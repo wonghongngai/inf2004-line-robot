@@ -1,0 +1,29 @@
+Development host verification, 2026-10-25 (Asia/Singapore).
+Base commit: 83664de; working tree changes uncommitted.
+No hardware or on-target results claimed.
+Command: cc -std=c11 -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined -DAPP_TEST=1 -DLINE_BARCODE_HOST_TEST app_program/subsystem3/line_barcode.c app_program/subsystem3/line_barcode_test.c -o /tmp/subsystem3-tests
+
+[TEST] S3-U02 PASS: all eight sensor positions
+[TEST] S3-U03 PASS: single-sample noise rejected
+[TEST] S3-U04 PASS: persistent loss enters bounded search
+[TEST] S3-U05 PASS: line reacquired after search
+[TEST] S3-U06 PASS: search timeout requests stop
+[TEST] S3-U13 PASS: relative widths at multiple scan speeds
+[TEST] S3-U07 PASS: A-D decode in both directions
+[TEST] S3-U08 PASS: sampled frames emit exactly one command
+[TEST] S3-U09 PASS: zero-width malformed frame rejected
+[TEST] S3-U10 PASS: invalid inter-character gap rejected
+[TEST] S3-U11 PASS: missed sampling interval invalidates capture
+[TEST] S3-U12 PASS: two-byte wire layout
+context=48 bytes, navigation message=2 bytes
+
+SHA-256 of tested source files:
+736072d6c3a1c403ea09bfc0dd4499626760e0b6bcd1863e9041c73e3911444e  app_program/subsystem3/line_barcode.c
+035a370c53c5133dab4b5aef67aced03bb107656c79438dbdcdc08e2ee6a10ba  app_program/subsystem3/line_barcode.h
+b95f27c2c49dce13c05fef88293bea0bdcb1efd0f46a2f67cebf406c5b539164  app_program/subsystem3/line_barcode_test.c
+e2036ab4808879242a160171e3041cb1913d1010a569fa757030a435bdfb5962  app_program/subsystem3/line_service.c
+596de7b8176e2d6ca7deb416e14a3301eb96a5d695c051a8d0cc7bdf1abf66c6  app_program/subsystem3/line_service.h
+b9a94fcbb2271d5f4c0ab86b2dc7bb37ce14e4fe080c04a0d4bfc3b0816ebcae  app_program/subsystem3/subsystem3.c
+06b722558a9628d7227b7c00a254a574b9d5ac83106e6335dad5eeb3c2beb55c  app_program/subsystem3/subsystem3.h
+47431bb84ede99b36e1c762709d45f15ddec38f7506937a6f6f68fd9adba74fc  app_program/subsystem3/subsystem3_test.c
+b0ec4af7d83b52f85c1485ddd8ab6eaccb369b67e38e5fc71c66dd94534585e6  app_program/subsystem3/task_consumer.c
