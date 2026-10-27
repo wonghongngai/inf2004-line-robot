@@ -17,7 +17,7 @@ subsystem, ask its owner or open a pull request for them to review.
 
 | # | Subsystem (what it does) | Student ID | GitHub username | Code | Tests |
 |---|---|---|---|---|---|
-| 1 | *example:* LED heartbeat on GP19 | | | `app_program/subsystem1/` | `testing/subsystem1/` |
+| 1 | WiFi / MQTT communication | | | `app_program/subsystem1/` | `testing/subsystem1/` |
 | 2 | *example:* Producer: makes a sample every 300 ms | | | `app_program/subsystem2/` | `testing/subsystem2/` |
 | 3 | *example:* Consumer: collects samples into statistics | | | `app_program/subsystem3/` | `testing/subsystem3/` |
 | 4 | *example:* Monitor: prints reports, pauses the LED | | | `app_program/subsystem4/` | `testing/subsystem4/` |
@@ -131,7 +131,7 @@ What students *can* do:
   ```
 - **Send or receive data over the network** by adding code that *runs
   inside the service task*. The MQTT client is in
-  `lib/liblwip/sysdepend/pico_rp2040/mqtt_utk.c`. It publishes a heartbeat
+  `app_program/subsystem1/mqtt_manager.c`. It publishes a heartbeat
   today. A "cloud / reporting" subsystem would add a kernel object
   (e.g. a message buffer) that application tasks fill. The MQTT code then
   reads it with `TMO_POL` (never blocking) and publishes it.
@@ -146,7 +146,7 @@ change it only by team agreement. Write down every task you create.
 
 | Subsystem | Priority band | Tasks (name – priority – core) |
 |---|---|---|
-| 1 | 12–13 | *example:* led_task – 12 – any |
+| 1 | 12–13 | No application task; network service owns MQTT |
 | 2 | 14–15 | *example:* producer_task – 14 – core 1 |
 | 3 | 16–17 | *example:* consumer_task – 16 – core 0 |
 | 4 | 18–19 | *example:* monitor_task – 18 – any |
@@ -166,7 +166,8 @@ sends to it or waits on it. Agree on the data format before coding.
 | IF-02 | S3 → S2 | semaphore + fixed memory pool (owned by S2) | `sem_slots`, `mpf_samples` | receiver returns the block, then 1 slot | *example* |
 | IF-03 | S3 → S4 | message buffer + event flag (owned by S4) | `mbf_summary`, `flg_events` | text line ≤ `S4_SUMMARY_MAX` bytes, then `FLG_BATCH` | *example* |
 | IF-04 | S4 → S3 | shared data under a mutex (owned by S3) | `app_stats`, `mtx_stats` | `APP_STATS`, read only while locked | *example* |
-| IF-05 | S4 → S1 | task control | `tid_led` | `tk_sus_tsk` / `tk_rsm_tsk` / `tk_chg_pri` | *example* |
+| IF-05 | All → S1 | telemetry queue | `subsystem1_publish_telemetry` | nonblocking message buffer | Buddy 1 |
+| IF-06 | S1 → controller | command queue | `subsystem1_receive_command` | message buffer receive | Buddy 1 |
 | IF-06 | | | | | |
 
 Each interface is tested by at least one integration test
@@ -191,3 +192,8 @@ limit there. The numbers below are the example's usage.
 | Alarm handler | 12 | | | | 1 | |
 
 (The kernel's USB and WiFi service tasks also use a few of these.)
+
+Buddy 1 integration: MQTT implementation moved from the library into subsystem1;
+the service entry point remains `mqtt_utk_start`. Subsystem4 no longer pauses the
+removed LED demo. Team review of this shared build/interface change is required
+before merging. See `app_program/subsystem1/README.md`.

@@ -67,7 +67,7 @@ endif
 
 # Optional MQTT client on top of NET=lwip. Connects and publishes from the
 # same processor-1-owned task as everything else above -- see
-# lib/liblwip/sysdepend/pico_rp2040/mqtt_utk.c. Broker address and topic
+# app_program/subsystem1/mqtt_manager.c. Broker address and topic
 # come from config/wifi_secrets.h (gitignored; copy from
 # config/wifi_secrets.example.h), same as the WiFi credentials.
 MQTT ?= 0
@@ -443,7 +443,8 @@ mtkernel_3/cyw43/cyw43_lwip.o: $(CYW43_DRIVER_PATH)/src/cyw43_lwip.c
 ifeq ($(MQTT),1)
 
 MQTT_CORE_OBJS := ./mtkernel_3/lwip/apps/mqtt/mqtt.o
-MQTT_PORT_OBJS := ./mtkernel_3/lib/liblwip/sysdepend/pico_rp2040/mqtt_utk.o
+# Buddy 1's mqtt_manager.c is built by the application source discovery.
+MQTT_PORT_OBJS :=
 
 CFLAGS += -DTM_MQTT=1
 

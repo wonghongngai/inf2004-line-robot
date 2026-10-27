@@ -18,10 +18,10 @@
  *
  *	The example system: one subsystem per folder, one task each
  *	------------------------------------------------------------
- *	  subsystem1/  LED       blinks GP19, paced by a cyclic handler
+ *	  subsystem1/  WiFi/MQTT queues, serviced by the built-in radio task
  *	  subsystem2/  Producer  makes a "sample" every 300 ms     (core 1)
  *	  subsystem3/  Consumer  collects samples into statistics  (core 0)
- *	  subsystem4/  Monitor   prints reports, pauses/resumes the LED
+ *	  subsystem4/  Monitor   prints reports
  *	  subsystem5/  (empty template for the fifth student)
  *
  *	How they talk to each other (the interfaces, see TEAM.md section 5):
@@ -31,7 +31,7 @@
  *	  IF-03  S3 -> S4  message buffer mbf_summary + event flag flg_events
  *	                   (owned by S4)
  *	  IF-04  S4 -> S3  reads app_stats under mutex mtx_stats (owned by S3)
- *	  IF-05  S4 -> S1  suspends/resumes the LED task tid_led (owned by S1)
+ *	  IF-05  All -> S1 telemetry queue; S1 -> controller command queue
  *	The subsystem that RECEIVES or OWNS the data creates the object and
  *	publishes its ID in its header; the other side just uses it.
  *
@@ -45,7 +45,7 @@
  *	  mutex       tk_cre_mtx tk_loc_mtx tk_unl_mtx                  S3, S4
  *	  msg buffer  tk_cre_mbf tk_snd_mbf tk_rcv_mbf                  S3, S4
  *	  event flag  tk_cre_flg tk_set_flg tk_wai_flg                  S3, S4
- *	  cyclic      tk_cre_cyc tk_ref_cyc                             S1
+ *	  cyclic      available for periodic application work
  *	  alarm       tk_cre_alm tk_sta_alm tk_stp_alm                  S4
  *	  time        tk_get_tim                                        S2, S4
  *	  system      tk_ref_ver                                        app_main.c
