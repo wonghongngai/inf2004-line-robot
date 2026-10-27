@@ -25,5 +25,6 @@ EXPORT ER subsystem5_init(void)
 
 EXPORT ER subsystem5_start(void)
 {
-	return E_OK;
+	ID tid = app_start_task(obstacle_task, S5_PRI_MAIN, 0, "obstacle");
+    return (tid < E_OK) ? tid : E_OK;
 }
