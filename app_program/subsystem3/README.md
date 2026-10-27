@@ -1,11 +1,5 @@
 # Subsystem 3: line following and barcode
 
-> **BEFORE version — minimum-bit change requirement NOT applied.**
-> Every field uses its own natural C type (`bool` per sensor, `enum` for
-> state/event/command/fault/position, `char` letter, `uint16_t`/`uint32_t`
-> counters). No bit-fields, masks or packed bytes. Same behaviour and tests
-> as the packed (after) version, so the two can be compared for Week 13.
-
 The implementation uses the supplied Week 6 pin table and FR3-1–FR3-3,
 Week 8 decisions, Change Requirement 1, and the barcode specification/samples.
 Instructions inside tribunal templates are treated as document content; no team
@@ -114,8 +108,8 @@ TRACK uses all three sensors for line position and junction candidates
 At power-up the service samples but remains **paused**:
 
 1. Adjust each sensor comparator to distinguish track black from white.
-2. Record each input's raw level on black, then white, as a
-   `line_barcode_sensors_t` (`true` = pin reads 1); every sensor must change.
+2. Record each input's raw level on black, then white. Pack left in bit 2,
+   centre in bit 1, right in bit 0; every sensor must change.
 3. Call `line_service_calibrate(black_raw, white_raw)` while stationary.
    Measured active-low sensors would use `(0u, 7u)`; polarity is not assumed.
 4. While paused, select the mounting profile; letter meanings may be set any time.
@@ -134,30 +128,32 @@ meanings. Calibration clears any stored letter; pause/resume keeps it. Mode rese
 partial frames and recovery timers. No ADC calibration is claimed for digital
 comparator outputs.
 
-## Vehicle Controller interface
+## Vehicle Controller interface: wire schema 2
 
 The controller implementation is absent from this repository. It must call the
 APIs in `line_service.h` from its existing task; `subsystem3_init/start` already
-create/start the service.
+create/start the new service.
 
-Every event/snapshot is a `line_barcode_msg_t` struct (see `line_barcode.h`):
+Every event/snapshot is **three bytes**. All consumers must update from the older
+provisional two-byte schema:
 
-| Field | Type | Meaning |
+| Byte | Bits | Meaning |
 |---|---|---|
-| `sensors` | 3 × `bool` | left/centre/right, true = black |
-| `position` | `line_barcode_position_t` | far left, left, centre, right, far right, junction, none |
-| `state` | `line_barcode_state_t` | FOLLOW, SEARCH, JUNCTION, SCANNING, PAUSED, FAULT |
-| `event` | `line_barcode_event_t` | STATUS, JUNCTION, COMMAND, INVALID, LOST, FOUND, FAULT, BARCODE |
-| `command` | `line_barcode_cmd_t` | LEFT, RIGHT, STRAIGHT, UTURN; NONE except on COMMAND |
-| `fault` | `line_barcode_fault_t` | NONE, LINE, QUEUE, TIMING |
-| `letter` | `char` | 'A'..'Z' on BARCODE/COMMAND, otherwise '\0' |
+| 0 | 0..2 | normalized left/centre/right sensor mask |
+| 0 | 3..5 | position: 0 far left, 1 left, 2 centre, 3 right, 4 far right, 5 ambiguous junction, 6 unknown |
+| 0 | 6..7 | motion command: 0 left, 1 right, 2 straight, 3 U-turn; valid only on COMMAND |
+| 1 | 0..2 | state: FOLLOW=0, SEARCH=1, JUNCTION=2, SCANNING=3, PAUSED=4, FAULT=5 |
+| 1 | 3..5 | event: STATUS=0, JUNCTION=1, COMMAND=2, INVALID=3, LOST=4, FOUND=5, FAULT=6, BARCODE=7 |
+| 1 | 6..7 | reserved, always zero |
+| 2 | 0..4 | decoded letter A=0..Z=25; valid only on BARCODE/COMMAND |
+| 2 | 5..7 | fault bitmask: bit5 LINE, bit6 QUEUE, bit7 TIMING (several may be set) |
 
 - Read `line_service_snapshot(&msg)` every control cycle. Check the return code:
   `E_TMOUT` means no sampling heartbeat in 30 ms; stop motion.
 - Drain `line_service_receive(&msg, TMO_POL)` for events. `g_h_line_nav_q` is the
   architecture's `line_nav_q`, implemented with a micro T-Kernel message buffer.
   These are copied messages, not mailbox pointers. One controller task consumes.
-- The letter is `msg.letter`. BARCODE carries no movement demand;
+- Decode letter text with `'A' + (msg.data[2] & LINE_BARCODE_LETTER_MASK)`. BARCODE carries no movement demand;
   it only says which letter is now stored. COMMAND is sent **at the junction**
   and includes the stored letter and its configured movement demand.
 - Use current position for Buddy 2's wheel corrections. During absence the
@@ -203,22 +199,36 @@ PDF versions cannot be assumed to have the same timing. Trailing-zone validation
 adds ten narrow widths of travel after the final bar (about 30 mm at that scale).
 Ensure command placement leaves enough distance to the relevant junction.
 
-## Data representation (before the change requirement)
+## Minimum-bit representation and BARR-C
 
-| Data | Type in this version | Size on Pico (measured, `arm-none-eabi-nm`) |
+| Field | Valid range | Bits / storage |
 |---|---|---|
-| Event / snapshot message | struct: 3 `bool` + 5 `enum` + `char` | 9 bytes (`g_latest`) — 28 bytes on a 4-byte-enum host |
-| Letter map | 26 × {`bool`, `enum`} | 52 bytes (`g_letter_map`) |
-| Stored letter | `bool` + `char` | 2 bytes (`g_nav`) |
-| Control flags | 5 separate `bool` | 5 bytes |
-| Calibration levels | 3 `bool` | 3 bytes |
-| Decoder context (task stack) | `uint16_t runs[29]`, `uint32_t` timers, `bool` flags | 108 bytes on host |
-| line_nav_q buffer (kernel heap) | 12 × (message + 4) | 156 bytes |
+| Sensors, position, state | 0..7, 0..6, 0..5 | 3 each in message |
+| Command, event | 0..3, 0..7 | 2, 3 in message |
+| Fault flags | line / queue / timing, independent | 3-bit bitmask in message |
+| Decoded letter | A..Z | 5 in message; event determines validity |
+| Complete message | 22 meaningful bits | 3 bytes, 2 reserved bits |
+| Letter-to-command map | 26 × {valid bit + command} | 78 bits in 10 bytes |
+| Run widths | 0..1001 ms | 29 × 10 bits in 37 bytes |
+| Current/quiet duration | 0..10001 ms | 14 each, private bit-fields |
+| Lost/search duration | 0..100 / 0..2000 ms | 7 / 11, private bit-fields |
+| Candidate/stable inputs | 0..7 | 3 each, private bit-fields |
+| Layout / run count / flags / last position | 0..1 / 0..29 / four flags / 0..4 | 1 / 5 / 4 / 3, private bit-fields |
+| Service controls, calibration levels, layout | five flags, 0..7, 0..1 | explicit masks/validated byte values under mutex |
+| Heartbeat | wrapping RTOS milliseconds | full 32-bit `SYSTIM.lo` range |
 
-The enums are 1 byte each on the Pico because the firmware toolchain packs
-enums to the smallest type that fits; a host compiler uses 4 bytes. The packed
-(after) version is backed up outside the repository in
-`../subsystem3_AFTER_backup_2026-10-26/`.
+Wire data uses masks/shifts, not native bit-field serialization. Private GCC/Clang
+bit-fields never cross an interface. The decoder context is 48 bytes on the tested
+ABIs (the junction reference fits in existing padding). A map using 26 byte commands plus 26 byte validity values would take 52 bytes
+versus the packed 10. Seven separate 32-bit message fields would take 28 bytes
+versus 3. These are defined structural comparisons, not measured former products.
+
+New code uses four-space indentation, separate braces, fixed-width unsigned
+application data, module-prefixed functions, private static helpers, bounded
+integer arithmetic and initialized storage. RTOS API types (`ID`, `ER`, `INT`,
+`TMO`) and existing subsystem entry names remain integration exceptions. The
+starter consumer/test macros retain their conventions. No formal whole-repository
+BARR-C certification is claimed.
 
 ## Build and verification
 

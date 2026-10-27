@@ -41,27 +41,25 @@ EXPORT void subsystem3_test(void)
 		   after.min >= 0 && after.max <= 100,
 		   "min <= max, both within 0..100");
 
-    line_barcode_sensors_t const same = {false, false, false};
-    TEST_CHECK("S3-U14", E_PAR == line_service_calibrate(same, same),
+    TEST_CHECK("S3-U14", E_PAR == line_service_calibrate(0u, 0u),
                "calibration rejects indistinguishable surfaces");
     TEST_CHECK("S3-U15", E_PAR == line_service_snapshot(NULL),
                "snapshot rejects null output");
     TEST_CHECK("S3-U16", E_OK == line_service_enable(false),
                "controller can pause navigation");
     tk_dly_tsk(30);
-    line_barcode_msg_t msg;
+    line_barcode_msg_t msg = {{0u, 0u}};
     ER result = line_service_snapshot(&msg);
     TEST_CHECK("S3-U17", (E_OK == result)
-               && (LINE_BARCODE_PAUSED == msg.state),
+               && (LINE_BARCODE_PAUSED == (msg.data[1] & 7u)),
                "paused service keeps a fresh sampling heartbeat");
     TEST_CHECK("S3-U23",
                (E_OK == line_service_map_letter('Z', LINE_BARCODE_CMD_UTURN))
                && (E_OK == line_service_clear_map()),
                "paused controller can set and clear a letter mapping");
     TEST_CHECK("S3-U24",
-               (E_PAR == line_service_map_letter('a', LINE_BARCODE_CMD_LEFT))
-               && (E_PAR == line_service_set_layout(
-                                (line_barcode_layout_t)2)),
+               (E_PAR == line_service_map_letter('a', 0u))
+               && (E_PAR == line_service_set_layout(2u)),
                "invalid mapping and layout rejected");
     TEST_CHECK("S3-U27",
                (E_OK == line_service_set_mapping('A', 'B', 'C', 'D'))

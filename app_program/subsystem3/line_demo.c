@@ -11,46 +11,53 @@
 #define DEMO_STATUS_MS      1000    /* sensor print period when idle */
 #define DEMO_FAULT_PAUSE_MS 1000    /* wait before clearing a fault */
 
-static char const * const g_cmd_names[5] =
+static char const * const g_cmd_names[4] =
 {
-    "LEFT", "RIGHT", "STRAIGHT", "U-TURN", "NONE"
+    "LEFT", "RIGHT", "STRAIGHT", "U-TURN"
 };
 
-static char const * const g_state_names[6] =
+static char const * const g_state_names[8] =
 {
-    "FOLLOW", "SEARCH", "JUNCTION", "SCANNING", "PAUSED", "FAULT"
+    "FOLLOW", "SEARCH", "JUNCTION", "SCANNING", "PAUSED", "FAULT", "?", "?"
 };
 
-static char const * const g_position_names[7] =
+static char const * const g_position_names[8] =
 {
-    "far-left", "left", "centre", "right", "far-right", "junction", "none"
+    "far-left", "left", "centre", "right", "far-right", "junction",
+    "none", "?"
 };
 
-static char const * const g_fault_names[4] =
+static void print_faults(uint8_t faults)
 {
-    "none", "line lost too long", "event queue full", "sampling late"
-};
+    tm_printf((UB *)"[S3] FAULT:%s%s%s\n",
+              (0u != (faults & LINE_BARCODE_ERR_LINE))
+              ? " line-lost-too-long" : "",
+              (0u != (faults & LINE_BARCODE_ERR_QUEUE))
+              ? " event-queue-full" : "",
+              (0u != (faults & LINE_BARCODE_ERR_TIMING))
+              ? " sampling-late" : "");
+}
 
 /* Mirror of the service's stored letter, for the printout only. */
 static char g_pending_letter = '\0';
 
 static void print_status(line_barcode_msg_t const *p_msg)
 {
+    uint8_t sensors = p_msg->data[0] & 7u;
     tm_printf((UB *)"[S3] sensors L=%d C=%d R=%d (1=black) pos=%s state=%s"
               " waiting=%c\n",
-              p_msg->sensors.b_left ? 1 : 0,
-              p_msg->sensors.b_centre ? 1 : 0,
-              p_msg->sensors.b_right ? 1 : 0,
-              g_position_names[p_msg->position],
-              g_state_names[p_msg->state],
+              (sensors >> 2u) & 1u, (sensors >> 1u) & 1u, sensors & 1u,
+              g_position_names[(p_msg->data[0] >> 3u) & 7u],
+              g_state_names[p_msg->data[1] & 7u],
               ('\0' != g_pending_letter) ? g_pending_letter : '-');
 }
 
 static void print_event(line_barcode_msg_t const *p_msg)
 {
-    char letter = p_msg->letter;
+    uint8_t event = (p_msg->data[1] >> 3u) & 7u;
+    char letter = (char)('A' + (p_msg->data[2] & LINE_BARCODE_LETTER_MASK));
 
-    switch (p_msg->event)
+    switch (event)
     {
         case LINE_BARCODE_EVT_BARCODE:
             g_pending_letter = letter;
@@ -61,7 +68,7 @@ static void print_event(line_barcode_msg_t const *p_msg)
         case LINE_BARCODE_EVT_COMMAND:
             g_pending_letter = '\0';
             tm_printf((UB *)"[S3] JUNCTION -> action %s (letter %c)\n",
-                      g_cmd_names[p_msg->command], letter);
+                      g_cmd_names[p_msg->data[0] >> 6u], letter);
         break;
 
         case LINE_BARCODE_EVT_JUNCTION:
@@ -90,8 +97,7 @@ static void print_event(line_barcode_msg_t const *p_msg)
         break;
 
         case LINE_BARCODE_EVT_FAULT:
-            tm_printf((UB *)"[S3] FAULT: %s\n",
-                      g_fault_names[p_msg->fault]);
+            print_faults(p_msg->data[2] >> LINE_BARCODE_FAULT_SHIFT);
         break;
 
         default:
@@ -102,13 +108,8 @@ static void print_event(line_barcode_msg_t const *p_msg)
 
 static ER demo_configure(void)
 {
-    line_barcode_sensors_t const black = {LINE_DEMO_BLACK_HIGH,
-                                          LINE_DEMO_BLACK_HIGH,
-                                          LINE_DEMO_BLACK_HIGH};
-    line_barcode_sensors_t const white = {!LINE_DEMO_BLACK_HIGH,
-                                          !LINE_DEMO_BLACK_HIGH,
-                                          !LINE_DEMO_BLACK_HIGH};
-    ER result = line_service_calibrate(black, white);
+    ER result = line_service_calibrate(LINE_DEMO_BLACK_RAW,
+                                       (uint8_t)(~LINE_DEMO_BLACK_RAW & 7u));
     if (E_OK == result)
     {
         result = line_service_set_layout(LINE_BARCODE_LAYOUT_SIDE);
@@ -129,7 +130,7 @@ static ER demo_configure(void)
 
 static void line_demo_task(INT start_code, void *p_extra)
 {
-    line_barcode_msg_t msg;
+    line_barcode_msg_t msg = {{0u, 0u, 0u}};
     (void)start_code;
     (void)p_extra;
 
@@ -168,7 +169,7 @@ static void line_demo_task(INT start_code, void *p_extra)
          * stop the motors instead.
          */
         if ((E_OK == line_service_snapshot(&msg))
-            && (LINE_BARCODE_FAULT == msg.state))
+            && (LINE_BARCODE_FAULT == (msg.data[1] & 7u)))
         {
             (void)tk_dly_tsk(DEMO_FAULT_PAUSE_MS);
             tm_printf((UB *)"[S3] clearing fault, resuming\n");

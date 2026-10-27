@@ -1,7 +1,5 @@
 /** @file line_service.c
- * @brief IR GPIO ownership, periodic sampling and event transport.
- *
- * BEFORE version: each control flag is its own bool (no flag bitmask).
+ * @brief IR GPIO ownership, periodic sampling and compact event transport.
  */
 #include "line_service.h"
 
@@ -9,43 +7,34 @@
 #error "IR_RIGHT uses GP0: select CONSOLE=usb_cdc CRASH_REPORT=0"
 #endif
 
+#define SERVICE_FLAG_CALIBRATED   1u
+#define SERVICE_FLAG_ENABLED      2u
+#define SERVICE_FLAG_RESET        4u
+#define SERVICE_FLAG_QUEUE_FAULT  8u
+#define SERVICE_FLAG_PROCESS_FAULT 16u
+
 ID g_h_line_nav_q = 0;
 static ID g_h_line_mutex = 0;
 static ID g_h_line_task = 0;
 static ID g_h_line_cycle = 0;
-
-/* All of the following are protected by g_h_line_mutex. Only the sensor
- * task owns the processing context and accesses IR GPIO.
- */
-static bool g_b_calibrated = false;
-static bool g_b_enabled = false;
-static bool g_b_reset = false;
-static bool g_b_queue_fault = false;
-static bool g_b_process_fault = false;
-static line_barcode_sensors_t g_black_raw = {false, false, false};
-static line_barcode_layout_t g_layout = LINE_BARCODE_LAYOUT_SIDE;
-static line_barcode_map_t g_letter_map;
+static uint8_t g_control_flags = 0u;
+static uint8_t g_black_raw = 0u;
+static uint8_t g_layout = LINE_BARCODE_LAYOUT_SIDE;
+/* Packed per-letter validity/command entries, protected by mutex. */
+static line_barcode_map_t g_letter_map = {{0u}};
 /* Letter read from the last barcode, waiting for the next junction. */
-static line_barcode_nav_t g_nav = {false, '\0'};
+static line_barcode_nav_t g_nav = {0u};
 static uint32_t g_sample_ms = 0u;
-static line_barcode_msg_t g_latest;
+static line_barcode_msg_t g_latest = {{0u, LINE_BARCODE_PAUSED}};
 
-static line_barcode_msg_t paused_msg(void)
-{
-    static line_barcode_sensors_t const no_sensors = {false, false, false};
-    return (line_barcode_make_msg(no_sensors, LINE_BARCODE_POS_NONE,
-                                  LINE_BARCODE_PAUSED,
-                                  LINE_BARCODE_EVT_STATUS,
-                                  LINE_BARCODE_ERR_NONE));
-}
-
+/* All shared packed fields and the three-byte snapshot use this mutex.
+ * Only the sensor task owns the processing context and accesses IR GPIO.
+ */
 ER line_service_init(void)
 {
     T_CMTX mutex_cfg = {0};
     T_CMBF queue_cfg = {0};
     ER result = E_OK;
-    line_barcode_map_clear(&g_letter_map);
-    g_latest = paused_msg();
     mutex_cfg.mtxatr = TA_INHERIT;
     g_h_line_mutex = tk_cre_mtx(&mutex_cfg);
     if (g_h_line_mutex < E_OK)
@@ -68,25 +57,20 @@ ER line_service_init(void)
     return (result);
 }
 
-ER line_service_calibrate(line_barcode_sensors_t black_raw,
-                          line_barcode_sensors_t white_raw)
+ER line_service_calibrate(uint8_t black_raw, uint8_t white_raw)
 {
     ER result = E_PAR;
-    if ((black_raw.b_left != white_raw.b_left)
-        && (black_raw.b_centre != white_raw.b_centre)
-        && (black_raw.b_right != white_raw.b_right))
+    if (((black_raw | white_raw) <= LINE_BARCODE_SENSOR_MASK)
+        && (LINE_BARCODE_SENSOR_MASK == (black_raw ^ white_raw)))
     {
         result = tk_loc_mtx(g_h_line_mutex, TMO_FEVR);
         if (E_OK == result)
         {
             g_black_raw = black_raw;
-            g_b_calibrated = true;
-            g_b_enabled = false;
-            g_b_reset = true;
-            g_b_queue_fault = false;
-            g_b_process_fault = false;
+            g_control_flags = SERVICE_FLAG_CALIBRATED | SERVICE_FLAG_RESET;
             line_barcode_nav_clear(&g_nav);
-            g_latest = paused_msg();
+            g_latest = line_barcode_pack(0u, 6u, 0u, LINE_BARCODE_PAUSED,
+                                         LINE_BARCODE_EVT_STATUS, 0u);
             result = tk_unl_mtx(g_h_line_mutex);
         }
     }
@@ -98,22 +82,22 @@ ER line_service_enable(bool b_enable)
     ER result = tk_loc_mtx(g_h_line_mutex, TMO_FEVR);
     if (E_OK == result)
     {
-        if (b_enable && !g_b_calibrated)
+        if (b_enable && (0u == (g_control_flags & SERVICE_FLAG_CALIBRATED)))
         {
             result = E_OBJ;
         }
         else
         {
-            g_b_enabled = b_enable;
-            g_b_reset = true;
-            g_b_queue_fault = false;
-            g_b_process_fault = false;
-            line_barcode_msg_t discarded;
+            g_control_flags &= SERVICE_FLAG_CALIBRATED;
+            g_control_flags |= SERVICE_FLAG_RESET;
+            g_control_flags |= b_enable ? SERVICE_FLAG_ENABLED : 0u;
+            line_barcode_msg_t discarded = {{0u, 0u}};
             while (tk_rcv_mbf(g_h_line_nav_q, &discarded, TMO_POL) > 0)
             {
                 /* Discard events from the preceding navigation session. */
             }
-            g_latest = paused_msg();
+            g_latest = line_barcode_pack(0u, 6u, 0u, LINE_BARCODE_PAUSED,
+                                         LINE_BARCODE_EVT_STATUS, 0u);
         }
         ER unlock_result = tk_unl_mtx(g_h_line_mutex);
         result = (E_OK == result) ? unlock_result : result;
@@ -121,7 +105,7 @@ ER line_service_enable(bool b_enable)
     return (result);
 }
 
-ER line_service_set_layout(line_barcode_layout_t layout)
+ER line_service_set_layout(uint8_t layout)
 {
     ER result = E_PAR;
     if (layout <= LINE_BARCODE_LAYOUT_SIDE)
@@ -129,12 +113,10 @@ ER line_service_set_layout(line_barcode_layout_t layout)
         result = tk_loc_mtx(g_h_line_mutex, TMO_FEVR);
         if (E_OK == result)
         {
-            result = g_b_enabled ? E_OBJ : E_OK;
-            if (E_OK == result)
-            {
-                g_layout = layout;
-                g_b_reset = true;
-            }
+            result = (0u != (g_control_flags & SERVICE_FLAG_ENABLED))
+                     ? E_OBJ : E_OK;
+            g_layout = (E_OK == result) ? layout : g_layout;
+            g_control_flags |= (E_OK == result) ? SERVICE_FLAG_RESET : 0u;
             ER unlock_result = tk_unl_mtx(g_h_line_mutex);
             result = (E_OK == result) ? unlock_result : result;
         }
@@ -142,7 +124,7 @@ ER line_service_set_layout(line_barcode_layout_t layout)
     return (result);
 }
 
-ER line_service_map_letter(char letter, line_barcode_cmd_t command)
+ER line_service_map_letter(char letter, uint8_t command)
 {
     ER result = tk_loc_mtx(g_h_line_mutex, TMO_FEVR);
     if (E_OK == result)
@@ -157,15 +139,13 @@ ER line_service_map_letter(char letter, line_barcode_cmd_t command)
 ER line_service_set_mapping(char left, char right, char straight, char uturn)
 {
     char const letters[4] = {left, right, straight, uturn};
-    line_barcode_map_t mapping;
+    line_barcode_map_t mapping = {{0u}};
     bool b_valid = true;
-    line_barcode_map_clear(&mapping);
 
     /* Build the complete map first, so a bad message changes nothing. */
     for (uint8_t cmd = 0u; cmd < 4u; cmd++)
     {
-        b_valid = b_valid && line_barcode_map_set(&mapping, letters[cmd],
-                                                  (line_barcode_cmd_t)cmd);
+        b_valid = b_valid && line_barcode_map_set(&mapping, letters[cmd], cmd);
         for (uint8_t other = 0u; other < cmd; other++)
         {
             b_valid = b_valid && (letters[other] != letters[cmd]);
@@ -235,44 +215,41 @@ ER line_service_receive(line_barcode_msg_t *p_msg, TMO timeout)
     return (result);
 }
 
-/* Reads each IR pin and converts it to "is black" using calibration. */
-static line_barcode_sensors_t read_sensors(void)
+static uint8_t read_sensors(void)
 {
-    line_barcode_sensors_t sensors;
-    bool b_left_high = (0 != gpio_get_val(LINE_SERVICE_PIN_LEFT));
-    bool b_centre_high = (0 != gpio_get_val(LINE_SERVICE_PIN_CENTRE));
-    bool b_right_high = (0 != gpio_get_val(LINE_SERVICE_PIN_RIGHT));
-    sensors.b_left = (b_left_high == g_black_raw.b_left);
-    sensors.b_centre = (b_centre_high == g_black_raw.b_centre);
-    sensors.b_right = (b_right_high == g_black_raw.b_right);
-    return (sensors);
+    uint8_t raw = (uint8_t)((gpio_get_val(LINE_SERVICE_PIN_LEFT) << 2u)
+                            | (gpio_get_val(LINE_SERVICE_PIN_CENTRE) << 1u)
+                            | gpio_get_val(LINE_SERVICE_PIN_RIGHT));
+    return (raw);
 }
 
 static void publish_sample(line_barcode_msg_t msg)
 {
-    if (g_b_process_fault)
+    if (0u != (g_control_flags & SERVICE_FLAG_PROCESS_FAULT))
     {
         return;
     }
     (void)line_barcode_nav_update(&g_nav, &g_letter_map, &msg);
-    if (LINE_BARCODE_EVT_STATUS != msg.event)
+    uint8_t event = (msg.data[1] >> 3u) & 7u;
+    if (LINE_BARCODE_EVT_STATUS != event)
     {
         ER result = tk_snd_mbf(g_h_line_nav_q, &msg, sizeof(msg), TMO_POL);
         if (E_OK != result)
         {
-            g_b_queue_fault = true;
+            g_control_flags |= SERVICE_FLAG_QUEUE_FAULT;
         }
     }
-    if (g_b_queue_fault)
+    if (0u != (g_control_flags & SERVICE_FLAG_QUEUE_FAULT))
     {
-        msg.state = LINE_BARCODE_FAULT;
-        msg.event = LINE_BARCODE_EVT_FAULT;
-        msg.fault = LINE_BARCODE_ERR_QUEUE;
+        msg.data[1] = (uint8_t)(LINE_BARCODE_FAULT
+                                | (LINE_BARCODE_EVT_FAULT << 3u));
+        msg.data[2] |= (uint8_t)(LINE_BARCODE_ERR_QUEUE
+                                 << LINE_BARCODE_FAULT_SHIFT);
     }
     g_latest = msg;
-    if (LINE_BARCODE_FAULT == msg.state)
+    if (LINE_BARCODE_FAULT == (msg.data[1] & 7u))
     {
-        g_b_process_fault = true;
+        g_control_flags |= SERVICE_FLAG_PROCESS_FAULT;
     }
 }
 
@@ -314,16 +291,17 @@ static void line_service_task(INT start_code, void *p_extra)
         ER lock_result = tk_loc_mtx(g_h_line_mutex, TMO_FEVR);
         if (E_OK == lock_result)
         {
-            if (g_b_reset)
+            if (0u != (g_control_flags & SERVICE_FLAG_RESET))
             {
                 (void)line_barcode_set_layout(&context, g_layout);
-                g_b_reset = false;
+                g_control_flags &= (uint8_t)~SERVICE_FLAG_RESET;
             }
             g_sample_ms = now.lo;
-            line_barcode_sensors_t sensors = read_sensors();
-            line_barcode_msg_t msg = paused_msg();
-            msg.sensors = sensors;
-            if ((E_OK == result) && g_b_enabled)
+            uint8_t sensors = (uint8_t)(~(read_sensors() ^ g_black_raw) & 7u);
+            line_barcode_msg_t msg = line_barcode_pack(sensors, 6u, 0u,
+                LINE_BARCODE_PAUSED, LINE_BARCODE_EVT_STATUS, 0u);
+            if ((E_OK == result)
+                && (0u != (g_control_flags & SERVICE_FLAG_ENABLED)))
             {
                 uint16_t elapsed = (elapsed_ms > UINT16_MAX)
                                    ? UINT16_MAX : (uint16_t)elapsed_ms;
@@ -331,9 +309,8 @@ static void line_service_task(INT start_code, void *p_extra)
             }
             if (E_OK != result)
             {
-                msg = line_barcode_make_msg(sensors, LINE_BARCODE_POS_NONE,
-                    LINE_BARCODE_FAULT, LINE_BARCODE_EVT_FAULT,
-                    LINE_BARCODE_ERR_LINE);
+                msg = line_barcode_pack(sensors, 6u, 0u, LINE_BARCODE_FAULT,
+                    LINE_BARCODE_EVT_FAULT, LINE_BARCODE_ERR_LINE);
             }
             publish_sample(msg);
             (void)tk_unl_mtx(g_h_line_mutex);
@@ -385,5 +362,3 @@ ER line_service_start(void)
     }
     return (result);
 }
-
-/*** end of file ***/

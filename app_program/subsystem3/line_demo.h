@@ -13,11 +13,11 @@
 #define LINE_DEMO_ENABLE        1
 #define LINE_DEMO_PRIORITY      17      /* below the IR task (16) */
 
-/* Raw GPIO level of every sensor on black: true = reads 1 on black (usual
- * for LM393 IR modules). If the printed L/C/R values are inverted on the
- * bench, change this to false.
+/* Raw GPIO level of each sensor on black, left bit2 / centre bit1 / right
+ * bit0. 7u = all read 1 on black (usual for LM393 IR modules). If the
+ * printed L/C/R bits are inverted on the bench, change this to 0u.
  */
-#define LINE_DEMO_BLACK_HIGH    true
+#define LINE_DEMO_BLACK_RAW     7u
 
 /* TEMPORARY letter-to-movement mapping until Buddy 1's MQTT message calls
  * line_service_set_mapping(). Four distinct letters 'A'..'Z'.

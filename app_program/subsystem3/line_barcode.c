@@ -1,47 +1,42 @@
 /** @file line_barcode.c
  * @brief Bounded, allocation-free processing of three digital IR inputs.
- *
- * BEFORE version: plain fields, no bit packing (see line_barcode.h).
  */
 #include "line_barcode.h"
 #include <stddef.h>
 #include <string.h>
 
+#define BARCODE_FLAG_BLACK       1u
+#define BARCODE_FLAG_CAPTURE     2u
+#define BARCODE_FLAG_JUNCTION    4u
+#define BARCODE_FLAG_CONFIRMED   8u
+#define BARCODE_FLAG_CROSSED     16u
 #define BARCODE_ELEMENTS         9u
+#define BARCODE_CHAR_STRIDE      10u
+#define BARCODE_CHAR_COUNT       3u
 #define BARCODE_WIDE_COUNT       3u
 #define BARCODE_STAR             0x094u
 #define BARCODE_MIN_RUN_MS       40u
-#define BARCODE_MIN_QUIET_UNITS  10u
+#define BARCODE_MIN_QUIET_UNITS   10u
 #define BARCODE_MAX_STEP_MS      20u
 #define BARCODE_QUIET_MAX_MS     10000u
 
-static uint32_t saturate_add(uint32_t value, uint32_t increment,
-                             uint32_t limit)
+static uint16_t saturate_add(uint16_t value, uint16_t increment,
+                             uint16_t limit)
 {
-    uint32_t sum = value + increment;
-    return ((sum > limit) ? limit : sum);
+    uint32_t sum = (uint32_t)value + increment;
+    return ((sum > limit) ? limit : (uint16_t)sum);
 }
 
-static bool all_black(line_barcode_sensors_t sensors)
+line_barcode_msg_t line_barcode_pack(uint8_t sensors, uint8_t position,
+                                    uint8_t command, uint8_t state,
+                                    uint8_t event, uint8_t fault)
 {
-    return (sensors.b_left && sensors.b_centre && sensors.b_right);
-}
-
-line_barcode_msg_t line_barcode_make_msg(line_barcode_sensors_t sensors,
-                                        line_barcode_position_t position,
-                                        line_barcode_state_t state,
-                                        line_barcode_event_t event,
-                                        line_barcode_fault_t fault)
-{
-    line_barcode_msg_t msg;
-    memset(&msg, 0, sizeof(msg));
-    msg.sensors = sensors;
-    msg.position = position;
-    msg.state = state;
-    msg.event = event;
-    msg.command = LINE_BARCODE_CMD_NONE;
-    msg.fault = fault;
-    msg.letter = '\0';
+    line_barcode_msg_t msg = {{0u, 0u, 0u}};
+    msg.data[0] = (uint8_t)((sensors & 7u) | ((position & 7u) << 3u)
+                           | ((command & 3u) << 6u));
+    msg.data[1] = (uint8_t)((state & 7u) | ((event & 7u) << 3u));
+    msg.data[2] = (uint8_t)((fault & LINE_BARCODE_ERR_MASK)
+                           << LINE_BARCODE_FAULT_SHIFT);
     return (msg);
 }
 
@@ -49,33 +44,54 @@ void line_barcode_map_clear(line_barcode_map_t *p_map)
 {
     if (NULL != p_map)
     {
-        for (uint8_t idx = 0u; idx < LINE_BARCODE_ALPHABET_SIZE; idx++)
-        {
-            p_map->entry[idx].b_valid = false;
-            p_map->entry[idx].command = LINE_BARCODE_CMD_NONE;
-        }
+        memset(p_map, 0, sizeof(*p_map));
     }
 }
 
 bool line_barcode_map_set(line_barcode_map_t *p_map, char letter,
-                           line_barcode_cmd_t command)
+                           uint8_t command)
 {
     bool b_valid = (NULL != p_map) && (letter >= 'A') && (letter <= 'Z')
                    && (command <= LINE_BARCODE_CMD_UTURN);
     if (b_valid)
     {
-        p_map->entry[letter - 'A'].b_valid = true;
-        p_map->entry[letter - 'A'].command = command;
+        uint8_t bit = (uint8_t)(letter - 'A') * 3u;
+        uint8_t offset = bit / 8u;
+        uint8_t shift = bit % 8u;
+        uint16_t pair = p_map->data[offset];
+        if ((offset + 1u) < sizeof(p_map->data))
+        {
+            pair |= (uint16_t)p_map->data[offset + 1u] << 8u;
+        }
+        pair = (uint16_t)((pair & ~(7u << shift))
+                          | ((4u | command) << shift));
+        p_map->data[offset] = (uint8_t)pair;
+        if ((offset + 1u) < sizeof(p_map->data))
+        {
+            p_map->data[offset + 1u] = (uint8_t)(pair >> 8u);
+        }
     }
     return (b_valid);
+}
+
+/* Returns the 3-bit entry {valid, command[1:0]} for letter 0..25. */
+static uint8_t map_lookup(line_barcode_map_t const *p_map, uint8_t letter)
+{
+    uint8_t bit = letter * 3u;
+    uint8_t offset = bit / 8u;
+    uint16_t pair = p_map->data[offset];
+    if ((offset + 1u) < sizeof(p_map->data))
+    {
+        pair |= (uint16_t)p_map->data[offset + 1u] << 8u;
+    }
+    return ((uint8_t)((pair >> (bit % 8u)) & 7u));
 }
 
 void line_barcode_nav_clear(line_barcode_nav_t *p_nav)
 {
     if (NULL != p_nav)
     {
-        p_nav->b_pending = false;
-        p_nav->letter = '\0';
+        p_nav->pending = 0u;
     }
 }
 
@@ -88,26 +104,33 @@ bool line_barcode_nav_update(line_barcode_nav_t *p_nav,
     {
         return (false);
     }
-    if ((LINE_BARCODE_EVT_BARCODE == p_msg->event)
-        && (p_msg->letter >= 'A') && (p_msg->letter <= 'Z')
-        && ((LINE_BARCODE_FOLLOW == p_msg->state)
-            || (LINE_BARCODE_SCANNING == p_msg->state)))
+    uint8_t event = (p_msg->data[1] >> 3u) & 7u;
+    uint8_t state = p_msg->data[1] & 7u;
+    if ((LINE_BARCODE_EVT_BARCODE == event)
+        && ((p_msg->data[2] & LINE_BARCODE_LETTER_MASK)
+            < LINE_BARCODE_ALPHABET_SIZE)
+        && ((LINE_BARCODE_FOLLOW == state) || (LINE_BARCODE_SCANNING == state)))
     {
         /* A newer barcode replaces any letter still waiting. */
-        p_nav->b_pending = true;
-        p_nav->letter = p_msg->letter;
+        p_nav->pending = (uint8_t)(0x80u
+                                   | (p_msg->data[2] & LINE_BARCODE_LETTER_MASK));
     }
-    else if ((LINE_BARCODE_EVT_JUNCTION == p_msg->event) && p_nav->b_pending)
+    else if ((LINE_BARCODE_EVT_JUNCTION == event)
+             && (0u != (p_nav->pending & 0x80u)))
     {
-        line_barcode_map_entry_t entry = p_map->entry[p_nav->letter - 'A'];
-        b_command = entry.b_valid;
+        uint8_t letter = p_nav->pending & 0x1fu;
+        uint8_t entry = map_lookup(p_map, letter);
+        p_nav->pending = 0u;
+        b_command = (0u != (entry & 4u));
         if (b_command)
         {
-            p_msg->event = LINE_BARCODE_EVT_COMMAND;
-            p_msg->command = entry.command;
-            p_msg->letter = p_nav->letter;
+            p_msg->data[0] = (uint8_t)((p_msg->data[0] & 0x3fu)
+                                      | ((entry & 3u) << 6u));
+            p_msg->data[1] = (uint8_t)((p_msg->data[1] & 0xc7u)
+                                      | (LINE_BARCODE_EVT_COMMAND << 3u));
+            p_msg->data[2] = (uint8_t)((p_msg->data[2]
+                                        & ~LINE_BARCODE_LETTER_MASK) | letter);
         }
-        line_barcode_nav_clear(p_nav);
     }
     else
     {
@@ -116,43 +139,10 @@ bool line_barcode_nav_update(line_barcode_nav_t *p_nav,
     return (b_command);
 }
 
-/* Three-sensor TRACK profile. */
-line_barcode_position_t line_barcode_position(line_barcode_sensors_t sensors)
+uint8_t line_barcode_position(uint8_t sensors)
 {
-    line_barcode_position_t position = LINE_BARCODE_POS_NONE;
-    bool b_left = sensors.b_left;
-    bool b_centre = sensors.b_centre;
-    bool b_right = sensors.b_right;
-
-    if (b_left && b_right)
-    {
-        position = LINE_BARCODE_POS_JUNCTION;
-    }
-    else if (b_left && b_centre)
-    {
-        position = LINE_BARCODE_POS_LEFT;
-    }
-    else if (b_centre && b_right)
-    {
-        position = LINE_BARCODE_POS_RIGHT;
-    }
-    else if (b_left)
-    {
-        position = LINE_BARCODE_POS_FAR_LEFT;
-    }
-    else if (b_right)
-    {
-        position = LINE_BARCODE_POS_FAR_RIGHT;
-    }
-    else if (b_centre)
-    {
-        position = LINE_BARCODE_POS_CENTRE;
-    }
-    else
-    {
-        position = LINE_BARCODE_POS_NONE;
-    }
-    return (position);
+    static uint8_t const positions[8] = {6u, 4u, 2u, 3u, 0u, 5u, 1u, 5u};
+    return (positions[sensors & LINE_BARCODE_SENSOR_MASK]);
 }
 
 void line_barcode_reset(line_barcode_ctx_t *p_ctx)
@@ -160,14 +150,12 @@ void line_barcode_reset(line_barcode_ctx_t *p_ctx)
     if (NULL != p_ctx)
     {
         memset(p_ctx, 0, sizeof(*p_ctx));
+        p_ctx->last_position = 2u;
         p_ctx->layout = LINE_BARCODE_LAYOUT_SIDE;
-        p_ctx->state = LINE_BARCODE_FOLLOW;
-        p_ctx->last_position = LINE_BARCODE_POS_CENTRE;
     }
 }
 
-bool line_barcode_set_layout(line_barcode_ctx_t *p_ctx,
-                             line_barcode_layout_t layout)
+bool line_barcode_set_layout(line_barcode_ctx_t *p_ctx, uint8_t layout)
 {
     bool b_valid = (NULL != p_ctx) && (layout <= LINE_BARCODE_LAYOUT_SIDE);
     if (b_valid)
@@ -180,30 +168,15 @@ bool line_barcode_set_layout(line_barcode_ctx_t *p_ctx,
 
 /* Two tracking sensors sit just inside opposite edges of the 18 mm line.
  * The third, offset sensor sees the separate barcode and cannot steer.
+ * Both track sensors black is centred; it cannot uniquely identify a junction.
  */
-static line_barcode_position_t track_position(line_barcode_ctx_t const *p_ctx)
+static uint8_t track_position(line_barcode_ctx_t const *p_ctx)
 {
-    line_barcode_position_t position = line_barcode_position(p_ctx->stable);
+    static uint8_t const positions[4] = {6u, 4u, 0u, 2u};
+    uint8_t position = line_barcode_position(p_ctx->stable);
     if (LINE_BARCODE_LAYOUT_SIDE == p_ctx->layout)
     {
-        bool b_left_edge = p_ctx->stable.b_centre;
-        bool b_right_edge = p_ctx->stable.b_right;
-        if (b_left_edge && b_right_edge)
-        {
-            position = LINE_BARCODE_POS_CENTRE;
-        }
-        else if (b_left_edge)
-        {
-            position = LINE_BARCODE_POS_FAR_LEFT;
-        }
-        else if (b_right_edge)
-        {
-            position = LINE_BARCODE_POS_FAR_RIGHT;
-        }
-        else
-        {
-            position = LINE_BARCODE_POS_NONE;
-        }
+        position = positions[p_ctx->stable & 3u];
     }
     return (position);
 }
@@ -248,16 +221,8 @@ static uint16_t decode_character(uint16_t const *p_runs, bool b_reverse)
 }
 
 bool line_barcode_decode(uint16_t const *p_runs, uint8_t count,
-                         char *p_letter)
+                         uint8_t *p_letter)
 {
-    /* Code 39 element patterns (1 = wide), A..Z. */
-    static uint16_t const alphabet[LINE_BARCODE_ALPHABET_SIZE] =
-    {
-        0x109u, 0x049u, 0x148u, 0x019u, 0x118u, 0x058u, 0x00du,
-        0x10cu, 0x04cu, 0x01cu, 0x103u, 0x043u, 0x142u, 0x013u,
-        0x112u, 0x052u, 0x007u, 0x106u, 0x046u, 0x016u, 0x181u,
-        0x0c1u, 0x1c0u, 0x091u, 0x190u, 0x0d0u
-    };
     bool b_valid = false;
     if ((NULL == p_runs) || (NULL == p_letter)
         || (LINE_BARCODE_FRAME_RUNS != count))
@@ -281,12 +246,19 @@ bool line_barcode_decode(uint16_t const *p_runs, uint8_t count,
                        && (p_runs[19] <= (2u * gap_min));
         if ((BARCODE_STAR == first) && (BARCODE_STAR == last) && b_gaps)
         {
+            static uint16_t const alphabet[LINE_BARCODE_ALPHABET_SIZE] =
+            {
+                0x109u, 0x049u, 0x148u, 0x019u, 0x118u, 0x058u, 0x00du,
+                0x10cu, 0x04cu, 0x01cu, 0x103u, 0x043u, 0x142u, 0x013u,
+                0x112u, 0x052u, 0x007u, 0x106u, 0x046u, 0x016u, 0x181u,
+                0x0c1u, 0x1c0u, 0x091u, 0x190u, 0x0d0u
+            };
             for (uint8_t letter = 0u; letter < LINE_BARCODE_ALPHABET_SIZE;
                  letter++)
             {
                 if (alphabet[letter] == symbol)
                 {
-                    *p_letter = (char)('A' + letter);
+                    *p_letter = letter;
                     b_valid = true;
                 }
             }
@@ -295,12 +267,35 @@ bool line_barcode_decode(uint16_t const *p_runs, uint8_t count,
     return (b_valid);
 }
 
+/* Ten-bit widths are serialized explicitly; no ABI-dependent array padding. */
+static uint16_t read_width(line_barcode_ctx_t const *p_ctx, uint8_t index)
+{
+    uint16_t bit = (uint16_t)index * 10u;
+    uint16_t pair = (uint16_t)(p_ctx->runs[bit / 8u]
+                              | ((uint16_t)p_ctx->runs[(bit / 8u) + 1u] << 8u));
+    return ((pair >> (bit % 8u)) & 0x3ffu);
+}
+
+static void write_width(line_barcode_ctx_t *p_ctx, uint8_t index,
+                         uint16_t width)
+{
+    uint16_t bit = (uint16_t)index * 10u;
+    uint8_t shift = bit % 8u;
+    uint8_t offset = bit / 8u;
+    uint16_t pair = (uint16_t)(p_ctx->runs[offset]
+                              | ((uint16_t)p_ctx->runs[offset + 1u] << 8u));
+    pair = (uint16_t)((pair & ~(0x3ffu << shift))
+                       | ((width & 0x3ffu) << shift));
+    p_ctx->runs[offset] = (uint8_t)pair;
+    p_ctx->runs[offset + 1u] = (uint8_t)(pair >> 8u);
+}
+
 static uint16_t first_narrow(line_barcode_ctx_t const *p_ctx)
 {
     uint16_t narrow = LINE_BARCODE_RUN_MAX_MS;
     for (uint8_t idx = 0u; idx < BARCODE_ELEMENTS; idx++)
     {
-        uint16_t width = p_ctx->runs[idx];
+        uint16_t width = read_width(p_ctx, idx);
         narrow = (width < narrow) ? width : narrow;
     }
     return (narrow);
@@ -308,73 +303,82 @@ static uint16_t first_narrow(line_barcode_ctx_t const *p_ctx)
 
 static void verify_start(line_barcode_ctx_t *p_ctx)
 {
-    if ((BARCODE_ELEMENTS == p_ctx->run_count) && !p_ctx->b_confirmed)
+    if ((BARCODE_ELEMENTS == p_ctx->run_count)
+        && (0u == (p_ctx->flags & BARCODE_FLAG_CONFIRMED)))
     {
-        bool b_start = (BARCODE_STAR == decode_character(p_ctx->runs, false))
-                       || (BARCODE_STAR == decode_character(p_ctx->runs,
-                                                            true));
+        uint16_t widths[BARCODE_ELEMENTS] = {0u};
+        for (uint8_t idx = 0u; idx < BARCODE_ELEMENTS; idx++)
+        {
+            widths[idx] = read_width(p_ctx, idx);
+        }
+        bool b_start = (BARCODE_STAR == decode_character(widths, false))
+                       || (BARCODE_STAR == decode_character(widths, true));
         if (b_start)
         {
-            p_ctx->b_confirmed = true;
+            p_ctx->flags |= BARCODE_FLAG_CONFIRMED;
         }
         else
         {
-            p_ctx->b_capture = false;
+            p_ctx->flags &= (uint8_t)~BARCODE_FLAG_CAPTURE;
         }
     }
 }
 
-static line_barcode_event_t finish_frame(line_barcode_ctx_t *p_ctx,
-                                         char *p_letter)
+static uint8_t finish_frame(line_barcode_ctx_t *p_ctx, uint8_t *p_letter)
 {
+    uint16_t widths[LINE_BARCODE_FRAME_RUNS] = {0u};
+    for (uint8_t idx = 0u; idx < LINE_BARCODE_FRAME_RUNS; idx++)
+    {
+        widths[idx] = read_width(p_ctx, idx);
+    }
     uint16_t narrow = first_narrow(p_ctx);
-    bool b_valid = line_barcode_decode(p_ctx->runs, LINE_BARCODE_FRAME_RUNS,
+    bool b_valid = line_barcode_decode(widths, LINE_BARCODE_FRAME_RUNS,
                                        p_letter)
-                  && (p_ctx->quiet_ms
-                      >= (uint32_t)BARCODE_MIN_QUIET_UNITS * narrow);
+                  && (p_ctx->quiet_ms >= BARCODE_MIN_QUIET_UNITS * narrow);
     if (b_valid)
     {
         /* Scan-speed reference for the following junction. */
         p_ctx->last_narrow = narrow;
     }
-    p_ctx->b_capture = false;
-    p_ctx->b_confirmed = false;
+    p_ctx->flags &= (uint8_t)~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
     return (b_valid ? LINE_BARCODE_EVT_BARCODE : LINE_BARCODE_EVT_INVALID);
 }
 
 /* The offset left sensor scans the barcode parallel to the guide line.
  * Capture never suppresses line tracking or line-loss detection.
  */
-static line_barcode_event_t barcode_update(line_barcode_ctx_t *p_ctx,
-                                           uint16_t elapsed_ms,
-                                           char *p_letter)
+static uint8_t barcode_update(line_barcode_ctx_t *p_ctx, uint16_t elapsed_ms,
+                              uint8_t *p_letter)
 {
-    bool b_black = p_ctx->stable.b_left;
-    line_barcode_event_t event = LINE_BARCODE_EVT_STATUS;
+    bool b_black = (0u != (p_ctx->stable & LINE_BARCODE_LEFT));
+    bool b_prev_black = (0u != (p_ctx->flags & BARCODE_FLAG_BLACK));
+    bool b_capture = (0u != (p_ctx->flags & BARCODE_FLAG_CAPTURE));
+    uint8_t event = LINE_BARCODE_EVT_STATUS;
     p_ctx->run_ms = saturate_add(p_ctx->run_ms, elapsed_ms,
                                  BARCODE_QUIET_MAX_MS + 1u);
-    if (b_black != p_ctx->b_black)
+    if (b_black != b_prev_black)
     {
-        if (p_ctx->b_capture && (p_ctx->run_count < LINE_BARCODE_FRAME_RUNS))
+        if (b_capture && (p_ctx->run_count < LINE_BARCODE_FRAME_RUNS))
         {
-            p_ctx->runs[p_ctx->run_count] = (uint16_t)p_ctx->run_ms;
+            write_width(p_ctx, p_ctx->run_count, p_ctx->run_ms);
             p_ctx->run_count++;
         }
-        if (b_black && !p_ctx->b_capture
+        if (b_black && !b_capture
             && (p_ctx->run_ms >= LINE_BARCODE_QUIET_MS))
         {
-            p_ctx->b_capture = true;
+            p_ctx->flags |= BARCODE_FLAG_CAPTURE;
             p_ctx->quiet_ms = p_ctx->run_ms;
             p_ctx->run_count = 0u;
         }
         p_ctx->run_ms = 0u;
-        p_ctx->b_black = b_black;
+        p_ctx->flags = (uint8_t)((p_ctx->flags & ~BARCODE_FLAG_BLACK)
+                                | (b_black ? BARCODE_FLAG_BLACK : 0u));
         verify_start(p_ctx);
     }
-    uint32_t quiet_required = (uint32_t)BARCODE_MIN_QUIET_UNITS
-                              * first_narrow(p_ctx);
+    uint16_t quiet_required = BARCODE_MIN_QUIET_UNITS * first_narrow(p_ctx);
     if (!b_black && (LINE_BARCODE_FRAME_RUNS == p_ctx->run_count)
-        && p_ctx->b_capture && (p_ctx->run_ms >= quiet_required))
+        && (0u != (p_ctx->flags & BARCODE_FLAG_CAPTURE))
+        && (p_ctx->run_ms >= quiet_required))
     {
         event = finish_frame(p_ctx, p_letter);
     }
@@ -382,10 +386,10 @@ static line_barcode_event_t barcode_update(line_barcode_ctx_t *p_ctx,
               && (b_black || (LINE_BARCODE_FRAME_RUNS != p_ctx->run_count)))
              || (b_black && (LINE_BARCODE_FRAME_RUNS == p_ctx->run_count)))
     {
-        event = p_ctx->b_confirmed ? LINE_BARCODE_EVT_INVALID
-                                   : LINE_BARCODE_EVT_STATUS;
-        p_ctx->b_capture = false;
-        p_ctx->b_confirmed = false;
+        event = (0u != (p_ctx->flags & BARCODE_FLAG_CONFIRMED))
+                ? LINE_BARCODE_EVT_INVALID : LINE_BARCODE_EVT_STATUS;
+        p_ctx->flags &= (uint8_t)~(BARCODE_FLAG_CAPTURE
+                                  | BARCODE_FLAG_CONFIRMED);
         p_ctx->run_count = 0u;
     }
     else
@@ -399,32 +403,34 @@ static line_barcode_event_t barcode_update(line_barcode_ctx_t *p_ctx,
  * black on a straight line too, so only the scanner's run length tells a
  * crossing (about 6 narrow units) from a wide bar (3 units).
  */
-static line_barcode_event_t side_junction_update(line_barcode_ctx_t *p_ctx)
+static uint8_t side_junction_update(line_barcode_ctx_t *p_ctx)
 {
-    line_barcode_event_t event = LINE_BARCODE_EVT_STATUS;
+    uint8_t event = LINE_BARCODE_EVT_STATUS;
     uint32_t threshold = LINE_BARCODE_JUNCTION_MS;
     uint16_t reference = p_ctx->last_narrow;
-    if (p_ctx->b_capture && (p_ctx->run_count > 0u))
+    if ((0u != (p_ctx->flags & BARCODE_FLAG_CAPTURE))
+        && (p_ctx->run_count > 0u))
     {
         /* Inside a frame: the first bar of '*' is narrow either way round. */
-        reference = p_ctx->runs[0];
+        reference = read_width(p_ctx, 0u);
     }
     if (0u != reference)
     {
         threshold = ((uint32_t)reference * LINE_BARCODE_JUNCTION_NUM)
                     / LINE_BARCODE_JUNCTION_DEN;
     }
-    if (!p_ctx->stable.b_left)
+    if (0u == (p_ctx->stable & LINE_BARCODE_LEFT))
     {
-        p_ctx->b_crossed = false;
+        p_ctx->flags &= (uint8_t)~BARCODE_FLAG_CROSSED;
     }
-    else if (!p_ctx->b_crossed && all_black(p_ctx->stable)
+    else if ((0u == (p_ctx->flags & BARCODE_FLAG_CROSSED))
+             && (LINE_BARCODE_SENSOR_MASK == p_ctx->stable)
              && (p_ctx->run_ms >= threshold))
     {
         /* Report once per crossing and drop the partial "barcode". */
-        p_ctx->b_crossed = true;
-        p_ctx->b_capture = false;
-        p_ctx->b_confirmed = false;
+        p_ctx->flags |= BARCODE_FLAG_CROSSED;
+        p_ctx->flags &= (uint8_t)~(BARCODE_FLAG_CAPTURE
+                                  | BARCODE_FLAG_CONFIRMED);
         p_ctx->run_count = 0u;
         event = LINE_BARCODE_EVT_JUNCTION;
     }
@@ -432,19 +438,19 @@ static line_barcode_event_t side_junction_update(line_barcode_ctx_t *p_ctx)
     {
         /* Scanner black but too short, or this crossing already reported. */
     }
-    if (p_ctx->b_crossed && (LINE_BARCODE_SEARCH != p_ctx->state))
+    if ((0u != (p_ctx->flags & BARCODE_FLAG_CROSSED))
+        && (LINE_BARCODE_SEARCH != p_ctx->state))
     {
         p_ctx->state = LINE_BARCODE_JUNCTION;
     }
     return (event);
 }
 
-static line_barcode_event_t line_update(line_barcode_ctx_t *p_ctx,
-                                        uint16_t elapsed_ms,
-                                        line_barcode_position_t position)
+static uint8_t line_update(line_barcode_ctx_t *p_ctx, uint16_t elapsed_ms,
+                           uint8_t position)
 {
-    line_barcode_event_t event = LINE_BARCODE_EVT_STATUS;
-    if (LINE_BARCODE_POS_NONE == position)
+    uint8_t event = LINE_BARCODE_EVT_STATUS;
+    if (6u == position)
     {
         p_ctx->lost_ms = saturate_add(p_ctx->lost_ms, elapsed_ms,
                                       LINE_BARCODE_LOST_MS);
@@ -464,40 +470,29 @@ static line_barcode_event_t line_update(line_barcode_ctx_t *p_ctx,
         p_ctx->lost_ms = 0u;
         p_ctx->search_ms = 0u;
         p_ctx->state = LINE_BARCODE_FOLLOW;
-        if (position < LINE_BARCODE_POS_JUNCTION)
-        {
-            p_ctx->last_position = position;
-        }
+        p_ctx->last_position = (position < 5u)
+                               ? position : p_ctx->last_position;
     }
-    bool b_junction = (LINE_BARCODE_POS_JUNCTION == position);
+    bool b_junction = (5u == position);
     if (b_junction)
     {
         p_ctx->state = LINE_BARCODE_JUNCTION;
-        if (!p_ctx->b_junction)
+        if (0u == (p_ctx->flags & BARCODE_FLAG_JUNCTION))
         {
             event = LINE_BARCODE_EVT_JUNCTION;
         }
     }
-    p_ctx->b_junction = b_junction;
+    p_ctx->flags = (uint8_t)((p_ctx->flags & ~BARCODE_FLAG_JUNCTION)
+                            | (b_junction ? BARCODE_FLAG_JUNCTION : 0u));
     return (event);
 }
 
-/* Each sensor must read the same on two samples in a row to change. */
-static bool debounce(bool b_sample, bool *p_candidate, bool b_stable)
-{
-    bool b_result = (b_sample == *p_candidate) ? b_sample : b_stable;
-    *p_candidate = b_sample;
-    return (b_result);
-}
-
 line_barcode_msg_t line_barcode_step(line_barcode_ctx_t *p_ctx,
-                                    line_barcode_sensors_t sensors,
-                                    uint16_t elapsed_ms)
+                                    uint8_t sensors, uint16_t elapsed_ms)
 {
-    static line_barcode_sensors_t const no_sensors = {false, false, false};
-    char letter = '\0';
-    line_barcode_fault_t fault = LINE_BARCODE_ERR_NONE;
-    line_barcode_event_t event = LINE_BARCODE_EVT_STATUS;
+    uint8_t letter = 0u;
+    uint8_t fault = LINE_BARCODE_ERR_NONE;
+    uint8_t event = LINE_BARCODE_EVT_STATUS;
     if ((NULL == p_ctx) || (0u == elapsed_ms)
         || (elapsed_ms > BARCODE_MAX_STEP_MS))
     {
@@ -505,32 +500,28 @@ line_barcode_msg_t line_barcode_step(line_barcode_ctx_t *p_ctx,
         {
             line_barcode_reset(p_ctx);
         }
-        return (line_barcode_make_msg(no_sensors, LINE_BARCODE_POS_NONE,
-                                      LINE_BARCODE_FAULT,
-                                      LINE_BARCODE_EVT_FAULT,
-                                      LINE_BARCODE_ERR_TIMING));
+        return (line_barcode_pack(0u, 6u, 0u, LINE_BARCODE_FAULT,
+                                  LINE_BARCODE_EVT_FAULT,
+                                  LINE_BARCODE_ERR_TIMING));
     }
-    /* Debounce each sensor independently, so scanner edges cannot delay
-     * line sensing.
+    sensors &= LINE_BARCODE_SENSOR_MASK;
+    /* Debounce each bit independently, so scanner edges cannot delay line
+     * sensing. Each bit must agree with its previous sample before changing.
      */
-    p_ctx->stable.b_left = debounce(sensors.b_left, &p_ctx->candidate.b_left,
-                                    p_ctx->stable.b_left);
-    p_ctx->stable.b_centre = debounce(sensors.b_centre,
-                                      &p_ctx->candidate.b_centre,
-                                      p_ctx->stable.b_centre);
-    p_ctx->stable.b_right = debounce(sensors.b_right,
-                                     &p_ctx->candidate.b_right,
-                                     p_ctx->stable.b_right);
-    line_barcode_position_t position = track_position(p_ctx);
+    uint8_t unchanged = (uint8_t)(~(sensors ^ p_ctx->candidate) & 7u);
+    p_ctx->stable = (p_ctx->stable & ~unchanged) | (sensors & unchanged);
+    p_ctx->candidate = sensors;
+    uint8_t position = track_position(p_ctx);
     event = line_update(p_ctx, elapsed_ms, position);
-    line_barcode_event_t barcode_event = LINE_BARCODE_EVT_STATUS;
-    line_barcode_event_t junction_event = LINE_BARCODE_EVT_STATUS;
+    uint8_t barcode_event = LINE_BARCODE_EVT_STATUS;
+    uint8_t junction_event = LINE_BARCODE_EVT_STATUS;
     if (LINE_BARCODE_LAYOUT_SIDE == p_ctx->layout)
     {
         barcode_event = barcode_update(p_ctx, elapsed_ms, &letter);
         junction_event = side_junction_update(p_ctx);
     }
-    if ((LINE_BARCODE_FOLLOW == p_ctx->state) && p_ctx->b_confirmed)
+    if ((LINE_BARCODE_FOLLOW == p_ctx->state)
+        && (0u != (p_ctx->flags & BARCODE_FLAG_CONFIRMED)))
     {
         p_ctx->state = LINE_BARCODE_SCANNING;
     }
@@ -549,17 +540,16 @@ line_barcode_msg_t line_barcode_step(line_barcode_ctx_t *p_ctx,
         fault = LINE_BARCODE_ERR_LINE;
     }
     /* During short gaps/search, retain the last steering direction. */
-    if (LINE_BARCODE_POS_NONE == position)
+    if (6u == position)
     {
         position = p_ctx->last_position;
     }
-    line_barcode_msg_t msg = line_barcode_make_msg(p_ctx->stable, position,
-                                                  p_ctx->state, event, fault);
+    line_barcode_msg_t msg = line_barcode_pack(p_ctx->stable, position, 0u,
+                                               p_ctx->state, event, fault);
     if (LINE_BARCODE_EVT_BARCODE == event)
     {
-        msg.letter = letter;
+        msg.data[2] = (uint8_t)((msg.data[2] & ~LINE_BARCODE_LETTER_MASK)
+                                | letter);
     }
     return (msg);
 }
-
-/*** end of file ***/

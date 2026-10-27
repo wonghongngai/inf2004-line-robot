@@ -102,3 +102,5 @@ acceptance. Track orientation and the letter-to-motion mapping remain team input
 | 2026-10-26 | S3-U27, bench demo printout | same source revision | Not run | PENDING on-target execution | No hardware result claimed |
 | 2026-10-26 | S3-U02–U13, U18–U22, U25–U26 — **BEFORE version** (no minimum-bit change) | 83664de + working tree; SHA-256 in log | Claude, host | PASS (19 checks), ASan/UBSan clean | [Before host log](logs/2026-10-26_before_host.txt) |
 | 2026-10-26 | Normal/test ARM builds, strict warnings, symbol sizes — **BEFORE version** | same source revision | Claude, compiler | PASS; no hardware execution | [Before build log](logs/2026-10-26_before_build.txt) |
+| 2026-10-27 | S3-U02–U13, U18–U22, U25–U26 — minimum-bit (CR1) version restored; fault field now a 3-bit bitmask | working tree; SHA-256 in log | Claude, host | PASS (19 checks), ASan/UBSan clean | [CR1 host log](logs/2026-10-27_cr1_host.txt) |
+| 2026-10-27 | Normal/test ARM builds, strict warnings, symbol sizes — CR1 version | same source revision | Claude, compiler | PASS; no hardware execution | [CR1 build log](logs/2026-10-27_cr1_build.txt) |
