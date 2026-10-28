@@ -86,8 +86,8 @@ endif
 TEST ?= 0
 ROBOT_MODE ?= integrated
 MOTION_DEMO ?= 0
-ifneq ($(filter $(ROBOT_MODE),integrated integrated_motor_test motion motor_test),$(ROBOT_MODE))
-$(error Unknown ROBOT_MODE '$(ROBOT_MODE)'; use integrated, integrated_motor_test, motion or motor_test)
+ifneq ($(filter $(ROBOT_MODE),integrated integrated_motor_test barcode_test line_follow_test all_test motion motor_test),$(ROBOT_MODE))
+$(error Unknown ROBOT_MODE '$(ROBOT_MODE)'; use integrated, integrated_motor_test, barcode_test, line_follow_test, all_test, motion or motor_test)
 endif
 ifneq ($(filter $(MOTION_DEMO),0 1),$(MOTION_DEMO))
 $(error MOTION_DEMO must be 0 or 1)
@@ -103,6 +103,22 @@ endif
 ifneq ($(filter motor_test integrated_motor_test,$(ROBOT_MODE)),)
 ifeq ($(TEST),1)
 $(error motor_test physically drives motors; use TEST=0)
+endif
+endif
+ifeq ($(ROBOT_MODE),all_test)
+ifneq ($(NET)$(MQTT),lwip1)
+$(error all_test requires NET=lwip MQTT=1)
+endif
+endif
+ifneq ($(filter barcode_test line_follow_test all_test,$(ROBOT_MODE)),)
+ifeq ($(TEST),1)
+$(error $(ROBOT_MODE) requires TEST=0 for live sensors)
+endif
+ifneq ($(CONSOLE),usb_cdc)
+$(error $(ROBOT_MODE) requires CONSOLE=usb_cdc)
+endif
+ifeq ($(CRASH_REPORT),1)
+$(error $(ROBOT_MODE) requires CRASH_REPORT=0; GP0 is an IR input)
 endif
 endif
 ROBOT_SUFFIX := _$(ROBOT_MODE)
@@ -204,7 +220,10 @@ endif
 CFLAGS  += -DAPP_TEST=$(TEST)
 CFLAGS  += -DAPP_ROBOT_INTEGRATED=$(if $(filter integrated integrated_motor_test,$(ROBOT_MODE)),1,0)
 CFLAGS  += -DS2_MOTOR_HW_TEST=$(if $(filter motor_test integrated_motor_test,$(ROBOT_MODE)),1,0)
-CFLAGS  += -DS2_MOTION_DEMO=$(MOTION_DEMO) -DLINE_DEMO_ENABLE=0
+CFLAGS  += -DS2_MOTION_DEMO=$(MOTION_DEMO) -DLINE_DEMO_ENABLE=$(if $(filter barcode_test,$(ROBOT_MODE)),1,0)
+CFLAGS += -DAPP_BARCODE_BENCH=$(if $(filter barcode_test,$(ROBOT_MODE)),1,0)
+CFLAGS += -DAPP_LINE_FOLLOW_TEST=$(if $(filter line_follow_test,$(ROBOT_MODE)),1,0)
+CFLAGS += -DAPP_ALL_TEST=$(if $(filter all_test,$(ROBOT_MODE)),1,0)
 CFLAGS  += -DTM_CONSOLE_UART=$(CRASH_REPORT)
 ifeq ($(CRASH_REPORT),0)
 CFLAGS  += -DBOARD_UART0_FREE=1

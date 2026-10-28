@@ -15,6 +15,7 @@
 
 #include "subsystem4.h"
 #include "drv_lsm303dlhc.h"
+#include <stdint.h>
 
 typedef enum {
     HUMP_IDLE = 0,
@@ -46,6 +47,10 @@ LOCAL BOOL tilt_reported;
 /* Height estimator state for one ramp crossing. */
 LOCAL W current_height_mm;
 LOCAL UW peak_height_mm;
+/* Retain fractional mm: mm * mg / 1000 loses small rises if each sample
+ * is rounded separately. 1000 units here represent one millimetre. */
+LOCAL int64_t current_height_milli_mm;
+LOCAL BOOL height_distance_seen;
 
 LOCAL W abs_w(W value)
 {
@@ -83,6 +88,8 @@ LOCAL void reset_height_tracker(void)
 {
     current_height_mm = 0;
     peak_height_mm = 0U;
+    current_height_milli_mm = 0;
+    height_distance_seen = FALSE;
 }
 
 /*
@@ -125,7 +132,6 @@ LOCAL W estimate_pitch_deg(W forward_mg)
 LOCAL void update_height_estimate(UW distance_mm, W dx)
 {
     W aligned_dx;
-    W delta_height_mm;
 
     if (distance_mm == 0U || hump_state.first_sign == 0) {
         return;
@@ -133,19 +139,16 @@ LOCAL void update_height_estimate(UW distance_mm, W dx)
 
     /* Make the first/up slope positive regardless of IMU mounting sign. */
     aligned_dx = (W)(dx * hump_state.first_sign);
+    if (aligned_dx > 1000) aligned_dx = 1000;
+    if (aligned_dx < -1000) aligned_dx = -1000;
+    height_distance_seen = TRUE;
 
-    /* delta_h ~= distance * sin(theta) ~= distance * Ax / 1000 mg. */
-    delta_height_mm = (W)(((W)distance_mm * aligned_dx) / 1000);
-
-    current_height_mm += delta_height_mm;
-
-    if (current_height_mm < 0) {
-        current_height_mm = 0;
-    }
-
-    if ((UW)current_height_mm > S4_MAX_RAMP_HEIGHT_MM) {
-        current_height_mm = (W)S4_MAX_RAMP_HEIGHT_MM;
-    }
+    /* Accumulate before rounding, on ascent AND descent. */
+    current_height_milli_mm += (int64_t)distance_mm * aligned_dx;
+    if (current_height_milli_mm < 0) current_height_milli_mm = 0;
+    if (current_height_milli_mm > (int64_t)S4_MAX_RAMP_HEIGHT_MM * 1000)
+        current_height_milli_mm = (int64_t)S4_MAX_RAMP_HEIGHT_MM * 1000;
+    current_height_mm = (W)(current_height_milli_mm / 1000);
 
     if ((UW)current_height_mm > peak_height_mm) {
         peak_height_mm = (UW)current_height_mm;
@@ -159,6 +162,7 @@ LOCAL void publish_snapshot(const LSM303_SAMPLE *sample,
                             W hump_peak,
                             W pitch_deg,
                             UW ramp_height_mm,
+                            BOOL ramp_height_valid,
                             IMU_MOTION_STATE motion,
                             IMU_EVENT event,
                             BOOL calibrated,
@@ -188,6 +192,7 @@ LOCAL void publish_snapshot(const LSM303_SAMPLE *sample,
     s4_imu_data.hump_peak_mg = hump_peak;
     s4_imu_data.pitch_deg = pitch_deg;
     s4_imu_data.ramp_height_mm = ramp_height_mm;
+    s4_imu_data.ramp_height_valid = ramp_height_valid;
     s4_imu_data.motion_state = motion;
     s4_imu_data.event = event;
     s4_imu_data.calibrated = calibrated;
@@ -355,6 +360,7 @@ LOCAL void print_periodic_status(const LSM303_SAMPLE *sample,
                                  IMU_MOTION_STATE motion,
                                  W pitch_deg,
                                  UW ramp_height_mm,
+                                 BOOL ramp_height_valid,
                                  UW sample_count)
 {
     if ((sample_count % S4_PRINT_PERIOD_SAMPLES) != 0U) {
@@ -362,11 +368,11 @@ LOCAL void print_periodic_status(const LSM303_SAMPLE *sample,
     }
 
     tm_printf((UB *)
-              "Buddy4: n=%u acc=(%d,%d,%d)mg mag=(%d,%d,%d) pitch=%d height=%umm state=%d\n",
+              "Buddy4: n=%u acc=(%d,%d,%d)mg mag=(%d,%d,%d) pitch=%d height=%umm height_valid=%d state=%d\n",
               sample_count,
               sample->ax_mg, sample->ay_mg, sample->az_mg,
               sample->mx_raw, sample->my_raw, sample->mz_raw,
-              pitch_deg, ramp_height_mm, motion);
+              pitch_deg, ramp_height_mm, ramp_height_valid, motion);
 }
 
 EXPORT void imu_task(INT stacd, void *exinf)
@@ -384,6 +390,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
     W last_hump_peak = 0;
     W pitch_deg = 0;
     UW last_ramp_height = 0U;
+    BOOL last_ramp_height_valid = FALSE;
     UW distance_mm;
     UW cycle_ms;
     UW local_sample_count = 0U;
@@ -465,6 +472,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
                              last_hump_peak,
                              0,
                              last_ramp_height,
+                             last_ramp_height_valid,
                              IMU_MOTION_NORMAL,
                              IMU_EVENT_NONE,
                              calibrated,
@@ -505,11 +513,17 @@ EXPORT void imu_task(INT stacd, void *exinf)
                     motion = IMU_MOTION_HUMP;
                     event = IMU_EVENT_HUMP;
                     last_hump_peak = completed_hump_peak;
-                    last_ramp_height = peak_height_mm;
-
-                    tm_printf((UB *)
-                              "Buddy4 EVENT: HUMP height=%u mm peak=%d mg\n",
-                              last_ramp_height, last_hump_peak);
+                    if (height_distance_seen) {
+                        if (peak_height_mm > last_ramp_height)
+                            last_ramp_height = peak_height_mm;
+                        last_ramp_height_valid = TRUE;
+                        tm_printf((UB *)
+                                  "Buddy4 EVENT: HUMP height=%u mm highest=%u mm peak=%d mg\n",
+                                  peak_height_mm, last_ramp_height, last_hump_peak);
+                    } else {
+                        tm_printf((UB *)"Buddy4 EVENT: HUMP height=unavailable (no wheel distance) peak=%d mg\n",
+                                  last_hump_peak);
+                    }
                 } else {
                     /* A normal ramp should not be misclassified as severe tilt. */
                     tilt_now = update_tilt(dx, dy);
@@ -536,6 +550,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
                              last_hump_peak,
                              pitch_deg,
                              last_ramp_height,
+                             last_ramp_height_valid,
                              motion,
                              event,
                              TRUE,
@@ -547,6 +562,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
                                   motion,
                                   pitch_deg,
                                   last_ramp_height,
+                                  last_ramp_height_valid,
                                   local_sample_count);
         }
 

@@ -82,6 +82,7 @@ typedef struct {
     W hump_peak_mg;
     W pitch_deg;
     UW ramp_height_mm;
+    BOOL ramp_height_valid; /* distance was supplied for a completed hump */
 
     IMU_MOTION_STATE motion_state;
     IMU_EVENT event;

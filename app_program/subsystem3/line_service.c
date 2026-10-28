@@ -355,7 +355,13 @@ ER line_service_start(void)
         task_cfg.tskatr = TA_HLNG | TA_RNG3;
 #if TK_SUPPORT_SMP
         task_cfg.tskatr |= TA_ASSPRC;
+#if APP_ALL_TEST
+        /* Radio/lwIP runs at higher priority on core 0. Keep the motor
+         * test's 10 ms sensor heartbeat on core 1, away from network work. */
+        task_cfg.assprc = TP_PRC2;
+#else
         task_cfg.assprc = TP_PRC1;
+#endif
 #endif
         g_h_line_task = tk_cre_tsk(&task_cfg);
         result = (g_h_line_task > 0) ? start_sampling() : g_h_line_task;

@@ -8,7 +8,7 @@
 #include "line_demo.h"
 #include "line_service.h"
 
-#define DEMO_STATUS_MS      1000    /* sensor print period when idle */
+#define DEMO_STATUS_MS      100     /* sensor print period when idle (10 Hz) */
 #define DEMO_FAULT_PAUSE_MS 1000    /* wait before clearing a fault */
 
 static char const * const g_cmd_names[4] =

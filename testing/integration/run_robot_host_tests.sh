@@ -10,6 +10,17 @@ cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined \
   testing/integration/robot_host_test.c app_program/subsystem2/motion_control.c \
   -o "$test_binary"
 "$test_binary"
+cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined \
+  testing/integration/all_buddies_host_test.c \
+  app_program/subsystem1/communication_protocol.c -o "$test_binary"
+"$test_binary"
 cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -Iinclude \
   testing/integration/motor_pwm_host_test.c -o "$test_binary"
+"$test_binary"
+cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined \
+  testing/integration/hump_height_host_test.c -o "$test_binary"
+"$test_binary"
+cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined \
+  testing/integration/line_service_host_test.c \
+  app_program/subsystem3/line_barcode.c -o "$test_binary"
 "$test_binary"

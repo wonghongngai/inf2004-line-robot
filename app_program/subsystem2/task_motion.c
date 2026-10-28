@@ -16,6 +16,10 @@
 #include "drv_motor.h"
 #include "drv_encoder.h"
 #include "robot_control.h"
+#if APP_ROBOT_INTEGRATED
+#include "wheel_odometry.h"
+#include "../subsystem4/subsystem4.h"
+#endif
 
 /*
  * Build the Motion Control configuration using the constants from
@@ -272,6 +276,9 @@ EXPORT void motion_task(
 
     bool ready;
     bool manual_stop = false;
+#if APP_ROBOT_INTEGRATED
+    WHEEL_ODOMETRY odometry;
+#endif
 
     /*
      * Task arguments are currently unused.
@@ -290,6 +297,10 @@ EXPORT void motion_task(
 
     now_ms =
         current_ms();
+#if APP_ROBOT_INTEGRATED
+    wheel_odometry_init(&odometry, S2_LEFT_TICKS_PER_CM,
+                        S2_RIGHT_TICKS_PER_CM, left_ticks, right_ticks);
+#endif
 
 #if S2_CALIBRATION_READY
 
@@ -365,6 +376,17 @@ EXPORT void motion_task(
 
         now_ms =
             current_ms();
+#if APP_ROBOT_INTEGRATED
+        uint8_t travelled_mm;
+        bool travelling = controller.status.state == MOTION_STATE_MOVING_FORWARD;
+        if (!wheel_odometry_step(&odometry, left_ticks, right_ticks, travelling, &travelled_mm) ||
+            (travelled_mm != 0u && subsystem4_add_distance_mm(travelled_mm) < E_OK)) {
+            manual_stop = true;
+            MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
+            (void)motion_control_command(&controller, &stop, now_ms, left_ticks, right_ticks);
+            tm_printf((UB *)"[MOTION] stopped: wheel-distance input failed\n");
+        }
+#endif
 
         /*
          * Check for commands every 1 ms.

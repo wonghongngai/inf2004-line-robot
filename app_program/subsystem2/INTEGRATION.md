@@ -134,6 +134,14 @@ layout must match S3's documented sensor placement and barcode/track geometry;
 the controller does not add a junction-centering advance. Tune physical sensor
 placement and pivot calibration on the real track before expecting clean turns.
 
+The motor-owning task also supplies average encoder travel to
+`subsystem4_add_distance_mm()` during forward travel, excluding pivot turns
+and stationary states. Distance conversion retains fractional millimetres.
+S4 accumulates fractional height before rounding and retains the highest
+completed hump estimate. Distance requires positive measured left/right
+ticks-per-centimetre values; motor PWM cannot supply a real distance scale.
+S4 reports height unavailable when a hump has no wheel-distance input.
+
 Line loss/search, an unmapped junction, queue/timing faults, stale line data,
 IMU errors/staleness, collision, tilt, a turn timeout, or a motion fault stop
 motors and latch the integrated stop until reboot. Humps alone allow travel to

@@ -54,6 +54,17 @@
  */
 
 #include "app.h"
+#if APP_ALL_TEST
+#include "subsystem2/all_buddies_test.h"
+#endif
+#if APP_LINE_FOLLOW_TEST
+#include "subsystem2/line_follow_test.h"
+#endif
+#if APP_BARCODE_BENCH
+#include "subsystem3/line_service.h"
+#include "subsystem3/line_demo.h"
+#include "subsystem2/drv_motor.h"
+#endif
 
 /*
  * Create and start one task (declared in app.h for every subsystem).
@@ -111,8 +122,38 @@ EXPORT INT usermain(void)
 	tm_printf((UB*)"single-core build\n");
 #endif
 
+#if APP_ALL_TEST
+    ER all_er = all_buddies_test_start();
+    CHECK(all_er, "all_buddies_test_start");
+    tk_slp_tsk(TMO_FEVR);
+    return 0;
+#endif
+
+#if APP_LINE_FOLLOW_TEST
+    /* Dedicated S2/S3 test owns motors and the IR event queue. */
+    ER follow_er = line_follow_test_start();
+    CHECK(follow_er, "line_follow_test_start");
+    tk_slp_tsk(TMO_FEVR);
+    return 0;
+#endif
+
+#if APP_BARCODE_BENCH
+    /* No motion task or robot adapter: the demo alone owns S3 events. */
+    ER bench_er = drv_motor_init();
+    if (bench_er == E_OK) bench_er = line_service_init();
+    if (bench_er == E_OK) bench_er = line_service_start();
+    if (bench_er == E_OK) bench_er = line_demo_start();
+    CHECK(bench_er, "barcode_bench_start");
+    tm_printf((UB *)"[APP] BARCODE BENCH: motors OFF; scanner GP7, centre GP27, right GP0\n");
+    tk_slp_tsk(TMO_FEVR);
+    return 0;
+#endif
+
 	/* Phase 1: every subsystem creates its kernel objects */
-	ER er = subsystem2_init();
+	ER er = subsystem1_init();
+	CHECK(er, "subsystem1_init");
+	if (er < E_OK) goto startup_failed;
+	er = subsystem2_init();
 	CHECK(er, "subsystem2_init");
 	if (er < E_OK) goto startup_failed;
 #if APP_ROBOT_INTEGRATED
@@ -125,6 +166,9 @@ EXPORT INT usermain(void)
 #endif
 
 	/* Phase 2: every subsystem starts its tasks */
+	er = subsystem1_start();
+	CHECK(er, "subsystem1_start");
+	if (er < E_OK) goto startup_failed;
 #if APP_ROBOT_INTEGRATED
 	er = subsystem3_start();
 	CHECK(er, "subsystem3_start");
@@ -153,7 +197,10 @@ EXPORT INT usermain(void)
 	/* Test build (make TEST=1): run every subsystem's tests in turn,
 	   here in the initial task, while the system is running.  Tests may
 	   call tk_dly_tsk() to let the other tasks work for a while. */
+	tm_printf((UB*)"[TEST] Connect serial monitor now; tests start in 10 seconds\n");
+	tk_dly_tsk(10000);
 	tm_printf((UB*)"[TEST] === test run start ===\n");
+	subsystem1_test();
 	subsystem2_test();
 #if APP_ROBOT_INTEGRATED
 	subsystem3_test();

@@ -56,6 +56,7 @@ EXPORT ER subsystem4_init(void)
     s4_imu_data.hump_peak_mg = 0;
     s4_imu_data.pitch_deg = 0;
     s4_imu_data.ramp_height_mm = 0U;
+    s4_imu_data.ramp_height_valid = FALSE;
     s4_imu_data.motion_state = IMU_MOTION_FAULT;
     s4_imu_data.event = IMU_EVENT_NONE;
     s4_imu_data.calibrated = FALSE;
