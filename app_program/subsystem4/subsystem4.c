@@ -1,52 +1,81 @@
 /*
- *	subsystem4.c
- *	Subsystem 4 -- Monitor: creates its objects and starts its task.
- *
- *	APIs shown: tk_cre_flg, tk_cre_mbf, tk_cre_alm
+ * subsystem4.c
+ * Buddy 4 -- IMU & Terrain Monitoring (pre-change baseline).
  */
 
 #include "subsystem4.h"
+#include "drv_lsm303dlhc.h"
 
-EXPORT ID	mbf_summary;	/* IF-03 */
-EXPORT ID	flg_events;	/* IF-03 */
-EXPORT ID	alm_monitor;
+EXPORT ID mtx_imu_data;
+EXPORT IMU_DATA s4_imu_data;
 
 EXPORT ER subsystem4_init(void)
 {
-	T_CFLG	cflg = {0};
-	T_CMBF	cmbf = {0};
-	T_CALM	calm = {0};
+    T_CMTX cmtx = {0};
+    ER er;
 
-	/* Event flag: a 32-bit pattern of bits.  Tasks wait for a bit (or a
-	   combination of bits) to be set. */
-	cflg.flgatr  = TA_TFIFO | TA_WMUL;	/* allow several waiters */
-	cflg.iflgptn = 0;			/* all bits clear to begin with */
-	flg_events = tk_cre_flg(&cflg);
-	if (flg_events < E_OK) {
-		return flg_events;
-	}
+    /* Protect the latest Buddy 4 snapshot from partial reads. */
+    cmtx.mtxatr = TA_INHERIT;
+    mtx_imu_data = tk_cre_mtx(&cmtx);
+    if (mtx_imu_data < E_OK) {
+        return mtx_imu_data;
+    }
 
-	/* Message buffer: COPIES variable-length data into a kernel ring
-	   buffer.  Here it carries short text lines from subsystem 3. */
-	cmbf.mbfatr = TA_TFIFO;
-	cmbf.bufsz  = 4 * S4_SUMMARY_MAX;	/* total buffer size, bytes */
-	cmbf.maxmsz = S4_SUMMARY_MAX;		/* largest single message */
-	mbf_summary = tk_cre_mbf(&cmbf);
-	if (mbf_summary < E_OK) {
-		return mbf_summary;
-	}
+    /* Start with a known public state. */
+    s4_imu_data.ax_mg = 0;
+    s4_imu_data.ay_mg = 0;
+    s4_imu_data.az_mg = 0;
+    s4_imu_data.mx_raw = 0;
+    s4_imu_data.my_raw = 0;
+    s4_imu_data.mz_raw = 0;
+    s4_imu_data.baseline_ax_mg = 0;
+    s4_imu_data.baseline_ay_mg = 0;
+    s4_imu_data.baseline_az_mg = 0;
+    s4_imu_data.hump_peak_mg = 0;
+    s4_imu_data.motion_state = IMU_MOTION_FAULT;
+    s4_imu_data.event = IMU_EVENT_NONE;
+    s4_imu_data.calibrated = FALSE;
+    s4_imu_data.sensor_ok = FALSE;
+    s4_imu_data.sample_count = 0;
+    s4_imu_data.read_errors = 0;
+    s4_imu_data.last_cycle_ms = 0;
 
-	/* Alarm handler: called ONCE, a given time after tk_sta_alm().
-	   The monitor task re-arms it each time round its loop. */
-	calm.almatr = TA_HLNG;
-	calm.almhdr = (FP)monitor_alarm_handler;
-	alm_monitor = tk_cre_alm(&calm);
-	return (alm_monitor < E_OK) ? alm_monitor : E_OK;
+    /*
+     * Try sensor setup now. If hardware is not connected yet, do not prevent
+     * the rest of the firmware from starting; imu_task() will retry.
+     */
+    er = lsm303dlhc_init();
+    if (er < E_OK) {
+        tm_printf((UB *)"Buddy4: IMU init deferred, er=%d\n", er);
+    } else {
+        s4_imu_data.sensor_ok = TRUE;
+    }
+
+    return E_OK;
 }
 
 EXPORT ER subsystem4_start(void)
 {
-	/* No affinity: the scheduler may run it on either core */
-	ID tid = app_start_task(monitor_task, S4_PRI_MONITOR, 0, "monitor_task");
-	return (tid < E_OK) ? tid : E_OK;
+    ID tid;
+
+    tid = app_start_task(imu_task, S4_PRI_IMU, 0, "imu_task");
+    return (tid < E_OK) ? tid : E_OK;
+}
+
+EXPORT ER subsystem4_get_latest(IMU_DATA *out)
+{
+    ER er;
+
+    if (out == NULL) {
+        return E_PAR;
+    }
+
+    er = tk_loc_mtx(mtx_imu_data, TMO_FEVR);
+    if (er < E_OK) {
+        return er;
+    }
+
+    *out = s4_imu_data;
+
+    return tk_unl_mtx(mtx_imu_data);
 }

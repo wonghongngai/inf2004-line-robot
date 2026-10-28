@@ -1,8 +1,8 @@
 /*
- *	subsystem4_test.c
- *	On-target tests for subsystem 4.  Built only with: make TEST=1
- *	Record unit results in testing/subsystem4/TEST_LOG.md and the
- *	INT- result in testing/integration/TEST_LOG.md.
+ * subsystem4_test.c
+ * On-target tests for Buddy 4. Built only with: make TEST=1
+ *
+ * These tests do not access I2C directly because imu_task is the owning task.
  */
 
 #include "subsystem4.h"
@@ -12,25 +12,38 @@
 
 EXPORT void subsystem4_test(void)
 {
-	T_RMBF	rmbf;
-	UW	before;
+    IMU_DATA before;
+    IMU_DATA after;
+    ER er;
 
-	TEST_INIT();
+    TEST_INIT();
 
-	/* S4-U01: the message buffer accepts the documented line length */
-	TEST_CHECK("S4-U01",
-		   tk_ref_mbf(mbf_summary, &rmbf) == E_OK &&
-		   rmbf.maxmsz == S4_SUMMARY_MAX,
-		   "message buffer max line = S4_SUMMARY_MAX");
+    er = subsystem4_get_latest(&before);
+    TEST_CHECK("S4-U01",
+               er == E_OK,
+               "latest IMU snapshot can be read safely");
 
-	/* INT-02 (integration, IF-03): summary lines from subsystem 3 reach
-	   the monitor.  One line per 5 samples = one per 1.5 s. */
-	before = s4_lines_received;
-	tk_dly_tsk(3500);
-	TEST_CHECK("INT-02", s4_lines_received >= before + 2,
-		   "summary lines flow from subsystem 3 to subsystem 4");
+    /* Allow enough time for 1 s calibration plus normal samples. */
+    tk_dly_tsk(1500);
 
-	TEST_SUMMARY("subsystem4");
+    er = subsystem4_get_latest(&after);
+    TEST_CHECK("S4-U02",
+               er == E_OK && after.sensor_ok,
+               "LSM303DLHC is responding through Buddy 4 task");
+
+    TEST_CHECK("S4-U03",
+               after.calibrated,
+               "stationary IMU calibration completes");
+
+    TEST_CHECK("S4-U04",
+               after.sample_count > before.sample_count,
+               "20 ms IMU task continues producing samples");
+
+    TEST_CHECK("S4-U05",
+               after.last_cycle_ms <= S4_SAMPLE_PERIOD_MS,
+               "IMU sensing and processing fits within 20 ms cycle");
+
+    TEST_SUMMARY("subsystem4");
 }
 
 #endif /* APP_TEST */
