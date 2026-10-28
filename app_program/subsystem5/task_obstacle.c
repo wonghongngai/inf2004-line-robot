@@ -1,4 +1,5 @@
 #include "subsystem5.h"
+#include "drv_rp2040.h"
 
 #define US_TRIG_PIN (6U)  /* Temporary, to be changed to 16 */
 #define US_ECHO_PIN (7U)  /* Temporary, to be changed to 17 */
@@ -12,11 +13,6 @@
 
 #define SOUND_MM_PER_MS    (343UL) /* speed of sound: 343 m/s = 343 mm per ms */
 #define ROUND_TRIP_DIVISOR (2000UL) /* 1000 us per ms, x2 for there-and-back */
-
-#define WATCHDOG_TICK_ADDR \
-    (0x40058000UL + 0x2CUL)              /* watchdog block + TICK offset */
-#define WATCHDOG_TICK_ENABLE  (1UL << 9) /* bit 9: turn the tick on      */
-#define CLK_REF_CYCLES_PER_US (12UL)     /* 12 MHz crystal / 12 = 1 MHz  */
 
 /* PWM slice that times the echo -> slice (N >> 1) & 7 */
 #define ECHO_SLICE      ((US_ECHO_PIN >> 1U) & 0x7U)
@@ -53,17 +49,6 @@
 #define SERVO_ANGLE_MIN_DEG (20U) /* safety limits: sweep needs 30-150 */
 #define SERVO_ANGLE_MAX_DEG (160U)
 
-/* Busy-wait 'us' microseconds. Safe across TIMERAWL wrap-around. */
-static void delay_us(UW us)
-{
-    UW start = in_w(TIMER_TIMERAWL);
-
-    while ((in_w(TIMER_TIMERAWL) - start) < us)
-    {
-        /* spin: do nothing until enough time has passed */
-    }
-}
-
 /* Fire one ping and print results. Blocks for 30ms - 40ms */
 static void ultrasonic_ping_and_print(void)
 {
@@ -83,7 +68,7 @@ static void ultrasonic_ping_and_print(void)
 
         /* Send trigger HIGH for ultrasonic sensor */
         gpio_set_val(US_TRIG_PIN, 1);
-        delay_us(12); /* 12 gives some margin over 10us */
+        rp2040_delay_us(12U); /* 12 gives some margin over 10us */
         gpio_set_val(US_TRIG_PIN, 0);
 
         /* Sleep; the hardware counts only while ECHO is high */
@@ -135,7 +120,8 @@ static void servo_set_angle(UW angle_deg)
     pwm_set_cc(SERVO_PIN, servo_angle_to_pulse_us(angle_deg));
 }
 
-static const UW g_test_angles_deg[] = {90U, 60U, 30U, 60U, 90U, 120U, 150U, 120U};
+static const UW g_test_angles_deg[] = {90U, 60U,  30U,  60U,
+                                       90U, 120U, 150U, 120U};
 #define TEST_ANGLE_COUNT \
     (sizeof(g_test_angles_deg) / sizeof(g_test_angles_deg[0]))
 
@@ -152,15 +138,8 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
     (void)stacd;
     (void)exinf;
 
-    /* Writing enable bit to watchdog */
-    out_w(WATCHDOG_TICK_ADDR, WATCHDOG_TICK_ENABLE | CLK_REF_CYCLES_PER_US);
-
-    clr_w(RESETS_RESET, RESETS_RESET_PWM); /* release the reset */
-    /* wait until it's ready */
-    while (0U == (in_w(RESETS_RESET_DONE) & RESETS_RESET_PWM))
-    {
-        /* hardware finishes within a few clock cycles */
-    }
+    rp2040_timer_start();
+    rp2040_pwm_unreset();
 
     out_w(ECHO_CSR_ADDR, PWM_CSR_DIVMODE_LEVEL);
     out_w(ECHO_DIV_ADDR, ECHO_CLKDIV_INT << PWM_DIV_INT_SHIFT);
@@ -189,8 +168,8 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
         {
             pulse_us = servo_angle_to_pulse_us(g_test_angles_deg[index]);
             pwm_set_cc(SERVO_PIN, pulse_us);
-            tm_printf((UB *)"S5: angle %u -> %u us\n",
-                      g_test_angles_deg[index], pulse_us);
+            tm_printf((UB *)"S5: angle %u -> %u us\n", g_test_angles_deg[index],
+                      pulse_us);
             tk_dly_tsk(1000);
         }
     }
