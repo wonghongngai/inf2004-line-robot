@@ -48,22 +48,22 @@ fixed.
 | Pin | Owner | Used for |
 |---|---|---|
 | GP23, GP24, GP25, GP29 | *reserved* | Pico W radio |
-| GP0 | | (taken whenever the team builds with `CRASH_REPORT=1`) |
+| GP0 | S3 | right IR digital input; USB console only, CRASH_REPORT=0 |
 | GP1 | | (taken whenever the team builds with `CRASH_REPORT=1`) |
-| GP2 | | |
-| GP3 | | |
-| GP4 | | |
-| GP5 | | |
-| GP6 | | |
-| GP7 | | |
-| GP8 | | |
-| GP9 | | |
-| GP10 | | |
-| GP11 | | |
+| GP2 | S2 | right encoder A |
+| GP3 | S2 | right encoder B |
+| GP4 | S4 | I2C0 SDA, LSM303DLHC |
+| GP5 | S4 | I2C0 SCL, LSM303DLHC |
+| GP6 | S2 | left encoder B |
+| GP7 | S3 | left IR digital input |
+| GP8 | S2 | left motor forward PWM |
+| GP9 | S2 | left motor reverse (zero PWM) |
+| GP10 | S2 | right motor forward PWM |
+| GP11 | S2 | right motor reverse (zero PWM) |
 | GP12 | | |
 | GP13 | | |
-| GP14 | | |
-| GP15 | | |
+| GP14 | kernel I2C1 | unused SDA boot assignment, kept away from encoder/IR |
+| GP15 | kernel I2C1 | unused SCL boot assignment |
 | GP16 | | |
 | GP17 | | |
 | GP18 | | |
@@ -71,8 +71,8 @@ fixed.
 | GP20 | | |
 | GP21 | | |
 | GP22 | | |
-| GP26 | | (ADC0 capable) |
-| GP27 | | (ADC1 capable) |
+| GP26 | S2 | left encoder A; ADC pin initialization disabled |
+| GP27 | S3 | centre IR digital input; ADC pin initialization disabled |
 | GP28 | | (ADC2 capable) |
 
 ## 3. Peripherals
@@ -106,12 +106,12 @@ the drivers have no locking to stop it.
 | Peripheral | Owner subsystem | Owning task | Pins |
 |---|---|---|---|
 | UART1 | | | |
-| I2C0 | | | |
-| I2C1 | | | |
+| I2C0 | S4 via kernel device `iica` | `imu_task` (plus existing startup probe) | GP4/GP5 |
+| I2C1 | kernel, unused by application | kernel driver | GP14/GP15 |
 | SPI0 | | | |
 | SPI1 | | | |
 | ADC | | | GP26–GP28 |
-| PWM slices (list) | | | |
+| PWM slices 4, 5 | S2 | `motion_task` or bench task (mutually exclusive) | GP8-GP11 |
 | WiFi radio, TCP/IP, MQTT | *kernel* | `cyw43_utk_task` (built in) | GP23–25, GP29 |
 
 ### WiFi and MQTT are special
@@ -168,7 +168,17 @@ sends to it or waits on it. Agree on the data format before coding.
 | IF-04 | S4 → S3 | shared data under a mutex (owned by S3) | `app_stats`, `mtx_stats` | `APP_STATS`, read only while locked | *example* |
 | IF-05 | All → S1 | telemetry queue | `subsystem1_publish_telemetry` | nonblocking message buffer | Buddy 1 |
 | IF-06 | S1 → controller | command queue | `subsystem1_receive_command` | message buffer receive | Buddy 1 |
-| IF-06 | | | | | |
+| IF-07 | S3 to S2 robot adapter | S3 message buffer and snapshot API | `g_h_line_nav_q` | line positions and barcode/junction commands; one consumer, demo disabled | integrated build |
+| IF-08 | S4 to S2 robot adapter | snapshot under S4 mutex | `subsystem4_get_latest()` | IMU readiness, terrain and safety stop | integrated build |
+| IF-09 | Application to S2 | message buffer, separate STOP flag | `mbf_motion_cmd`, `flg_motion_stop` | `MOTION_COMMAND`; autonomous profiles reject external moves | motion build |
+
+Robot modes and validation are documented in
+`app_program/subsystem2/INTEGRATION.md`. Active S2 tasks: motion/bench at 14 on
+core 1; compatibility producer at 15 only in integrated builds. S3 retains
+consumer at 17 and line service at 16 on core 0. S4 IMU runs at 18 on any core.
+S1/S5 are not started by these robot profiles. The 1 ms kernel timer supports
+the short requested encoder sleep; actual polling includes an extra tick of
+kernel rounding and scheduling overhead.
 
 Each interface is tested by at least one integration test
 (`testing/integration/TEST_LOG.md`).

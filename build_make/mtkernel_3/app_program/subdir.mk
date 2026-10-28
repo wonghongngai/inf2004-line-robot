@@ -4,6 +4,10 @@
 
 # app_program/*.c plus one level of subfolders (one per subsystem)
 TEMP_SRCS = $(wildcard ../app_program/*.c) $(wildcard ../app_program/*/*.c)
+ifeq ($(filter integrated integrated_motor_test,$(ROBOT_MODE)),)
+# Standalone firmware has no link-time dependency on S3/S4 or examples.
+TEMP_SRCS := $(filter-out ../app_program/subsystem1/% ../app_program/subsystem3/% ../app_program/subsystem4/% ../app_program/subsystem5/% ../app_program/subsystem2/task_producer.c,$(TEMP_SRCS))
+endif
 TEMP_OBJS = $(TEMP_SRCS:.c=.o)
 TEMP_DEPS = $(TEMP_SRCS:.c=.d)
 

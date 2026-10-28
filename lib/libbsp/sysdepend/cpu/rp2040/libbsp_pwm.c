@@ -86,6 +86,15 @@ ER pwm_set_pin(UINT no)
 {
 	if(no >= GPIO_NUM) return E_PAR;
 
+	/* Startup releases PWM only for USE_PTMR. Motor PWM must also work
+	   with USE_PTMR=0. Deassert reset without resetting other PWM users. */
+	clr_w(RESETS_RESET, RESETS_RESET_PWM);
+	UINT retries;
+	for (retries = 0; retries < 1024; ++retries) {
+		if (in_w(RESETS_RESET_DONE) & RESETS_RESET_PWM) break;
+	}
+	if (retries == 1024) return E_TMOUT;
+
 	clr_w(GPIO(no), GPIO_OD);			// Enable output
 	set_w(GPIO(no), GPIO_IE);			// Enable input
 	out_w(GPIO_CTRL(no), GPIO_CTRL_FUNCSEL_PWM);	// Set function

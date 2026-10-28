@@ -1,0 +1,22 @@
+Barcode sample revision build verification, 2026-10-25 (Asia/Singapore).
+Options: SMP=1 CONSOLE=usb_cdc WIFI=cyw43 CRASH_REPORT=0
+SDK: /Users/shelmainechai/pico-sdk
+line_barcode: PASS strict ARM compile (-Wall -Wextra -Werror, APP_TEST=1)
+line_barcode_test: PASS strict ARM compile (-Wall -Wextra -Werror, APP_TEST=1)
+line_service: PASS strict ARM compile (-Wall -Wextra -Werror, APP_TEST=1)
+
+TEST=1
+Finished building target: mtk3pico_smp1_usb_cdc_wifi_test.elf
+arm-none-eabi-size mtk3pico_smp1_usb_cdc_wifi_test.elf
+   text	   data	    bss	    dec	    hex	filename
+ 296688	     92	  24500	 321280	  4e700	mtk3pico_smp1_usb_cdc_wifi_test.elf
+tools/elf2uf2 mtk3pico_smp1_usb_cdc_wifi_test.elf mtk3pico_smp1_usb_cdc_wifi_test.uf2
+ 
+
+TEST=0
+Finished building target: mtk3pico_smp1_usb_cdc_wifi.elf
+arm-none-eabi-size mtk3pico_smp1_usb_cdc_wifi.elf
+   text	   data	    bss	    dec	    hex	filename
+ 288804	     92	  24500	 313396	  4c834	mtk3pico_smp1_usb_cdc_wifi.elf
+tools/elf2uf2 mtk3pico_smp1_usb_cdc_wifi.elf mtk3pico_smp1_usb_cdc_wifi.uf2
+ 

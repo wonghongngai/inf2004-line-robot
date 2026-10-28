@@ -3,6 +3,18 @@
 A starting point for your project: micro T-Kernel 3.0 running on **both cores**
 of the Pico W's RP2040, with a USB serial console and the WiFi driver built in.
 
+**Robot firmware:** see [motion hardware and integration](app_program/subsystem2/INTEGRATION.md)
+for wiring, calibration, and the `ROBOT_MODE=integrated`, `motion`, and
+`motor_test` builds. Images now include the mode in their name, for example
+`mtk3pico_smp1_usb_cdc_wifi_integrated_test.uf2`. The default integrated build
+keeps motors off until real motion and IR calibration are entered.
+
+**Check all three on hardware (wheels raised):**
+`make ROBOT_MODE=integrated_motor_test -j8` in `build_make`, then flash
+`mtk3pico_smp1_usb_cdc_wifi_integrated_motor_test.uf2`. This runs S2 motor
+pulses with S3 IR/S4 IMU sampling and prints PWM/sensor diagnostics. It includes
+the PWM reset-release fix needed when `USE_PTMR=0`; rebuild older images.
+
 You need a **Raspberry Pi Pico W**, a USB cable, and a computer running
 macOS, Linux, or Windows with **WSL (Ubuntu)**. On Windows, run every
 command below inside the WSL Ubuntu terminal.
@@ -96,8 +108,8 @@ make -j8
 ```
 
 A successful build ends with a line like
-`tools/elf2uf2 mtk3pico_smp1_usb_cdc_wifi.elf mtk3pico_smp1_usb_cdc_wifi.uf2`.
-Your firmware is **`build_make/mtk3pico_smp1_usb_cdc_wifi.uf2`**.
+`tools/elf2uf2 mtk3pico_smp1_usb_cdc_wifi_integrated.elf mtk3pico_smp1_usb_cdc_wifi_integrated.uf2`.
+Your firmware is **`build_make/mtk3pico_smp1_usb_cdc_wifi_integrated.uf2`**.
 
 If `make` stops with an error, it tells you which one is wrong:
 `arm-none-eabi-gcc not found` means fix `PATH`, and
@@ -122,8 +134,8 @@ screen /dev/ttyACM0 115200            # Linux
 ```
 
 On Windows, use PuTTY or the VS Code *Serial Monitor* on the new COM port.
-You should see the task reports. Connect an LED with a 330 Ω resistor from
-**GP19** to GND to see subsystem 1's LED blink.
+You should see the motion and IMU reports. Robot profiles skip the example
+LED task; see the robot integration guide for motor/IR/IMU wiring.
 
 **2.5 Write your own code**
 
@@ -131,8 +143,9 @@ Your code lives in **`app_program/`**. Every `.c` file there, and in its
 subfolders, is compiled automatically.
 
 - **`app_main.c` → `usermain()` is where the program starts.** It first calls
-  every subsystem's `subsystemN_init()` (create kernel objects), then every
-  `subsystemN_start()` (start tasks). Read its comments first.
+  the selected subsystems' `subsystemN_init()` functions (create kernel
+  objects), then their `subsystemN_start()` functions (start tasks). The robot
+  build starts S2/S3/S4; standalone modes start S2 only.
 - **One folder per student:** `app_program/subsystem1/` … `subsystem5/`.
   Subsystems 1–4 hold a working example, one task each (LED, producer,
   consumer, monitor). Together they use the main micro T-Kernel APIs and
@@ -179,8 +192,9 @@ To set several options at once, list them all, separated by spaces. For
 example, to track down a crash in the test build while running on one core only:
 
 ```sh
-make SMP=0 TEST=1 CRASH_REPORT=1 -j8
-#  -> build_make/mtk3pico_smp0_usb_cdc_wifi_crash_test.uf2
+# Integrated IR uses GP0, so select standalone motion for UART crash reports:
+make ROBOT_MODE=motion SMP=0 TEST=1 CRASH_REPORT=1 -j8
+#  -> build_make/mtk3pico_smp0_usb_cdc_wifi_crash_motion_test.uf2
 ```
 
 Any option you leave out keeps its default (here `CONSOLE=usb_cdc` and
@@ -207,7 +221,7 @@ either setting. If a subsystem has claimed GP0/GP1 in `TEAM.md`, unplug that
 hardware before using `CRASH_REPORT=1`.
 
 The options are part of the image name, e.g.
-`mtk3pico_smp1_usb_cdc_wifi_test.uf2`, so you can always tell which build
+`mtk3pico_smp1_usb_cdc_wifi_integrated_test.uf2`, so you can always tell which build
 you are flashing. Switching options needs no `make clean`: the makefile
 notices and recompiles everything.
 

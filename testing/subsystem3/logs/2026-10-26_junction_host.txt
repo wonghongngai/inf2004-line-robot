@@ -1,0 +1,25 @@
+Junction/mapping revision host tests, 2026-10-26. Flags: -std=c11 -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined
+6c15acccd4a834b9836cc086649728798468b3691f9e9f6fb26a098d3258117e  app_program/subsystem3/line_barcode.c
+8da5fa283b25d7024520899de13bcd29ab5bb6911d83d999a379d7854be19a88  app_program/subsystem3/line_barcode.h
+032d3d45eb029f616001f4e09d6c477ec09c82a9ef2bb44e52739c9d07aaad0c  app_program/subsystem3/line_barcode_test.c
+[TEST] S3-U18 PASS: supplied PDF A/Z width fixtures
+[TEST] S3-U19 PASS: mapped and unmapped letters; packed map
+[TEST] S3-U20 PASS: scanner edges never change steering
+[TEST] S3-U21 PASS: line loss during barcode capture
+[TEST] S3-U22 PASS: three-sensor junction profile
+[TEST] S3-U25 PASS: SIDE cross-junction reported once, wide bars ignored
+[TEST] S3-U26 PASS: stored letter becomes a command at the next junction
+[TEST] S3-U02 PASS: all eight sensor positions
+[TEST] S3-U03 PASS: single-sample noise rejected
+[TEST] S3-U04 PASS: persistent loss enters bounded search
+[TEST] S3-U05 PASS: line reacquired after search
+[TEST] S3-U06 PASS: search timeout requests stop
+[TEST] S3-U13 PASS: relative widths at multiple scan speeds
+[TEST] S3-U07 PASS: A-Z decode in both directions
+[TEST] S3-U08 PASS: sampled frames emit exactly one letter
+[TEST] S3-U09 PASS: zero-width malformed frame rejected
+[TEST] S3-U10 PASS: invalid inter-character gap rejected
+[TEST] S3-U11 PASS: missed sampling interval invalidates capture
+[TEST] S3-U12 PASS: three-byte wire layout
+context=48 bytes, navigation message=3 bytes
+exit 0
