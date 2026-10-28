@@ -32,8 +32,8 @@
  * GP8/GP9 are its motor 1 pins. */
 #define DEVCNF_I2C0_SDA_PIN 4
 #define DEVCNF_I2C0_SCL_PIN 5
-#define	DEVCNF_I2C1_SDA_PIN	6
-#define	DEVCNF_I2C1_SCL_PIN	7
+#define	DEVCNF_I2C1_SDA_PIN	14
+#define	DEVCNF_I2C1_SCL_PIN	15
 
 /* Register initial value */
 

@@ -84,6 +84,31 @@ endif
 # TEST=1 builds the subsystem self-tests into the image (APP_TEST=1 in C).
 # The image gets a _test suffix so it cannot be mistaken for the normal one.
 TEST ?= 0
+ROBOT_MODE ?= integrated
+MOTION_DEMO ?= 0
+ifneq ($(filter $(ROBOT_MODE),integrated integrated_motor_test motion motor_test),$(ROBOT_MODE))
+$(error Unknown ROBOT_MODE '$(ROBOT_MODE)'; use integrated, integrated_motor_test, motion or motor_test)
+endif
+ifneq ($(filter $(MOTION_DEMO),0 1),$(MOTION_DEMO))
+$(error MOTION_DEMO must be 0 or 1)
+endif
+ifeq ($(MOTION_DEMO),1)
+ifneq ($(ROBOT_MODE),motion)
+$(error MOTION_DEMO=1 requires ROBOT_MODE=motion)
+endif
+ifeq ($(TEST),1)
+$(error MOTION_DEMO=1 cannot be combined with TEST=1)
+endif
+endif
+ifneq ($(filter motor_test integrated_motor_test,$(ROBOT_MODE)),)
+ifeq ($(TEST),1)
+$(error motor_test physically drives motors; use TEST=0)
+endif
+endif
+ROBOT_SUFFIX := _$(ROBOT_MODE)
+ifeq ($(MOTION_DEMO),1)
+ROBOT_SUFFIX := $(ROBOT_SUFFIX)_demo
+endif
 ifneq ($(filter $(TEST),0 1),$(TEST))
 $(error Unknown TEST '$(TEST)'; use 0 or 1)
 endif
@@ -116,7 +141,7 @@ endif
 # a live hazard: an SMP=1 build was once flashed in place of an SMP=0 one and
 # only the banner in the log revealed it.
 #
-EXE_FILE := mtk3pico_smp$(SMP)_$(CONSOLE)$(WIFI_SUFFIX)$(NET_SUFFIX)$(MQTT_SUFFIX)$(CRASH_SUFFIX)$(TEST_SUFFIX)
+EXE_FILE := mtk3pico_smp$(SMP)_$(CONSOLE)$(WIFI_SUFFIX)$(NET_SUFFIX)$(MQTT_SUFFIX)$(CRASH_SUFFIX)$(ROBOT_SUFFIX)$(TEST_SUFFIX)
 
 GCC := arm-none-eabi-gcc
 AS := arm-none-eabi-gcc
@@ -177,6 +202,9 @@ CFLAGS  += -DCNF_SMP=1
 ASFLAGS += -DCNF_SMP=1
 endif
 CFLAGS  += -DAPP_TEST=$(TEST)
+CFLAGS  += -DAPP_ROBOT_INTEGRATED=$(if $(filter integrated integrated_motor_test,$(ROBOT_MODE)),1,0)
+CFLAGS  += -DS2_MOTOR_HW_TEST=$(if $(filter motor_test integrated_motor_test,$(ROBOT_MODE)),1,0)
+CFLAGS  += -DS2_MOTION_DEMO=$(MOTION_DEMO) -DLINE_DEMO_ENABLE=0
 CFLAGS  += -DTM_CONSOLE_UART=$(CRASH_REPORT)
 ifeq ($(CRASH_REPORT),0)
 CFLAGS  += -DBOARD_UART0_FREE=1
@@ -209,7 +237,7 @@ endif
 # before any recipe executes.
 ################################################################################
 
-PROFILE_ID := smp$(SMP)-$(CONSOLE)-wifi$(WIFI)-net$(NET)-mqtt$(MQTT)-crash$(CRASH_REPORT)-test$(TEST)
+PROFILE_ID := smp$(SMP)-$(CONSOLE)-wifi$(WIFI)-net$(NET)-mqtt$(MQTT)-crash$(CRASH_REPORT)-test$(TEST)-robot$(ROBOT_MODE)-demo$(MOTION_DEMO)
 PROFILE_FILE := .build_profile
 
 ifneq ($(strip $(shell cat $(PROFILE_FILE) 2>/dev/null)),$(PROFILE_ID))

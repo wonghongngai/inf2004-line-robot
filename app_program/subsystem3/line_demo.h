@@ -10,7 +10,9 @@
 
 #include "../app.h"
 
+#ifndef LINE_DEMO_ENABLE
 #define LINE_DEMO_ENABLE        1
+#endif
 #define LINE_DEMO_PRIORITY      17      /* below the IR task (16) */
 
 /* Raw GPIO level of each sensor on black, left bit2 / centre bit1 / right

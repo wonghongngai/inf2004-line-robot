@@ -12,6 +12,30 @@
 #include "subsystem2.h"
 #include "../subsystem3/subsystem3.h"	/* IF-01: mbx_samples */
 
+EXPORT ID sem_slots;
+EXPORT ID mpf_samples;
+
+/* Retain the original example's objects while S3/S4 still use them. */
+EXPORT ER s2_legacy_example_init(void)
+{
+	T_CSEM csem = {0};
+	T_CMPF cmpf = {0};
+
+	csem.sematr = TA_TFIFO;
+	csem.isemcnt = S2_POOL_COUNT;
+	csem.maxsem = S2_POOL_COUNT;
+	sem_slots = tk_cre_sem(&csem);
+	if (sem_slots < E_OK) {
+		return sem_slots;
+	}
+
+	cmpf.mpfatr = TA_TFIFO | TA_RNG3;
+	cmpf.mpfcnt = S2_POOL_COUNT;
+	cmpf.blfsz = sizeof(SAMPLE_MSG);
+	mpf_samples = tk_cre_mpf(&cmpf);
+	return (mpf_samples < E_OK) ? mpf_samples : E_OK;
+}
+
 /* A fake measurement: a triangle wave between 0 and 100 */
 EXPORT INT s2_make_value(UW seq)
 {

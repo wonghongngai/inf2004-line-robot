@@ -89,6 +89,10 @@ EXPORT ID app_start_task(FP entry, PRI pri, UW prc, const char *name)
 	/* tk_sta_tsk: DORMANT -> READY.  The int is passed as stacd. */
 	er = tk_sta_tsk(tid, 0);
 	CHECK(er, name);
+	if (er < E_OK) {
+		(void)tk_del_tsk(tid);
+		return er;
+	}
 	return tid;
 }
 
@@ -108,34 +112,58 @@ EXPORT INT usermain(void)
 #endif
 
 	/* Phase 1: every subsystem creates its kernel objects */
-	CHECK(subsystem1_init(), "subsystem1_init");
-	CHECK(subsystem2_init(), "subsystem2_init");
-	CHECK(subsystem3_init(), "subsystem3_init");
-	CHECK(subsystem4_init(), "subsystem4_init");
-	CHECK(subsystem5_init(), "subsystem5_init");
+	ER er = subsystem2_init();
+	CHECK(er, "subsystem2_init");
+	if (er < E_OK) goto startup_failed;
+#if APP_ROBOT_INTEGRATED
+	er = subsystem3_init();
+	CHECK(er, "subsystem3_init");
+	if (er < E_OK) goto startup_failed;
+	er = subsystem4_init();
+	CHECK(er, "subsystem4_init");
+	if (er < E_OK) goto startup_failed;
+#endif
 
 	/* Phase 2: every subsystem starts its tasks */
-	CHECK(subsystem1_start(), "subsystem1_start");
-	CHECK(subsystem2_start(), "subsystem2_start");
-	CHECK(subsystem3_start(), "subsystem3_start");
-	CHECK(subsystem4_start(), "subsystem4_start");
-	CHECK(subsystem5_start(), "subsystem5_start");
+#if APP_ROBOT_INTEGRATED
+	er = subsystem3_start();
+	CHECK(er, "subsystem3_start");
+	if (er < E_OK) goto startup_failed;
+	er = subsystem4_start();
+	CHECK(er, "subsystem4_start");
+	if (er < E_OK) goto startup_failed;
+#endif
+	er = subsystem2_start();
+	CHECK(er, "subsystem2_start");
+	if (er < E_OK) goto startup_failed;
 
-	tm_printf((UB*)"all subsystems started\n\n");
+#if APP_ROBOT_INTEGRATED
+#if S2_MOTOR_HW_TEST
+	tm_printf((UB*)"[APP] INTEGRATED MOTOR TEST: S2 motor pulses + S3 IR + S4 IMU; raise wheels\n\n");
+#else
+	tm_printf((UB*)"[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started\n\n");
+#endif
+#elif S2_MOTOR_HW_TEST
+	tm_printf((UB*)"[APP] MOTOR TEST: S2 only; S3/S4 are not started\n\n");
+#else
+	tm_printf((UB*)"[APP] STANDALONE MOTION: S2 only; S3/S4 are not started\n\n");
+#endif
 
 #if APP_TEST
 	/* Test build (make TEST=1): run every subsystem's tests in turn,
 	   here in the initial task, while the system is running.  Tests may
 	   call tk_dly_tsk() to let the other tasks work for a while. */
 	tm_printf((UB*)"[TEST] === test run start ===\n");
-	subsystem1_test();
 	subsystem2_test();
+#if APP_ROBOT_INTEGRATED
 	subsystem3_test();
 	subsystem4_test();
-	subsystem5_test();
+#endif
 	tm_printf((UB*)"[TEST] === test run end ===\n");
 #endif
 
+startup_failed:
+	/* Never start motion after a required service failed to start. */
 	/* Sleep forever.  Returning from usermain() would shut down. */
 	tk_slp_tsk(TMO_FEVR);
 	return 0;
