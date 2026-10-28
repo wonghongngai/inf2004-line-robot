@@ -1,35 +1,15 @@
 #include "subsystem5.h"
 #include "drv_rp2040.h"
+#include "drv_ultrasonic.h"
 
-#define US_TRIG_PIN (6U)  /* Temporary, to be changed to 16 */
-#define US_ECHO_PIN (7U)  /* Temporary, to be changed to 17 */
-#define SERVO_PIN   (14U) /* even pin = channel A */
-#if ((US_ECHO_PIN & 1U) == 0U)
-#error "US_ECHO_PIN must be odd (PWM channel B)"
-#endif
+#define SERVO_PIN (14U) /* even pin = channel A */
 #if ((SERVO_PIN & 1U) != 0U)
 #error "SERVO_PIN must be even (PWM channel A)"
 #endif
 
-#define SOUND_MM_PER_MS    (343UL) /* speed of sound: 343 m/s = 343 mm per ms */
-#define ROUND_TRIP_DIVISOR (2000UL) /* 1000 us per ms, x2 for there-and-back */
-
-/* PWM slice that times the echo -> slice (N >> 1) & 7 */
-#define ECHO_SLICE      ((US_ECHO_PIN >> 1U) & 0x7U)
-#define ECHO_SLICE_BASE (PWM_BASE + (0x14UL * ECHO_SLICE))
-#define ECHO_CSR_ADDR   (ECHO_SLICE_BASE + PWM_CHx_CSR)
-#define ECHO_DIV_ADDR   (ECHO_SLICE_BASE + PWM_CHx_DIV)
-#define ECHO_CTR_ADDR   (ECHO_SLICE_BASE + PWM_CHx_CTR)
-#define ECHO_TOP_ADDR   (ECHO_SLICE_BASE + PWM_CHx_TOP)
-
-/* Register field values */
-#define PWM_CSR_DIVMODE_LEVEL (1UL << 4) /* count only while pin B is high */
-#define PWM_DIV_INT_SHIFT     (4U)       /* DIV integer part is bits 11:4  */
-#define ECHO_CLKDIV_INT       (125UL)    /* 125 MHz / 125 = 1 count per us */
-#define ECHO_CTR_MAX          (0xFFFFUL) /* 16-bit counter: 65 535 us max  */
+#define PWM_DIV_INT_SHIFT (4U) /* DIV integer part is bits 11:4  */
 
 /* timing */
-#define ECHO_WINDOW_MS (30U) /* sleep while hardware times echo (4 m = 23 ms) */
 #define PING_PERIOD_MS \
     (500U) /* >= 60 ms between pings; 500 keeps log readable */
 
@@ -48,52 +28,6 @@
     (510UL) /* 1530 - 1020: 90 deg = 1530 us, left = more */
 #define SERVO_ANGLE_MIN_DEG (20U) /* safety limits: sweep needs 30-150 */
 #define SERVO_ANGLE_MAX_DEG (160U)
-
-/* Fire one ping and print results. Blocks for 30ms - 40ms */
-static void ultrasonic_ping_and_print(void)
-{
-    UW   echo_us;
-    UW   distance_mm;
-    BOOL b_still_high;
-
-    if (0U != gpio_get_val(US_ECHO_PIN))
-    {
-        tm_printf((UB *)"S5: busy (echo still high)\n");
-    }
-    else
-    {
-        /* Zero the stopwatch and arm it */
-        out_w(ECHO_CTR_ADDR, 0U);
-        set_w(ECHO_CSR_ADDR, PWM_CH_CSR_EN);
-
-        /* Send trigger HIGH for ultrasonic sensor */
-        gpio_set_val(US_TRIG_PIN, 1);
-        rp2040_delay_us(12U); /* 12 gives some margin over 10us */
-        gpio_set_val(US_TRIG_PIN, 0);
-
-        /* Sleep; the hardware counts only while ECHO is high */
-        tk_dly_tsk(ECHO_WINDOW_MS);
-
-        b_still_high = (0U != gpio_get_val(US_ECHO_PIN));
-        echo_us      = in_w(ECHO_CTR_ADDR) & ECHO_CTR_MAX;
-        clr_w(ECHO_CSR_ADDR, PWM_CH_CSR_EN);
-
-        /* Interpret */
-        if (b_still_high)
-        {
-            tm_printf((UB *)"S5: no echo (too long)\n");
-        }
-        else if (0U == echo_us)
-        {
-            tm_printf((UB *)"S5: no echo\n");
-        }
-        else
-        {
-            distance_mm = (echo_us * SOUND_MM_PER_MS) / ROUND_TRIP_DIVISOR;
-            tm_printf((UB *)"S5: echo=%u us  d=%u mm\n", echo_us, distance_mm);
-        }
-    }
-}
 
 /*
  * Robot angle (90 = forward, >90 = left) -> pulse width in us.
@@ -125,31 +59,34 @@ static const UW g_test_angles_deg[] = {90U, 60U,  30U,  60U,
 #define TEST_ANGLE_COUNT \
     (sizeof(g_test_angles_deg) / sizeof(g_test_angles_deg[0]))
 
+static const char * status_name(ultrasonic_status_t status)
+{
+    switch (status)
+    {
+        case ULTRASONIC_OK: return "ok";
+        case ULTRASONIC_BUSY: return "busy";
+        case ULTRASONIC_NO_ECHO: return "no-echo";
+        case ULTRASONIC_TOO_NEAR: return "too-near";
+        case ULTRASONIC_TOO_FAR: return "too-far";
+        default: return "?";
+    }
+}
+
 EXPORT void obstacle_task(INT stacd, void * exinf)
 {
-    UW index;
-    UW pulse_us;
-
-    /* Setting the pins */
-    gpio_set_pin(US_TRIG_PIN, GPIO_MODE_OUT);
-    gpio_set_val(US_TRIG_PIN, 0);
+    UW                  index;
+    UW                  pulse_us;
+    UW                  distance_mm;
+    ultrasonic_status_t status;
 
     /* To hide unused warnings */
     (void)stacd;
     (void)exinf;
 
+    ultrasonic_init();
+
     rp2040_timer_start();
     rp2040_pwm_unreset();
-
-    out_w(ECHO_CSR_ADDR, PWM_CSR_DIVMODE_LEVEL);
-    out_w(ECHO_DIV_ADDR, ECHO_CLKDIV_INT << PWM_DIV_INT_SHIFT);
-    out_w(ECHO_TOP_ADDR, ECHO_CTR_MAX);
-
-    /* Give the ECHO pin to the PWM block (also enables its input) */
-    pwm_set_pin(US_ECHO_PIN);
-
-    /* Safety: the sensor drives ECHO, so the Pico must never drive it */
-    set_w(GPIO(US_ECHO_PIN), GPIO_OD);
 
     /* Servo: slice in normal free-running mode (DIVMODE = 0), enable off */
     out_w(SERVO_CSR_ADDR, 0U);
@@ -168,9 +105,12 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
         {
             pulse_us = servo_angle_to_pulse_us(g_test_angles_deg[index]);
             pwm_set_cc(SERVO_PIN, pulse_us);
-            tm_printf((UB *)"S5: angle %u -> %u us\n", g_test_angles_deg[index],
-                      pulse_us);
-            tk_dly_tsk(1000);
+            tk_dly_tsk(1000); /* let the servo arrive before pinging */
+
+            status = ultrasonic_measure_mm(&distance_mm);
+            tm_printf((UB *)"S5: angle %u (%u us)  d=%u mm  %s\n",
+                      g_test_angles_deg[index], pulse_us, distance_mm,
+                      status_name(status));
         }
     }
 }
