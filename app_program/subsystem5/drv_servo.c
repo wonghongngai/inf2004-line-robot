@@ -29,20 +29,33 @@
     (510UL) /* 1530 - 1020: 90 deg = 1530 us, left = more */
 #define SERVO_CAL_SPAN_DEG (90UL) /* calibrated across 45 R .. 45 L */
 
+/* Speed: 0.1 s per 60 deg, plus wobble margin based on spec sheet */
+#define SERVO_MS_PER_60_DEG    (100UL)
+#define SERVO_SETTLE_MARGIN_MS (20UL)
+
+/* Last commanded angle (not measured: the servo can't report it). */
+static UW g_angle_deg = SERVO_ANGLE_CENTRE_DEG;
+
+static UW servo_clamp_deg(UW angle_deg)
+{
+    if (angle_deg < SERVO_ANGLE_MIN_DEG)
+    {
+        return SERVO_ANGLE_MIN_DEG;
+    }
+    if (angle_deg > SERVO_ANGLE_MAX_DEG)
+    {
+        return SERVO_ANGLE_MAX_DEG;
+    }
+    return angle_deg;
+}
+
 /*
  * Robot angle (90 = forward, >90 = left) -> pulse width in us.
  * Clamped to SERVO_ANGLE_MIN/MAX so the horn never reaches its end stops.
  */
 EXPORT UW servo_angle_to_pulse_us(UW angle_deg)
 {
-    if (angle_deg < SERVO_ANGLE_MIN_DEG)
-    {
-        angle_deg = SERVO_ANGLE_MIN_DEG;
-    }
-    if (angle_deg > SERVO_ANGLE_MAX_DEG)
-    {
-        angle_deg = SERVO_ANGLE_MAX_DEG;
-    }
+    angle_deg = servo_clamp_deg(angle_deg);
 
     /* Adding half the divisor rounds to the nearest us.  Never negative. */
     return SERVO_US_AT_0_DEG +
@@ -52,7 +65,37 @@ EXPORT UW servo_angle_to_pulse_us(UW angle_deg)
 
 EXPORT void servo_set_angle(UW angle_deg)
 {
-    pwm_set_cc(SERVO_PIN, servo_angle_to_pulse_us(angle_deg));
+    g_angle_deg = servo_clamp_deg(angle_deg);
+    pwm_set_cc(SERVO_PIN, servo_angle_to_pulse_us(g_angle_deg));
+}
+
+EXPORT UW servo_settle_ms(UW from_deg, UW to_deg)
+{
+    UW delta_deg =
+        (from_deg > to_deg) ? (from_deg - to_deg) : (to_deg - from_deg);
+
+    if (0U == delta_deg)
+    {
+        return 0U; /* not moving: nothing to wait for */
+    }
+
+    /* (x + 59) / 60 rounds UP: never wait too little */
+    return (((delta_deg * SERVO_MS_PER_60_DEG) + 59UL) / 60UL) +
+           SERVO_SETTLE_MARGIN_MS;
+}
+
+EXPORT void servo_move_and_settle(UW angle_deg)
+{
+    UW wait_ms;
+    UW from_deg = g_angle_deg;
+
+    servo_set_angle(angle_deg);
+
+    wait_ms = servo_settle_ms(from_deg, g_angle_deg);
+    if (wait_ms > 0U)
+    {
+        tk_dly_tsk(wait_ms);
+    }
 }
 
 EXPORT void servo_init(void)
@@ -69,4 +112,9 @@ EXPORT void servo_init(void)
     pwm_set_cc(SERVO_PIN, servo_angle_to_pulse_us(SERVO_ANGLE_CENTRE_DEG));
     pwm_set_pin(SERVO_PIN);
     pwm_set_enabled(SERVO_PIN, TRUE);
+
+    g_angle_deg = SERVO_ANGLE_CENTRE_DEG;
+
+    /* We don't know where the horn was at power-up: allow a full swing */
+    tk_dly_tsk(servo_settle_ms(SERVO_ANGLE_MIN_DEG, SERVO_ANGLE_MAX_DEG));
 }

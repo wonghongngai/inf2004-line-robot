@@ -31,7 +31,6 @@
 #define ECHO_CLKDIV_INT      (125UL)    /* 125 MHz / 125 = 1 count per us */
 #define ECHO_CTR_MAX          (0xFFFFUL) /* 16-bit counter: 65 535 us max  */
 
-#define ECHO_WINDOW_MS (30U) /* sleep while hardware times echo (4 m = 23 ms) */
 
 #define TRIG_PULSE_US (12U) /* datasheet needs >= 10 us; 12 gives margin */
 
@@ -55,7 +54,8 @@ EXPORT void ultrasonic_init(void)
     set_w(GPIO(US_ECHO_PIN), GPIO_OD);
 }
 
-EXPORT ultrasonic_status_t ultrasonic_measure_mm(UW * p_distance_mm)
+EXPORT ultrasonic_status_t ultrasonic_measure_mm(UW   window_ms,
+                                                 UW * p_distance_mm)
 {
     UW   echo_us;
     UW   distance_mm;
@@ -84,7 +84,7 @@ EXPORT ultrasonic_status_t ultrasonic_measure_mm(UW * p_distance_mm)
     gpio_set_val(US_TRIG_PIN, 0);
 
     /* Sleep; the hardware counts only while ECHO is high */
-    tk_dly_tsk(ECHO_WINDOW_MS);
+    tk_dly_tsk(window_ms);
 
     b_still_high = (0U != gpio_get_val(US_ECHO_PIN));
     echo_us      = in_w(ECHO_CTR_ADDR) & ECHO_CTR_MAX;

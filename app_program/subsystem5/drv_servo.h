@@ -27,4 +27,11 @@ IMPORT void servo_set_angle(UW angle_deg);
  *  the on-target tests can check the calibration maths. */
 IMPORT UW servo_angle_to_pulse_us(UW angle_deg);
 
+/** Point the servo at 'angle_deg' (clamped) and SLEEP until it has
+ *  arrived.  Blocks the caller for servo_settle_ms(). */
+IMPORT void servo_move_and_settle(UW angle_deg);
+
+/** Pure: how long a move from 'from_deg' to 'to_deg' needs, in ms. */
+IMPORT UW servo_settle_ms(UW from_deg, UW to_deg);
+
 #endif /* DRV_SERVO_H */
