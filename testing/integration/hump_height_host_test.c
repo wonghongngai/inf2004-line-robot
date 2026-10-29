@@ -71,6 +71,16 @@ int main(void)
     publish_snapshot(&sample, 0, 0, 1000, 300, 10, 20, TRUE,
                      IMU_MOTION_HUMP, IMU_EVENT_HUMP, TRUE, TRUE, 1, FALSE);
     assert(s4_imu_data.ramp_height_valid && s4_imu_data.ramp_height_mm == 20);
+    /* Startup ramp must not weaken the actual single-sample impact test. */
+    LSM303_SAMPLE resting = {.az_mg = 1000};
+    LSM303_SAMPLE vibration = {.ax_mg = 200, .ay_mg = 100, .az_mg = 900};
+    LSM303_SAMPLE impact = {.ax_mg = S4_COLLISION_DELTA_MG, .az_mg = 1000};
+    W delta;
+    assert(!detect_collision(&vibration, &resting, &delta) && delta == 200);
+    assert(detect_collision(&impact, &resting, &delta) && delta == S4_COLLISION_DELTA_MG);
+    impact.ax_mg = -S4_COLLISION_DELTA_MG;
+    assert(detect_collision(&impact, &resting, &delta) && delta == S4_COLLISION_DELTA_MG);
     puts("Hump height/odometry: fractional rise, descent, sign, bounds, missing calibration and validity PASS");
+    puts("IMU collision: positive/negative single-sample impact threshold and measured delta PASS");
     return 0;
 }

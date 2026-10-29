@@ -5,6 +5,9 @@
 #include <string.h>
 
 #define APP_ALL_TEST 1
+#ifndef ALL_TEST_CONTINUE_ON_SENSOR
+#define ALL_TEST_CONTINUE_ON_SENSOR 0
+#endif
 #define TP_PRC2 2
 #define TMO_FEVR (-1)
 typedef unsigned int UINT;
@@ -124,27 +127,51 @@ int main(void)
     command = S1_COMMAND_RESET_STATS; step(&t, 5120);
     EXPECT(t.phase == RUNNING); /* Unsupported reset never restarts a run. */
     fake_line.data[0] = 0; step(&t, 5130);
-    EXPECT(t.phase == STOPPED && motor_left == 0 && motor_right == 0);
-    fake_line.data[0] = 3; command = S1_COMMAND_RESUME; step(&t, 5140);
-    EXPECT(t.phase == STOPPED && motor_left == 0);
+    EXPECT(t.phase == LINE_WAIT && !enabled && motor_left == 0 && motor_right == 0);
+    EXPECT(s1_telemetry_get(&published, S1_FIELD_STATE, &value) && value == S1_STATE_RECOVERING);
+    fake_line.data[0] = 3; step(&t, 5140);
+    EXPECT(t.phase == LINE_WAIT && motor_left == 0);
+    step(&t, 5190); EXPECT(t.phase == LINE_WAIT && motor_left == 0);
+    step(&t, 5240); EXPECT(t.phase == SETTLING && enabled && motor_left == 0);
+    step(&t, 5270);
+    EXPECT(t.phase == RUNNING && motor_left == 30 && motor_right == 15);
     unsigned before = packets;
-    command = S1_COMMAND_STATUS; step(&t, 5150);
-    EXPECT(packets == before + 1); /* MQTT status remains live after stop. */
+    command = S1_COMMAND_STATUS; step(&t, 5280);
+    EXPECT(packets == before + 1);
 
     t = running(); fake_imu.motion_state = IMU_MOTION_TILT; step(&t, 5040);
     EXPECT(t.phase == STOPPED && motor_left == 0);
+    EXPECT(strcmp(t.stop_reason, "IMU tilt detected") == 0);
     EXPECT(s1_telemetry_get(&published, S1_FIELD_FAULTS, &value) && (value & S1_FAULT_IMU));
+    fake_imu.motion_state = IMU_MOTION_NORMAL; step(&t, 5200);
+    EXPECT(t.phase == STOPPED && motor_left == 0); /* Black cannot clear IMU fault. */
+    EXPECT(strcmp(t.stop_reason, "IMU tilt detected") == 0); /* Historical cause retained. */
     t = running(); fake_imu.event = IMU_EVENT_COLLISION; step(&t, 5040);
-    EXPECT(t.phase == STOPPED && motor_left == 0);
+    EXPECT(t.phase == RUNNING && motor_left == 30 && motor_right == 30);
+    EXPECT(!t.imu_fault && t.stop_reason == NULL);
+    fake_imu.motion_state = IMU_MOTION_COLLISION; step(&t, 5050);
+    EXPECT(t.phase == RUNNING && motor_left == 30 && motor_right == 30);
+    /* A collision flag must not hide other simultaneous fault conditions. */
+    fake_imu.motion_state = IMU_MOTION_TILT; step(&t, 5060);
+    EXPECT(t.phase == STOPPED && strcmp(t.stop_reason, "IMU tilt detected") == 0);
     t = running(); all_test_step(&t, 5131); /* Same sample count, stale IMU. */
     EXPECT(t.phase == STOPPED && motor_left == 0);
+    EXPECT(strcmp(t.stop_reason, "IMU samples stale (over 100ms)") == 0);
     t = running(); ++fake_imu.read_errors; step(&t, 5040);
     EXPECT(t.phase == STOPPED && motor_left == 0);
+    EXPECT(strcmp(t.stop_reason, "IMU read-error count changed") == 0);
     EXPECT(s1_telemetry_get(&published, S1_FIELD_FAULTS, &value) && (value & S1_FAULT_IMU));
     command = S1_COMMAND_STATUS; step(&t, 5050);
     EXPECT(s1_telemetry_get(&published, S1_FIELD_FAULTS, &value) && (value & S1_FAULT_IMU));
     t = running(); imu_error = E_PAR; step(&t, 5040);
     EXPECT(t.phase == STOPPED && motor_left == 0);
+    EXPECT(strcmp(t.stop_reason, "IMU snapshot API failed") == 0);
+    t = running(); fake_imu.sensor_ok = FALSE; step(&t, 5040);
+    EXPECT(t.phase == STOPPED && strcmp(t.stop_reason, "IMU sensor reports not OK") == 0);
+    t = running(); fake_imu.calibrated = FALSE; step(&t, 5040);
+    EXPECT(t.phase == STOPPED && strcmp(t.stop_reason, "IMU calibration not ready") == 0);
+    t = running(); fake_imu.event = IMU_EVENT_FAULT; step(&t, 5040);
+    EXPECT(t.phase == STOPPED && strcmp(t.stop_reason, "IMU processing fault") == 0);
     t = running(); line_error = E_TMOUT; step(&t, 5040);
     EXPECT(t.phase == STOPPED && motor_left == 0);
     t = running(); receive_error = E_PAR; step(&t, 5040);
@@ -208,6 +235,61 @@ int main(void)
     EXPECT(t.phase == STOPPED && motor_left == 0);
     t = setup(); step(&t, 5000); line_error = E_PAR; step(&t, 5030);
     EXPECT(t.phase == STOPPED && motor_left == 0);
+    /* Long line absence pauses S3 decisions, so search cannot time out.
+     * Fresh raw readings remain available while its snapshot is PAUSED. */
+    t = running(); fake_line.data[0] = 0; step(&t, 5040);
+    fake_line.data[1] = LINE_BARCODE_PAUSED;
+    for (unsigned now = 5050; now <= 10000; now += 50) step(&t, now);
+    EXPECT(t.phase == LINE_WAIT && motor_left == 0 && !enabled);
+    fake_line.data[0] = 2; step(&t, 10010); step(&t, 10110);
+    EXPECT(t.phase == SETTLING && enabled && motor_left == 0);
+    fake_line.data[1] = LINE_BARCODE_FOLLOW; step(&t, 10140);
+    EXPECT(t.phase == RUNNING && motor_left == 30 && motor_right == 30);
+    /* An intermittent black reading must restart the stability interval. */
+    t = running(); fake_line.data[0] = 0; step(&t, 5040);
+    fake_line.data[0] = 2; step(&t, 5050);
+    fake_line.data[0] = 0; step(&t, 5100);
+    fake_line.data[0] = 2; step(&t, 5110); step(&t, 5150);
+    EXPECT(t.phase == LINE_WAIT && motor_left == 0);
+    step(&t, 5210); EXPECT(t.phase == SETTLING && motor_left == 0);
+    step(&t, 5240); EXPECT(t.phase == RUNNING && motor_left == 30);
+    /* Manual pause always takes precedence over automatic line recovery. */
+    t = running(); fake_line.data[0] = 0; step(&t, 5040);
+    command = S1_COMMAND_PAUSE; fake_line.data[0] = 2; step(&t, 5050); step(&t, 5200);
+    EXPECT(t.phase == PAUSED && motor_left == 0 && !enabled);
+    command = S1_COMMAND_RESUME; step(&t, 5210); step(&t, 5240);
+    EXPECT(t.phase == RUNNING && motor_left == 30);
+    /* Stale data while waiting remains a hard fault; collision does not. */
+    t = running(); fake_line.data[0] = 0; step(&t, 5040);
+    line_error = E_TMOUT; fake_line.data[0] = 2; step(&t, 5050);
+    EXPECT(t.phase == STOPPED && motor_left == 0);
+    line_error = E_OK; step(&t, 5200); EXPECT(t.phase == STOPPED && motor_left == 0);
+    t = running(); fake_line.data[0] = 0; step(&t, 5040);
+    fake_imu.event = IMU_EVENT_COLLISION; step(&t, 5050);
+    EXPECT(t.phase == LINE_WAIT && motor_left == 0);
+    fake_line.data[0] = 2; step(&t, 5060); step(&t, 5160); step(&t, 5190);
+    EXPECT(t.phase == RUNNING && motor_left == 30);
+    command = S1_COMMAND_PAUSE; step(&t, 5200);
+    EXPECT(t.phase == PAUSED && motor_left == 0); /* Collision cannot override manual pause. */
+    /* S3 fault snapshot wins over an older queued LOST event. */
+    t = running(); fake_line.data[1] = LINE_BARCODE_FAULT;
+    fake_event = (line_barcode_msg_t){{0u, LINE_BARCODE_EVT_LOST << 3u, 0u}};
+    has_event = true; step(&t, 5040);
+    EXPECT(t.phase == STOPPED && motor_left == 0);
+    t = running(); fake_line.data[0] = 0;
+    fake_event = (line_barcode_msg_t){{0u, LINE_BARCODE_EVT_LOST << 3u, 0u}};
+    has_event = true; step(&t, 5040);
+    EXPECT(t.phase == LINE_WAIT && motor_left == 0);
+    /* Junctions and ambiguous patterns still do not auto-drive. */
+    t = running(); fake_line.data[0] = 5u; step(&t, 5040);
+    EXPECT(t.phase == STOPPED && motor_left == 0);
+    t = running(); fake_line.data[0] = 7u; step(&t, 5040);
+    EXPECT(t.phase == STOPPED && motor_left == 0);
+    /* Starting on white waits for black rather than requiring a reboot. */
+    t = setup(); fake_line.data[0] = 0; step(&t, 5000); step(&t, 5030);
+    EXPECT(t.phase == LINE_WAIT && motor_left == 0);
+    fake_line.data[0] = 2; step(&t, 5040); step(&t, 5140); step(&t, 5170);
+    EXPECT(t.phase == RUNNING && motor_left == 30 && motor_right == 30);
     /* Every physical line pattern: centre alone goes straight, either
      * edge steers, and missing/ambiguous patterns return zero outputs. */
     const float left[8] = {0,30,30,30,15,0,15,0};
@@ -225,6 +307,33 @@ int main(void)
         EXPECT(l == ((mask & 3u) == 0 ? 0 : (mask & 3u) == 2 ? 15 : 30));
         EXPECT(r == ((mask & 3u) == 0 ? 0 : (mask & 3u) == 1 ? 15 : 30));
     }
+    /* Exercise the production ramp from startup through a line-loss
+     * recovery, then confirm a collision report no longer interrupts it. */
+    t = setup(); t.pwm_ramp_per_second = ALL_TEST_PWM_RAMP_PER_SECOND;
+    step(&t, 5000); step(&t, 5030);
+    EXPECT(t.phase == RUNNING && motor_left == 1 && motor_right == 1);
+    float previous = motor_left;
+    for (unsigned now = 5040; now <= 5330; now += 10) {
+        step(&t, now);
+        EXPECT(motor_left >= previous && motor_left <= previous + 1.0f && motor_left <= 30);
+        EXPECT(motor_left == motor_right);
+        previous = motor_left;
+    }
+    EXPECT(motor_left == 30 && motor_right == 30);
+    fake_line.data[0] = 4; step(&t, 5340);
+    EXPECT(motor_left == 29 && motor_right == 30); /* Steering also changes smoothly. */
+    fake_line.data[0] = 0; step(&t, 5350);
+    EXPECT(t.phase == LINE_WAIT && motor_left == 0 && motor_right == 0);
+    fake_line.data[0] = 2; step(&t, 5360); step(&t, 5460); step(&t, 5490);
+    EXPECT(t.phase == RUNNING && motor_left > 0 && motor_left <= 2 && motor_left == motor_right);
+    fake_imu.event = IMU_EVENT_COLLISION; step(&t, 5500);
+    EXPECT(t.phase == RUNNING && motor_left > 0 && motor_right > 0);
+    fake_imu.event = IMU_EVENT_FAULT; step(&t, 5510);
+    EXPECT(t.phase == STOPPED && motor_left == 0 && motor_right == 0);
+    t = setup(); t.pwm_ramp_per_second = ALL_TEST_PWM_RAMP_PER_SECOND;
+    apply_follow_pwm(&t, 30, 30, 0);
+    apply_follow_pwm(&t, 30, 30, 5000); /* Delayed cycle cannot jump to 30%. */
+    EXPECT(motor_left == 3 && motor_right == 3);
     EXPECT(all_buddies_test_start() == E_OK && motor_left == 0);
     printf("All-buddies coordinator: %u checks passed\n", checks);
     return 0;

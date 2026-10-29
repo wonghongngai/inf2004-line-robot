@@ -28,19 +28,18 @@
 /* ---------------------------------------------------------------------
  * CALIBRATION
  * ---------------------------------------------------------------------
- * Leave S2_CALIBRATION_READY = 0 until the physical robot is available.
- * The task will initialise safely with motors OFF and report a configuration
- * fault instead of moving with guessed calibration values.
- *
- * After measuring the robot, enter the real values below and set READY = 1.
+ * Physical measurements supplied on 2026-10-29; see CALIBRATION.md.
+ * Distance uses the three measured 100 cm runs, not wheel circumference.
+ * Turn scales belong to the MOVING wheel: left wheel for a right pivot,
+ * right wheel for a left pivot. Revalidate after encoder/sampling changes.
  */
-#define S2_CALIBRATION_READY                 0
-#define S2_LEFT_TICKS_PER_CM                 0.0f
-#define S2_RIGHT_TICKS_PER_CM                0.0f
-#define S2_LEFT_TURN_TICKS_PER_DEGREE        0.0f
-#define S2_RIGHT_TURN_TICKS_PER_DEGREE       0.0f
+#define S2_CALIBRATION_READY                 1
+#define S2_LEFT_TICKS_PER_CM                 103.5267f
+#define S2_RIGHT_TICKS_PER_CM                118.5634f
+#define S2_LEFT_TURN_TICKS_PER_DEGREE         20.3556f  /* right turn: 1832 / 90 */
+#define S2_RIGHT_TURN_TICKS_PER_DEGREE        22.9074f  /* left turn: 2061.6667 / 90 */
 #define S2_BASE_PWM_PERCENT                  55.0f
-#define S2_MIN_EFFECTIVE_PWM_PERCENT         20.0f
+#define S2_MIN_EFFECTIVE_PWM_PERCENT         15.0f    /* shared floor covers right motor */
 #define S2_MAX_PWM_PERCENT                   100.0f
 #define S2_DISTANCE_TOLERANCE_CM             1.0f
 #define S2_ANGLE_TOLERANCE_DEG               2.0f

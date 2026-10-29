@@ -247,7 +247,8 @@ LOCAL BOOL update_calibration(const LSM303_SAMPLE *sample,
 
 /* Collision = sudden sample-to-sample acceleration change. */
 LOCAL BOOL detect_collision(const LSM303_SAMPLE *current,
-                            const LSM303_SAMPLE *previous)
+                            const LSM303_SAMPLE *previous,
+                            W *measured_delta_mg)
 {
     W dax;
     W day;
@@ -259,6 +260,7 @@ LOCAL BOOL detect_collision(const LSM303_SAMPLE *current,
     daz = current->az_mg - previous->az_mg;
 
     peak_delta = max3(abs_w(dax), abs_w(day), abs_w(daz));
+    if (measured_delta_mg != NULL) *measured_delta_mg = peak_delta;
     return (peak_delta >= S4_COLLISION_DELTA_MG) ? TRUE : FALSE;
 }
 
@@ -389,6 +391,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
     W completed_hump_peak;
     W last_hump_peak = 0;
     W pitch_deg = 0;
+    W collision_delta_mg = 0;
     UW last_ramp_height = 0U;
     BOOL last_ramp_height_valid = FALSE;
     UW distance_mm;
@@ -487,14 +490,17 @@ EXPORT void imu_task(INT stacd, void *exinf)
             completed_hump_peak = 0;
 
             /* Safety event has highest classification priority. */
-            if (have_previous && detect_collision(&sample, &previous_sample)) {
+            if (have_previous && detect_collision(&sample, &previous_sample, &collision_delta_mg)) {
                 motion = IMU_MOTION_COLLISION;
                 event = IMU_EVENT_COLLISION;
                 reset_hump_detector();
                 reset_height_tracker();
                 tilt_samples = 0U;
 
-                tm_printf((UB *)"Buddy4 EVENT: COLLISION\n");
+                tm_printf((UB *)"Buddy4 EVENT: COLLISION delta=%dmg threshold=%dmg previous=(%d,%d,%d) current=(%d,%d,%d)\n",
+                          collision_delta_mg, S4_COLLISION_DELTA_MG,
+                          previous_sample.ax_mg, previous_sample.ay_mg, previous_sample.az_mg,
+                          sample.ax_mg, sample.ay_mg, sample.az_mg);
             } else {
                 hump_was_active = (hump_state.phase != HUMP_IDLE);
                 hump_completed = update_hump(dx, &completed_hump_peak);

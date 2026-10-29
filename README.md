@@ -30,22 +30,22 @@ layout). Centre alone on black commands straight movement; left/left+centre
 steer left, and right/centre+right steer right. All sensors use raw 1 on
 black, 0 on white. IMU I2C0 uses GP4 SDA and GP5 SCL.
 Raise the wheels for the first direction/steering test, then test on the line.
-After enabling sensors, startup waits up to 500 ms for a fresh sample,
-keeping motors off. In the combined test, sampling runs on core 1 away from
-the higher-priority Wi-Fi task on core 0. The 30 ms snapshot freshness limit
-still applies during movement; stale data stops the motors. Logs show
-individual L/C/R values and `line_er` (0 success, -50 stale).
-
-IMU tilt/collision/fault, changed IMU read-error count, an IMU sample older
-than 100 ms, stale/failed line data, line loss, a detected junction, or a
-queue error stops and latches the motors off. There is now **no automatic
-30-second stop**: `ALL_TEST_DURATION_MS=0` in
-`app_program/subsystem2/all_buddies_test.h` means continuous line following
-while sensors are healthy. Set a positive millisecond value there for a
-timed run (including pauses). Reboot to retry a stopped/finished test;
-RESUME only resumes a manual pause. Wi-Fi failure does not stop autonomous
-following; use motor power to stop locally. `drv_motor_set()` already keeps
-PWM running until another motor command or `drv_motor_stop()` changes it.
+Motor startup ramps from 0% to 30% in about 300 ms; steering uses the same
+rate limit. `ALL_TEST_CONTINUE_ON_SENSOR=1` in `all_buddies_test.h` makes
+sensor detections and failures report-only: collision, tilt, IMU faults,
+calibration/readiness, stale IMU samples, junction events, line queue errors and encoder-distance
+errors do not stop PWM. Missing/ambiguous black line or unavailable line
+readings stop both motors immediately; valid black automatically resumes.
+Startup begins after 5 seconds even if sensors are unavailable. Valid line
+patterns still steer; missing/ambiguous or unavailable line data stops
+both wheels. Restart uses the same smooth PWM ramp. Navigation faults are re-enabled for recovery.
+Manual MQTT PAUSE still stops immediately and RESUME restarts movement,
+even with failed sensors. The default run limit is zero (continuous).
+A positive `ALL_TEST_DURATION_MS` still stops the timed run. Motor/task
+initialization failure, clock failure or inability to run the control task
+can still leave motors stopped. Wi-Fi loss does not stop autonomous drive.
+Set `ALL_TEST_CONTINUE_ON_SENSOR=0` and rebuild to restore sensor stop and
+line-recovery behavior. Other firmware profiles retain their stop rules.
 
 The console prints `[ALL TEST]` status twice per second, and telemetry is
 queued once per second through the existing ten-byte binary protocol. S3's
@@ -54,14 +54,18 @@ layout disables barcode decoding because GP7 is a line sensor. For a
 separate offset-scanner mounting, explicitly change `ALL_TEST_LINE_LAYOUT`
 in `all_buddies_test.h` to `LINE_BARCODE_LAYOUT_SIDE`; only that layout
 decodes barcodes (A/B/C/Z map to left/right/straight/U-turn telemetry).
-This test stops at junctions and does not execute barcode turns without
-encoder calibration. It does not run PID or encoder stall detection. Encoders are
+This test continues through junctions and does not execute barcode turns. It does not run PID or encoder stall detection. Encoders are
 polled with a requested 1 ms sleep, while motor/sensor control runs every
 10 ms. Actual polling is slower due to kernel rounding and scheduling;
 verify counts at the intended speed. The log includes encoder ticks, the
-latched stop reason, and `height_valid`. MQTT queue-full messages print on
+diagnostic status, and `height_valid`. MQTT queue-full messages print on
 status changes instead of once every second; connection failures still
 require working Wi-Fi/IP and broker settings.
+
+IMU events continue to print through `Buddy4 EVENT` logs. The periodic
+`status=` field reports sensor problems without stopping movement in the
+default continuous mode. Collision logs include the measured acceleration
+jump and threshold; the threshold remains 1200 mg.
 
 With positive measured `S2_LEFT_TICKS_PER_CM` and `S2_RIGHT_TICKS_PER_CM` in
 `app_program/subsystem2/subsystem2.h`, average wheel travel is supplied to
@@ -71,15 +75,22 @@ millimetre are retained in distance conversion and height integration.
 Paused/stopped movement is not included. The normal `integrated` profile
 also supplies distance during forward travel, excluding pivot turns.
 
-With the current zero scales, no distance is invented: startup reports
-height/distance unavailable, and a detected hump reports
+The measured distance scales from 2026-10-29 are now configured: left
+103.5267 ticks/cm, right 118.5634 ticks/cm. Turn scales and source trials
+are recorded in [CALIBRATION.md](app_program/subsystem2/CALIBRATION.md).
+Motion calibration is enabled; PID tuning and hardware validation remain.
+
+If either distance scale is unset/zero, startup reports height/distance
+unavailable, and a detected hump reports
 `height=unavailable (no wheel distance)` instead of implying a measured
-zero. To measure the scales, let the test latch STOPPED on white paper and
-confirm PWM is 0/0. Record encoder counts, roll the robot straight through
+zero. To measure the scales, send MQTT PAUSE and confirm `phase=3` and
+PWM 0/0 before handling the robot. Do not use LINE_WAIT as a manual stop:
+black can automatically restart it. Record encoder counts, roll the robot straight through
 a measured 20 cm, and record the new counts. Each wheel's scale is its
 absolute count change divided by 20. Enter both values and rebuild. This
-does not enable calibrated distance/angle commands: leave
-`S2_CALIBRATION_READY=0` until turn calibration is also measured.
+does not by itself calibrate turns: only set `S2_CALIBRATION_READY=1`
+when distance and turn scales have both been measured, as in the current
+configuration.
 
 S4 logs each completed hump estimate and retains the highest completed
 height in its snapshot/telemetry. `height_valid=1` means wheel distance was
@@ -106,8 +117,11 @@ is explicitly rejected: S4 has no statistics-reset API. Status requests and
 telemetry remain active after a stop. A successful queue operation is not
 proof that the broker received a packet; check `mqtt: connected` and the
 subscriber. Confirm pause stops both motors and resume only works on a
-healthy line/IMU. Confirm loss of the line stops motors and cannot be cleared
-by RESUME. Live network and physical behaviour still require hardware tests.
+healthy line/IMU. Confirm loss of the line stops motors, brief/intermittent
+black readings do not restart it, and stable black automatically resumes
+following. Confirm manual PAUSE still blocks movement on black, and IMU
+faults/stale data still require reboot. Live network and physical behaviour
+still require hardware tests.
 
 Host regression checks for the coordinator, existing robot controller, and
 PWM driver run with `sh testing/integration/run_robot_host_tests.sh`.

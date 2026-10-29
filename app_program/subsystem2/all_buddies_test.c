@@ -10,11 +10,12 @@
 #include "../subsystem3/line_service.h"
 #include "../subsystem4/subsystem4.h"
 
-enum { WAITING, SETTLING, RUNNING, PAUSED, STOPPED };
+enum { WAITING, SETTLING, RUNNING, PAUSED, STOPPED, LINE_WAIT };
 #define ALL_START_MS       5000u
 #define ALL_READY_MS       15000u
 #define ALL_IMU_STALE_MS   100u
 #define ALL_LINE_READY_MS  500u
+#define ALL_LINE_REACQUIRE_MS 100u
 #define ALL_BASE_PWM       30.0f
 #define ALL_INNER_PWM      15.0f
 
@@ -23,19 +24,53 @@ typedef struct {
     uint32_t boot, started, settled, last_report, last_telemetry;
     uint32_t imu_count, imu_updated, imu_errors;
     uint32_t duration_ms, distance_mm;
+    uint32_t line_valid_since;
+    uint8_t line_candidate;
     int32_t left_ticks, right_ticks;
     WHEEL_ODOMETRY odometry;
     const char *stop_reason;
     ER telemetry_error;
-    bool started_once, force_status, imu_fault;
+    bool started_once, force_status, imu_fault, line_candidate_valid;
+    bool pwm_clock_started;
+    uint32_t pwm_updated;
+    float pwm_ramp_per_second;
     IMU_DATA imu;
     line_barcode_msg_t line;
     ER imu_er, line_er;
     float left, right;
 } ALL_TEST;
 
+static float approach_pwm(float current, float target, float step)
+{
+    if (target > current + step) return current + step;
+    if (target < current - step) return current - step;
+    return target;
+}
+
+static void apply_follow_pwm(ALL_TEST *t, float left, float right, uint32_t now)
+{
+    uint32_t elapsed = t->pwm_clock_started ? now - t->pwm_updated : LINE_BARCODE_PERIOD_MS;
+    /* A delayed cycle/resume must not turn into a sudden full-power step. */
+    if (elapsed > 2u * LINE_BARCODE_PERIOD_MS) elapsed = 2u * LINE_BARCODE_PERIOD_MS;
+    t->pwm_updated = now;
+    t->pwm_clock_started = true;
+    if (t->pwm_ramp_per_second > 0.0f) {
+        float step = t->pwm_ramp_per_second * (float)elapsed / 1000.0f;
+        t->left = approach_pwm(t->left, left, step);
+        t->right = approach_pwm(t->right, right, step);
+    } else {
+        t->left = left;
+        t->right = right;
+    }
+    drv_motor_set(t->left, t->right);
+}
+
 static void stop_test(ALL_TEST *t, const char *reason, unsigned state)
 {
+    if (ALL_TEST_CONTINUE_ON_SENSOR && state == S1_STATE_FAULT) {
+        t->stop_reason = reason;
+        return;
+    }
     drv_motor_stop();
     t->left = t->right = 0.0f;
     if (t->phase != STOPPED) {
@@ -48,15 +83,47 @@ static void stop_test(ALL_TEST *t, const char *reason, unsigned state)
     }
 }
 
+static void wait_for_line(ALL_TEST *t)
+{
+    drv_motor_stop();
+    t->left = t->right = 0.0f;
+    if (t->phase == LINE_WAIT) return;
+    /* Keep sampling raw inputs while navigation is paused. This prevents
+     * ordinary line absence from becoming S3's permanent search timeout.
+     * Fault snapshots/events must be checked before calling this helper. */
+    if (line_service_enable(false) < E_OK) {
+        stop_test(t, "line recovery pause failed", S1_STATE_FAULT);
+        return;
+    }
+    t->phase = LINE_WAIT;
+    t->line_candidate_valid = false;
+    t->stop_reason = "waiting for black line (auto-resume)";
+    t->force_status = true;
+    tm_printf((UB *)"[ALL TEST] line missing; motors off until a valid black line returns\n");
+}
+
+static const char *imu_status_reason(const ALL_TEST *t, uint32_t now)
+{
+    if (t->imu_er != E_OK) return "IMU snapshot API failed";
+    if (!t->imu.sensor_ok) return "IMU sensor reports not OK";
+    if (!t->imu.calibrated) return "IMU calibration not ready";
+    if (t->imu_count == 0u) return "IMU has no samples";
+#if ALL_TEST_STOP_ON_COLLISION
+    if (t->imu.motion_state == IMU_MOTION_COLLISION || t->imu.event == IMU_EVENT_COLLISION)
+        return "IMU collision detected";
+#endif
+    if (t->imu.motion_state == IMU_MOTION_TILT || t->imu.event == IMU_EVENT_TILT)
+        return "IMU tilt detected";
+    if (t->imu.motion_state == IMU_MOTION_FAULT || t->imu.event == IMU_EVENT_FAULT)
+        return "IMU processing fault";
+    if ((uint32_t)(now - t->imu_updated) > ALL_IMU_STALE_MS)
+        return "IMU samples stale (over 100ms)";
+    return NULL;
+}
+
 static bool imu_ready(const ALL_TEST *t, uint32_t now)
 {
-    return t->imu_er == E_OK && t->imu.sensor_ok && t->imu.calibrated &&
-        t->imu_count != 0u && (uint32_t)(now - t->imu_updated) <= ALL_IMU_STALE_MS &&
-        t->imu.motion_state != IMU_MOTION_TILT &&
-        t->imu.motion_state != IMU_MOTION_COLLISION &&
-        t->imu.motion_state != IMU_MOTION_FAULT &&
-        t->imu.event != IMU_EVENT_TILT && t->imu.event != IMU_EVENT_COLLISION &&
-        t->imu.event != IMU_EVENT_FAULT;
+    return imu_status_reason(t, now) == NULL;
 }
 
 static void report_telemetry(ALL_TEST *t, uint32_t now)
@@ -64,6 +131,7 @@ static void report_telemetry(ALL_TEST *t, uint32_t now)
     if (!t->force_status && (uint32_t)(now - t->last_telemetry) < 1000u) return;
     S1_TELEMETRY packet;
     unsigned state = t->phase == STOPPED ? t->terminal_state :
+                     t->phase == LINE_WAIT ? S1_STATE_RECOVERING :
                      t->phase == RUNNING ? S1_STATE_FOLLOWING : S1_STATE_IDLE;
     unsigned sensors = t->line.data[0] & 7u;
     /* S3: L/C/R at bits 2/1/0; S1 wire protocol: L/C/R at bits 0/1/2. */
@@ -114,23 +182,27 @@ static void commands(ALL_TEST *t, uint32_t now)
             if (t->phase != STOPPED) {
                 drv_motor_stop();
                 t->left = t->right = 0.0f;
-                if (line_service_enable(false) < E_OK) {
+                if (line_service_enable(false) < E_OK && !ALL_TEST_CONTINUE_ON_SENSOR) {
                     stop_test(t, "pause failed", S1_STATE_FAULT);
                 } else {
                     t->phase = PAUSED;
+                    t->stop_reason = "MQTT pause";
+                    t->line_candidate_valid = false;
                     tm_printf((UB *)"[ALL TEST] MQTT pause\n");
                 }
             }
             t->force_status = true;
             break;
         case S1_COMMAND_RESUME:
-            if (t->phase == PAUSED && imu_ready(t, now) &&
+            if (t->phase == PAUSED && (ALL_TEST_CONTINUE_ON_SENSOR || imu_ready(t, now)) &&
                 (uint32_t)(now - t->boot) >= ALL_START_MS) {
-                if (line_service_enable(true) < E_OK) {
+                if (line_service_enable(true) < E_OK && !ALL_TEST_CONTINUE_ON_SENSOR) {
                     stop_test(t, "resume failed", S1_STATE_FAULT);
                 } else {
                     t->phase = SETTLING;
                     t->settled = now;
+                    t->stop_reason = NULL;
+                    t->line_candidate_valid = false;
                     tm_printf((UB *)"[ALL TEST] MQTT resume; checking line\n");
                 }
             } else {
@@ -175,11 +247,84 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
         (uint32_t)(now - t->started) >= t->duration_ms) {
         stop_test(t, "configured run time complete", S1_STATE_FINISHED);
     }
-    if ((t->phase == RUNNING || t->phase == SETTLING ||
-         (t->phase == PAUSED && t->started_once)) &&
-        (!imu_ready(t, now) || t->imu.read_errors != t->imu_errors)) {
-        t->imu_fault = true;
-        stop_test(t, "IMU unsafe, stale, or read error", S1_STATE_FAULT);
+    if (ALL_TEST_CONTINUE_ON_SENSOR) {
+        const char *reason = imu_status_reason(t, now);
+        t->imu_fault = reason != NULL || t->imu.read_errors != t->imu_errors;
+        if (reason != NULL) t->stop_reason = reason;
+        t->imu_errors = t->imu.read_errors;
+        if (t->phase == WAITING && (uint32_t)(now - t->boot) >= ALL_START_MS) {
+            (void)line_service_enable(true);
+            t->phase = RUNNING;
+        }
+        if (t->phase == SETTLING || t->phase == LINE_WAIT) t->phase = RUNNING;
+        if (t->phase == RUNNING) {
+            if (!t->started_once) {
+                t->started = now;
+                t->started_once = true;
+            }
+            for (unsigned i = 0; i < 24u; ++i) {
+                line_barcode_msg_t event;
+                ER er = line_service_receive(&event, TMO_POL);
+                if (er == E_TMOUT) break;
+                if (er < E_OK) { t->stop_reason = "line queue failed"; break; }
+                unsigned code = (event.data[1] >> 3u) & 7u;
+                if (code == LINE_BARCODE_EVT_BARCODE) {
+                    unsigned letter = event.data[2] & LINE_BARCODE_LETTER_MASK;
+                    t->barcode = letter == 0u ? S1_BARCODE_LEFT :
+                        letter == 1u ? S1_BARCODE_RIGHT :
+                        letter == 2u ? S1_BARCODE_STRAIGHT :
+                        letter == 25u ? S1_BARCODE_UTURN : S1_BARCODE_NONE;
+                    tm_printf((UB *)"[ALL TEST] barcode '%c' detected; continuing\n", 'A' + letter);
+                } else if (code != 0u) {
+                    tm_printf((UB *)"[ALL TEST] line event=%u; continuing\n", code);
+                }
+            }
+            float left = ALL_BASE_PWM, right = ALL_BASE_PWM;
+            bool line_valid = false;
+            if (t->line_er == E_OK) {
+                line_valid = line_follow_output(t->line.data[0], ALL_TEST_LINE_LAYOUT,
+                                                ALL_BASE_PWM, ALL_INNER_PWM, &left, &right);
+                if (!line_valid) {
+                    t->stop_reason = "line absent/ambiguous; motors stopped";
+                }
+                /* Reset navigation faults/search timeouts so fresh steering can recover. */
+                unsigned state = t->line.data[1] & 7u;
+                if (state == LINE_BARCODE_FAULT || state == LINE_BARCODE_PAUSED ||
+                    state == LINE_BARCODE_JUNCTION) (void)line_service_enable(true);
+            } else {
+                t->stop_reason = "line snapshot failed; motors stopped";
+            }
+            if (line_valid) {
+                t->stop_reason = reason;
+                apply_follow_pwm(t, left, right, now);
+            } else {
+                drv_motor_stop();
+                t->left = t->right = 0.0f;
+                t->pwm_clock_started = false;
+            }
+        }
+        goto report_status;
+    }
+    if (t->phase == RUNNING || t->phase == SETTLING || t->phase == LINE_WAIT ||
+        (t->phase == PAUSED && t->started_once)) {
+        const char *reason = imu_status_reason(t, now);
+        if (reason == NULL && t->imu.read_errors != t->imu_errors)
+            reason = "IMU read-error count changed";
+        if (reason != NULL) {
+            t->imu_fault = true;
+            stop_test(t, reason, S1_STATE_FAULT);
+            /* Capture the triggering values once, after stopping motors.
+             * Later live samples may recover to NORMAL; they must not
+             * obscure the event/error that latched this stop. */
+            tm_printf((UB *)"[ALL TEST] IMU stop data: api=%d age=%lu ms samples=%lu ok=%d calibrated=%d motion=%d event=%d errors=%lu baseline_errors=%lu\n",
+                      t->imu_er, (unsigned long)(now - t->imu_updated),
+                      (unsigned long)t->imu_count, t->imu.sensor_ok, t->imu.calibrated,
+                      t->imu.motion_state, t->imu.event,
+                      (unsigned long)t->imu.read_errors, (unsigned long)t->imu_errors);
+            tm_printf((UB *)"[ALL TEST] IMU stop acceleration=(%d,%d,%d)mg baseline=(%d,%d,%d)mg\n",
+                      t->imu.ax_mg, t->imu.ay_mg, t->imu.az_mg,
+                      t->imu.baseline_ax_mg, t->imu.baseline_ay_mg, t->imu.baseline_az_mg);
+        }
     }
     if (t->phase == WAITING) {
         if ((uint32_t)(now - t->boot) >= ALL_READY_MS) {
@@ -214,10 +359,15 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
             t->phase = RUNNING;
         }
     }
-    if (t->phase == RUNNING) {
+    if (t->phase == RUNNING || t->phase == LINE_WAIT) {
         if (t->line_er < E_OK) {
             stop_test(t, "line snapshot stale/failed", S1_STATE_FAULT);
-        } else {
+        } else if ((t->line.data[1] & 7u) == LINE_BARCODE_FAULT) {
+            /* A newer fault must win over an older queued LOST event.
+             * Never clear a sensor/queue/timing fault through auto-resume. */
+            stop_test(t, "line sensor fault", S1_STATE_FAULT);
+        } else if (t->phase == RUNNING) {
+            bool lost_event = false;
             for (unsigned i = 0u; i < 24u; ++i) {
                 line_barcode_msg_t event;
                 ER er = line_service_receive(&event, TMO_POL);
@@ -226,9 +376,15 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
                     stop_test(t, "line queue failed", S1_STATE_FAULT); break;
                 }
                 unsigned code = (event.data[1] >> 3u) & 7u;
-                if (code == LINE_BARCODE_EVT_LOST || code == LINE_BARCODE_EVT_FAULT ||
-                    code == LINE_BARCODE_EVT_JUNCTION || code == LINE_BARCODE_EVT_COMMAND) {
-                    stop_test(t, "line lost, fault, or junction", S1_STATE_FAULT); break;
+                if (code == LINE_BARCODE_EVT_LOST) {
+                    lost_event = true;
+                    drv_motor_stop();
+                    t->left = t->right = 0.0f;
+                    continue; /* Drain newer faults before resetting S3. */
+                }
+                if (code == LINE_BARCODE_EVT_FAULT || code == LINE_BARCODE_EVT_JUNCTION ||
+                    code == LINE_BARCODE_EVT_COMMAND) {
+                    stop_test(t, "line fault or junction", S1_STATE_FAULT); break;
                 }
                 if (code == LINE_BARCODE_EVT_BARCODE) {
                     unsigned letter = event.data[2] & LINE_BARCODE_LETTER_MASK;
@@ -242,22 +398,54 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
             }
             unsigned state = t->line.data[1] & 7u;
             if (t->phase == RUNNING) {
-                if (state == LINE_BARCODE_FAULT || state == LINE_BARCODE_SEARCH ||
-                    state == LINE_BARCODE_PAUSED || state == LINE_BARCODE_JUNCTION) {
-                    stop_test(t, "line lost, fault, or junction", S1_STATE_FAULT);
-                } else if (line_follow_output(t->line.data[0], ALL_TEST_LINE_LAYOUT,
-                                             ALL_BASE_PWM, ALL_INNER_PWM,
-                                             &t->left, &t->right)) {
-                    drv_motor_set(t->left, t->right);
+                if (state == LINE_BARCODE_PAUSED || state == LINE_BARCODE_JUNCTION) {
+                    stop_test(t, "line paused unexpectedly or junction", S1_STATE_FAULT);
+                } else if (lost_event || state == LINE_BARCODE_SEARCH) {
+                    wait_for_line(t);
                 } else {
-                    stop_test(t, "line absent or ambiguous L/C/R pattern", S1_STATE_FAULT);
+                    float left, right;
+                    if (line_follow_output(t->line.data[0], ALL_TEST_LINE_LAYOUT,
+                                            ALL_BASE_PWM, ALL_INNER_PWM, &left, &right)) {
+                        apply_follow_pwm(t, left, right, now);
+                    } else {
+                        unsigned sensors = t->line.data[0] & LINE_BARCODE_SENSOR_MASK;
+                        bool absent = ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_SIDE ?
+                                      (sensors & 3u) == 0u : sensors == 0u;
+                        if (absent) wait_for_line(t);
+                        else stop_test(t, "ambiguous L/C/R pattern or junction", S1_STATE_FAULT);
+                    }
                 }
             }
         }
     }
+    if (t->phase == LINE_WAIT) {
+        float left, right;
+        uint8_t sensors = t->line.data[0] & LINE_BARCODE_SENSOR_MASK;
+        bool valid = line_follow_output(sensors, ALL_TEST_LINE_LAYOUT,
+                                        ALL_BASE_PWM, ALL_INNER_PWM, &left, &right);
+        if (!valid) {
+            t->line_candidate_valid = false;
+        } else if (!t->line_candidate_valid || t->line_candidate != sensors) {
+            t->line_candidate = sensors;
+            t->line_candidate_valid = true;
+            t->line_valid_since = now;
+        } else if ((uint32_t)(now - t->line_valid_since) >= ALL_LINE_REACQUIRE_MS) {
+            if (line_service_enable(true) < E_OK) {
+                stop_test(t, "line recovery enable failed", S1_STATE_FAULT);
+            } else {
+                t->phase = SETTLING;
+                t->settled = now;
+                t->line_candidate_valid = false;
+                t->stop_reason = NULL;
+                t->force_status = true;
+                tm_printf((UB *)"[ALL TEST] black line stable; automatically resuming\n");
+            }
+        }
+    }
+report_status:
     if ((uint32_t)(now - t->last_report) >= 500u) {
         unsigned sensors = t->line.data[0] & 7u;
-        tm_printf((UB *)"[ALL TEST] phase=%u L=%u C=%u R=%u line_er=%d IMU ok=%d calibrated=%d state=%d samples=%lu PWM=%d/%d ticks=%ld/%ld height=%umm valid=%d stop=%s\n",
+        tm_printf((UB *)"[ALL TEST] phase=%u L=%u C=%u R=%u line_er=%d IMU ok=%d calibrated=%d state=%d samples=%lu PWM=%d/%d ticks=%ld/%ld height=%umm valid=%d status=%s\n",
                   t->phase, (UINT)((sensors >> 2u) & 1u), (UINT)((sensors >> 1u) & 1u),
                   (UINT)(sensors & 1u), t->line_er, t->imu.sensor_ok,
                   t->imu.calibrated, t->imu.motion_state, (unsigned long)t->imu_count,
@@ -277,9 +465,11 @@ static void all_task(INT stacd, void *exinf)
     (void)stacd;
     (void)exinf;
     tm_printf((UB *)"[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU\n"
-              "[ALL TEST] keep stationary for IMU calibration; starts after 5s when ready\n"
+              "[ALL TEST] keep stationary for IMU calibration; starts after 5s\n"
               "[ALL TEST] 30%% PWM; GP7=left GP27=centre GP0=right; 1=black\n"
               "[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders\n");
+    tm_printf((UB *)"[ALL TEST] sensor response=%s; missing/invalid line stops motors; valid black auto-resumes; manual pause remains active\n",
+              ALL_TEST_CONTINUE_ON_SENSOR ? "LOG ONLY (keep motors moving)" : "STOP/RECOVER");
     tm_printf((UB *)"[ALL TEST] layout=%s\n",
               ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_TRACK ?
               "TRACK (three line sensors; barcode decoding disabled)" : "SIDE (offset scanner)");
@@ -291,17 +481,20 @@ static void all_task(INT stacd, void *exinf)
     test.boot = now.lo;
     last_control = now.lo - LINE_BARCODE_PERIOD_MS;
     test.duration_ms = ALL_TEST_DURATION_MS;
+    test.pwm_ramp_per_second = ALL_TEST_PWM_RAMP_PER_SECOND;
+    tm_printf((UB *)"[ALL TEST] smooth motor start: 0 to 30%% in about 300ms; sensor detections are report-only in continuous mode\n");
     drv_encoder_get_counts(&test.left_ticks, &test.right_ticks);
     wheel_odometry_init(&test.odometry, S2_LEFT_TICKS_PER_CM,
                         S2_RIGHT_TICKS_PER_CM, test.left_ticks, test.right_ticks);
     if (!test.odometry.available)
         tm_printf((UB *)"[ALL TEST] height/distance unavailable: set measured S2_LEFT/RIGHT_TICKS_PER_CM; raw ticks are logged\n");
-    tm_printf((UB *)"[ALL TEST] run limit=%lu ms (0=continuous while sensors are healthy)\n",
+    tm_printf((UB *)"[ALL TEST] run limit=%lu ms (0=continuous)\n",
               (unsigned long)test.duration_ms);
     test.force_status = true;
     for (;;) {
         drv_encoder_poll();
         if (tk_get_tim(&now) < E_OK) {
+            drv_motor_stop();
             stop_test(&test, "clock failed", S1_STATE_FAULT);
             tk_slp_tsk(TMO_FEVR);
             return;
@@ -311,6 +504,7 @@ static void all_task(INT stacd, void *exinf)
             last_control = now.lo;
         }
         if (tk_dly_tsk(S2_ENCODER_POLL_MS) < E_OK) {
+            drv_motor_stop();
             stop_test(&test, "control wait failed", S1_STATE_FAULT);
             tk_slp_tsk(TMO_FEVR);
             return;
