@@ -38,7 +38,43 @@ typedef struct {
     line_barcode_msg_t line;
     ER imu_er, line_er;
     float left, right;
+    bool straight_sample;
+    uint32_t straight_since;
+    int32_t straight_left, straight_right;
 } ALL_TEST;
+
+/* Observe only uninterrupted straight commands. Raw counts are signed;
+ * distance uses magnitudes because encoder mounting can reverse polarity.
+ * This is a measurement, not a claim of equal wheel revolutions. */
+static void report_straight_balance(ALL_TEST *t, uint32_t now)
+{
+    if (t->phase != RUNNING || t->left <= 0.0f || t->left != t->right) {
+        t->straight_sample = false;
+        return;
+    }
+    if (!t->straight_sample) {
+        t->straight_sample = true;
+        t->straight_since = now;
+        t->straight_left = t->left_ticks;
+        t->straight_right = t->right_ticks;
+        return;
+    }
+    uint32_t elapsed = now - t->straight_since;
+    if (elapsed < 500u) return;
+    int64_t dl = (int64_t)t->left_ticks - t->straight_left;
+    int64_t dr = (int64_t)t->right_ticks - t->straight_right;
+    float left = (float)(dl < 0 ? -dl : dl) / S2_LEFT_TICKS_PER_CM;
+    float right = (float)(dr < 0 ? -dr : dr) / S2_RIGHT_TICKS_PER_CM;
+    tm_printf((UB *)"[STRAIGHT CHECK] dt=%lu ms delta_ticks=%ld/%ld speed_mm_s=%ld/%ld ahead=%s (distance calibration; not revolutions)\n",
+              (unsigned long)elapsed, (long)dl, (long)dr,
+              (long)(left * 10000.0f / elapsed),
+              (long)(right * 10000.0f / elapsed),
+              dl == 0 || dr == 0 ? "encoder/motor missing movement" :
+              left > right ? "left" : right > left ? "right" : "equal");
+    t->straight_since = now;
+    t->straight_left = t->left_ticks;
+    t->straight_right = t->right_ticks;
+}
 
 static float approach_pwm(float current, float target, float step)
 {
@@ -49,6 +85,7 @@ static float approach_pwm(float current, float target, float step)
 
 static void apply_follow_pwm(ALL_TEST *t, float left, float right, uint32_t now)
 {
+    if (left != right) t->straight_sample = false;
     uint32_t elapsed = t->pwm_clock_started ? now - t->pwm_updated : LINE_BARCODE_PERIOD_MS;
     /* A delayed cycle/resume must not turn into a sudden full-power step. */
     if (elapsed > 2u * LINE_BARCODE_PERIOD_MS) elapsed = 2u * LINE_BARCODE_PERIOD_MS;
@@ -443,6 +480,7 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
         }
     }
 report_status:
+    report_straight_balance(t, now);
     if ((uint32_t)(now - t->last_report) >= 500u) {
         unsigned sensors = t->line.data[0] & 7u;
         tm_printf((UB *)"[ALL TEST] phase=%u L=%u C=%u R=%u line_er=%d IMU ok=%d calibrated=%d state=%d samples=%lu PWM=%d/%d ticks=%ld/%ld height=%umm valid=%d status=%s\n",
