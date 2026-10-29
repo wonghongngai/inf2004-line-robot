@@ -6,13 +6,15 @@
 /* Enter measured black/white GPIO masks before enabling integrated motion.
    Left=bit2, centre=bit1, right=bit0. No assumed sensor polarity. */
 #ifndef S2_LINE_CALIBRATION_READY
-#define S2_LINE_CALIBRATION_READY 0
+#define S2_LINE_CALIBRATION_READY 1
 #endif
 #define S2_LINE_BLACK_RAW 7u
 #define S2_LINE_WHITE_RAW 0u
 #define S2_LINE_LAYOUT LINE_BARCODE_LAYOUT_SIDE
 #define S2_ROBOT_START_MS 5000u
 #define S2_IMU_STALE_MS 100u
+#define S2_LINE_UNSAFE_MS 200u
+#define S2_LINE_REARM_MS 1000u
 #define S2_ROBOT_TURN_TIMEOUT_MS 10000u
 #define S2_DEMO_TIMEOUT_MS 15000u
 

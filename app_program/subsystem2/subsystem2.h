@@ -45,7 +45,8 @@
 #define S2_ANGLE_TOLERANCE_DEG               2.0f
 #define S2_ENCODER_STALL_TIMEOUT_MS          500U
 
-/* PID gains are deliberately not guessed.  Tune these on the real vehicle. */
+/* PID gains are deliberately not guessed.  Tune these on the real vehicle.
+   KP stays 0 until the left encoder's counting direction is confirmed. */
 #define S2_PID_KP                            0.0f
 #define S2_PID_KI                            0.0f
 #define S2_PID_KD                            0.0f

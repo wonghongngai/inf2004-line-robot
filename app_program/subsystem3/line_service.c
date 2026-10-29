@@ -355,9 +355,10 @@ ER line_service_start(void)
         task_cfg.tskatr = TA_HLNG | TA_RNG3;
 #if TK_SUPPORT_SMP
         task_cfg.tskatr |= TA_ASSPRC;
-#if APP_ALL_TEST
-        /* Radio/lwIP runs at higher priority on core 0. Keep the motor
-         * test's 10 ms sensor heartbeat on core 1, away from network work. */
+#if APP_ALL_TEST || APP_ROBOT_INTEGRATED
+        /* Radio/lwIP runs at higher priority on core 0 and can hold it for
+         * seconds during bring-up. Keep the 10 ms sensor heartbeat on core 1,
+         * away from network work, whenever the motors depend on it. */
         task_cfg.assprc = TP_PRC2;
 #else
         task_cfg.assprc = TP_PRC1;

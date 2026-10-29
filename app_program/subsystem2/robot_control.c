@@ -6,19 +6,92 @@
 #include "../subsystem3/line_service.h"
 #include "../subsystem4/subsystem4.h"
 
-static bool armed, halted, turning, configured;
+static bool armed, halted, line_halt, turning, configured;
 static uint32_t last_imu_sample, imu_count, imu_errors, resumed_at, turn_started;
+static uint32_t rearm_since;
+static int32_t rearm_l, rearm_r;
 
-static void halt(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r,
-                 const char *reason)
+/* Line stops (lost, unmapped junction, bad snapshot) may re-arm by
+   themselves; any other stop is a safety stop and latches until reboot. */
+static void stop_robot(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l,
+                       int32_t r, const char *reason, bool recoverable)
 {
     MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
     (void)motion_control_command(ctl, &stop, now, l, r);
     if (!halted) {
         (void)line_service_enable(false);
-        tm_printf((UB *)"[ROBOT] stopped: %s; reboot to re-arm\n", reason);
+        tm_printf((UB *)"[ROBOT] stopped: %s; %s\n", reason,
+                  recoverable ? "re-arms when back on the line"
+                              : "reboot to re-arm");
+        line_halt = recoverable;
+        rearm_since = now;
+        rearm_l = l;
+        rearm_r = r;
+    } else if (!recoverable) {
+        line_halt = false;
     }
     halted = true;
+}
+
+static void halt(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r,
+                 const char *reason)
+{
+    stop_robot(ctl, now, l, r, reason, false);
+}
+
+static void halt_line(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l,
+                      int32_t r, const char *reason)
+{
+    stop_robot(ctl, now, l, r, reason, true);
+}
+
+/* Paused S3 snapshots still carry calibrated sensor bits. Re-arm only after
+   centre and right have both seen black, with the wheels still, for
+   S2_LINE_REARM_MS; moving the robot by hand restarts the wait. */
+static bool line_rearm_ready(uint32_t now, int32_t l, int32_t r)
+{
+    line_barcode_msg_t msg = {{0u, 0u, 0u}};
+    bool ready = line_service_snapshot(&msg) >= E_OK &&
+                 (msg.data[0] & 3u) == 3u && l == rearm_l && r == rearm_r;
+
+    if (!ready) {
+        rearm_since = now;
+        rearm_l = l;
+        rearm_r = r;
+        return false;
+    }
+    return (uint32_t)(now - rearm_since) >= S2_LINE_REARM_MS;
+}
+
+static bool line_unsafe_active;
+static uint32_t line_unsafe_since;
+
+/* A FAULT stops at once. Stale, paused, searching or absent-position
+   snapshots must persist for S2_LINE_UNSAFE_MS before stopping, so one late
+   or debouncing sample cannot latch a stop. S3 queues LOST after 100 ms. */
+static bool line_snapshot_ok(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l,
+                             int32_t r, ER er, const line_barcode_msg_t *msg,
+                             bool need_position)
+{
+    unsigned state = msg->data[1] & 7u;
+    unsigned pos = (msg->data[0] >> 3u) & 7u;
+    bool fault = er >= E_OK && state == LINE_BARCODE_FAULT;
+
+    if (er >= E_OK && !fault && state != LINE_BARCODE_SEARCH &&
+        state != LINE_BARCODE_PAUSED && (!need_position || pos < 6u)) {
+        line_unsafe_active = false;
+        return true;
+    }
+    if (!line_unsafe_active) {
+        line_unsafe_active = true;
+        line_unsafe_since = now;
+    }
+    if (fault || (uint32_t)(now - line_unsafe_since) >= S2_LINE_UNSAFE_MS) {
+        tm_printf((UB *)"[ROBOT] line er=%d state=%u pos=%u sensors=%u\n",
+                  (int)er, state, pos, (unsigned)(msg->data[0] & 7u));
+        halt_line(ctl, now, l, r, "line snapshot unsafe or stale");
+    }
+    return false;
 }
 
 void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
@@ -29,7 +102,22 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
     ER er;
 
     if (halted) {
-        halt(ctl, now, l, r, "latched stop");
+        if (!line_halt || !line_rearm_ready(now, l, r)) {
+            cmd = (MOTION_COMMAND){MOTION_CMD_STOP, 0.0f};
+            (void)motion_control_command(ctl, &cmd, now, l, r);
+            return;
+        }
+        halted = false;
+        line_halt = false;
+        turning = false;
+        er = line_service_enable(true);
+        if (er < E_OK) {
+            halt(ctl, now, l, r, "line resume failed");
+            return;
+        }
+        resumed_at = now;
+        line_unsafe_active = false;
+        tm_printf((UB *)"[ROBOT] line found, re-armed\n");
         return;
     }
     if (ctl->status.state == MOTION_STATE_FAULT) {
@@ -86,6 +174,7 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
             turning = false;
             er = line_service_enable(true);
             resumed_at = now;
+            line_unsafe_active = false;
             if (er < E_OK) halt(ctl, now, l, r, "line resume failed");
         }
         return;
@@ -95,12 +184,7 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
 
     /* A newer snapshot fault must win over an older queued turn command. */
     er = line_service_snapshot(&msg);
-    if (er < E_OK || (msg.data[1] & 7u) == LINE_BARCODE_FAULT ||
-        (msg.data[1] & 7u) == LINE_BARCODE_SEARCH ||
-        (msg.data[1] & 7u) == LINE_BARCODE_PAUSED) {
-        halt(ctl, now, l, r, "line snapshot unsafe or stale");
-        return;
-    }
+    if (!line_snapshot_ok(ctl, now, l, r, er, &msg, false)) return;
 
     /* Drain events with a fixed budget so control cannot starve. */
     for (unsigned i = 0; i < 24u; ++i) {
@@ -113,7 +197,7 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         uint8_t event = (msg.data[1] >> 3u) & 7u;
         if (event == LINE_BARCODE_EVT_LOST || event == LINE_BARCODE_EVT_FAULT ||
             event == LINE_BARCODE_EVT_JUNCTION) {
-            halt(ctl, now, l, r, "line lost, fault, or unmapped junction");
+            halt_line(ctl, now, l, r, "line lost, fault, or unmapped junction");
             return;
         }
         if (event == LINE_BARCODE_EVT_COMMAND) {
@@ -140,13 +224,8 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         }
     }
     er = line_service_snapshot(&msg);
-    unsigned state = msg.data[1] & 7u;
+    if (!line_snapshot_ok(ctl, now, l, r, er, &msg, true)) return;
     unsigned pos = (msg.data[0] >> 3u) & 7u;
-    if (er < E_OK || state == LINE_BARCODE_FAULT || state == LINE_BARCODE_PAUSED ||
-        state == LINE_BARCODE_SEARCH || pos >= 6u) {
-        halt(ctl, now, l, r, "line snapshot unsafe or stale");
-        return;
-    }
     cmd.type = MOTION_CMD_FOLLOW_LINE;
     /* S3's positions increase from far-left to far-right. */
     cmd.value = pos <= 4u ? ((float)pos - 2.0f) * 0.5f : 0.0f;
