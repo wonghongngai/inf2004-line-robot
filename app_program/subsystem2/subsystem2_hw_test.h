@@ -7,7 +7,7 @@
 #define S2_MOTOR_HW_TEST 0
 #endif
 
-#define S2_HW_TEST_PWM_PERCENT 40.0f
+#define S2_HW_TEST_PWM_PERCENT 20.0f
 #define S2_HW_TEST_RUN_MS      750U
 #define S2_HW_TEST_PAUSE_MS    1500U
 #define S2_HW_TEST_START_MS    5000U

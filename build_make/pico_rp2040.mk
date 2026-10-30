@@ -106,8 +106,10 @@ $(error motor_test physically drives motors; use TEST=0)
 endif
 endif
 ifeq ($(ROBOT_MODE),all_test)
+ifneq ($(ALL_TEST_OFFLINE),1)
 ifneq ($(NET)$(MQTT),lwip1)
 $(error all_test requires NET=lwip MQTT=1)
+endif
 endif
 endif
 ifneq ($(filter barcode_test line_follow_test all_test,$(ROBOT_MODE)),)

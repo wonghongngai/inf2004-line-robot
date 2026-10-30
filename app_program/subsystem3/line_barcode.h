@@ -14,7 +14,12 @@
 #define LINE_BARCODE_PERIOD_MS       10u
 #define LINE_BARCODE_DEBOUNCE        2u
 #define LINE_BARCODE_LOST_MS         100u
+#if defined(APP_ALL_TEST) && APP_ALL_TEST
+/* Combined hardware trial: no line-search deadline. */
+#define LINE_BARCODE_SEARCH_MS       0u
+#else
 #define LINE_BARCODE_SEARCH_MS       2000u
+#endif
 #define LINE_BARCODE_RUN_MAX_MS      1000u
 #define LINE_BARCODE_QUIET_MS        100u
 /* SIDE cross-junction: scanner black for 4.5 narrow widths of the last

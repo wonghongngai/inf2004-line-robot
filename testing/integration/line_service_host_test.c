@@ -2,6 +2,7 @@
 #include "robot_host_stubs.h"
 #include <assert.h>
 #include <stdio.h>
+#define tm_printf(...) ((void)0)
 #define APP_ALL_TEST 1
 #define TK_SUPPORT_SMP 1
 #define TASK_STACK_SIZE 2048

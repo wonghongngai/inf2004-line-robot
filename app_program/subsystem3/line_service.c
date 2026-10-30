@@ -267,6 +267,10 @@ static void line_service_task(INT start_code, void *p_extra)
     line_barcode_ctx_t context;
     SYSTIM now = {0};
     uint32_t previous_ms = 0u;
+#if APP_ALL_TEST
+    unsigned previous_inputs = 0xffu;
+    unsigned previous_filtered = 0xffu;
+#endif
     ER result = gpio_set_pin(LINE_SERVICE_PIN_LEFT, GPIO_MODE_IN);
     (void)start_code;
     (void)p_extra;
@@ -297,7 +301,8 @@ static void line_service_task(INT start_code, void *p_extra)
                 g_control_flags &= (uint8_t)~SERVICE_FLAG_RESET;
             }
             g_sample_ms = now.lo;
-            uint8_t sensors = (uint8_t)(~(read_sensors() ^ g_black_raw) & 7u);
+            uint8_t raw_inputs = read_sensors();
+            uint8_t sensors = (uint8_t)(~(raw_inputs ^ g_black_raw) & 7u);
             line_barcode_msg_t msg = line_barcode_pack(sensors, 6u, 0u,
                 LINE_BARCODE_PAUSED, LINE_BARCODE_EVT_STATUS, 0u);
             if ((E_OK == result)
@@ -314,6 +319,22 @@ static void line_service_task(INT start_code, void *p_extra)
             }
             publish_sample(msg);
             (void)tk_unl_mtx(g_h_line_mutex);
+#if APP_ALL_TEST
+            /* Report transitions outside the shared mutex. Raw is the
+             * sampled GPIO level; filtered is the published black bit.
+             * Pulses shorter than the sampling interval may still be missed. */
+            unsigned inputs = raw_inputs & 3u;
+            unsigned filtered = msg.data[0] & 3u;
+            if (inputs != previous_inputs || filtered != previous_filtered) {
+                tm_printf((UB *)"[IR RAW] ms=%lu dt=%lu GP27=%u GP0=%u filtered_C=%u filtered_R=%u state=%u\n",
+                          (unsigned long)now.lo, (unsigned long)elapsed_ms,
+                          (unsigned)((inputs >> 1u) & 1u), (unsigned)(inputs & 1u),
+                          (unsigned)((filtered >> 1u) & 1u), (unsigned)(filtered & 1u),
+                          (unsigned)(msg.data[1] & 7u));
+                previous_inputs = inputs;
+                previous_filtered = filtered;
+            }
+#endif
         }
     }
 }

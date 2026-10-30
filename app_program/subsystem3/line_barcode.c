@@ -533,12 +533,14 @@ line_barcode_msg_t line_barcode_step(line_barcode_ctx_t *p_ctx,
     {
         event = junction_event;
     }
+#if LINE_BARCODE_SEARCH_MS > 0
     if (p_ctx->search_ms >= LINE_BARCODE_SEARCH_MS)
     {
         p_ctx->state = LINE_BARCODE_FAULT;
         event = LINE_BARCODE_EVT_FAULT;
         fault = LINE_BARCODE_ERR_LINE;
     }
+#endif
     /* During short gaps/search, retain the last steering direction. */
     if (6u == position)
     {
