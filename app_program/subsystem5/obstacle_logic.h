@@ -10,7 +10,54 @@
 #include <tk/tkernel.h>     /* UW, UB, BOOL */
 #include "drv_ultrasonic.h" /* ultrasonic_status_t */
 
+/* Scan geometry (FR5-1, FR5-2) */
+#define SCAN_MIN_DEG    (30U)  /* scans never go outside 30..150 deg     */
+#define SCAN_MAX_DEG    (150U)
+#define FINE_STEP_DEG   (5U)   /* FR5-2                                  */
+#define FINE_MARGIN_DEG (15U)  /* half the coarse spacing: an edge may be
+                                  up to 15 deg beyond the last hit       */
+#define FINE_MAX_POINTS (((SCAN_MAX_DEG - SCAN_MIN_DEG) / FINE_STEP_DEG) + 1U)
+
+/* NFR5-3 budget: ~80 ms per fine point (measured 2026-11-01: 22 points
+ * took 2299 ms with the 570 ms coarse scan).  At most 15 points (~1.2 s)
+ * + coarse 0.57 s keeps detection -> decision under 2 s. */
+#define FINE_BUDGET_POINTS (15U)
+#define FINE_HALF_SPAN_DEG (((FINE_BUDGET_POINTS - 1U) / 2U) * FINE_STEP_DEG)
+
 #define D_DETECT_MM (300U) /* NFR5-1: detect at >= 30 cm [VERIFY speed] */
+
+/* A reading counts as "something there" for profiling below this.
+ * Further than this is treated as clear.  600 mm, not 300: the sides of
+ * an obstacle 30 cm ahead are further away. [VERIFY with real obstacles] */
+#define D_PROFILE_MM (600U)
+
+typedef struct
+{
+    UW                  angle_deg;
+    UW                  distance_mm;
+    ultrasonic_status_t status;
+} scan_point_t;
+
+/**
+ * Choose the fine-scan window from a coarse scan: from (first hit - 15)
+ * to (last hit + 15), limited to SCAN_MIN_DEG..SCAN_MAX_DEG.
+ * A hit is an ULTRASONIC_OK reading under D_PROFILE_MM.
+ * If that window has more than FINE_BUDGET_POINTS points, it is instead
+ * the closest hit +/- FINE_HALF_SPAN_DEG (also limited to 30..150).
+ * @return FALSE if there are no hits (obstacle gone: skip the fine scan).
+ */
+IMPORT BOOL fine_scan_window(const scan_point_t * p_coarse, UW count,
+                             UW * p_start_deg, UW * p_end_deg);
+
+/**
+ * Smooth a scan by replacing each distance with the median of itself and
+ * its two neighbours, but only where all three are ULTRASONIC_OK.
+ * Invalid points and the two end points are copied unchanged, so no
+ * reading is ever invented (NFR5-5).
+ * p_in and p_out must be different arrays of 'count' points.
+ */
+IMPORT void scan_median3(const scan_point_t * p_in, scan_point_t * p_out,
+                         UW count);
 
 /**
  * Add one reading to the 3-reading history and report whether an

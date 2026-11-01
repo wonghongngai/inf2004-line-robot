@@ -18,13 +18,6 @@ typedef enum
  * reading comes first; total travel 180 deg. */
 static const UW g_coarse_angles_deg[COARSE_COUNT] = {90U, 60U, 30U, 120U, 150U};
 
-typedef struct
-{
-    UW                  angle_deg;
-    UW                  distance_mm;
-    ultrasonic_status_t status;
-} scan_point_t;
-
 /* One coarse scan: move, settle, ping at each angle.  No printing
  * inside: printing takes time and would spoil the timing (NFR5-2). */
 static void coarse_scan(scan_point_t * p_points)
@@ -39,6 +32,26 @@ static void coarse_scan(scan_point_t * p_points)
         p_points[index].status    = ultrasonic_measure_mm(
             ULTRASONIC_WINDOW_SCAN_MS, &p_points[index].distance_mm);
     }
+}
+
+static UW fine_scan(UW start_deg, UW end_deg, scan_point_t * p_points)
+{
+    UW angle_deg;
+    UW count = 0U;
+
+    for (angle_deg = start_deg;
+         (angle_deg <= end_deg) && (count < FINE_MAX_POINTS);
+         angle_deg += FINE_STEP_DEG)
+    {
+        servo_move_and_settle(angle_deg);
+
+        p_points[count].angle_deg = angle_deg;
+        p_points[count].status    = ultrasonic_measure_mm(
+            ULTRASONIC_WINDOW_SCAN_MS, &p_points[count].distance_mm);
+        count++;
+    }
+
+    return count;
 }
 
 static const char * status_name(ultrasonic_status_t status)
@@ -58,12 +71,17 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
 {
     s5_state_t          state   = S5_MONITORING;
     UB                  history = 0U;
-    scan_point_t        points[COARSE_COUNT];
+    static scan_point_t points[COARSE_COUNT];
+    static scan_point_t fine_raw[FINE_MAX_POINTS];
+    static scan_point_t fine[FINE_MAX_POINTS];
     ultrasonic_status_t status;
     UW                  distance_mm;
     UW                  index;
     UW                  t0_us;
     UW                  scan_ms;
+    UW                  fine_count;
+    UW                  start_deg;
+    UW                  end_deg;
 
     /* To hide unused warnings */
     (void)stacd;
@@ -99,17 +117,35 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
             case S5_SCANNING:
                 t0_us = rp2040_time_us();
                 coarse_scan(points);
-                scan_ms = (rp2040_time_us() - t0_us) / 1000U;
-                servo_move_and_settle(SERVO_ANGLE_CENTRE_DEG);
 
-                for (index = 0U; index < COARSE_COUNT; index++)
+                if (!fine_scan_window(points, COARSE_COUNT, &start_deg,
+                                      &end_deg))
                 {
-                    tm_printf((UB *)"S5: %3u deg %4u mm %s\n",
-                              points[index].angle_deg,
-                              points[index].distance_mm,
-                              status_name(points[index].status));
+                    /* Nothing anymore, false alarm or obstacle moved */
+                    servo_move_and_settle(SERVO_ANGLE_CENTRE_DEG);
+                    tm_printf((UB *)"S5: no obstacle in coarse scan\n");
                 }
-                tm_printf((UB *)"S5: coarse scan %u ms\n", scan_ms);
+                else
+                {
+                    fine_count = fine_scan(start_deg, end_deg, fine_raw);
+                    scan_ms    = (rp2040_time_us() - t0_us) / 1000U;
+                    servo_move_and_settle(SERVO_ANGLE_CENTRE_DEG);
+
+                    scan_median3(fine_raw, fine, fine_count);
+
+                    tm_printf((UB *)"S5: fine %u..%u deg, %u points\n",
+                              start_deg, end_deg, fine_count);
+
+                    for (index = 0U; index < fine_count; index++)
+                    {
+                        tm_printf((UB *)"S5: %3u deg  raw %4u  med %4u  %s\n",
+                                  fine[index].angle_deg,
+                                  fine_raw[index].distance_mm,
+                                  fine[index].distance_mm,
+                                  status_name(fine[index].status));
+                    }
+                    tm_printf((UB *)"S5: coarse+fine %u ms\n", scan_ms);
+                }
 
                 /* Bench stand in */
                 tk_dly_tsk(RESUME_MS);
