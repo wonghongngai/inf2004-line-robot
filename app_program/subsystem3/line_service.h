@@ -42,6 +42,10 @@ ER line_service_set_layout(uint8_t layout);
 ER line_service_map_letter(char letter, uint8_t command);
 ER line_service_set_mapping(char left, char right, char straight, char uturn);
 ER line_service_clear_map(void);
+/* Current map entry for letter 0..25 (A=0): E_OK with *p_command set,
+ * E_NOEXS if unmapped, E_PAR on bad arguments. Any task.
+ */
+ER line_service_lookup(uint8_t letter, uint8_t *p_command);
 /* Returns E_TMOUT if the last sampling heartbeat is over 30 ms old.
  * Always check the return code before using a snapshot.
  */

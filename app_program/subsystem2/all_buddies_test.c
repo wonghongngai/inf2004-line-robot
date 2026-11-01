@@ -11,6 +11,7 @@
 #include "../subsystem4/subsystem4.h"
 
 enum { WAITING, SETTLING, RUNNING, PAUSED, STOPPED, LINE_WAIT };
+enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_START_MS       5000u
 #define ALL_READY_MS       15000u
 #define ALL_IMU_STALE_MS   100u
@@ -50,7 +51,14 @@ typedef struct {
     uint32_t white_clear_since;
     unsigned steering_action;
     unsigned white_report_pattern, white_report_action;
+    uint8_t pending_letter;          /* bit 7 = waiting, bits 4..0 = A=0..Z=25 */
+    unsigned turn_stage, turn_command;
+    uint32_t turn_started, turn_done;
+    int32_t turn_left0, turn_right0;
+    bool turn_done_valid;
 } ALL_TEST;
+
+static const char *const command_names[4] = {"LEFT", "RIGHT", "STRAIGHT", "U-TURN"};
 
 static float approach_pwm(float current, float target, float step)
 {
@@ -197,6 +205,104 @@ static bool corner_step(ALL_TEST *t, uint32_t now)
     return true;
 }
 
+/* S1 telemetry action for a decoded letter, from S3's current map. */
+static unsigned barcode_action(unsigned letter)
+{
+    uint8_t command;
+    if (line_service_lookup((uint8_t)letter, &command) != E_OK) return S1_BARCODE_NONE;
+    return command == LINE_BARCODE_CMD_LEFT ? S1_BARCODE_LEFT :
+           command == LINE_BARCODE_CMD_RIGHT ? S1_BARCODE_RIGHT :
+           command == LINE_BARCODE_CMD_STRAIGHT ? S1_BARCODE_STRAIGHT : S1_BARCODE_UTURN;
+}
+
+/* Left encoder direction is unconfirmed on hardware; use travelled magnitude. */
+static uint32_t tick_delta(int32_t now, int32_t start)
+{
+    int32_t delta = now - start;
+    return (uint32_t)(delta < 0 ? -delta : delta);
+}
+
+static void begin_turn_stage(ALL_TEST *t, unsigned stage)
+{
+    t->turn_stage = stage;
+    t->turn_left0 = t->left_ticks;
+    t->turn_right0 = t->right_ticks;
+}
+
+/* At a C/R-both-black junction, consume the stored letter. True when a
+ * mapped movement starts; false leaves the existing stop rule in charge. */
+static bool start_junction_turn(ALL_TEST *t, uint32_t now)
+{
+    uint8_t command;
+    if (!ALL_TEST_BARCODE_TURNS || (t->pending_letter & 0x80u) == 0u) return false;
+    unsigned letter = t->pending_letter & LINE_BARCODE_LETTER_MASK;
+    t->pending_letter = 0u;
+    if (line_service_lookup((uint8_t)letter, &command) != E_OK) {
+        tm_printf((UB *)"[ALL TEST] junction: letter '%c' has no mapping\n", 'A' + letter);
+        return false;
+    }
+    t->turn_command = command & 3u;
+    t->turn_started = now;
+    begin_turn_stage(t, TURN_ADVANCE);
+    t->stop_reason = "barcode junction movement";
+    t->force_status = true;
+    tm_printf((UB *)"[ALL TEST] junction: letter '%c' -> %s\n", 'A' + letter,
+              command_names[t->turn_command]);
+    return true;
+}
+
+static void finish_turn(ALL_TEST *t, uint32_t now)
+{
+    t->turn_stage = TURN_NONE;
+    t->turn_done = now;
+    t->turn_done_valid = true;
+    t->steering_action = 0u;
+    t->white_clear_pending = false;
+    t->white_reported = false;
+    t->stop_reason = NULL;
+    t->force_status = true;
+    tm_printf((UB *)"[ALL TEST] junction movement complete; white tracking resumes\n");
+}
+
+/* Sensors are ignored until the movement ends; IMU, queue and pause checks
+ * still run in all_test_step. */
+static void turn_step(ALL_TEST *t, uint32_t now)
+{
+    if ((uint32_t)(now - t->turn_started) >= ALL_TEST_TURN_TIMEOUT_MS) {
+        t->turn_stage = TURN_NONE;
+        stop_test(t, "junction movement timed out", S1_STATE_FAULT);
+        return;
+    }
+    if (t->turn_stage == TURN_ADVANCE) {
+        float advance = ALL_TEST_TURN_ADVANCE_CM * S2_RIGHT_TICKS_PER_CM;
+        if ((float)tick_delta(t->right_ticks, t->turn_right0) < advance) {
+            apply_follow_pwm(t, ALL_BASE_PWM, ALL_BASE_PWM, now);
+            return;
+        }
+        if (t->turn_command == LINE_BARCODE_CMD_STRAIGHT) {
+            finish_turn(t, now);
+            return;
+        }
+        begin_turn_stage(t, TURN_PIVOT);
+    }
+    /* Right pivot moves the left wheel; left pivot and U-turn the right. */
+    bool right_turn = t->turn_command == LINE_BARCODE_CMD_RIGHT;
+    float degrees = t->turn_command == LINE_BARCODE_CMD_UTURN ? 180.0f : 90.0f;
+    float target = degrees * (right_turn ? S2_LEFT_TURN_TICKS_PER_DEGREE :
+                                           S2_RIGHT_TURN_TICKS_PER_DEGREE);
+    uint32_t moved = right_turn ? tick_delta(t->left_ticks, t->turn_left0) :
+                                  tick_delta(t->right_ticks, t->turn_right0);
+    if ((float)moved >= target) {
+        finish_turn(t, now);
+    } else if (right_turn) {
+        t->right = 0.0f;
+        apply_follow_pwm(t, ALL_RIGHT_TURN_LEFT_PWM, 0.0f, now);
+    } else {
+        t->left = 0.0f;
+        apply_follow_pwm(t, 0.0f, ALL_BASE_PWM, now);
+    }
+}
+
 static void white_follow_step(ALL_TEST *t, uint32_t now)
 {
     unsigned sensors = t->line.data[0] & 3u; /* Ignore left entirely. */
@@ -231,7 +337,13 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
         t->white_report_pattern = sensors;
         t->white_report_action = action;
     }
-    if (sensors == 3u) {
+    if (sensors == 3u && t->turn_done_valid &&
+        (uint32_t)(now - t->turn_done) < ALL_TEST_TURN_SETTLE_MS) {
+        /* Still on the crossing just left by a movement. */
+        apply_follow_pwm(t, ALL_BASE_PWM, ALL_BASE_PWM, now);
+    } else if (sensors == 3u && start_junction_turn(t, now)) {
+        turn_step(t, now);
+    } else if (sensors == 3u) {
         stop_test(t, "centre and right both black", S1_STATE_FAULT);
     } else if (action == 1u) {
         t->right = 0.0f;
@@ -289,6 +401,7 @@ static void report_telemetry(ALL_TEST *t, uint32_t now)
     S1_TELEMETRY packet;
     unsigned state = t->phase == STOPPED ? t->terminal_state :
                      t->phase == LINE_WAIT ? S1_STATE_RECOVERING :
+                     t->phase == RUNNING && t->turn_stage != TURN_NONE ? S1_STATE_TURNING :
                      t->phase == RUNNING ? S1_STATE_FOLLOWING : S1_STATE_IDLE;
     unsigned sensors = t->line.data[0] & 7u;
     /* S3: L/C/R at bits 2/1/0; S1 wire protocol: L/C/R at bits 0/1/2. */
@@ -343,6 +456,7 @@ static void commands(ALL_TEST *t, uint32_t now)
                 t->last_side = 0;
                 t->white_clear_pending = false;
                 t->steering_action = 0u;
+                t->turn_stage = TURN_NONE;
                 if (line_service_enable(false) < E_OK && !ALL_TEST_CONTINUE_ON_SENSOR) {
                     stop_test(t, "pause failed", S1_STATE_FAULT);
                 } else {
@@ -378,6 +492,26 @@ static void commands(ALL_TEST *t, uint32_t now)
             break;
         }
     }
+    /* Barcode route map from MQTT; S3 keeps the old map on any rejection. */
+    for (unsigned i = 0u; i < S1_QUEUE_DEPTH; ++i) {
+        S1_MAPPING mapping;
+        unsigned char letters[S1_MAP_SLOTS];
+        INT len = subsystem1_receive_mapping(&mapping, TMO_POL);
+        if (len == E_TMOUT) break;
+        if (len != S1_MAPPING_BYTES || !s1_mapping_get(&mapping, letters) ||
+            line_service_set_mapping((char)('A' + letters[S1_MAP_LEFT]),
+                                     (char)('A' + letters[S1_MAP_RIGHT]),
+                                     (char)('A' + letters[S1_MAP_STRAIGHT]),
+                                     (char)('A' + letters[S1_MAP_UTURN])) < E_OK) {
+            tm_printf((UB *)"[ALL TEST] MQTT barcode map rejected (len=%d)\n", len);
+            if (len < E_OK) break;
+            continue;
+        }
+        tm_printf((UB *)"[ALL TEST] MQTT barcode map: %c=LEFT %c=RIGHT %c=STRAIGHT %c=U-TURN\n",
+                  'A' + letters[S1_MAP_LEFT], 'A' + letters[S1_MAP_RIGHT],
+                  'A' + letters[S1_MAP_STRAIGHT], 'A' + letters[S1_MAP_UTURN]);
+        t->force_status = true;
+    }
 }
 
 /* One step owns motor outputs, S3 events and the S1 command queue. The task
@@ -388,6 +522,7 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
     drv_encoder_get_counts(&t->left_ticks, &t->right_ticks);
     if (!wheel_odometry_step(&t->odometry, t->left_ticks, t->right_ticks,
                              t->phase == RUNNING && !t->corner_active &&
+                             t->turn_stage != TURN_PIVOT &&
                              (!ALL_TEST_WHITE_FOLLOW || (t->line.data[0] & 3u) == 0u),
                              &travelled_mm)) {
         stop_test(t, "encoder distance out of range; check calibration", S1_STATE_FAULT);
@@ -433,10 +568,7 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
                 unsigned code = (event.data[1] >> 3u) & 7u;
                 if (code == LINE_BARCODE_EVT_BARCODE) {
                     unsigned letter = event.data[2] & LINE_BARCODE_LETTER_MASK;
-                    t->barcode = letter == 0u ? S1_BARCODE_LEFT :
-                        letter == 1u ? S1_BARCODE_RIGHT :
-                        letter == 2u ? S1_BARCODE_STRAIGHT :
-                        letter == 25u ? S1_BARCODE_UTURN : S1_BARCODE_NONE;
+                    t->barcode = barcode_action(letter);
                     tm_printf((UB *)"[ALL TEST] barcode '%c' detected; continuing\n", 'A' + letter);
                 } else if (code != 0u) {
                     tm_printf((UB *)"[ALL TEST] line event=%u; continuing\n", code);
@@ -554,17 +686,20 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
                 }
                 if (code == LINE_BARCODE_EVT_BARCODE) {
                     unsigned letter = event.data[2] & LINE_BARCODE_LETTER_MASK;
-                    t->barcode = letter == 0u ? S1_BARCODE_LEFT :
-                        letter == 1u ? S1_BARCODE_RIGHT :
-                        letter == 2u ? S1_BARCODE_STRAIGHT :
-                        letter == 25u ? S1_BARCODE_UTURN : S1_BARCODE_NONE;
-                    tm_printf((UB *)"[ALL TEST] barcode '%c' detected (no automatic turn in test)\n",
-                              'A' + letter);
+                    unsigned action = barcode_action(letter);
+                    t->barcode = action;
+                    /* A newer barcode replaces any letter still waiting. */
+                    t->pending_letter = (uint8_t)(0x80u | letter);
+                    tm_printf((UB *)"[ALL TEST] barcode '%c' stored -> %s at next junction\n",
+                              'A' + letter, action == S1_BARCODE_NONE ? "no mapping" :
+                              command_names[action - S1_BARCODE_LEFT]);
                 }
             }
             unsigned state = t->line.data[1] & 7u;
             if (t->phase == RUNNING) {
-                if (ALL_TEST_WHITE_FOLLOW) {
+                if (t->turn_stage != TURN_NONE) {
+                    turn_step(t, now);
+                } else if (ALL_TEST_WHITE_FOLLOW) {
                     white_follow_step(t, now);
                 } else if (corner_step(t, now)) {
                     /* Corner helper owns PWM; common reporting still runs. */
@@ -650,6 +785,9 @@ static void all_task(INT stacd, void *exinf)
     tm_printf((UB *)"[ALL TEST] layout=%s\n",
               ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_TRACK ?
               "TRACK (three line sensors; barcode decoding disabled)" : "SIDE (offset scanner)");
+    tm_printf((UB *)"[ALL TEST] barcode map: %s\n", ALL_TEST_DEFAULT_MAP ?
+              "offline default A=LEFT B=RIGHT C=STRAIGHT Z=U-TURN (MQTT may replace)" :
+              "none until MQTT <client-id>/mapping arrives");
     if (tk_get_tim(&now) < E_OK) {
         drv_motor_stop();
         tk_slp_tsk(TMO_FEVR);
@@ -700,6 +838,10 @@ ER all_buddies_test_start(void)
     if (er == E_OK) er = line_service_init();
     if (er == E_OK) er = line_service_calibrate(7u, 0u);
     if (er == E_OK) er = line_service_set_layout(ALL_TEST_LINE_LAYOUT);
+#if ALL_TEST_DEFAULT_MAP
+    /* Offline bench map only; MQTT builds start unmapped. */
+    if (er == E_OK) er = line_service_set_mapping('A', 'B', 'C', 'Z');
+#endif
     if (er == E_OK) er = subsystem4_init();
     if (er == E_OK) er = subsystem1_start();
     if (er == E_OK) er = line_service_start();

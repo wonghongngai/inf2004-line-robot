@@ -6,7 +6,14 @@ Flash `build_make/mtk3pico_smp1_usb_cdc_all_test.uf2`.
 This profile combines S2 motors/encoders, S3 TRACK line sensing, and S4 IMU.
 S1 command/telemetry queues are initialized, but Wi-Fi and MQTT are disabled.
 Distance and hump-height calculations use the existing encoder calibration.
-Barcode decoding is disabled: GP7/GP27/GP0 are left/centre/right line inputs.
+Barcode decoding is on (SIDE layout): GP7 scans the offset barcode, GP27/GP0
+steer. A decoded letter is stored; at the next junction (centre and right both
+black) its mapped movement runs: forward `ALL_TEST_TURN_ADVANCE_CM`, then a
+90/180 degree one-wheel pivot from S2's turn calibration (STRAIGHT skips the
+pivot). No stored or unmapped letter keeps the old latched stop. Offline builds
+use the bench map A=LEFT B=RIGHT C=STRAIGHT Z=U-TURN; MQTT builds start
+unmapped and wait for `<client-id>/mapping`. `ALL_TEST_LINE_LAYOUT=0` (TRACK)
+restores the previous three-line-sensor profile without barcodes.
 
 The default combined profile now follows the white area with GP27 centre
 and GP0 right. GP7 remains sampled for diagnostics but does not affect steering.

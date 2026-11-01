@@ -88,6 +88,9 @@ typedef struct
 bool line_barcode_map_set(line_barcode_map_t *p_map, char letter,
                            uint8_t command);
 void line_barcode_map_clear(line_barcode_map_t *p_map);
+/* letter is 0..25 (A=0). True and *p_command set only if the letter is mapped. */
+bool line_barcode_map_get(line_barcode_map_t const *p_map, uint8_t letter,
+                          uint8_t *p_command);
 
 /* Letter remembered from the last barcode until the next junction.
  * pending bit 7 = waiting, bits 4..0 = letter A=0..Z=25.

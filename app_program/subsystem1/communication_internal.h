@@ -4,4 +4,5 @@
 #include "communication_protocol.h"
 int s1_take_telemetry(unsigned char *payload);
 void s1_deliver_command(const unsigned char *payload, unsigned int length);
+void s1_deliver_mapping(const unsigned char *payload, unsigned int length);
 #endif

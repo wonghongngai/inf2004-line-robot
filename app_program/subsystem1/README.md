@@ -40,6 +40,12 @@ fault, no echo, Wi-Fi loss. Sensors occupy bits left=0, centre=1, right=2;
 agree whether 1 means black with Buddy 3 (proposed convention: 1 = black).
 Fault flags describe the controller's snapshot, not automatic driver updates.
 
+Barcode map (topic `<client-id>/mapping`, QoS 1): exactly 3 bytes. Four 5-bit
+letters (A=0..Z=25) at bit offsets 0, 5, 10, 15 for LEFT, RIGHT, STRAIGHT,
+U-TURN; bits 20–23 MUST be zero and the four letters must differ. Example
+A/B/C/Z = `20 88 0c`. Invalid maps are rejected and the old map stays. The
+controller applies a valid map with S3's `line_service_set_mapping()`.
+
 Command codes: 0 request status, 1 pause, 2 resume, 3 reset statistics.
 Each occupies bits 0–1 of one byte; upper six bits MUST be zero. A heartbeat
 uses bit 0 of one byte (0 offline / 1 online), with seven reserved zero bits.

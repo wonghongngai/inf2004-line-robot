@@ -4,6 +4,7 @@
 
 LOCAL ID telemetry_queue;
 LOCAL ID command_queue;
+LOCAL ID mapping_queue;
 
 LOCAL ID create_queue(INT message_size)
 {
@@ -18,7 +19,7 @@ LOCAL ID create_queue(INT message_size)
 
 EXPORT ER subsystem1_init(void)
 {
-    if (telemetry_queue > 0 && command_queue > 0) {
+    if (telemetry_queue > 0 && command_queue > 0 && mapping_queue > 0) {
         return E_OK;
     }
     telemetry_queue = create_queue(S1_TELEMETRY_BYTES);
@@ -31,13 +32,21 @@ EXPORT ER subsystem1_init(void)
         telemetry_queue = 0;
         return command_queue;
     }
+    mapping_queue = create_queue(S1_MAPPING_BYTES);
+    if (mapping_queue < E_OK) {
+        tk_del_mbf(command_queue);
+        tk_del_mbf(telemetry_queue);
+        command_queue = telemetry_queue = 0;
+        return mapping_queue;
+    }
     return E_OK;
 }
 
 EXPORT ER subsystem1_start(void)
 {
-    /* No second network task: cyw43_utk_task services both queues. */
-    return (telemetry_queue > 0 && command_queue > 0) ? E_OK : E_OBJ;
+    /* No second network task: cyw43_utk_task services all queues. */
+    return (telemetry_queue > 0 && command_queue > 0 && mapping_queue > 0) ?
+           E_OK : E_OBJ;
 }
 
 EXPORT ER subsystem1_publish_telemetry(const S1_TELEMETRY *packet)
@@ -67,6 +76,17 @@ EXPORT INT subsystem1_receive_command(S1_COMMAND *command, TMO timeout)
     return tk_rcv_mbf(command_queue, command->bytes, timeout);
 }
 
+EXPORT INT subsystem1_receive_mapping(S1_MAPPING *mapping, TMO timeout)
+{
+    if (mapping == NULL) {
+        return E_PAR;
+    }
+    if (mapping_queue <= 0) {
+        return E_OBJ;
+    }
+    return tk_rcv_mbf(mapping_queue, mapping->bytes, timeout);
+}
+
 int s1_take_telemetry(unsigned char *payload)
 {
     if (telemetry_queue <= 0) {
@@ -89,5 +109,27 @@ void s1_deliver_command(const unsigned char *payload, unsigned int length)
     result = tk_snd_mbf(command_queue, command.bytes, S1_COMMAND_BYTES, TMO_POL);
     if (result < E_OK) {
         tm_printf((UB *)"Buddy 1: command queue full/error %d\n", result);
+    }
+}
+
+void s1_deliver_mapping(const unsigned char *payload, unsigned int length)
+{
+    S1_MAPPING mapping;
+    unsigned char letters[S1_MAP_SLOTS];
+    unsigned int i;
+    ER result;
+    if (payload == NULL || length != S1_MAPPING_BYTES || mapping_queue <= 0) {
+        return;
+    }
+    for (i = 0; i < S1_MAPPING_BYTES; ++i) {
+        mapping.bytes[i] = payload[i];
+    }
+    if (!s1_mapping_get(&mapping, letters)) {
+        tm_printf((UB *)"Buddy 1: invalid barcode map rejected\n");
+        return;
+    }
+    result = tk_snd_mbf(mapping_queue, mapping.bytes, S1_MAPPING_BYTES, TMO_POL);
+    if (result < E_OK) {
+        tm_printf((UB *)"Buddy 1: mapping queue full/error %d\n", result);
     }
 }

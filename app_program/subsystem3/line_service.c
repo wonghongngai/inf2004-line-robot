@@ -175,6 +175,23 @@ ER line_service_clear_map(void)
     return (result);
 }
 
+ER line_service_lookup(uint8_t letter, uint8_t *p_command)
+{
+    ER result = E_PAR;
+    if ((NULL != p_command) && (letter < LINE_BARCODE_ALPHABET_SIZE))
+    {
+        result = tk_loc_mtx(g_h_line_mutex, TMO_FEVR);
+        if (E_OK == result)
+        {
+            bool b_mapped = line_barcode_map_get(&g_letter_map, letter,
+                                                 p_command);
+            result = tk_unl_mtx(g_h_line_mutex);
+            result = (E_OK == result) ? (b_mapped ? E_OK : E_NOEXS) : result;
+        }
+    }
+    return (result);
+}
+
 static ER snapshot_locked(line_barcode_msg_t *p_msg)
 {
     SYSTIM now = {0};
