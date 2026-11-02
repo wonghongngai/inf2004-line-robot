@@ -11,10 +11,11 @@
 #include "drv_ultrasonic.h" /* ultrasonic_status_t */
 
 /* Scan geometry (FR5-1, FR5-2) */
-#define SCAN_MIN_DEG    (30U)  /* scans never go outside 30..150 deg     */
-#define SCAN_MAX_DEG    (150U)
-#define FINE_STEP_DEG   (5U)   /* FR5-2                                  */
-#define FINE_MARGIN_DEG (15U)  /* half the coarse spacing: an edge may be
+#define SCAN_MIN_DEG  (30U) /* scans never go outside 30..150 deg     */
+#define SCAN_MAX_DEG  (150U)
+#define FINE_STEP_DEG (5U) /* FR5-2                                  */
+#define FINE_MARGIN_DEG \
+    (15U) /* half the coarse spacing: an edge may be
                                   up to 15 deg beyond the last hit       */
 #define FINE_MAX_POINTS (((SCAN_MAX_DEG - SCAN_MIN_DEG) / FINE_STEP_DEG) + 1U)
 
@@ -24,12 +25,15 @@
 #define FINE_BUDGET_POINTS (15U)
 #define FINE_HALF_SPAN_DEG (((FINE_BUDGET_POINTS - 1U) / 2U) * FINE_STEP_DEG)
 
-#define D_DETECT_MM (300U) /* NFR5-1: detect at >= 30 cm [VERIFY speed] */
-
+#define D_DETECT_MM  (300U) /* detect at >= 30 cm */
 /* A reading counts as "something there" for profiling below this.
  * Further than this is treated as clear.  600 mm, not 300: the sides of
- * an obstacle 30 cm ahead are further away. [VERIFY with real obstacles] */
+ * an obstacle 30 cm ahead are further away. */
 #define D_PROFILE_MM (600U)
+
+/* only objects up to this far beyond the closest point limit a sidestep */
+#define CLEARANCE_DEPTH_MM (500U)
+#define CLEARANCE_OPEN_MM  (9999U) /* "nothing seen on that side"           */
 
 typedef struct
 {
@@ -37,6 +41,22 @@ typedef struct
     UW                  distance_mm;
     ultrasonic_status_t status;
 } scan_point_t;
+
+/**
+ * Obstacle description from one scan.  Positions are from the sensor:
+ * x forward, y LEFT (negative = right), all in mm.
+ */
+typedef struct
+{
+    BOOL b_valid;        /* FALSE: no obstacle found, ignore the rest */
+    UW   closest_mm;     /* closest point: distance ...               */
+    UW   closest_deg;    /* ... and robot angle                       */
+    INT  closest_x_mm;   /* how far ahead the closest point is        */
+    INT  centre_y_mm;    /* sideways centre: + left, - right          */
+    UW   width_mm;       /* beam-corrected width                      */
+    UW   clear_left_mm;  /* gap beside the left edge, or OPEN         */
+    UW   clear_right_mm; /* gap beside the right edge, or OPEN        */
+} obstacle_profile_t;
 
 /**
  * Choose the fine-scan window from a coarse scan: from (first hit - 15)
@@ -71,5 +91,15 @@ IMPORT void scan_median3(const scan_point_t * p_in, scan_point_t * p_out,
  */
 IMPORT BOOL obstacle_filter_update(UB * p_history, ultrasonic_status_t status,
                                    UW distance_mm);
+
+/**
+ * Describe the obstacle (FR5-3) from the smoothed fine scan, using coarse
+ * points outside the fine window for clearance only.
+ * The obstacle is the run of neighbouring hits around the closest hit.
+ * @return FALSE (and p_out->b_valid = FALSE) if the fine scan has no hit.
+ */
+IMPORT BOOL obstacle_profile(const scan_point_t * p_fine, UW fine_count,
+                             const scan_point_t * p_coarse, UW coarse_count,
+                             obstacle_profile_t * p_out);
 
 #endif /* OBSTACLE_LOGIC_H */

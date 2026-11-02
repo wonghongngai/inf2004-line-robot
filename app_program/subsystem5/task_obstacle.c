@@ -74,6 +74,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
     static scan_point_t points[COARSE_COUNT];
     static scan_point_t fine_raw[FINE_MAX_POINTS];
     static scan_point_t fine[FINE_MAX_POINTS];
+    obstacle_profile_t  profile;
     ultrasonic_status_t status;
     UW                  distance_mm;
     UW                  index;
@@ -128,10 +129,12 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 else
                 {
                     fine_count = fine_scan(start_deg, end_deg, fine_raw);
-                    scan_ms    = (rp2040_time_us() - t0_us) / 1000U;
                     servo_move_and_settle(SERVO_ANGLE_CENTRE_DEG);
 
                     scan_median3(fine_raw, fine, fine_count);
+                    (void)obstacle_profile(fine, fine_count, points,
+                                           COARSE_COUNT, &profile);
+                    scan_ms = (rp2040_time_us() - t0_us) / 1000U;
 
                     tm_printf((UB *)"S5: fine %u..%u deg, %u points\n",
                               start_deg, end_deg, fine_count);
@@ -144,7 +147,27 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                                   fine[index].distance_mm,
                                   status_name(fine[index].status));
                     }
-                    tm_printf((UB *)"S5: coarse+fine %u ms\n", scan_ms);
+
+                    if (profile.b_valid)
+                    {
+                        tm_printf((UB *)"S5: closest %u mm at %u deg (x %d)\n",
+                                  profile.closest_mm, profile.closest_deg,
+                                  profile.closest_x_mm);
+                        tm_printf((UB *)"S5: centre y %d mm, width %u mm\n",
+                                  profile.centre_y_mm, profile.width_mm);
+                        tm_printf((UB *)"S5: clear L %u mm, R %u mm "
+                                        "(9999 = open)\n",
+                                  profile.clear_left_mm,
+                                  profile.clear_right_mm);
+                    }
+                    else
+                    {
+                        tm_printf((UB *)"S5: no obstacle in fine scan\n");
+                    }
+
+                    tm_printf(
+                        (UB *)"S5: scan+profile %u ms\n",
+                        scan_ms);
                 }
 
                 /* Bench stand in */
