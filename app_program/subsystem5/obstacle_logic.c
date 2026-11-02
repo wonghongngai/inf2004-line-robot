@@ -361,3 +361,88 @@ EXPORT BOOL obstacle_filter_update(UB * p_history, ultrasonic_status_t status,
 
     return (count >= CONFIRM_THRESHOLD) ? TRUE : FALSE;
 }
+
+EXPORT void obstacle_plan(const obstacle_profile_t * p_profile, UW retries,
+                          plan_t * p_plan)
+{
+    INT  half_width_mm;
+    INT  y_left_mm;
+    INT  y_right_mm;
+    UW   shift_left_mm;
+    UW   shift_right_mm;
+    BOOL b_left_fits;
+    BOOL b_right_fits;
+
+    if (NULL == p_plan)
+    {
+        return;
+    }
+
+    /* Safe default: if anything below can't decide, stop */
+    p_plan->decision = PLAN_STOP;
+    p_plan->shift_mm = 0U;
+
+    if (NULL == p_profile)
+    {
+        return;
+    }
+    if (!p_profile->b_valid)
+    {
+        p_plan->decision = PLAN_CONTINUE; /* nothing was found */
+        return;
+    }
+
+    /* Edges from the beam-corrected width */
+    half_width_mm = (INT)(p_profile->width_mm / 2U);
+    y_left_mm     = p_profile->centre_y_mm + half_width_mm;
+    y_right_mm    = p_profile->centre_y_mm - half_width_mm;
+
+    /* Rule 1: entirely outside the robot's corridor? (A5-1) */
+    if ((y_right_mm > (INT)CORRIDOR_HALF_MM) ||
+        (y_left_mm < -(INT)CORRIDOR_HALF_MM))
+    {
+        p_plan->decision = PLAN_CONTINUE;
+        return;
+    }
+
+    /* Rule 2: shift needed for each side.  Inside the corridor,
+     * y_left >= -CORRIDOR_HALF and y_right <= +CORRIDOR_HALF,
+     * so neither result can be negative. */
+    shift_left_mm  = (UW)(y_left_mm + (INT)CORRIDOR_HALF_MM);
+    shift_right_mm = (UW)((INT)CORRIDOR_HALF_MM - y_right_mm);
+
+    /* Rule 3: is there room for the robot on each side? */
+    b_left_fits  = (p_profile->clear_left_mm >= PASS_GAP_MM) ? TRUE : FALSE;
+    b_right_fits = (p_profile->clear_right_mm >= PASS_GAP_MM) ? TRUE : FALSE;
+
+    /* Rule 4: choose */
+    if (b_left_fits && b_right_fits)
+    {
+        if ((shift_left_mm < shift_right_mm) ||
+            ((shift_left_mm == shift_right_mm) &&
+             (p_profile->clear_left_mm >= p_profile->clear_right_mm)))
+        {
+            p_plan->decision = PLAN_PASS_LEFT;
+            p_plan->shift_mm = shift_left_mm;
+        }
+        else
+        {
+            p_plan->decision = PLAN_PASS_RIGHT;
+            p_plan->shift_mm = shift_right_mm;
+        }
+    }
+    else if (b_left_fits)
+    {
+        p_plan->decision = PLAN_PASS_LEFT;
+        p_plan->shift_mm = shift_left_mm;
+    }
+    else if (b_right_fits)
+    {
+        p_plan->decision = PLAN_PASS_RIGHT;
+        p_plan->shift_mm = shift_right_mm;
+    }
+    else
+    {
+        p_plan->decision = (retries < MAX_RETRIES) ? PLAN_REVERSE : PLAN_STOP;
+    }
+}

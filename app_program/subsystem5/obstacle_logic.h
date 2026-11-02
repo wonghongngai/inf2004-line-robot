@@ -10,13 +10,11 @@
 #include <tk/tkernel.h>     /* UW, UB, BOOL */
 #include "drv_ultrasonic.h" /* ultrasonic_status_t */
 
-/* Scan geometry (FR5-1, FR5-2) */
-#define SCAN_MIN_DEG  (30U) /* scans never go outside 30..150 deg     */
-#define SCAN_MAX_DEG  (150U)
-#define FINE_STEP_DEG (5U) /* FR5-2                                  */
-#define FINE_MARGIN_DEG \
-    (15U) /* half the coarse spacing: an edge may be
-                                  up to 15 deg beyond the last hit       */
+/* Scan geometry */
+#define SCAN_MIN_DEG    (30U) /* scans never go outside 30..150 deg     */
+#define SCAN_MAX_DEG    (150U)
+#define FINE_STEP_DEG   (5U)
+#define FINE_MARGIN_DEG (15U) /* half the coarse spacing */
 #define FINE_MAX_POINTS (((SCAN_MAX_DEG - SCAN_MIN_DEG) / FINE_STEP_DEG) + 1U)
 
 /* NFR5-3 budget: ~80 ms per fine point (measured 2026-11-01: 22 points
@@ -33,7 +31,12 @@
 
 /* only objects up to this far beyond the closest point limit a sidestep */
 #define CLEARANCE_DEPTH_MM (500U)
-#define CLEARANCE_OPEN_MM  (9999U) /* "nothing seen on that side"           */
+#define CLEARANCE_OPEN_MM  (9999U) /* "nothing seen on that side" */
+#define ROBOT_WIDTH_MM (150U) /* W_R: robot's widest point [VERIFY: measure] */
+#define PASS_MARGIN_MM (50U)  /* M: space kept from obstacles [VERIFY]       */
+#define CORRIDOR_HALF_MM ((ROBOT_WIDTH_MM / 2U) + PASS_MARGIN_MM) /* A5-1   */
+#define PASS_GAP_MM      (ROBOT_WIDTH_MM + (2U * PASS_MARGIN_MM)) /* to fit */
+#define MAX_RETRIES      (2U) /* reverse-and-rescan attempts before NO_PATH */
 
 typedef struct
 {
@@ -57,6 +60,22 @@ typedef struct
     UW   clear_left_mm;  /* gap beside the left edge, or OPEN         */
     UW   clear_right_mm; /* gap beside the right edge, or OPEN        */
 } obstacle_profile_t;
+
+typedef enum
+{
+    PLAN_CONTINUE = 0, /* not in the corridor: carry on               */
+    PLAN_PASS_LEFT,    /* go round on the left by shift_mm            */
+    PLAN_PASS_RIGHT,   /* go round on the right by shift_mm           */
+    PLAN_REVERSE,      /* no room: back up and rescan                 */
+    PLAN_STOP          /* no room after MAX_RETRIES (NO_PATH), or bad
+                          input: stop safely                          */
+} plan_decision_t;
+
+typedef struct
+{
+    plan_decision_t decision;
+    UW              shift_mm; /* sideways shift for PASS_LEFT/RIGHT, else 0 */
+} plan_t;
 
 /**
  * Choose the fine-scan window from a coarse scan: from (first hit - 15)
@@ -101,5 +120,14 @@ IMPORT BOOL obstacle_filter_update(UB * p_history, ultrasonic_status_t status,
 IMPORT BOOL obstacle_profile(const scan_point_t * p_fine, UW fine_count,
                              const scan_point_t * p_coarse, UW coarse_count,
                              obstacle_profile_t * p_out);
+
+/**
+ * Choose how to avoid the profiled obstacle.
+ * @param  p_profile  From obstacle_profile().
+ * @param  retries    Reverse-and-rescan attempts already made.
+ * @param  p_plan     Out: decision and shift.  PLAN_STOP on bad input.
+ */
+IMPORT void obstacle_plan(const obstacle_profile_t * p_profile, UW retries,
+                          plan_t * p_plan);
 
 #endif /* OBSTACLE_LOGIC_H */

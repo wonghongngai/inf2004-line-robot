@@ -19,7 +19,7 @@ typedef enum
 static const UW g_coarse_angles_deg[COARSE_COUNT] = {90U, 60U, 30U, 120U, 150U};
 
 /* One coarse scan: move, settle, ping at each angle.  No printing
- * inside: printing takes time and would spoil the timing (NFR5-2). */
+ * inside: printing takes time and would spoil the timing. */
 static void coarse_scan(scan_point_t * p_points)
 {
     UW index;
@@ -67,6 +67,19 @@ static const char * status_name(ultrasonic_status_t status)
     }
 }
 
+static const char * plan_name(plan_decision_t decision)
+{
+    switch (decision)
+    {
+        case PLAN_CONTINUE: return "CONTINUE";
+        case PLAN_PASS_LEFT: return "PASS LEFT";
+        case PLAN_PASS_RIGHT: return "PASS RIGHT";
+        case PLAN_REVERSE: return "REVERSE";
+        case PLAN_STOP: return "STOP (no path)";
+        default: return "?";
+    }
+}
+
 EXPORT void obstacle_task(INT stacd, void * exinf)
 {
     s5_state_t          state   = S5_MONITORING;
@@ -74,8 +87,6 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
     static scan_point_t points[COARSE_COUNT];
     static scan_point_t fine_raw[FINE_MAX_POINTS];
     static scan_point_t fine[FINE_MAX_POINTS];
-    obstacle_profile_t  profile;
-    ultrasonic_status_t status;
     UW                  distance_mm;
     UW                  index;
     UW                  t0_us;
@@ -83,6 +94,10 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
     UW                  fine_count;
     UW                  start_deg;
     UW                  end_deg;
+    obstacle_profile_t  profile;
+    ultrasonic_status_t status;
+    plan_t              plan;
+    UW                  retries = 0U;
 
     /* To hide unused warnings */
     (void)stacd;
@@ -110,8 +125,8 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 }
                 else
                 {
-                    tk_dly_tsk(
-                        MONITOR_GAP_MS); /* sensor needs >= 60ms as stated in datasheet */
+                    /* Sensor needs >= 60 ms between pings (datasheet) */
+                    tk_dly_tsk(MONITOR_GAP_MS);
                 }
                 break;
 
@@ -123,6 +138,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                                       &end_deg))
                 {
                     /* Nothing anymore, false alarm or obstacle moved */
+                    plan.decision = PLAN_CONTINUE;
                     servo_move_and_settle(SERVO_ANGLE_CENTRE_DEG);
                     tm_printf((UB *)"S5: no obstacle in coarse scan\n");
                 }
@@ -134,6 +150,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                     scan_median3(fine_raw, fine, fine_count);
                     (void)obstacle_profile(fine, fine_count, points,
                                            COARSE_COUNT, &profile);
+                    obstacle_plan(&profile, retries, &plan);
                     scan_ms = (rp2040_time_us() - t0_us) / 1000U;
 
                     tm_printf((UB *)"S5: fine %u..%u deg, %u points\n",
@@ -165,16 +182,34 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                         tm_printf((UB *)"S5: no obstacle in fine scan\n");
                     }
 
-                    tm_printf(
-                        (UB *)"S5: scan+profile %u ms\n",
-                        scan_ms);
+                    tm_printf((UB *)"S5: PLAN %s, shift %u mm\n",
+                              plan_name(plan.decision), plan.shift_mm);
+                    tm_printf((UB *)"S5: detect->decision %u ms "
+                                    "(NFR5-3: <= 2000)\n",
+                              scan_ms);
                 }
 
-                /* Bench stand in */
+                /* Bench stand-in for the moves (Step 14 asks Buddy 2) */
                 tk_dly_tsk(RESUME_MS);
-                history = 0U; /* forget readings before scan */
-                tm_printf((UB *)"S5: MONITORING\n");
-                state = S5_MONITORING;
+                history = 0U; /* forget readings from before the scan */
+
+                if (PLAN_REVERSE == plan.decision)
+                {
+                    retries++;
+                    tm_printf((UB *)"S5: (would reverse) rescan, retry %u\n",
+                              retries);
+                    state = S5_SCANNING; /* scan again from the new spot */
+                }
+                else
+                {
+                    if (PLAN_STOP == plan.decision)
+                    {
+                        tm_printf((UB *)"S5: NO PATH (would stay stopped)\n");
+                    }
+                    retries = 0U; /* next obstacle starts fresh */
+                    tm_printf((UB *)"S5: MONITORING\n");
+                    state = S5_MONITORING;
+                }
                 break;
 
             default:
