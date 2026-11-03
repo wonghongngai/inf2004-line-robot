@@ -21,15 +21,15 @@
 #define S4_PRI_IMU                  18
 #define S4_SAMPLE_PERIOD_MS         20
 #define S4_CALIBRATION_SAMPLES      50U
-#define S4_PRINT_PERIOD_SAMPLES     25U
+#define S4_PRINT_PERIOD_SAMPLES     50u
 
 /*
  * Initial detection thresholds.
  * These MUST be tuned from the real robot logs.
  */
-#define S4_TILT_DELTA_MG            350
+#define S4_TILT_DELTA_MG            180
 #define S4_TILT_CONFIRM_SAMPLES     5U
-#define S4_COLLISION_DELTA_MG       2500  /* 1200 tripped on motor start-up jolt */
+#define S4_COLLISION_DELTA_MG       1200  /* 1200 tripped on motor start-up jolt */
 #define S4_HUMP_ENTRY_MG            180
 #define S4_HUMP_OPPOSITE_MG         120
 #define S4_HUMP_SETTLE_MG           80

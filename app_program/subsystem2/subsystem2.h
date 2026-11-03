@@ -34,8 +34,10 @@
  * right wheel for a left pivot. Revalidate after encoder/sampling changes.
  */
 #define S2_CALIBRATION_READY                 1
-#define S2_LEFT_TICKS_PER_CM                 103.5267f
-#define S2_RIGHT_TICKS_PER_CM                118.5634f
+// #define S2_LEFT_TICKS_PER_CM                 103.5267f
+// #define S2_RIGHT_TICKS_PER_CM                118.5634f
+#define S2_LEFT_TICKS_PER_CM   23.10f //updated calibration value
+#define S2_RIGHT_TICKS_PER_CM  18.83f
 #define S2_LEFT_TURN_TICKS_PER_DEGREE         20.3556f  /* right turn: 1832 / 90 */
 #define S2_RIGHT_TURN_TICKS_PER_DEGREE        22.9074f  /* left turn: 2061.6667 / 90 */
 #define S2_BASE_PWM_PERCENT                  55.0f

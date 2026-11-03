@@ -17,9 +17,9 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_IMU_STALE_MS   100u
 #define ALL_LINE_READY_MS  500u
 #define ALL_LINE_REACQUIRE_MS 100u
-#define ALL_BASE_PWM       12.5f
+#define ALL_BASE_PWM       20.0f
 #define ALL_INNER_PWM      10.0f
-#define ALL_RIGHT_BASE_PWM 14.2f
+#define ALL_RIGHT_BASE_PWM 22.0f
 #define ALL_RIGHT_TURN_LEFT_PWM 20.0f
 #define ALL_WHITE_CLEAR_MS 100u
 
@@ -310,6 +310,11 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
         stop_test(t, "white tracking sensor service paused", S1_STATE_FAULT);
         return;
     }
+    // if (sensors == 3u) {
+    //     stop_test(t, "centre and right both black", S1_STATE_FAULT);
+    //     return;
+    // }
+
     t->corner_active = t->centre_pending = false;
     t->last_side = 0;
     if (sensors != 0u) {
@@ -381,8 +386,6 @@ static const char *imu_status_reason(const ALL_TEST *t, uint32_t now)
     if (t->imu.motion_state == IMU_MOTION_COLLISION || t->imu.event == IMU_EVENT_COLLISION)
         return "IMU collision detected";
 #endif
-    if (t->imu.motion_state == IMU_MOTION_TILT || t->imu.event == IMU_EVENT_TILT)
-        return "IMU tilt detected";
     if (t->imu.motion_state == IMU_MOTION_FAULT || t->imu.event == IMU_EVENT_FAULT)
         return "IMU processing fault";
     if ((uint32_t)(now - t->imu_updated) > ALL_IMU_STALE_MS)
@@ -520,11 +523,13 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
 {
     uint8_t travelled_mm;
     drv_encoder_get_counts(&t->left_ticks, &t->right_ticks);
-    if (!wheel_odometry_step(&t->odometry, t->left_ticks, t->right_ticks,
-                             t->phase == RUNNING && !t->corner_active &&
-                             t->turn_stage != TURN_PIVOT &&
-                             (!ALL_TEST_WHITE_FOLLOW || (t->line.data[0] & 3u) == 0u),
-                             &travelled_mm)) {
+    if (!wheel_odometry_step(&t->odometry,
+                            t->left_ticks,
+                            t->right_ticks,
+                            t->phase == RUNNING &&
+                            !t->corner_active &&
+                            t->turn_stage != TURN_PIVOT,
+                            &travelled_mm)) {
         stop_test(t, "encoder distance out of range; check calibration", S1_STATE_FAULT);
     } else if (travelled_mm != 0u) {
         ER er = subsystem4_add_distance_mm(travelled_mm);
