@@ -6,17 +6,32 @@ static unsigned hits;
 static unsigned expected;
 static void feed(line_barcode_ctx_t *ctx, unsigned sensors, unsigned ms)
 {
-    while (ms >= 10u) {
-        line_barcode_msg_t msg = line_barcode_step(ctx, sensors, 10u);
+    while (ms >= LINE_BARCODE_PERIOD_MS) {
+        line_barcode_msg_t msg = line_barcode_step(ctx, sensors, LINE_BARCODE_PERIOD_MS);
         if (((msg.data[1] >> 3u) & 7u) == LINE_BARCODE_EVT_BARCODE) {
             assert((msg.data[2] & LINE_BARCODE_LETTER_MASK) == expected);
             ++hits;
         }
-        ms -= 10u;
+        ms -= LINE_BARCODE_PERIOD_MS;
     }
 }
 int main(void)
 {
+    line_barcode_ctx_t debounce;
+    line_barcode_reset(&debounce);
+    /* Candidate first appears at t=1; acceptance only at t=4. */
+    for (unsigned t=1; t<=3; ++t) {
+        line_barcode_msg_t m = line_barcode_step(&debounce, 4u, 1u);
+        assert((m.data[0] & 4u) == 0u);
+    }
+    line_barcode_msg_t m = line_barcode_step(&debounce, 4u, 1u);
+    assert((m.data[0] & 4u) != 0u);
+    /* Two-ms opposite flicker never changes the accepted level. */
+    line_barcode_step(&debounce, 0u, 1u);
+    line_barcode_step(&debounce, 0u, 1u);
+    m = line_barcode_step(&debounce, 4u, 1u);
+    assert((m.data[0] & 4u) != 0u);
+    puts("PASS: 3ms stable acceptance; short flicker rejected");
     line_barcode_map_t map = {{0u}};
     assert(line_barcode_map_set(&map, 'A', LINE_BARCODE_CMD_LEFT));
     assert(line_barcode_map_set(&map, 'F', LINE_BARCODE_CMD_RIGHT));
@@ -59,6 +74,22 @@ int main(void)
         }
         printf("PASS: slide %c forward/reverse decode and sampled scan\n", pptx_samples[s].letter);
     }
+    /* Synthetic sensor bias: black and white have different narrow/wide
+     * durations. Validate every slide in both directions. */
+    for (unsigned s=0; s<sizeof(pptx_samples)/sizeof(pptx_samples[0]); ++s) {
+        for (unsigned reverse=0; reverse<2; ++reverse) {
+            uint16_t runs[29]; uint8_t letter;
+            for (unsigned i=0; i<29; ++i) {
+                unsigned source = reverse ? 28u-i : i;
+                bool wide = pptx_samples[s].widths[source] == 3u;
+                runs[i] = (i & 1u) ? (wide ? 380u : 140u)
+                                       : (wide ? 300u : 70u);
+            }
+            assert(line_barcode_decode(runs,29u,&letter));
+            assert(letter == pptx_samples[s].letter-'A');
+        }
+    }
+    puts("PASS: separate bar/space classification with sensor timing bias");
     uint16_t uniform[29]; uint8_t letter;
     for (unsigned i=0; i<29; ++i) uniform[i]=60u;
     assert(!line_barcode_decode(uniform,29u,&letter));

@@ -175,18 +175,23 @@ provisional two-byte schema:
 
 Only the owning task mutates its processing context and reads IR GPIO. A priority
 inheritance mutex protects packed configuration, mapping and snapshots. Queue
-sends never wait. Per-input two-sample debouncing prevents barcode edges from
+sends never wait. Per-input 3 ms stability filtering prevents barcode edges from
 delaying the tracking inputs.
 
 ## Timing and printing limits
 
-The service uses a 10 ms cyclic wake-up because `CNF_TIMER_PERIOD=10` and a task
-delay adds a tick. Elapsed intervals over 20 ms invalidate capture and latch a
+The service requests a 1 ms cyclic wake-up with `CNF_TIMER_PERIOD=1`.
+A changed level must remain unchanged for 3 ms after its first sample before
+acceptance. Each accepted edge uses the sampled elapsed time; intervals
+between accepted edges measure bar/space duration without wheel input. Elapsed intervals over 20 ms invalidate capture and latch a
 timing fault. Measure scheduling jitter with all buddy tasks running.
 
 Widths must be 40–1000 ms, with three clearly wide elements in each character.
-Classification is relative within a character, permitting different steady scan
-speeds and gradual speed changes. Arbitrary acceleration within a character is
+Classification compares the five black bars separately from the four white
+spaces in each nine-element character. The strongest adjacent duration ratio
+splits narrow/wide groups, with at least 1.5x separation and exactly three
+wide elements overall. A colour without a distinct split remains narrow.
+This permits different black/white timing scales and gradual speed changes. Arbitrary acceleration within a character is
 not supported. Both inter-character gaps are checked; each frame needs leading
 and trailing quiet zones at least ten narrow widths. The supplied PDF crops very
 close to its bars, so retain/add surrounding white paper when printing it.
