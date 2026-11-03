@@ -264,3 +264,43 @@ include the 2048-byte task stack, kernel objects and 96-byte event buffer from
 the existing heap. The 48-byte context lives on the stack. Hardware stack/heap
 high-water and timing measurements remain pending. See the sample-revision host
 and build logs; older provisional logs remain unchanged as historical evidence.
+
+### Combined trial: BARCODE.pptx patterns
+
+The default decoder recognises the narrow/wide Code 39 patterns shown in
+BARCODE.pptx (A, F, Z, W, X and Y), including the start/stop stars. Every example
+has 29 alternating segments: 15 black bars and 14 internal white gaps. Letter
+identity comes from widths, not segment count. Both scan directions work.
+GP7 is the offset barcode sensor; centre/right continue steering.
+
+The combined controller uses A=LEFT, F=RIGHT, Z=STRAIGHT and W=U-TURN
+at the next C/R-both-black junction. All other A-Z letters are decoded and
+logged without a barcode movement assignment. This fixed map is installed
+in MQTT and offline builds; incoming MQTT mapping updates are ignored.
+An unmapped letter replaces any previously pending letter. The existing
+C/R-both-black stop rule still applies without a mapped movement.
+The existing movement advance/pivot calibration and timeout still apply.
+
+Leave white margins before and after the barcode. The leading margin must
+last at least 100 ms and at least ten narrow-bar durations; the trailing
+margin must also last ten narrow-bar durations. Narrow segments must last
+at least 40 ms for this decoder. Keep scan speed steady. Internal wide white
+gaps may exceed 100 ms in this pattern-based mode. Do not scan through the
+licence text overprinted on some slide examples.
+
+Optional legacy count-only behaviour is available with
+`LINE_BARCODE_COUNT_A=1`; it accepts any 29-segment pattern as A and uses
+100 ms white gaps to delimit frames. It is disabled by default.
+
+Host checks from the repository root:
+
+```sh
+cc -DAPP_ALL_TEST=1 -Iapp_program/subsystem3 testing/subsystem3/pptx_samples_test.c app_program/subsystem3/line_barcode.c -o /tmp/pptx-barcode-test
+/tmp/pptx-barcode-test
+cc -DAPP_ALL_TEST=1 -DLINE_BARCODE_COUNT_A=1 -Iapp_program/subsystem3 testing/subsystem3/count_a_test.c app_program/subsystem3/line_barcode.c -o /tmp/count-a-test
+/tmp/count-a-test
+```
+
+The slide fixtures measure the EMF bar geometry for A/F/Z/W/X and a PNG row
+above the licence overlay for Y; tests check direct decoding and sampled
+sensor streams in both directions, plus rejection of uniform-width segments.

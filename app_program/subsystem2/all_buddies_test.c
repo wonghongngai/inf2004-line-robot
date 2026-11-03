@@ -17,10 +17,10 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_IMU_STALE_MS   100u
 #define ALL_LINE_READY_MS  500u
 #define ALL_LINE_REACQUIRE_MS 100u
-#define ALL_BASE_PWM       20.0f
-#define ALL_INNER_PWM      10.0f
-#define ALL_RIGHT_BASE_PWM 22.0f
-#define ALL_RIGHT_TURN_LEFT_PWM 20.0f
+#define ALL_BASE_PWM       10.0f
+#define ALL_INNER_PWM      5.0f
+#define ALL_RIGHT_BASE_PWM 12.0f
+#define ALL_RIGHT_TURN_LEFT_PWM 10.0f
 #define ALL_WHITE_CLEAR_MS 100u
 
 typedef struct {
@@ -495,25 +495,14 @@ static void commands(ALL_TEST *t, uint32_t now)
             break;
         }
     }
-    /* Barcode route map from MQTT; S3 keeps the old map on any rejection. */
+    /* This hardware profile uses the user's fixed A/F/Z/W route map.
+     * Drain remote mapping messages without changing those assignments. */
     for (unsigned i = 0u; i < S1_QUEUE_DEPTH; ++i) {
         S1_MAPPING mapping;
-        unsigned char letters[S1_MAP_SLOTS];
         INT len = subsystem1_receive_mapping(&mapping, TMO_POL);
         if (len == E_TMOUT) break;
-        if (len != S1_MAPPING_BYTES || !s1_mapping_get(&mapping, letters) ||
-            line_service_set_mapping((char)('A' + letters[S1_MAP_LEFT]),
-                                     (char)('A' + letters[S1_MAP_RIGHT]),
-                                     (char)('A' + letters[S1_MAP_STRAIGHT]),
-                                     (char)('A' + letters[S1_MAP_UTURN])) < E_OK) {
-            tm_printf((UB *)"[ALL TEST] MQTT barcode map rejected (len=%d)\n", len);
-            if (len < E_OK) break;
-            continue;
-        }
-        tm_printf((UB *)"[ALL TEST] MQTT barcode map: %c=LEFT %c=RIGHT %c=STRAIGHT %c=U-TURN\n",
-                  'A' + letters[S1_MAP_LEFT], 'A' + letters[S1_MAP_RIGHT],
-                  'A' + letters[S1_MAP_STRAIGHT], 'A' + letters[S1_MAP_UTURN]);
-        t->force_status = true;
+        if (len < E_OK) break;
+        tm_printf((UB *)"[ALL TEST] MQTT map ignored: fixed A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN\n");
     }
 }
 
@@ -753,7 +742,6 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
         }
     }
 report_status:
-    report_straight_balance(t, now);
     if ((uint32_t)(now - t->last_report) >= 500u) {
         unsigned sensors = t->line.data[0] & 7u;
         tm_printf((UB *)"[ALL TEST] phase=%u L=%u C=%u R=%u line_er=%d IMU ok=%d calibrated=%d state=%d samples=%lu PWM=%d.%d/%d.%d ticks=%ld/%ld height=%umm valid=%d status=%s\n",
@@ -791,9 +779,7 @@ static void all_task(INT stacd, void *exinf)
     tm_printf((UB *)"[ALL TEST] layout=%s\n",
               ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_TRACK ?
               "TRACK (three line sensors; barcode decoding disabled)" : "SIDE (offset scanner)");
-    tm_printf((UB *)"[ALL TEST] barcode map: %s\n", ALL_TEST_DEFAULT_MAP ?
-              "offline default A=LEFT B=RIGHT C=STRAIGHT Z=U-TURN (MQTT may replace)" :
-              "none until MQTT <client-id>/mapping arrives");
+    tm_printf((UB *)"[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only\n");
     if (tk_get_tim(&now) < E_OK) {
         drv_motor_stop();
         tk_slp_tsk(TMO_FEVR);
@@ -844,10 +830,8 @@ ER all_buddies_test_start(void)
     if (er == E_OK) er = line_service_init();
     if (er == E_OK) er = line_service_calibrate(7u, 0u);
     if (er == E_OK) er = line_service_set_layout(ALL_TEST_LINE_LAYOUT);
-#if ALL_TEST_DEFAULT_MAP
-    /* Offline bench map only; MQTT builds start unmapped. */
-    if (er == E_OK) er = line_service_set_mapping('A', 'B', 'C', 'Z');
-#endif
+    /* Only these four letters request junction movements. */
+    if (er == E_OK) er = line_service_set_mapping('A', 'F', 'Z', 'W');
     if (er == E_OK) er = subsystem4_init();
     if (er == E_OK) er = subsystem1_start();
     if (er == E_OK) er = line_service_start();

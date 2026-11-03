@@ -390,7 +390,32 @@ static uint8_t barcode_update(line_barcode_ctx_t *p_ctx, uint16_t elapsed_ms,
         p_ctx->run_ms = 0u;
         p_ctx->flags = (uint8_t)((p_ctx->flags & ~BARCODE_FLAG_BLACK)
                                 | (b_black ? BARCODE_FLAG_BLACK : 0u));
-        verify_start(p_ctx);
+        if (!LINE_BARCODE_COUNT_A) verify_start(p_ctx);
+    }
+    if (LINE_BARCODE_COUNT_A)
+    {
+        /* run_count counts completed segments, starting at the first black
+         * bar. The surrounding white quiet zones are not segments. Wait for
+         * the trailing quiet zone so a longer pattern cannot match at 29. */
+        if (0u != (p_ctx->flags & BARCODE_FLAG_CAPTURE))
+        {
+            if (!b_black && p_ctx->run_ms >= LINE_BARCODE_QUIET_MS)
+            {
+                event = p_ctx->run_count == LINE_BARCODE_FRAME_RUNS
+                        ? LINE_BARCODE_EVT_BARCODE : LINE_BARCODE_EVT_INVALID;
+                *p_letter = 0u;
+                p_ctx->flags &= (uint8_t)~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
+                p_ctx->run_count = 0u;
+            }
+            else if ((b_black && p_ctx->run_count == LINE_BARCODE_FRAME_RUNS)
+                     || p_ctx->run_ms > LINE_BARCODE_RUN_MAX_MS)
+            {
+                event = LINE_BARCODE_EVT_INVALID;
+                p_ctx->flags &= (uint8_t)~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
+                p_ctx->run_count = 0u;
+            }
+        }
+        return event;
     }
     uint16_t quiet_required = BARCODE_MIN_QUIET_UNITS * first_narrow(p_ctx);
     if (!b_black && (LINE_BARCODE_FRAME_RUNS == p_ctx->run_count)

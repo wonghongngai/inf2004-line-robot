@@ -287,6 +287,9 @@ static void line_service_task(INT start_code, void *p_extra)
 #if APP_ALL_TEST
     unsigned previous_inputs = 0xffu;
     unsigned previous_filtered = 0xffu;
+    unsigned barcode_level = 0xffu, barcode_black = 0u, barcode_white = 0u;
+    uint32_t barcode_edge_ms = 0u;
+    bool barcode_counting = false;
 #endif
     ER result = gpio_set_pin(LINE_SERVICE_PIN_LEFT, GPIO_MODE_IN);
     (void)start_code;
@@ -335,8 +338,51 @@ static void line_service_task(INT start_code, void *p_extra)
                     LINE_BARCODE_EVT_FAULT, LINE_BARCODE_ERR_LINE);
             }
             publish_sample(msg);
+#if APP_ALL_TEST
+            unsigned captured_runs = context.run_count;
+            unsigned capture_state = context.state;
+#endif
             (void)tk_unl_mtx(g_h_line_mutex);
 #if APP_ALL_TEST
+            /* Count completed debounced runs independently of the decoder.
+             * A one-second white margin separates diagnostic scans. The
+             * current trailing white margin is not a completed segment. */
+            unsigned black = (msg.data[0] & LINE_BARCODE_LEFT) != 0u;
+            uint32_t run_ms = now.lo - barcode_edge_ms;
+            if (barcode_level == 0xffu) {
+                barcode_level = black;
+                barcode_edge_ms = now.lo;
+                tm_printf((UB *)"[BARCODE SENSOR] GP7=%u filtered=%s\n",
+                          (unsigned)((raw_inputs >> 2u) & 1u), black ? "BLACK" : "WHITE");
+            } else if (black != barcode_level) {
+                if (barcode_counting) {
+                    if (barcode_level) ++barcode_black;
+                    else ++barcode_white;
+                    tm_printf((UB *)"[BARCODE RUN] %s ms=%lu black=%u white=%u total=%u decoder_runs=%u state=%u\n",
+                              barcode_level ? "BLACK" : "WHITE", (unsigned long)run_ms,
+                              barcode_black, barcode_white, barcode_black + barcode_white,
+                              captured_runs, capture_state);
+                } else if (black) {
+                    barcode_black = barcode_white = 0u;
+                    barcode_counting = true;
+                    tm_printf((UB *)"[BARCODE SCAN] first black; preceding white=%lums\n",
+                              (unsigned long)run_ms);
+                }
+                barcode_level = black;
+                barcode_edge_ms = now.lo;
+            } else if (!black && barcode_counting && run_ms >= 1000u) {
+                tm_printf((UB *)"[BARCODE SCAN END] black=%u white=%u total=%u (outer white margin excluded)\n",
+                          barcode_black, barcode_white, barcode_black + barcode_white);
+                barcode_counting = false;
+            }
+            unsigned barcode_event = (msg.data[1] >> 3u) & 7u;
+            if (barcode_event == LINE_BARCODE_EVT_BARCODE) {
+                tm_printf((UB *)"[BARCODE DECODE] letter=%c\n",
+                          'A' + (msg.data[2] & LINE_BARCODE_LETTER_MASK));
+            } else if (barcode_event == LINE_BARCODE_EVT_INVALID) {
+                tm_printf((UB *)"[BARCODE REJECT] invalid frame: check start/stop pattern, widths and white margins; completed black=%u white=%u\n",
+                          barcode_black, barcode_white);
+            }
             /* Report transitions outside the shared mutex. Raw is the
              * sampled GPIO level; filtered is the published black bit.
              * Pulses shorter than the sampling interval may still be missed. */

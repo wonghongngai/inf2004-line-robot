@@ -12,14 +12,6 @@
  * mapped movement instead of a stop. */
 #define ALL_TEST_BARCODE_TURNS 1
 #endif
-#ifndef ALL_TEST_DEFAULT_MAP
-/* MQTT builds wait for <client-id>/mapping; offline builds use A/B/C/Z. */
-#if TM_MQTT
-#define ALL_TEST_DEFAULT_MAP 0
-#else
-#define ALL_TEST_DEFAULT_MAP 1
-#endif
-#endif
 /* Junction movement, tune on hardware: forward until the wheels reach the
  * crossing, then a one-wheel pivot measured with S2's turn calibration. */
 #define ALL_TEST_TURN_ADVANCE_CM 5.0f
