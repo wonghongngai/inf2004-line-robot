@@ -18,6 +18,14 @@ cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined \
   testing/integration/all_buddies_continuous_host_test.c \
   app_program/subsystem1/communication_protocol.c -o "$test_binary"
 "$test_binary"
+cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined \
+  testing/integration/all_buddies_corner_host_test.c \
+  app_program/subsystem1/communication_protocol.c -o "$test_binary"
+"$test_binary"
+cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined \
+  testing/integration/all_buddies_collision_host_test.c \
+  app_program/subsystem1/communication_protocol.c -o "$test_binary"
+"$test_binary"
 cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -Iinclude \
   testing/integration/motor_pwm_host_test.c -o "$test_binary"
 "$test_binary"

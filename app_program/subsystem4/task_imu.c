@@ -16,6 +16,11 @@
 #include "subsystem4.h"
 #include "drv_lsm303dlhc.h"
 #include <stdint.h>
+#define S4_HUMP_REARM_FLAT_SAMPLES 25U
+#define S4_HUMP_ENTRY_CONFIRM_SAMPLES 4U
+#define S4_MOVEMENT_HOLD_SAMPLES 5U
+#define S4_HUMP_EXIT_FLAT_MG 180
+#define S4_HUMP_EXIT_FLAT_SAMPLES 4U
 
 typedef enum {
     HUMP_IDLE = 0,
@@ -37,12 +42,20 @@ typedef struct {
     W peak_mg;
     UW age_samples;
     UW settle_samples;
+
+    /* Entry confirmation prevents short vibrations from becoming humps. */
+    INT entry_sign;
+    UW entry_samples;
 } HUMP_STATE;
 
 LOCAL CAL_STATE cal_state;
 LOCAL HUMP_STATE hump_state;
 LOCAL UW tilt_samples;
 LOCAL BOOL tilt_reported;
+LOCAL BOOL hump_armed;
+LOCAL UW hump_rearm_count;
+LOCAL UW movement_hold_samples;
+LOCAL int64_t hump_entry_height_milli_mm;
 
 /* Height estimator state for one ramp crossing. */
 LOCAL W current_height_mm;
@@ -82,6 +95,10 @@ LOCAL void reset_hump_detector(void)
     hump_state.peak_mg = 0;
     hump_state.age_samples = 0U;
     hump_state.settle_samples = 0U;
+
+    hump_state.entry_sign = 0;
+    hump_state.entry_samples = 0U;
+    hump_entry_height_milli_mm = 0;
 }
 
 LOCAL void reset_height_tracker(void)
@@ -94,8 +111,8 @@ LOCAL void reset_height_tracker(void)
 
 /*
  * Estimate pitch for logging/telemetry without floating-point trigonometry.
- * Assumes the IMU X axis is aligned approximately with forward travel.
- * The table maps |Ax-baseline| in mg to the nearest 5-degree pitch angle.
+ * Uses the IMU Y axis as the forward/ramp axis for the current mounting.
+ * The table maps |forward-baseline| in mg to the nearest 5-degree pitch angle.
  */
 LOCAL W estimate_pitch_deg(W forward_mg)
 {
@@ -129,32 +146,59 @@ LOCAL W estimate_pitch_deg(W forward_mg)
     return (W)(90 * sign);
 }
 
-LOCAL void update_height_estimate(UW distance_mm, W dx)
+LOCAL void update_height_estimate(UW distance_mm, W forward_mg)
 {
-    W aligned_dx;
+    W aligned_forward;
 
     if (distance_mm == 0U || hump_state.first_sign == 0) {
         return;
     }
 
-    /* Make the first/up slope positive regardless of IMU mounting sign. */
-    aligned_dx = (W)(dx * hump_state.first_sign);
-    if (aligned_dx > 1000) aligned_dx = 1000;
-    if (aligned_dx < -1000) aligned_dx = -1000;
+    /*
+     * first_sign is the uphill direction.
+     * On the current mounting, nose-up is negative Y, so a negative
+     * forward value with first_sign == -1 becomes a positive rise.
+     */
+    aligned_forward = (W)(forward_mg * hump_state.first_sign);
+
+    if (aligned_forward > 1000) {
+        aligned_forward = 1000;
+    }
+
+    /*
+     * We report maximum vertical rise. Once the robot is travelling
+     * down the opposite side, do not subtract that descent from the
+     * height already accumulated on the climb.
+     */
+    if (aligned_forward <= 0) {
+        return;
+    }
+
     height_distance_seen = TRUE;
 
-    /* Accumulate before rounding, on ascent AND descent. */
-    current_height_milli_mm += (int64_t)distance_mm * aligned_dx;
-    if (current_height_milli_mm < 0) current_height_milli_mm = 0;
-    if (current_height_milli_mm > (int64_t)S4_MAX_RAMP_HEIGHT_MM * 1000)
-        current_height_milli_mm = (int64_t)S4_MAX_RAMP_HEIGHT_MM * 1000;
-    current_height_mm = (W)(current_height_milli_mm / 1000);
+    /*
+     * delta_height ~= distance_mm * sin(theta)
+     *              ~= distance_mm * aligned_forward / 1000
+     *
+     * Keep milli-mm precision. 1000 stored units = 1 mm.
+     */
+    current_height_milli_mm +=
+        (int64_t)distance_mm * (int64_t)aligned_forward;
+
+    if (current_height_milli_mm >
+        (int64_t)S4_MAX_RAMP_HEIGHT_MM * 1000) {
+
+        current_height_milli_mm =
+            (int64_t)S4_MAX_RAMP_HEIGHT_MM * 1000;
+    }
+
+    current_height_mm =
+        (W)(current_height_milli_mm / 1000);
 
     if ((UW)current_height_mm > peak_height_mm) {
         peak_height_mm = (UW)current_height_mm;
     }
 }
-
 LOCAL void publish_snapshot(const LSM303_SAMPLE *sample,
                             W baseline_x,
                             W baseline_y,
@@ -264,36 +308,85 @@ LOCAL BOOL detect_collision(const LSM303_SAMPLE *current,
     return (peak_delta >= S4_COLLISION_DELTA_MG) ? TRUE : FALSE;
 }
 
-LOCAL BOOL update_tilt(W dx, W dy)
+LOCAL BOOL update_tilt(W lateral_mg, W forward_mg, BOOL hump_active)
 {
     BOOL beyond_threshold;
 
-    beyond_threshold = (abs_w(dx) >= S4_TILT_DELTA_MG ||
-                        abs_w(dy) >= S4_TILT_DELTA_MG);
+    /*
+     * X = lateral tilt.
+     * A large sideways tilt remains dangerous even while crossing a ramp.
+     *
+     * Y = forward pitch.
+     * A large Y deviation is expected while a ramp/hump is active,
+     * so only treat forward pitch as tilt when not traversing a hump.
+     */
+    beyond_threshold =
+        (abs_w(lateral_mg) >= S4_TILT_DELTA_MG) ||
+        (!hump_active &&
+         abs_w(forward_mg) >= S4_TILT_DELTA_MG);
 
     if (beyond_threshold) {
+
         if (tilt_samples < S4_TILT_CONFIRM_SAMPLES) {
             tilt_samples++;
         }
+
     } else {
+
         tilt_samples = 0U;
         tilt_reported = FALSE;
     }
 
-    return (tilt_samples >= S4_TILT_CONFIRM_SAMPLES) ? TRUE : FALSE;
+    return
+        (tilt_samples >= S4_TILT_CONFIRM_SAMPLES)
+        ? TRUE
+        : FALSE;
 }
 
 /* Multi-sample ramp pattern: up slope -> opposite slope -> flat again. */
-LOCAL BOOL update_hump(W dx, W *completed_peak)
+LOCAL BOOL update_hump(W forward_mg,
+                       BOOL moving,
+                       UW distance_mm,
+                       W *completed_peak)
 {
-    W abs_dx = abs_w(dx);
+    W abs_forward;
+
+    abs_forward = abs_w(forward_mg);
 
     if (completed_peak != NULL) {
         *completed_peak = 0;
     }
 
+    /*
+     * After one completed hump, require a sustained flat period before
+     * allowing another hump. This prevents one physical hump from
+     * generating repeated events.
+     */
+    if (!hump_armed) {
+
+        if (abs_forward <= S4_HUMP_SETTLE_MG) {
+
+            if (hump_rearm_count < S4_HUMP_REARM_FLAT_SAMPLES) {
+                hump_rearm_count++;
+            }
+
+            if (hump_rearm_count >= S4_HUMP_REARM_FLAT_SAMPLES) {
+                hump_armed = TRUE;
+                hump_rearm_count = 0U;
+
+                tm_printf((UB *)"Buddy4: hump detector re-armed\n");
+            }
+
+        } else {
+            hump_rearm_count = 0U;
+        }
+
+        return FALSE;
+    }
+
     if (hump_state.phase != HUMP_IDLE) {
         hump_state.age_samples++;
+
         if (hump_state.age_samples > S4_HUMP_TIMEOUT_SAMPLES) {
             reset_hump_detector();
             reset_height_tracker();
@@ -302,51 +395,151 @@ LOCAL BOOL update_hump(W dx, W *completed_peak)
     }
 
     switch (hump_state.phase) {
+
     case HUMP_IDLE:
-        if (abs_dx >= S4_HUMP_ENTRY_MG) {
-            hump_state.phase = HUMP_FIRST_SLOPE;
-            hump_state.first_sign = sign_w(dx);
-            hump_state.peak_mg = abs_dx;
-            hump_state.age_samples = 0U;
+    {
+        INT current_sign;
+
+        /*
+         * A hump may only begin when:
+         *   1. the robot has moved recently, and
+         *   2. the forward-axis slope exceeds the entry threshold.
+         *
+         * Four consecutive same-direction samples are required so a
+         * short motor-start vibration does not become a hump.
+         */
+        if (moving &&
+            (abs_forward >= S4_HUMP_ENTRY_MG)) {
+
+            current_sign = sign_w(forward_mg);
+
+            if (hump_state.entry_samples == 0U) {
+                hump_state.entry_sign = current_sign;
+                hump_state.entry_samples = 1U;
+                hump_state.peak_mg = abs_forward;
+
+                hump_entry_height_milli_mm =
+                    (int64_t)distance_mm * (int64_t)abs_forward;
+
+            } else if (current_sign == hump_state.entry_sign) {
+                hump_state.entry_samples++;
+
+                hump_entry_height_milli_mm +=
+                    (int64_t)distance_mm * (int64_t)abs_forward;
+
+                if (abs_forward > hump_state.peak_mg) {
+                    hump_state.peak_mg = abs_forward;
+                }
+
+            } else {
+                /*
+                 * Direction changed before confirmation, so restart the
+                 * candidate sequence using this new direction.
+                 */
+                hump_state.entry_sign = current_sign;
+                hump_state.entry_samples = 1U;
+                hump_state.peak_mg = abs_forward;
+
+                hump_entry_height_milli_mm =
+                    (int64_t)distance_mm * (int64_t)abs_forward;
+            }
+
+            if (hump_state.entry_samples >=
+                S4_HUMP_ENTRY_CONFIRM_SAMPLES) {
+
+                hump_state.phase = HUMP_FIRST_SLOPE;
+                hump_state.first_sign = hump_state.entry_sign;
+                hump_state.age_samples = 0U;
+                hump_state.settle_samples = 0U;
+
+                hump_state.entry_sign = 0;
+                hump_state.entry_samples = 0U;
+
+                tm_printf((UB *)
+                          "Buddy4: hump entry confirmed sign=%d peak=%dmg\n",
+                          hump_state.first_sign,
+                          hump_state.peak_mg);
+            }
+
+        } else {
+            hump_state.entry_sign = 0;
+            hump_state.entry_samples = 0U;
+            hump_state.peak_mg = 0;
+            hump_entry_height_milli_mm = 0;
         }
+
         break;
+    }
 
     case HUMP_FIRST_SLOPE:
-        if (abs_dx > hump_state.peak_mg) {
-            hump_state.peak_mg = abs_dx;
+
+        if (abs_forward > hump_state.peak_mg) {
+            hump_state.peak_mg = abs_forward;
         }
 
-        if (sign_w(dx) != hump_state.first_sign &&
-            abs_dx >= S4_HUMP_OPPOSITE_MG) {
+        /*
+         * A complete hump must eventually contain a significant slope
+         * in the opposite direction.
+         */
+        if (sign_w(forward_mg) != hump_state.first_sign &&
+            abs_forward >= S4_HUMP_OPPOSITE_MG) {
+
             hump_state.phase = HUMP_OPPOSITE_SLOPE;
         }
+
         break;
 
     case HUMP_OPPOSITE_SLOPE:
-        if (abs_dx > hump_state.peak_mg) {
-            hump_state.peak_mg = abs_dx;
+
+        if (abs_forward > hump_state.peak_mg) {
+            hump_state.peak_mg = abs_forward;
         }
 
-        if (abs_dx <= S4_HUMP_SETTLE_MG) {
+        /*
+         * Moving measurements are noisy, so use a slightly wider
+         * "approximately flat" threshold for completion.
+         */
+        if (abs_forward <= S4_HUMP_EXIT_FLAT_MG) {
             hump_state.phase = HUMP_SETTLING;
             hump_state.settle_samples = 1U;
         }
+
         break;
 
     case HUMP_SETTLING:
-        if (abs_dx <= S4_HUMP_SETTLE_MG) {
+
+        if (abs_forward <= S4_HUMP_EXIT_FLAT_MG) {
             hump_state.settle_samples++;
-            if (hump_state.settle_samples >= S4_HUMP_SETTLE_SAMPLES) {
+
+            if (hump_state.settle_samples >=
+                S4_HUMP_EXIT_FLAT_SAMPLES) {
+
                 if (completed_peak != NULL) {
                     *completed_peak = hump_state.peak_mg;
                 }
+
+                hump_armed = FALSE;
+                hump_rearm_count = 0U;
+
                 reset_hump_detector();
+
                 return TRUE;
             }
-        } else {
+
+        } else if (abs_forward >= S4_HUMP_OPPOSITE_MG) {
+            /*
+             * Still clearly on the descending slope. Return to the
+             * opposite-slope phase and wait for flat again.
+             */
             hump_state.settle_samples = 0U;
             hump_state.phase = HUMP_OPPOSITE_SLOPE;
+
+        } else {
+            /*
+             * Small noisy excursion: keep the existing settling progress.
+             */
         }
+
         break;
 
     default:
@@ -359,22 +552,53 @@ LOCAL BOOL update_hump(W dx, W *completed_peak)
 }
 
 LOCAL void print_periodic_status(const LSM303_SAMPLE *sample,
-                                 IMU_MOTION_STATE motion,
-                                 W pitch_deg,
-                                 UW ramp_height_mm,
-                                 BOOL ramp_height_valid,
-                                 UW sample_count)
+                                  W baseline_x,
+                                  W baseline_y,
+                                  IMU_MOTION_STATE motion,
+                                  W pitch_deg,
+                                  UW ramp_height_mm,
+                                  BOOL ramp_height_valid,
+                                  UW sample_count)
 {
+    W dx;
+    W dy;
+
     if ((sample_count % S4_PRINT_PERIOD_SAMPLES) != 0U) {
         return;
     }
 
-    tm_printf((UB *)
-              "Buddy4: n=%u acc=(%d,%d,%d)mg mag=(%d,%d,%d) pitch=%d height=%umm height_valid=%d state=%d\n",
-              sample_count,
-              sample->ax_mg, sample->ay_mg, sample->az_mg,
-              sample->mx_raw, sample->my_raw, sample->mz_raw,
-              pitch_deg, ramp_height_mm, ramp_height_valid, motion);
+    dx = sample->ax_mg - baseline_x;
+    dy = sample->ay_mg - baseline_y;
+
+    tm_printf(
+        (UB *)
+        "Buddy4: n=%u "
+        "acc=(%d,%d,%d)mg "
+        "delta=(x:%d,y:%d)mg "
+        "mag=(%d,%d,%d) "
+        "pitch=%d "
+        "height=%umm "
+        "height_valid=%d "
+        "state=%d\n",
+
+        sample_count,
+
+        sample->ax_mg,
+        sample->ay_mg,
+        sample->az_mg,
+
+        dx,
+        dy,
+
+        sample->mx_raw,
+        sample->my_raw,
+        sample->mz_raw,
+
+        pitch_deg,
+        ramp_height_mm,
+        ramp_height_valid,
+        motion
+    );
 }
 
 EXPORT void imu_task(INT stacd, void *exinf)
@@ -418,6 +642,9 @@ EXPORT void imu_task(INT stacd, void *exinf)
     cal_state.count = 0U;
     tilt_samples = 0U;
     tilt_reported = FALSE;
+    hump_armed = TRUE;
+    hump_rearm_count = 0U;
+    movement_hold_samples = 0U;
     reset_hump_detector();
     reset_height_tracker();
 
@@ -445,6 +672,9 @@ EXPORT void imu_task(INT stacd, void *exinf)
             cal_state.count = 0U;
             tilt_samples = 0U;
             tilt_reported = FALSE;
+            hump_armed = TRUE;
+            hump_rearm_count = 0U;
+            movement_hold_samples = 0U;
             reset_hump_detector();
             reset_height_tracker();
         }
@@ -485,8 +715,25 @@ EXPORT void imu_task(INT stacd, void *exinf)
         } else {
             dx = sample.ax_mg - baseline_x;
             dy = sample.ay_mg - baseline_y;
-            pitch_deg = estimate_pitch_deg(dx);
+
+            /*
+            * Physical mounting confirmed from ramp testing:
+            *
+            * X = lateral / sideways movement
+            * Y = forward / ramp slope
+            *
+            * Therefore pitch, hump detection and ramp-height estimation
+            * use Y.
+            */
+            pitch_deg = estimate_pitch_deg(dy);
+
             distance_mm = subsystem4_take_distance_mm();
+            if (distance_mm > 0U) {
+                movement_hold_samples = S4_MOVEMENT_HOLD_SAMPLES;
+            } else if (movement_hold_samples > 0U) {
+                movement_hold_samples--;
+            }
+
             completed_hump_peak = 0;
 
             /* Safety event has highest classification priority. */
@@ -503,15 +750,44 @@ EXPORT void imu_task(INT stacd, void *exinf)
                           sample.ax_mg, sample.ay_mg, sample.az_mg);
             } else {
                 hump_was_active = (hump_state.phase != HUMP_IDLE);
-                hump_completed = update_hump(dx, &completed_hump_peak);
+                hump_completed = update_hump(
+                    dy,
+                    movement_hold_samples > 0U,
+                    distance_mm,
+                    &completed_hump_peak);
                 hump_is_active = (hump_state.phase != HUMP_IDLE);
 
                 if (!hump_was_active && hump_is_active) {
+                    /*
+                     * The entry-confirmation samples are already part of
+                     * the uphill climb, so preserve their accumulated rise.
+                     */
                     reset_height_tracker();
+
+                    current_height_milli_mm =
+                        hump_entry_height_milli_mm;
+
+                    current_height_mm =
+                        (W)(current_height_milli_mm / 1000);
+
+                    if (current_height_mm > 0) {
+                        peak_height_mm = (UW)current_height_mm;
+                    }
+
+                    if (hump_entry_height_milli_mm > 0) {
+                        height_distance_seen = TRUE;
+                    }
                 }
 
                 if (hump_is_active) {
-                    update_height_estimate(distance_mm, dx);
+                    /*
+                     * When the hump starts on this exact cycle, the current
+                     * entry sample has already been included above.
+                     */
+                    if (hump_was_active) {
+                        update_height_estimate(distance_mm, dy);
+                    }
+
                     motion = IMU_MOTION_HUMP;
                 }
 
@@ -532,16 +808,16 @@ EXPORT void imu_task(INT stacd, void *exinf)
                     }
                 } else {
                     /* A normal ramp should not be misclassified as severe tilt. */
-                    tilt_now = update_tilt(dx, dy);
+                    tilt_now = update_tilt(dx, dy, hump_is_active);
 
-                    if (tilt_now && !hump_is_active) {
+                    if (tilt_now) {
+                        W roll_deg = estimate_pitch_deg(dx);
                         motion = IMU_MOTION_TILT;
                         if (!tilt_reported) {
                             event = IMU_EVENT_TILT;
                             tilt_reported = TRUE;
                             tm_printf((UB *)
-                                      "Buddy4 EVENT: TILT pitch=%d deg\n",
-                                      pitch_deg);
+                                      "Buddy4 EVENT: TILT roll=%d deg lateral=%d mg\n", roll_deg,dx);
                         }
                     }
                 }
@@ -565,11 +841,13 @@ EXPORT void imu_task(INT stacd, void *exinf)
                              timing_overrun);
 
             print_periodic_status(&sample,
-                                  motion,
-                                  pitch_deg,
-                                  last_ramp_height,
-                                  last_ramp_height_valid,
-                                  local_sample_count);
+                                baseline_x,
+                                baseline_y,
+                                motion,
+                                pitch_deg,
+                                last_ramp_height,
+                                last_ramp_height_valid,
+                                local_sample_count);
         }
 
         previous_sample = sample;

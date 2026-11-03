@@ -4,6 +4,7 @@
 
 #define S1_TELEMETRY_BYTES 10U
 #define S1_COMMAND_BYTES 1U
+#define S1_MAPPING_BYTES 3U
 #define S1_HEARTBEAT_BYTES 1U
 #define S1_QUEUE_DEPTH 4U
 
@@ -66,8 +67,19 @@ typedef enum {
 #define S1_HEARTBEAT_OFFLINE 0U
 #define S1_HEARTBEAT_ONLINE 1U
 
+/* Barcode route map: four 5-bit letters (A=0..Z=25) in bits 0-19, slot order
+ * left, right, straight, U-turn (S3's command order). Bits 20-23 MUST be zero;
+ * the four letters must differ. */
+#define S1_MAP_SLOTS 4U
+#define S1_MAP_LEFT 0U
+#define S1_MAP_RIGHT 1U
+#define S1_MAP_STRAIGHT 2U
+#define S1_MAP_UTURN 3U
+#define S1_MAP_LETTER_MAX 25U
+
 typedef struct { unsigned char bytes[S1_TELEMETRY_BYTES]; } S1_TELEMETRY;
 typedef struct { unsigned char bytes[S1_COMMAND_BYTES]; } S1_COMMAND;
+typedef struct { unsigned char bytes[S1_MAPPING_BYTES]; } S1_MAPPING;
 
 /* Return 1 on success, 0 on invalid input. Failed setters leave packet intact.
  * Values are logical units, including signed speed. Pack before enqueueing;
@@ -78,4 +90,8 @@ int s1_telemetry_get(const S1_TELEMETRY *packet, S1_FIELD field, int *value);
 int s1_telemetry_valid(const S1_TELEMETRY *packet);
 int s1_command_set(S1_COMMAND *packet, unsigned int code);
 int s1_command_valid(const S1_COMMAND *packet);
+/* letters[slot] are 0..25. Set rejects range/duplicates and leaves packet
+ * intact; get rejects reserved bits, range and duplicates. */
+int s1_mapping_set(S1_MAPPING *packet, const unsigned char letters[S1_MAP_SLOTS]);
+int s1_mapping_get(const S1_MAPPING *packet, unsigned char letters[S1_MAP_SLOTS]);
 #endif

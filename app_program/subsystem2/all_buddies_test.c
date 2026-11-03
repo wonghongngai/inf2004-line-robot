@@ -11,13 +11,17 @@
 #include "../subsystem4/subsystem4.h"
 
 enum { WAITING, SETTLING, RUNNING, PAUSED, STOPPED, LINE_WAIT };
+enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_START_MS       5000u
 #define ALL_READY_MS       15000u
 #define ALL_IMU_STALE_MS   100u
 #define ALL_LINE_READY_MS  500u
 #define ALL_LINE_REACQUIRE_MS 100u
-#define ALL_BASE_PWM       30.0f
-#define ALL_INNER_PWM      15.0f
+#define ALL_BASE_PWM       20.0f
+#define ALL_INNER_PWM      10.0f
+#define ALL_RIGHT_BASE_PWM 22.0f
+#define ALL_RIGHT_TURN_LEFT_PWM 20.0f
+#define ALL_WHITE_CLEAR_MS 100u
 
 typedef struct {
     unsigned phase, terminal_state, barcode;
@@ -38,43 +42,23 @@ typedef struct {
     line_barcode_msg_t line;
     ER imu_er, line_er;
     float left, right;
-    bool straight_sample;
-    uint32_t straight_since;
-    int32_t straight_left, straight_right;
+    int corner_direction;
+    int last_side;
+    uint32_t side_seen;
+    uint32_t corner_started, centre_since;
+    bool corner_active, centre_pending;
+    bool white_clear_pending, white_reported;
+    uint32_t white_clear_since;
+    unsigned steering_action;
+    unsigned white_report_pattern, white_report_action;
+    uint8_t pending_letter;          /* bit 7 = waiting, bits 4..0 = A=0..Z=25 */
+    unsigned turn_stage, turn_command;
+    uint32_t turn_started, turn_done;
+    int32_t turn_left0, turn_right0;
+    bool turn_done_valid;
 } ALL_TEST;
 
-/* Observe only uninterrupted straight commands. Raw counts are signed;
- * distance uses magnitudes because encoder mounting can reverse polarity.
- * This is a measurement, not a claim of equal wheel revolutions. */
-static void report_straight_balance(ALL_TEST *t, uint32_t now)
-{
-    if (t->phase != RUNNING || t->left <= 0.0f || t->left != t->right) {
-        t->straight_sample = false;
-        return;
-    }
-    if (!t->straight_sample) {
-        t->straight_sample = true;
-        t->straight_since = now;
-        t->straight_left = t->left_ticks;
-        t->straight_right = t->right_ticks;
-        return;
-    }
-    uint32_t elapsed = now - t->straight_since;
-    if (elapsed < 500u) return;
-    int64_t dl = (int64_t)t->left_ticks - t->straight_left;
-    int64_t dr = (int64_t)t->right_ticks - t->straight_right;
-    float left = (float)(dl < 0 ? -dl : dl) / S2_LEFT_TICKS_PER_CM;
-    float right = (float)(dr < 0 ? -dr : dr) / S2_RIGHT_TICKS_PER_CM;
-    tm_printf((UB *)"[STRAIGHT CHECK] dt=%lu ms delta_ticks=%ld/%ld speed_mm_s=%ld/%ld ahead=%s (distance calibration; not revolutions)\n",
-              (unsigned long)elapsed, (long)dl, (long)dr,
-              (long)(left * 10000.0f / elapsed),
-              (long)(right * 10000.0f / elapsed),
-              dl == 0 || dr == 0 ? "encoder/motor missing movement" :
-              left > right ? "left" : right > left ? "right" : "equal");
-    t->straight_since = now;
-    t->straight_left = t->left_ticks;
-    t->straight_right = t->right_ticks;
-}
+static const char *const command_names[4] = {"LEFT", "RIGHT", "STRAIGHT", "U-TURN"};
 
 static float approach_pwm(float current, float target, float step)
 {
@@ -85,7 +69,9 @@ static float approach_pwm(float current, float target, float step)
 
 static void apply_follow_pwm(ALL_TEST *t, float left, float right, uint32_t now)
 {
-    if (left != right) t->straight_sample = false;
+    /* Physical wheel trim selected on hardware: straight = 12.5/14.2.
+     * Preserve 10% on the inner right wheel when steering right. */
+    if (right == ALL_BASE_PWM) right = ALL_RIGHT_BASE_PWM;
     uint32_t elapsed = t->pwm_clock_started ? now - t->pwm_updated : LINE_BARCODE_PERIOD_MS;
     /* A delayed cycle/resume must not turn into a sudden full-power step. */
     if (elapsed > 2u * LINE_BARCODE_PERIOD_MS) elapsed = 2u * LINE_BARCODE_PERIOD_MS;
@@ -122,6 +108,8 @@ static void stop_test(ALL_TEST *t, const char *reason, unsigned state)
 
 static void wait_for_line(ALL_TEST *t)
 {
+    t->corner_active = t->centre_pending = false;
+    t->last_side = 0;
     drv_motor_stop();
     t->left = t->right = 0.0f;
     if (t->phase == LINE_WAIT) return;
@@ -139,6 +127,255 @@ static void wait_for_line(ALL_TEST *t)
     tm_printf((UB *)"[ALL TEST] line missing; motors off until a valid black line returns\n");
 }
 
+/* Remain RUNNING so IMU, queue, duration and manual stop checks still apply.
+ * Active searches retain their direction through white gaps until real black
+ * changes it. A new search without a recent side defaults left. */
+static bool corner_step(ALL_TEST *t, uint32_t now)
+{
+    if (!ALL_TEST_CORNER_SEARCH || ALL_TEST_LINE_LAYOUT != LINE_BARCODE_LAYOUT_TRACK)
+        return false;
+    unsigned sensors = t->line.data[0] & 7u;
+    unsigned state = t->line.data[1] & 7u;
+    if (state == LINE_BARCODE_PAUSED || state == LINE_BARCODE_JUNCTION ||
+        sensors == 5u || sensors == 7u) {
+        stop_test(t, "ambiguous corner/junction; no route rule", S1_STATE_FAULT);
+        return true;
+    }
+    if (sensors == 4u || sensors == 6u || sensors == 1u || sensors == 3u) {
+        t->last_side = (sensors & 4u) ? -1 : 1;
+        t->side_seen = now;
+    }
+    int gap_direction = t->corner_active ? t->corner_direction :
+        (t->last_side != 0 &&
+         (uint32_t)(now - t->side_seen) <= ALL_TEST_DIRECTION_HOLD_MS ? t->last_side : -1);
+    int direction = sensors == 0u ? gap_direction : sensors == 4u ? -1 :
+                    (sensors == 1u || sensors == 3u) ? 1 : 0;
+    if (!t->corner_active) {
+        if (direction == 0) return false;
+        t->corner_active = true;
+        t->centre_pending = false;
+        t->corner_direction = direction;
+        t->corner_started = now;
+        t->stop_reason = "corner search";
+        tm_printf((UB *)"[ALL TEST] corner search %s; timeout=%u ms (0=disabled)\n",
+                  direction < 0 ? "left" : "right",
+                  (UINT)ALL_TEST_CORNER_TIMEOUT_MS);
+    }
+    /* Changing direction never resets the total search deadline. */
+#if ALL_TEST_CORNER_TIMEOUT_MS > 0
+    if ((uint32_t)(now - t->corner_started) >= ALL_TEST_CORNER_TIMEOUT_MS) {
+        stop_test(t, "corner search timed out", S1_STATE_FAULT);
+        return true;
+    }
+#endif
+    if (direction != 0 && direction != t->corner_direction) {
+        t->corner_direction = direction;
+        t->centre_pending = false;
+        tm_printf((UB *)"[ALL TEST] corner search switched %s\n",
+                  direction < 0 ? "left" : "right");
+    }
+    if (sensors == 6u && state != LINE_BARCODE_SEARCH) {
+        t->corner_active = t->centre_pending = false;
+        t->stop_reason = NULL;
+        return false; /* Left+centre black: ordinary left steering. */
+    }
+    /* Keep moving at 90% straight PWM during centre confirmation. */
+    if (sensors == 2u && state != LINE_BARCODE_SEARCH) {
+        apply_follow_pwm(t, ALL_BASE_PWM * 0.9f, ALL_RIGHT_BASE_PWM * 0.9f, now);
+        if (!t->centre_pending) {
+            t->centre_pending = true;
+            t->centre_since = now;
+        }
+        if ((uint32_t)(now - t->centre_since) >= ALL_TEST_CORNER_CENTRE_MS) {
+            t->corner_active = t->centre_pending = false;
+            t->stop_reason = NULL;
+            tm_printf((UB *)"[ALL TEST] corner complete; centre line stable\n");
+        }
+        return true;
+    }
+    t->centre_pending = false;
+    /* Immediately stop the inside wheel, ramp the outside wheel only. */
+    if (t->corner_direction < 0) {
+        t->left = 0.0f;
+        apply_follow_pwm(t, 0.0f, ALL_BASE_PWM, now);
+    } else {
+        t->right = 0.0f;
+        apply_follow_pwm(t, ALL_BASE_PWM, 0.0f, now);
+    }
+    return true;
+}
+
+/* S1 telemetry action for a decoded letter, from S3's current map. */
+static unsigned barcode_action(unsigned letter)
+{
+    uint8_t command;
+    if (line_service_lookup((uint8_t)letter, &command) != E_OK) return S1_BARCODE_NONE;
+    return command == LINE_BARCODE_CMD_LEFT ? S1_BARCODE_LEFT :
+           command == LINE_BARCODE_CMD_RIGHT ? S1_BARCODE_RIGHT :
+           command == LINE_BARCODE_CMD_STRAIGHT ? S1_BARCODE_STRAIGHT : S1_BARCODE_UTURN;
+}
+
+/* Left encoder direction is unconfirmed on hardware; use travelled magnitude. */
+static uint32_t tick_delta(int32_t now, int32_t start)
+{
+    int32_t delta = now - start;
+    return (uint32_t)(delta < 0 ? -delta : delta);
+}
+
+static void begin_turn_stage(ALL_TEST *t, unsigned stage)
+{
+    t->turn_stage = stage;
+    t->turn_left0 = t->left_ticks;
+    t->turn_right0 = t->right_ticks;
+}
+
+/* At a C/R-both-black junction, consume the stored letter. True when a
+ * mapped movement starts; false leaves the existing stop rule in charge. */
+static bool start_junction_turn(ALL_TEST *t, uint32_t now)
+{
+    uint8_t command;
+    if (!ALL_TEST_BARCODE_TURNS || (t->pending_letter & 0x80u) == 0u) return false;
+    unsigned letter = t->pending_letter & LINE_BARCODE_LETTER_MASK;
+    t->pending_letter = 0u;
+    if (line_service_lookup((uint8_t)letter, &command) != E_OK) {
+        tm_printf((UB *)"[ALL TEST] junction: letter '%c' has no mapping\n", 'A' + letter);
+        return false;
+    }
+    t->turn_command = command & 3u;
+    t->turn_started = now;
+    begin_turn_stage(t, TURN_ADVANCE);
+    t->stop_reason = "barcode junction movement";
+    t->force_status = true;
+    tm_printf((UB *)"[ALL TEST] junction: letter '%c' -> %s\n", 'A' + letter,
+              command_names[t->turn_command]);
+    return true;
+}
+
+static void finish_turn(ALL_TEST *t, uint32_t now)
+{
+    t->turn_stage = TURN_NONE;
+    t->turn_done = now;
+    t->turn_done_valid = true;
+    t->steering_action = 0u;
+    t->white_clear_pending = false;
+    t->white_reported = false;
+    t->stop_reason = NULL;
+    t->force_status = true;
+    tm_printf((UB *)"[ALL TEST] junction movement complete; white tracking resumes\n");
+}
+
+/* Sensors are ignored until the movement ends; IMU, queue and pause checks
+ * still run in all_test_step. */
+static void turn_step(ALL_TEST *t, uint32_t now)
+{
+    if ((uint32_t)(now - t->turn_started) >= ALL_TEST_TURN_TIMEOUT_MS) {
+        t->turn_stage = TURN_NONE;
+        stop_test(t, "junction movement timed out", S1_STATE_FAULT);
+        return;
+    }
+    if (t->turn_stage == TURN_ADVANCE) {
+        float advance = ALL_TEST_TURN_ADVANCE_CM * S2_RIGHT_TICKS_PER_CM;
+        if ((float)tick_delta(t->right_ticks, t->turn_right0) < advance) {
+            apply_follow_pwm(t, ALL_BASE_PWM, ALL_BASE_PWM, now);
+            return;
+        }
+        if (t->turn_command == LINE_BARCODE_CMD_STRAIGHT) {
+            finish_turn(t, now);
+            return;
+        }
+        begin_turn_stage(t, TURN_PIVOT);
+    }
+    /* Right pivot moves the left wheel; left pivot and U-turn the right. */
+    bool right_turn = t->turn_command == LINE_BARCODE_CMD_RIGHT;
+    float degrees = t->turn_command == LINE_BARCODE_CMD_UTURN ? 180.0f : 90.0f;
+    float target = degrees * (right_turn ? S2_LEFT_TURN_TICKS_PER_DEGREE :
+                                           S2_RIGHT_TURN_TICKS_PER_DEGREE);
+    uint32_t moved = right_turn ? tick_delta(t->left_ticks, t->turn_left0) :
+                                  tick_delta(t->right_ticks, t->turn_right0);
+    if ((float)moved >= target) {
+        finish_turn(t, now);
+    } else if (right_turn) {
+        t->right = 0.0f;
+        apply_follow_pwm(t, ALL_RIGHT_TURN_LEFT_PWM, 0.0f, now);
+    } else {
+        t->left = 0.0f;
+        apply_follow_pwm(t, 0.0f, ALL_BASE_PWM, now);
+    }
+}
+
+static void white_follow_step(ALL_TEST *t, uint32_t now)
+{
+    unsigned sensors = t->line.data[0] & 3u; /* Ignore left entirely. */
+    if ((t->line.data[1] & 7u) == LINE_BARCODE_PAUSED) {
+        stop_test(t, "white tracking sensor service paused", S1_STATE_FAULT);
+        return;
+    }
+    // if (sensors == 3u) {
+    //     stop_test(t, "centre and right both black", S1_STATE_FAULT);
+    //     return;
+    // }
+
+    t->corner_active = t->centre_pending = false;
+    t->last_side = 0;
+    if (sensors != 0u) {
+        t->steering_action = sensors;
+        t->white_clear_pending = false;
+    } else if (t->steering_action != 0u) {
+        if (!t->white_clear_pending) {
+            t->white_clear_pending = true;
+            t->white_clear_since = now;
+        }
+        if ((uint32_t)(now - t->white_clear_since) >= ALL_WHITE_CLEAR_MS) {
+            t->steering_action = 0u;
+            t->white_clear_pending = false;
+        }
+    }
+    unsigned action = t->steering_action;
+    if (!t->white_reported || sensors != t->white_report_pattern ||
+        action != t->white_report_action) {
+        tm_printf((UB *)"[WHITE STEER] C=%u R=%u action=%s%s\n",
+                  (UINT)((sensors >> 1u) & 1u), (UINT)(sensors & 1u),
+                  action == 0u ? "STRAIGHT" : action == 1u ? "RIGHT target=20/0" :
+                  action == 2u ? "LEFT" : "STOP",
+                  sensors == 0u && action != 0u ? " (confirming white 100ms)" : "");
+        t->white_reported = true;
+        t->white_report_pattern = sensors;
+        t->white_report_action = action;
+    }
+    if (sensors == 3u && t->turn_done_valid &&
+        (uint32_t)(now - t->turn_done) < ALL_TEST_TURN_SETTLE_MS) {
+        /* Still on the crossing just left by a movement. */
+        apply_follow_pwm(t, ALL_BASE_PWM, ALL_BASE_PWM, now);
+    } else if (sensors == 3u && start_junction_turn(t, now)) {
+        turn_step(t, now);
+    } else if (sensors == 3u) {
+        stop_test(t, "centre and right both black", S1_STATE_FAULT);
+    } else if (action == 1u) {
+        t->right = 0.0f;
+        t->stop_reason = "right black: turn right";
+        apply_follow_pwm(t, ALL_RIGHT_TURN_LEFT_PWM, 0.0f, now);
+    } else if (action == 2u) {
+        t->left = 0.0f;
+        t->stop_reason = "centre black: turn left";
+        apply_follow_pwm(t, 0.0f, ALL_BASE_PWM, now);
+    } else {
+        t->stop_reason = NULL;
+        apply_follow_pwm(t, ALL_BASE_PWM, ALL_BASE_PWM, now);
+    }
+}
+
+static void report_motor_outputs(void)
+{
+    MOTOR_DIAGNOSTICS d = {0};
+    ER er = drv_motor_diagnostics(&d);
+    tm_printf((UB *)"[MOTOR READBACK] check=%d GP8=%lu GP9=%lu GP10=%lu GP11=%lu CSR_L=%lu CSR_R=%lu\n",
+              er, (unsigned long)(d.left_compare & 0xffffu),
+              (unsigned long)(d.left_compare >> 16u),
+              (unsigned long)(d.right_compare & 0xffffu),
+              (unsigned long)(d.right_compare >> 16u),
+              (unsigned long)d.left_csr, (unsigned long)d.right_csr);
+}
+
 static const char *imu_status_reason(const ALL_TEST *t, uint32_t now)
 {
     if (t->imu_er != E_OK) return "IMU snapshot API failed";
@@ -149,8 +386,6 @@ static const char *imu_status_reason(const ALL_TEST *t, uint32_t now)
     if (t->imu.motion_state == IMU_MOTION_COLLISION || t->imu.event == IMU_EVENT_COLLISION)
         return "IMU collision detected";
 #endif
-    if (t->imu.motion_state == IMU_MOTION_TILT || t->imu.event == IMU_EVENT_TILT)
-        return "IMU tilt detected";
     if (t->imu.motion_state == IMU_MOTION_FAULT || t->imu.event == IMU_EVENT_FAULT)
         return "IMU processing fault";
     if ((uint32_t)(now - t->imu_updated) > ALL_IMU_STALE_MS)
@@ -169,6 +404,7 @@ static void report_telemetry(ALL_TEST *t, uint32_t now)
     S1_TELEMETRY packet;
     unsigned state = t->phase == STOPPED ? t->terminal_state :
                      t->phase == LINE_WAIT ? S1_STATE_RECOVERING :
+                     t->phase == RUNNING && t->turn_stage != TURN_NONE ? S1_STATE_TURNING :
                      t->phase == RUNNING ? S1_STATE_FOLLOWING : S1_STATE_IDLE;
     unsigned sensors = t->line.data[0] & 7u;
     /* S3: L/C/R at bits 2/1/0; S1 wire protocol: L/C/R at bits 0/1/2. */
@@ -219,6 +455,11 @@ static void commands(ALL_TEST *t, uint32_t now)
             if (t->phase != STOPPED) {
                 drv_motor_stop();
                 t->left = t->right = 0.0f;
+                t->corner_active = t->centre_pending = false;
+                t->last_side = 0;
+                t->white_clear_pending = false;
+                t->steering_action = 0u;
+                t->turn_stage = TURN_NONE;
                 if (line_service_enable(false) < E_OK && !ALL_TEST_CONTINUE_ON_SENSOR) {
                     stop_test(t, "pause failed", S1_STATE_FAULT);
                 } else {
@@ -254,6 +495,26 @@ static void commands(ALL_TEST *t, uint32_t now)
             break;
         }
     }
+    /* Barcode route map from MQTT; S3 keeps the old map on any rejection. */
+    for (unsigned i = 0u; i < S1_QUEUE_DEPTH; ++i) {
+        S1_MAPPING mapping;
+        unsigned char letters[S1_MAP_SLOTS];
+        INT len = subsystem1_receive_mapping(&mapping, TMO_POL);
+        if (len == E_TMOUT) break;
+        if (len != S1_MAPPING_BYTES || !s1_mapping_get(&mapping, letters) ||
+            line_service_set_mapping((char)('A' + letters[S1_MAP_LEFT]),
+                                     (char)('A' + letters[S1_MAP_RIGHT]),
+                                     (char)('A' + letters[S1_MAP_STRAIGHT]),
+                                     (char)('A' + letters[S1_MAP_UTURN])) < E_OK) {
+            tm_printf((UB *)"[ALL TEST] MQTT barcode map rejected (len=%d)\n", len);
+            if (len < E_OK) break;
+            continue;
+        }
+        tm_printf((UB *)"[ALL TEST] MQTT barcode map: %c=LEFT %c=RIGHT %c=STRAIGHT %c=U-TURN\n",
+                  'A' + letters[S1_MAP_LEFT], 'A' + letters[S1_MAP_RIGHT],
+                  'A' + letters[S1_MAP_STRAIGHT], 'A' + letters[S1_MAP_UTURN]);
+        t->force_status = true;
+    }
 }
 
 /* One step owns motor outputs, S3 events and the S1 command queue. The task
@@ -262,8 +523,13 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
 {
     uint8_t travelled_mm;
     drv_encoder_get_counts(&t->left_ticks, &t->right_ticks);
-    if (!wheel_odometry_step(&t->odometry, t->left_ticks, t->right_ticks,
-                             t->phase == RUNNING, &travelled_mm)) {
+    if (!wheel_odometry_step(&t->odometry,
+                            t->left_ticks,
+                            t->right_ticks,
+                            t->phase == RUNNING &&
+                            !t->corner_active &&
+                            t->turn_stage != TURN_PIVOT,
+                            &travelled_mm)) {
         stop_test(t, "encoder distance out of range; check calibration", S1_STATE_FAULT);
     } else if (travelled_mm != 0u) {
         ER er = subsystem4_add_distance_mm(travelled_mm);
@@ -307,10 +573,7 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
                 unsigned code = (event.data[1] >> 3u) & 7u;
                 if (code == LINE_BARCODE_EVT_BARCODE) {
                     unsigned letter = event.data[2] & LINE_BARCODE_LETTER_MASK;
-                    t->barcode = letter == 0u ? S1_BARCODE_LEFT :
-                        letter == 1u ? S1_BARCODE_RIGHT :
-                        letter == 2u ? S1_BARCODE_STRAIGHT :
-                        letter == 25u ? S1_BARCODE_UTURN : S1_BARCODE_NONE;
+                    t->barcode = barcode_action(letter);
                     tm_printf((UB *)"[ALL TEST] barcode '%c' detected; continuing\n", 'A' + letter);
                 } else if (code != 0u) {
                     tm_printf((UB *)"[ALL TEST] line event=%u; continuing\n", code);
@@ -415,27 +678,37 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
                 unsigned code = (event.data[1] >> 3u) & 7u;
                 if (code == LINE_BARCODE_EVT_LOST) {
                     lost_event = true;
-                    drv_motor_stop();
-                    t->left = t->right = 0.0f;
+                    if (!ALL_TEST_CORNER_SEARCH && !ALL_TEST_WHITE_FOLLOW) {
+                        drv_motor_stop();
+                        t->left = t->right = 0.0f;
+                    }
                     continue; /* Drain newer faults before resetting S3. */
                 }
-                if (code == LINE_BARCODE_EVT_FAULT || code == LINE_BARCODE_EVT_JUNCTION ||
-                    code == LINE_BARCODE_EVT_COMMAND) {
+                if (code == LINE_BARCODE_EVT_FAULT ||
+                    (!ALL_TEST_WHITE_FOLLOW && (code == LINE_BARCODE_EVT_JUNCTION ||
+                                               code == LINE_BARCODE_EVT_COMMAND))) {
                     stop_test(t, "line fault or junction", S1_STATE_FAULT); break;
                 }
                 if (code == LINE_BARCODE_EVT_BARCODE) {
                     unsigned letter = event.data[2] & LINE_BARCODE_LETTER_MASK;
-                    t->barcode = letter == 0u ? S1_BARCODE_LEFT :
-                        letter == 1u ? S1_BARCODE_RIGHT :
-                        letter == 2u ? S1_BARCODE_STRAIGHT :
-                        letter == 25u ? S1_BARCODE_UTURN : S1_BARCODE_NONE;
-                    tm_printf((UB *)"[ALL TEST] barcode '%c' detected (no automatic turn in test)\n",
-                              'A' + letter);
+                    unsigned action = barcode_action(letter);
+                    t->barcode = action;
+                    /* A newer barcode replaces any letter still waiting. */
+                    t->pending_letter = (uint8_t)(0x80u | letter);
+                    tm_printf((UB *)"[ALL TEST] barcode '%c' stored -> %s at next junction\n",
+                              'A' + letter, action == S1_BARCODE_NONE ? "no mapping" :
+                              command_names[action - S1_BARCODE_LEFT]);
                 }
             }
             unsigned state = t->line.data[1] & 7u;
             if (t->phase == RUNNING) {
-                if (state == LINE_BARCODE_PAUSED || state == LINE_BARCODE_JUNCTION) {
+                if (t->turn_stage != TURN_NONE) {
+                    turn_step(t, now);
+                } else if (ALL_TEST_WHITE_FOLLOW) {
+                    white_follow_step(t, now);
+                } else if (corner_step(t, now)) {
+                    /* Corner helper owns PWM; common reporting still runs. */
+                } else if (state == LINE_BARCODE_PAUSED || state == LINE_BARCODE_JUNCTION) {
                     stop_test(t, "line paused unexpectedly or junction", S1_STATE_FAULT);
                 } else if (lost_event || state == LINE_BARCODE_SEARCH) {
                     wait_for_line(t);
@@ -483,14 +756,17 @@ report_status:
     report_straight_balance(t, now);
     if ((uint32_t)(now - t->last_report) >= 500u) {
         unsigned sensors = t->line.data[0] & 7u;
-        tm_printf((UB *)"[ALL TEST] phase=%u L=%u C=%u R=%u line_er=%d IMU ok=%d calibrated=%d state=%d samples=%lu PWM=%d/%d ticks=%ld/%ld height=%umm valid=%d status=%s\n",
+        tm_printf((UB *)"[ALL TEST] phase=%u L=%u C=%u R=%u line_er=%d IMU ok=%d calibrated=%d state=%d samples=%lu PWM=%d.%d/%d.%d ticks=%ld/%ld height=%umm valid=%d status=%s\n",
                   t->phase, (UINT)((sensors >> 2u) & 1u), (UINT)((sensors >> 1u) & 1u),
                   (UINT)(sensors & 1u), t->line_er, t->imu.sensor_ok,
                   t->imu.calibrated, t->imu.motion_state, (unsigned long)t->imu_count,
-                  (int)t->left, (int)t->right, (long)t->left_ticks, (long)t->right_ticks,
+                  (int)t->left, ((int)(t->left * 10.0f)) % 10,
+                  (int)t->right, ((int)(t->right * 10.0f)) % 10,
+                  (long)t->left_ticks, (long)t->right_ticks,
                   (UINT)t->imu.ramp_height_mm, t->imu.ramp_height_valid,
                   t->stop_reason ? t->stop_reason : "none");
         t->last_report = now;
+        if (ALL_TEST_WHITE_FOLLOW) report_motor_outputs();
     }
     report_telemetry(t, now);
 }
@@ -504,13 +780,20 @@ static void all_task(INT stacd, void *exinf)
     (void)exinf;
     tm_printf((UB *)"[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU\n"
               "[ALL TEST] keep stationary for IMU calibration; starts after 5s\n"
-              "[ALL TEST] 30%% PWM; GP7=left GP27=centre GP0=right; 1=black\n"
+              "[ALL TEST] straight PWM left=12.5%% right=14.2%%; inner=10%%; GP7=left GP27=centre GP0=right; 1=black\n"
               "[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders\n");
-    tm_printf((UB *)"[ALL TEST] sensor response=%s; missing/invalid line stops motors; valid black auto-resumes; manual pause remains active\n",
+    if (ALL_TEST_WHITE_FOLLOW)
+        tm_printf((UB *)"[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP7 ignored for steering\n"
+                  "[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%%), 1/0 left, 1/1 STOP; 1=black\n");
+    else
+        tm_printf((UB *)"[ALL TEST] sensor response=%s; missing/invalid line stops motors; valid black auto-resumes; manual pause remains active\n",
               ALL_TEST_CONTINUE_ON_SENSOR ? "LOG ONLY (keep motors moving)" : "STOP/RECOVER");
     tm_printf((UB *)"[ALL TEST] layout=%s\n",
               ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_TRACK ?
               "TRACK (three line sensors; barcode decoding disabled)" : "SIDE (offset scanner)");
+    tm_printf((UB *)"[ALL TEST] barcode map: %s\n", ALL_TEST_DEFAULT_MAP ?
+              "offline default A=LEFT B=RIGHT C=STRAIGHT Z=U-TURN (MQTT may replace)" :
+              "none until MQTT <client-id>/mapping arrives");
     if (tk_get_tim(&now) < E_OK) {
         drv_motor_stop();
         tk_slp_tsk(TMO_FEVR);
@@ -520,7 +803,7 @@ static void all_task(INT stacd, void *exinf)
     last_control = now.lo - LINE_BARCODE_PERIOD_MS;
     test.duration_ms = ALL_TEST_DURATION_MS;
     test.pwm_ramp_per_second = ALL_TEST_PWM_RAMP_PER_SECOND;
-    tm_printf((UB *)"[ALL TEST] smooth motor start: 0 to 30%% in about 300ms; sensor detections are report-only in continuous mode\n");
+    tm_printf((UB *)"[ALL TEST] smooth motor start: 100 PWM percentage points/second\n");
     drv_encoder_get_counts(&test.left_ticks, &test.right_ticks);
     wheel_odometry_init(&test.odometry, S2_LEFT_TICKS_PER_CM,
                         S2_RIGHT_TICKS_PER_CM, test.left_ticks, test.right_ticks);
@@ -561,6 +844,10 @@ ER all_buddies_test_start(void)
     if (er == E_OK) er = line_service_init();
     if (er == E_OK) er = line_service_calibrate(7u, 0u);
     if (er == E_OK) er = line_service_set_layout(ALL_TEST_LINE_LAYOUT);
+#if ALL_TEST_DEFAULT_MAP
+    /* Offline bench map only; MQTT builds start unmapped. */
+    if (er == E_OK) er = line_service_set_mapping('A', 'B', 'C', 'Z');
+#endif
     if (er == E_OK) er = subsystem4_init();
     if (er == E_OK) er = subsystem1_start();
     if (er == E_OK) er = line_service_start();

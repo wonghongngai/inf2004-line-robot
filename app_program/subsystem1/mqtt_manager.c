@@ -31,6 +31,9 @@
 #ifndef MQTT_COMMAND_TOPIC
 #define MQTT_COMMAND_TOPIC MQTT_CLIENT_ID "/command"
 #endif
+#ifndef MQTT_MAPPING_TOPIC
+#define MQTT_MAPPING_TOPIC MQTT_CLIENT_ID "/mapping"
+#endif
 #ifndef MQTT_TELEMETRY_TOPIC
 #define MQTT_TELEMETRY_TOPIC MQTT_CLIENT_ID "/telemetry"
 #endif
@@ -39,57 +42,74 @@ static mqtt_client_t    *client;
 static ip_addr_t    broker_addr;
 static u8_t     connecting;
 
-/* Two command bits are stored separately from receive protocol state.
- * Owned solely by the Wi-Fi task. Zero is a valid command, not a terminator. */
-static unsigned char rx_command;
-#define RX_VALID 0x04U
-#define RX_HAVE_DATA 0x08U
-static unsigned char rx_flags;
+/* One incoming binary payload, stored separately from receive protocol state.
+ * Owned solely by the Wi-Fi task. Zero is valid data, not a terminator. */
+#define RX_NONE 0U
+#define RX_COMMAND 1U
+#define RX_MAPPING 2U
+static unsigned char rx_payload[S1_MAPPING_BYTES];
+static unsigned char rx_kind;
+static unsigned char rx_length;
 
 static void heartbeat_timeout(void *arg);
 
-static void incoming_publish_cb(void *arg, const char *topic, u32_t tot_len)
+static int topic_is(const char *topic, const char *name)
 {
     unsigned int i = 0;
-    (void)arg;
-    while (topic[i] != '\0' && MQTT_COMMAND_TOPIC[i] != '\0' &&
-           topic[i] == MQTT_COMMAND_TOPIC[i]) {
+    while (topic[i] != '\0' && name[i] != '\0' && topic[i] == name[i]) {
         ++i;
     }
-    rx_flags = (tot_len == S1_COMMAND_BYTES &&
-                topic[i] == '\0' && MQTT_COMMAND_TOPIC[i] == '\0') ? RX_VALID : 0U;
-    rx_command = 0;
+    return topic[i] == '\0' && name[i] == '\0';
+}
+
+static void incoming_publish_cb(void *arg, const char *topic, u32_t tot_len)
+{
+    (void)arg;
+    rx_length = 0;
+    rx_kind = RX_NONE;
+    if (topic_is(topic, MQTT_COMMAND_TOPIC) && tot_len == S1_COMMAND_BYTES) {
+        rx_kind = RX_COMMAND;
+    } else if (topic_is(topic, MQTT_MAPPING_TOPIC) && tot_len == S1_MAPPING_BYTES) {
+        rx_kind = RX_MAPPING;
+    }
 }
 
 static void incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
 {
+    unsigned int expected = rx_kind == RX_MAPPING ? S1_MAPPING_BYTES : S1_COMMAND_BYTES;
+    unsigned int i;
     (void)arg;
-    if ((rx_flags & RX_VALID) != 0U && len != 0U) {
-        if (len != S1_COMMAND_BYTES || (rx_flags & RX_HAVE_DATA) != 0U ||
-            (data[0] & ~S1_COMMAND_MASK) != 0U) {
-            rx_flags = 0;
+    if (rx_kind != RX_NONE) {
+        if (len > expected - rx_length) {
+            rx_kind = RX_NONE;
         } else {
-            rx_command = data[0];
-            rx_flags |= RX_HAVE_DATA;
+            for (i = 0; i < len; ++i) {
+                rx_payload[rx_length + i] = data[i];
+            }
+            rx_length = (unsigned char)(rx_length + len);
         }
     }
     if ((flags & MQTT_DATA_FLAG_LAST) != 0U) {
-        if ((rx_flags & (RX_VALID | RX_HAVE_DATA)) == (RX_VALID | RX_HAVE_DATA)) {
-            s1_deliver_command(&rx_command, S1_COMMAND_BYTES);
+        if (rx_kind == RX_COMMAND && rx_length == S1_COMMAND_BYTES &&
+            (rx_payload[0] & ~S1_COMMAND_MASK) == 0U) {
+            s1_deliver_command(rx_payload, S1_COMMAND_BYTES);
+        } else if (rx_kind == RX_MAPPING && rx_length == S1_MAPPING_BYTES) {
+            s1_deliver_mapping(rx_payload, S1_MAPPING_BYTES); /* validates */
         } else {
-            tm_printf((UB *)"mqtt: invalid binary command rejected\n");
+            tm_printf((UB *)"mqtt: invalid binary command/mapping rejected\n");
         }
-        rx_flags = 0;
+        rx_kind = RX_NONE;
+        rx_length = 0;
     }
 }
 
 static void subscribe_done_cb(void *arg, err_t result)
 {
-    (void)arg;
     if(result == ERR_OK) {
-        tm_printf((UB*)"mqtt: subscribed to " MQTT_COMMAND_TOPIC "\n");
+        tm_printf((UB*)"mqtt: subscribed to %s\n", (const char *)arg);
     } else {
-        tm_printf((UB*)"mqtt: subscribe failed, err=%d\n", (int)result);
+        tm_printf((UB*)"mqtt: subscribe %s failed, err=%d\n",
+                  (const char *)arg, (int)result);
     }
 }
 
@@ -140,14 +160,21 @@ static void connection_cb(mqtt_client_t *c, void *arg, mqtt_connection_status_t 
 
         tm_printf((UB*)"mqtt: connected to " MQTT_BROKER_IP "\n");
 
-        /* Reinstall command subscription after every reconnect. */
+        /* Reinstall command and mapping subscriptions after every reconnect. */
         mqtt_set_inpub_callback(client, incoming_publish_cb,
                     incoming_data_cb, NULL);
 
         err = mqtt_subscribe(client, MQTT_COMMAND_TOPIC, 0 /* qos */,
-                     subscribe_done_cb, NULL);
+                     subscribe_done_cb, (void *)MQTT_COMMAND_TOPIC);
         if(err != ERR_OK) {
             tm_printf((UB*)"mqtt: mqtt_subscribe() failed, err=%d\n",
+                  (int)err);
+        }
+        /* QoS 1: a lost map would leave every barcode unmapped. */
+        err = mqtt_subscribe(client, MQTT_MAPPING_TOPIC, 1 /* qos */,
+                     subscribe_done_cb, (void *)MQTT_MAPPING_TOPIC);
+        if(err != ERR_OK) {
+            tm_printf((UB*)"mqtt: mapping mqtt_subscribe() failed, err=%d\n",
                   (int)err);
         }
 

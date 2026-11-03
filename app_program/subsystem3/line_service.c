@@ -175,6 +175,23 @@ ER line_service_clear_map(void)
     return (result);
 }
 
+ER line_service_lookup(uint8_t letter, uint8_t *p_command)
+{
+    ER result = E_PAR;
+    if ((NULL != p_command) && (letter < LINE_BARCODE_ALPHABET_SIZE))
+    {
+        result = tk_loc_mtx(g_h_line_mutex, TMO_FEVR);
+        if (E_OK == result)
+        {
+            bool b_mapped = line_barcode_map_get(&g_letter_map, letter,
+                                                 p_command);
+            result = tk_unl_mtx(g_h_line_mutex);
+            result = (E_OK == result) ? (b_mapped ? E_OK : E_NOEXS) : result;
+        }
+    }
+    return (result);
+}
+
 static ER snapshot_locked(line_barcode_msg_t *p_msg)
 {
     SYSTIM now = {0};
@@ -267,6 +284,10 @@ static void line_service_task(INT start_code, void *p_extra)
     line_barcode_ctx_t context;
     SYSTIM now = {0};
     uint32_t previous_ms = 0u;
+#if APP_ALL_TEST
+    unsigned previous_inputs = 0xffu;
+    unsigned previous_filtered = 0xffu;
+#endif
     ER result = gpio_set_pin(LINE_SERVICE_PIN_LEFT, GPIO_MODE_IN);
     (void)start_code;
     (void)p_extra;
@@ -297,7 +318,8 @@ static void line_service_task(INT start_code, void *p_extra)
                 g_control_flags &= (uint8_t)~SERVICE_FLAG_RESET;
             }
             g_sample_ms = now.lo;
-            uint8_t sensors = (uint8_t)(~(read_sensors() ^ g_black_raw) & 7u);
+            uint8_t raw_inputs = read_sensors();
+            uint8_t sensors = (uint8_t)(~(raw_inputs ^ g_black_raw) & 7u);
             line_barcode_msg_t msg = line_barcode_pack(sensors, 6u, 0u,
                 LINE_BARCODE_PAUSED, LINE_BARCODE_EVT_STATUS, 0u);
             if ((E_OK == result)
@@ -314,6 +336,22 @@ static void line_service_task(INT start_code, void *p_extra)
             }
             publish_sample(msg);
             (void)tk_unl_mtx(g_h_line_mutex);
+#if APP_ALL_TEST
+            /* Report transitions outside the shared mutex. Raw is the
+             * sampled GPIO level; filtered is the published black bit.
+             * Pulses shorter than the sampling interval may still be missed. */
+            unsigned inputs = raw_inputs & 3u;
+            unsigned filtered = msg.data[0] & 3u;
+            if (inputs != previous_inputs || filtered != previous_filtered) {
+                tm_printf((UB *)"[IR RAW] ms=%lu dt=%lu GP27=%u GP0=%u filtered_C=%u filtered_R=%u state=%u\n",
+                          (unsigned long)now.lo, (unsigned long)elapsed_ms,
+                          (unsigned)((inputs >> 1u) & 1u), (unsigned)(inputs & 1u),
+                          (unsigned)((filtered >> 1u) & 1u), (unsigned)(filtered & 1u),
+                          (unsigned)(msg.data[1] & 7u));
+                previous_inputs = inputs;
+                previous_filtered = filtered;
+            }
+#endif
         }
     }
 }
@@ -355,9 +393,10 @@ ER line_service_start(void)
         task_cfg.tskatr = TA_HLNG | TA_RNG3;
 #if TK_SUPPORT_SMP
         task_cfg.tskatr |= TA_ASSPRC;
-#if APP_ALL_TEST
-        /* Radio/lwIP runs at higher priority on core 0. Keep the motor
-         * test's 10 ms sensor heartbeat on core 1, away from network work. */
+#if APP_ALL_TEST || APP_ROBOT_INTEGRATED
+        /* Radio/lwIP runs at higher priority on core 0 and can hold it for
+         * seconds during bring-up. Keep the 10 ms sensor heartbeat on core 1,
+         * away from network work, whenever the motors depend on it. */
         task_cfg.assprc = TP_PRC2;
 #else
         task_cfg.assprc = TP_PRC1;

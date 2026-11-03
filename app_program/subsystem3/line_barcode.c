@@ -87,6 +87,23 @@ static uint8_t map_lookup(line_barcode_map_t const *p_map, uint8_t letter)
     return ((uint8_t)((pair >> (bit % 8u)) & 7u));
 }
 
+bool line_barcode_map_get(line_barcode_map_t const *p_map, uint8_t letter,
+                          uint8_t *p_command)
+{
+    bool b_mapped = false;
+    if ((NULL != p_map) && (NULL != p_command)
+        && (letter < LINE_BARCODE_ALPHABET_SIZE))
+    {
+        uint8_t entry = map_lookup(p_map, letter);
+        b_mapped = (0u != (entry & 4u));
+        if (b_mapped)
+        {
+            *p_command = entry & 3u;
+        }
+    }
+    return (b_mapped);
+}
+
 void line_barcode_nav_clear(line_barcode_nav_t *p_nav)
 {
     if (NULL != p_nav)
@@ -533,12 +550,14 @@ line_barcode_msg_t line_barcode_step(line_barcode_ctx_t *p_ctx,
     {
         event = junction_event;
     }
+#if LINE_BARCODE_SEARCH_MS > 0
     if (p_ctx->search_ms >= LINE_BARCODE_SEARCH_MS)
     {
         p_ctx->state = LINE_BARCODE_FAULT;
         event = LINE_BARCODE_EVT_FAULT;
         fault = LINE_BARCODE_ERR_LINE;
     }
+#endif
     /* During short gaps/search, retain the last steering direction. */
     if (6u == position)
     {

@@ -34,8 +34,10 @@
  * right wheel for a left pivot. Revalidate after encoder/sampling changes.
  */
 #define S2_CALIBRATION_READY                 1
-#define S2_LEFT_TICKS_PER_CM                 103.5267f
-#define S2_RIGHT_TICKS_PER_CM                118.5634f
+// #define S2_LEFT_TICKS_PER_CM                 103.5267f
+// #define S2_RIGHT_TICKS_PER_CM                118.5634f
+#define S2_LEFT_TICKS_PER_CM   23.10f //updated calibration value
+#define S2_RIGHT_TICKS_PER_CM  18.83f
 #define S2_LEFT_TURN_TICKS_PER_DEGREE         20.3556f  /* right turn: 1832 / 90 */
 #define S2_RIGHT_TURN_TICKS_PER_DEGREE        22.9074f  /* left turn: 2061.6667 / 90 */
 #define S2_BASE_PWM_PERCENT                  55.0f
@@ -45,7 +47,8 @@
 #define S2_ANGLE_TOLERANCE_DEG               2.0f
 #define S2_ENCODER_STALL_TIMEOUT_MS          500U
 
-/* PID gains are deliberately not guessed.  Tune these on the real vehicle. */
+/* PID gains are deliberately not guessed.  Tune these on the real vehicle.
+   KP stays 0 until the left encoder's counting direction is confirmed. */
 #define S2_PID_KP                            0.0f
 #define S2_PID_KI                            0.0f
 #define S2_PID_KD                            0.0f

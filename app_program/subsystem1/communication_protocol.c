@@ -19,6 +19,11 @@ _Static_assert(STATE_BITS + FAULT_BITS + BATTERY_BITS + SPEED_BITS +
                "Update packet size and protocol layout together");
 _Static_assert(sizeof(S1_TELEMETRY) == 10, "Telemetry must have no padding");
 _Static_assert(sizeof(S1_COMMAND) == 1, "Command must have no padding");
+#define MAP_LETTER_BITS 5U
+_Static_assert(S1_MAP_SLOTS * MAP_LETTER_BITS <= S1_MAPPING_BYTES * 8U &&
+               S1_MAP_SLOTS * MAP_LETTER_BITS > (S1_MAPPING_BYTES - 1U) * 8U,
+               "Update mapping size and layout together");
+_Static_assert(sizeof(S1_MAPPING) == 3, "Mapping must have no padding");
 
 /* Fail compilation if a later range edit no longer fits its allocation,
  * or would leave unnecessary bits. Revisit layout and decoder in that case. */
@@ -36,6 +41,7 @@ CHECK_BITS("hump bits", S1_HUMP_MIN, S1_HUMP_MAX, HUMP_BITS);
 CHECK_BITS("obstacle bits", S1_OBSTACLE_MIN, S1_OBSTACLE_MAX, OBSTACLE_BITS);
 CHECK_BITS("angle bits", S1_SCAN_MIN, S1_SCAN_MAX, SCAN_BITS);
 CHECK_BITS("width bits", S1_WIDTH_MIN, S1_WIDTH_MAX, WIDTH_BITS);
+CHECK_BITS("map letter bits", 0, S1_MAP_LETTER_MAX, MAP_LETTER_BITS);
 #undef CHECK_BITS
 
 /* Descriptors are immutable protocol metadata, not application measurements. */
@@ -137,4 +143,64 @@ int s1_command_set(S1_COMMAND *packet, unsigned int code)
 int s1_command_valid(const S1_COMMAND *packet)
 {
     return packet != 0 && (packet->bytes[0] & ~S1_COMMAND_MASK) == 0U;
+}
+
+int s1_mapping_get(const S1_MAPPING *packet, unsigned char letters[S1_MAP_SLOTS])
+{
+    unsigned char decoded[S1_MAP_SLOTS];
+    unsigned int slot, other, bit;
+    if (packet == 0 || letters == 0) {
+        return 0;
+    }
+    for (bit = S1_MAP_SLOTS * MAP_LETTER_BITS; bit < S1_MAPPING_BYTES * 8U; ++bit) {
+        if (((packet->bytes[bit / 8U] >> (bit % 8U)) & 1U) != 0U) {
+            return 0;
+        }
+    }
+    for (slot = 0; slot < S1_MAP_SLOTS; ++slot) {
+        unsigned int i, value = 0;
+        for (i = 0; i < MAP_LETTER_BITS; ++i) {
+            bit = slot * MAP_LETTER_BITS + i;
+            value |= ((unsigned int)(packet->bytes[bit / 8U] >> (bit % 8U)) & 1U) << i;
+        }
+        if (value > S1_MAP_LETTER_MAX) {
+            return 0;
+        }
+        for (other = 0; other < slot; ++other) {
+            if (decoded[other] == value) {
+                return 0;
+            }
+        }
+        decoded[slot] = (unsigned char)value;
+    }
+    for (slot = 0; slot < S1_MAP_SLOTS; ++slot) {
+        letters[slot] = decoded[slot];
+    }
+    return 1;
+}
+
+int s1_mapping_set(S1_MAPPING *packet, const unsigned char letters[S1_MAP_SLOTS])
+{
+    S1_MAPPING encoded = {{0}};
+    unsigned char check[S1_MAP_SLOTS];
+    unsigned int slot, i;
+    if (packet == 0 || letters == 0) {
+        return 0;
+    }
+    for (slot = 0; slot < S1_MAP_SLOTS; ++slot) {
+        if (letters[slot] > S1_MAP_LETTER_MAX) {
+            return 0;
+        }
+        for (i = 0; i < MAP_LETTER_BITS; ++i) {
+            unsigned int bit = slot * MAP_LETTER_BITS + i;
+            if (((letters[slot] >> i) & 1U) != 0U) {
+                encoded.bytes[bit / 8U] |= (unsigned char)(1U << (bit % 8U));
+            }
+        }
+    }
+    if (!s1_mapping_get(&encoded, check)) {
+        return 0; /* duplicate letters */
+    }
+    *packet = encoded;
+    return 1;
 }

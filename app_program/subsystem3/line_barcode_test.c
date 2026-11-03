@@ -143,6 +143,9 @@ static bool test_mapping(void)
     }
     for (uint8_t letter = 0u; letter < LINE_BARCODE_ALPHABET_SIZE; letter++)
     {
+        uint8_t command = 9u;
+        b_valid = b_valid && line_barcode_map_get(&mapping, letter, &command)
+                  && ((letter % 4u) == command);
         barcode.data[2] = letter;
         msg = junction;
         b_valid = b_valid && !line_barcode_nav_update(&nav, &mapping, &barcode)
@@ -159,6 +162,9 @@ static bool test_mapping(void)
     (void)line_barcode_nav_update(&nav, &mapping, &barcode);
     b_valid = b_valid && (0u == nav.pending);
     line_barcode_map_clear(&mapping);
+    uint8_t unused = 0u;
+    b_valid = b_valid && !line_barcode_map_get(&mapping, 0u, &unused)
+              && !line_barcode_map_get(&mapping, 26u, &unused);
     return (b_valid && !line_barcode_map_set(&mapping, 'a', 0u)
             && !line_barcode_map_set(&mapping, 'Z', 4u)
             && (10u == sizeof(mapping)));
