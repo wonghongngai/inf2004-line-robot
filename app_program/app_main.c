@@ -144,7 +144,7 @@ EXPORT INT usermain(void)
     if (bench_er == E_OK) bench_er = line_service_start();
     if (bench_er == E_OK) bench_er = line_demo_start();
     CHECK(bench_er, "barcode_bench_start");
-    tm_printf((UB *)"[APP] BARCODE BENCH: motors OFF; scanner GP7, centre GP27, right GP0\n");
+    tm_printf((UB *)"[APP] BARCODE BENCH: motors OFF; scanner GP28, centre GP27, right GP0\n");
     tk_slp_tsk(TMO_FEVR);
     return 0;
 #endif

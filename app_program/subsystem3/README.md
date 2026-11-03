@@ -75,11 +75,11 @@ from the supplied PDF rectangles rather than the decoder's own lookup table.
 
 | Input | GPIO | SIDE profile (default) | TRACK profile |
 |---|---|---|---|
-| Left IR D0 | GP7 | offset barcode scanner | left line sensor |
+| Left IR D0 | GP28 | offset barcode scanner | left line sensor |
 | Centre IR D0 | GP27 | left edge of guide line | centre line sensor |
 | Right IR D0 | GP0 | right edge of guide line | right line sensor |
 
-Supply sensors at 3.3 V with common ground. GP28/GP1 analogue outputs are unused.
+Supply sensors at 3.3 V with common ground. GP28 reads the barcode sensor digital D0 output; analogue outputs are unused.
 GP0 conflicts with UART0: use USB console and `CRASH_REPORT=0`; the module
 rejects UART/crash-console builds.
 
@@ -276,7 +276,7 @@ The default decoder recognises the narrow/wide Code 39 patterns shown in
 BARCODE.pptx (A, F, Z, W, X and Y), including the start/stop stars. Every example
 has 29 alternating segments: 15 black bars and 14 internal white gaps. Letter
 identity comes from widths, not segment count. Both scan directions work.
-GP7 is the offset barcode sensor; centre/right continue steering.
+GP28 is the offset barcode sensor; centre/right continue steering.
 
 The combined controller uses A=LEFT, F=RIGHT, Z=STRAIGHT and W=U-TURN
 at the next C/R-both-black junction. All other A-Z letters are decoded and

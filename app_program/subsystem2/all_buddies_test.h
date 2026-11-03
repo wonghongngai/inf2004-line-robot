@@ -3,8 +3,8 @@
 #include "../app.h"
 #include "../subsystem3/line_barcode.h"
 #ifndef ALL_TEST_LINE_LAYOUT
-/* SIDE: GP7 is the offset barcode scanner, GP27/GP0 steer. TRACK disables
- * barcode decoding (GP7 over the track as a third line sensor). */
+/* SIDE: GP28 is the offset barcode scanner, GP27/GP0 steer. TRACK disables
+ * barcode decoding (GP28 over the track as a third line sensor). */
 #define ALL_TEST_LINE_LAYOUT LINE_BARCODE_LAYOUT_SIDE
 #endif
 #ifndef ALL_TEST_BARCODE_TURNS

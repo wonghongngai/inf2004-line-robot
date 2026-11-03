@@ -56,6 +56,7 @@ typedef struct {
     uint32_t turn_started, turn_done;
     int32_t turn_left0, turn_right0;
     bool turn_done_valid;
+    bool leaving_junction;
 } ALL_TEST;
 
 static const char *const command_names[4] = {"LEFT", "RIGHT", "STRAIGHT", "U-TURN"};
@@ -102,7 +103,10 @@ static void stop_test(ALL_TEST *t, const char *reason, unsigned state)
         t->stop_reason = reason;
         (void)line_service_enable(false);
         t->force_status = true;
-        tm_printf((UB *)"[ALL TEST] STOPPED: %s; reboot to retry\n", reason);
+        tm_printf((UB *)"[ALL TEST] STOPPED: %s; sample_dt=%lums line_fault=%u (1=line/GPIO 2=queue 4=timing); reboot to retry\n",
+                  reason, (unsigned long)line_service_fault_interval_ms(),
+                  (UINT)((t->line.data[2] >> LINE_BARCODE_FAULT_SHIFT)
+                                  & LINE_BARCODE_ERR_MASK));
     }
 }
 
@@ -246,7 +250,7 @@ static bool start_junction_turn(ALL_TEST *t, uint32_t now)
     begin_turn_stage(t, TURN_ADVANCE);
     t->stop_reason = "barcode junction movement";
     t->force_status = true;
-    tm_printf((UB *)"[ALL TEST] junction: letter '%c' -> %s\n", 'A' + letter,
+    tm_printf((UB *)"[MOTION] junction reached: letter '%c' -> %s\n", 'A' + letter,
               command_names[t->turn_command]);
     return true;
 }
@@ -256,12 +260,14 @@ static void finish_turn(ALL_TEST *t, uint32_t now)
     t->turn_stage = TURN_NONE;
     t->turn_done = now;
     t->turn_done_valid = true;
+    t->leaving_junction = true;
     t->steering_action = 0u;
     t->white_clear_pending = false;
     t->white_reported = false;
     t->stop_reason = NULL;
     t->force_status = true;
-    tm_printf((UB *)"[ALL TEST] junction movement complete; white tracking resumes\n");
+    apply_follow_pwm(t, ALL_BASE_PWM, ALL_BASE_PWM, now);
+    tm_printf((UB *)"[MOTION] turn complete; forward line following resumed\n");
 }
 
 /* Sensors are ignored until the movement ends; IMU, queue and pause checks
@@ -310,10 +316,11 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
         stop_test(t, "white tracking sensor service paused", S1_STATE_FAULT);
         return;
     }
-    // if (sensors == 3u) {
-    //     stop_test(t, "centre and right both black", S1_STATE_FAULT);
-    //     return;
-    // }
+    /* A completed turn may still leave the sensors on the same crossing.
+     * Re-arm junction detection only after the settling period and exit. */
+    if (t->leaving_junction && sensors != 3u
+        && (uint32_t)(now - t->turn_done) >= ALL_TEST_TURN_SETTLE_MS)
+        t->leaving_junction = false;
 
     t->corner_active = t->centre_pending = false;
     t->last_side = 0;
@@ -342,8 +349,7 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
         t->white_report_pattern = sensors;
         t->white_report_action = action;
     }
-    if (sensors == 3u && t->turn_done_valid &&
-        (uint32_t)(now - t->turn_done) < ALL_TEST_TURN_SETTLE_MS) {
+    if (sensors == 3u && t->leaving_junction) {
         /* Still on the crossing just left by a movement. */
         apply_follow_pwm(t, ALL_BASE_PWM, ALL_BASE_PWM, now);
     } else if (sensors == 3u && start_junction_turn(t, now)) {
@@ -560,6 +566,9 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
                 if (er == E_TMOUT) break;
                 if (er < E_OK) { t->stop_reason = "line queue failed"; break; }
                 unsigned code = (event.data[1] >> 3u) & 7u;
+                if (code == LINE_BARCODE_EVT_INVALID) {
+                    tm_printf((UB *)"[BARCODE REJECT] invalid frame: check start/stop, narrow/wide widths and white margins\n");
+                }
                 if (code == LINE_BARCODE_EVT_BARCODE) {
                     unsigned letter = event.data[2] & LINE_BARCODE_LETTER_MASK;
                     t->barcode = barcode_action(letter);
@@ -665,6 +674,9 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
                     stop_test(t, "line queue failed", S1_STATE_FAULT); break;
                 }
                 unsigned code = (event.data[1] >> 3u) & 7u;
+                if (code == LINE_BARCODE_EVT_INVALID) {
+                    tm_printf((UB *)"[BARCODE REJECT] invalid frame: check start/stop, narrow/wide widths and white margins\n");
+                }
                 if (code == LINE_BARCODE_EVT_LOST) {
                     lost_event = true;
                     if (!ALL_TEST_CORNER_SEARCH && !ALL_TEST_WHITE_FOLLOW) {
@@ -684,7 +696,7 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
                     t->barcode = action;
                     /* A newer barcode replaces any letter still waiting. */
                     t->pending_letter = (uint8_t)(0x80u | letter);
-                    tm_printf((UB *)"[ALL TEST] barcode '%c' stored -> %s at next junction\n",
+                    tm_printf((UB *)"[BARCODE -> MOTION] decoded=%c queued=%s; execute at next C/R junction\n",
                               'A' + letter, action == S1_BARCODE_NONE ? "no mapping" :
                               command_names[action - S1_BARCODE_LEFT]);
                 }
@@ -744,6 +756,37 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
 report_status:
     if ((uint32_t)(now - t->last_report) >= 500u) {
         unsigned sensors = t->line.data[0] & 7u;
+        for (unsigned run = 0u; run < 64u; ++run) {
+            uint32_t duration = 0u, dropped = 0u;
+            unsigned black = 0u;
+            if (!line_service_barcode_run(&duration, &black, &dropped)) break;
+            tm_printf((UB *)"[BARCODE RUN] %s duration=%lums under_40ms=%u dropped=%lu (white may be margin)\n",
+                      black ? "BLACK" : "WHITE", (unsigned long)duration,
+                      (UINT)(duration < 40u), (unsigned long)dropped);
+        }
+        if (ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_SIDE && t->phase == RUNNING) {
+            unsigned raw_level = 0u, rises = 0u, falls = 0u;
+            line_service_barcode_raw(&raw_level, &rises, &falls);
+            tm_printf((UB *)"[BARCODE RAW] GP28=%u rises=%u falls=%u (before debounce, session totals)\n",
+                      raw_level, rises, falls);
+            unsigned current_black = 0u;
+            uint32_t current_age = 0u;
+            line_service_barcode_level(&current_black, &current_age);
+            tm_printf((UB *)"[BARCODE LEVEL] GP28=%s held=%lums (ongoing run, not completed)\n",
+                      current_black ? "BLACK" : "WHITE", (unsigned long)current_age);
+            unsigned black_bars = 0u, white_runs = 0u;
+            uint8_t decoded_letter = 0xffu;
+            line_service_barcode_debug(&black_bars, &white_runs, &decoded_letter);
+            tm_printf((UB *)"[BARCODE COUNT] black_lines=%u internal_white_spaces=%u decoded=%c (session totals; gaps >=1s excluded)\n",
+                      black_bars, white_runs,
+                      decoded_letter < 26u ? 'A' + decoded_letter : '-');
+            unsigned scan_state = t->line.data[1] & 7u;
+            tm_printf((UB *)"[BARCODE STATUS] GP28 debounced=%s scanning=%u service_state=%u pending=%c (500ms snapshot)\n",
+                      (sensors & LINE_BARCODE_LEFT) ? "BLACK" : "WHITE",
+                      (UINT)(scan_state == LINE_BARCODE_SCANNING), scan_state,
+                      (t->pending_letter & 0x80u) ?
+                          'A' + (t->pending_letter & LINE_BARCODE_LETTER_MASK) : '-');
+        }
         tm_printf((UB *)"[ALL TEST] phase=%u L=%u C=%u R=%u line_er=%d IMU ok=%d calibrated=%d state=%d samples=%lu PWM=%d.%d/%d.%d ticks=%ld/%ld height=%umm valid=%d status=%s\n",
                   t->phase, (UINT)((sensors >> 2u) & 1u), (UINT)((sensors >> 1u) & 1u),
                   (UINT)(sensors & 1u), t->line_er, t->imu.sensor_ok,
@@ -766,12 +809,12 @@ static void all_task(INT stacd, void *exinf)
     uint32_t last_control;
     (void)stacd;
     (void)exinf;
-    tm_printf((UB *)"[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU\n"
+    tm_printf((UB *)"[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU\n[BARCODE BUILD] GP28 digital; cumulative counts; raw edges enabled\n[BARCODE DEBUG] duration logging enabled; minimum element=40ms; target=A\n"
               "[ALL TEST] keep stationary for IMU calibration; starts after 5s\n"
-              "[ALL TEST] straight PWM left=12.5%% right=14.2%%; inner=10%%; GP7=left GP27=centre GP0=right; 1=black\n"
+              "[ALL TEST] straight PWM left=12.5%% right=14.2%%; inner=10%%; GP28=left GP27=centre GP0=right; 1=black\n"
               "[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders\n");
     if (ALL_TEST_WHITE_FOLLOW)
-        tm_printf((UB *)"[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP7 ignored for steering\n"
+        tm_printf((UB *)"[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering\n"
                   "[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%%), 1/0 left, 1/1 STOP; 1=black\n");
     else
         tm_printf((UB *)"[ALL TEST] sensor response=%s; missing/invalid line stops motors; valid black auto-resumes; manual pause remains active\n",

@@ -10,5 +10,7 @@
  * Called each Wi-Fi poll while the link has an IP. Never call from student tasks.
  * Connects/reconnects and drains Buddy 1's telemetry queue without blocking. */
 void mqtt_utk_start(void);
+/* Wi-Fi owner calls this when no usable IP exists. Cancels stale retries. */
+void mqtt_utk_network_down(void);
 
 #endif /* MQTT_UTK_H */
