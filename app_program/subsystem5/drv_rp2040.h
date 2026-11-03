@@ -3,8 +3,6 @@
  * @brief   Small RP2040 helpers for subsystem 5: the 1 MHz timer, short
  *          busy-wait delays, and releasing the PWM block from reset.
  *
- * Why: this kernel port does not set up the watchdog tick that drives
- * the TIMER at 1 MHz, and leaves the PWM block held in reset.
  */
 
 #ifndef DRV_RP2040_H

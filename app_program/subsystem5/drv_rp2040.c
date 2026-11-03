@@ -6,17 +6,23 @@
 #include "subsystem5.h"
 #include "drv_rp2040.h"
 
-#define WATCHDOG_TICK_ADDR \
-    (0x40058000UL + 0x2CUL)              /* watchdog block + TICK offset */
+#define WATCHDOG_TICK_ADDR (0x40058000UL + 0x2CUL) /* watchdog block + TICK offset */
 #define WATCHDOG_TICK_ENABLE  (1UL << 9) /* bit 9: turn the tick on      */
 #define CLK_REF_CYCLES_PER_US (12UL)     /* 12 MHz crystal / 12 = 1 MHz  */
 
+/* 
+ * Turns on watchdog tick which divides 12 MHz crystal oscillator down 
+ * to 1 MHz so the hardware timer counts once per microsecond.
+ */
 EXPORT void rp2040_timer_start(void)
 {
     /* Writing enable bit to watchdog */
     out_w(WATCHDOG_TICK_ADDR, WATCHDOG_TICK_ENABLE | CLK_REF_CYCLES_PER_US);
 }
 
+/*
+ * Returns the current reading of the 1 MHz hardware timer.
+*/
 EXPORT UW rp2040_time_us(void)
 {
     return in_w(TIMER_TIMERAWL);
@@ -33,6 +39,10 @@ EXPORT void rp2040_delay_us(UW us)
     }
 }
 
+/*
+ * Takes the PWM block out of reset (which the kernel leaves it in) 
+ * and waits until the hardware reports it’s ready.
+*/
 EXPORT void rp2040_pwm_unreset(void)
 {
     clr_w(RESETS_RESET, RESETS_RESET_PWM); /* release the reset */
