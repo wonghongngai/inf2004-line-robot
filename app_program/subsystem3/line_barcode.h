@@ -30,6 +30,8 @@
 #define LINE_BARCODE_JUNCTION_NUM    9u
 #define LINE_BARCODE_JUNCTION_DEN    2u
 #define LINE_BARCODE_FRAME_RUNS      29u
+/* Digital comparator squeezes white spaces; retain runs above debounce. */
+#define LINE_BARCODE_MIN_RUN_MS      10u
 /* Optional count-only trial. Default validates Code 39 width patterns,
  * matching BARCODE.pptx: 29 segments alone cannot distinguish letters. */
 #ifndef LINE_BARCODE_COUNT_A
@@ -134,6 +136,8 @@ typedef struct
 
 /* Call only from the owning task, or with a task-private test context. */
 void line_barcode_reset(line_barcode_ctx_t *p_ctx);
+/* Completed run width in ms; index must be below run_count and 29. */
+uint16_t line_barcode_run_width(line_barcode_ctx_t const *p_ctx, uint8_t index);
 /* SIDE (default): left scans barcode; centre/right track opposite line edges.
  * A cross-junction is all three black with the scanner held black longer
  * than any bar (see LINE_BARCODE_JUNCTION_MS).

@@ -17,10 +17,12 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_IMU_STALE_MS   100u
 #define ALL_LINE_READY_MS  500u
 #define ALL_LINE_REACQUIRE_MS 100u
-#define ALL_BASE_PWM       12.5f
-#define ALL_INNER_PWM      6.25f
-#define ALL_RIGHT_BASE_PWM 15.0f
-#define ALL_RIGHT_TURN_LEFT_PWM 12.5f
+/* Slower barcode trial: all motor targets reduced by 20%, trim retained.
+ * PWM reduction is not a calibrated reduction in physical wheel speed. */
+#define ALL_BASE_PWM       10.0f
+#define ALL_INNER_PWM      5.0f
+#define ALL_RIGHT_BASE_PWM 11.0f
+#define ALL_RIGHT_TURN_LEFT_PWM 10.0f
 #define ALL_WHITE_CLEAR_MS 100u
 
 typedef struct {
@@ -70,8 +72,7 @@ static float approach_pwm(float current, float target, float step)
 
 static void apply_follow_pwm(ALL_TEST *t, float left, float right, uint32_t now)
 {
-    /* Physical wheel trim selected on hardware: straight = 12.5/14.2.
-     * Preserve 10% on the inner right wheel when steering right. */
+    /* Preserve the left/right straight-travel trim in the slower trial. */
     if (right == ALL_BASE_PWM) right = ALL_RIGHT_BASE_PWM;
     uint32_t elapsed = t->pwm_clock_started ? now - t->pwm_updated : LINE_BARCODE_PERIOD_MS;
     /* A delayed cycle/resume must not turn into a sudden full-power step. */
@@ -342,7 +343,7 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
         action != t->white_report_action) {
         tm_printf((UB *)"[WHITE STEER] C=%u R=%u action=%s%s\n",
                   (UINT)((sensors >> 1u) & 1u), (UINT)(sensors & 1u),
-                  action == 0u ? "STRAIGHT" : action == 1u ? "RIGHT target=20/0" :
+                  action == 0u ? "STRAIGHT" : action == 1u ? "RIGHT target=10/0" :
                   action == 2u ? "LEFT" : "STOP",
                   sensors == 0u && action != 0u ? " (confirming white 100ms)" : "");
         t->white_reported = true;
@@ -755,14 +756,29 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
     }
 report_status:
     if ((uint32_t)(now - t->last_report) >= 500u) {
+        static uint32_t last_frame_sequence;
+        line_service_barcode_frame_t frame = {0};
+        line_service_barcode_frame(&frame);
+        if (frame.sequence != last_frame_sequence) {
+            tm_printf((UB *)"[BARCODE FRAME] id=%lu runs=%u/29 black=%u white=%u result=%c skipped=%lu\n",
+                      (unsigned long)frame.sequence, (UINT)frame.count,
+                      (UINT)((frame.count + 1u) / 2u), (UINT)(frame.count / 2u),
+                      frame.letter < 26u ? 'A' + frame.letter : '?',
+                      (unsigned long)(frame.sequence - last_frame_sequence - 1u));
+            for (unsigned i = 0; i < frame.count; ++i)
+                tm_printf((UB *)"[BARCODE WIDTH] frame=%lu run=%u %s width_ms=%u\n",
+                          (unsigned long)frame.sequence, (UINT)(i + 1u),
+                          (i & 1u) ? "WHITE" : "BLACK", (UINT)frame.widths[i]);
+            last_frame_sequence = frame.sequence;
+        }
         unsigned sensors = t->line.data[0] & 7u;
         for (unsigned run = 0u; run < 64u; ++run) {
             uint32_t duration = 0u, dropped = 0u;
             unsigned black = 0u;
             if (!line_service_barcode_run(&duration, &black, &dropped)) break;
-            tm_printf((UB *)"[BARCODE RUN] %s duration=%lums under_40ms=%u dropped=%lu (white may be margin)\n",
+            tm_printf((UB *)"[BARCODE RUN] %s duration=%lums too_short=%u dropped=%lu (white may be margin)\n",
                       black ? "BLACK" : "WHITE", (unsigned long)duration,
-                      (UINT)(duration < 40u), (unsigned long)dropped);
+                      (UINT)(duration < LINE_BARCODE_MIN_RUN_MS), (unsigned long)dropped);
         }
         if (ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_SIDE) {
             if (t->phase != RUNNING)
@@ -812,13 +828,14 @@ static void all_task(INT stacd, void *exinf)
     uint32_t last_control;
     (void)stacd;
     (void)exinf;
-    tm_printf((UB *)"[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU\n[BARCODE BUILD] GP28 digital; cumulative counts; raw edges enabled\n[BARCODE DEBUG] duration logging enabled; minimum element=40ms; target=A\n"
+    tm_printf((UB *)"[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU\n[BARCODE BUILD] GP28 digital; full 29-run capture then Code39 A-Z decoder; short-white validation v2\n[BARCODE DEBUG] per-frame widths in ms; 15 black + 14 white; minimum element=10ms\n"
               "[ALL TEST] keep stationary for IMU calibration; starts after 5s\n"
-              "[ALL TEST] straight PWM left=12.5%% right=15%%; inner=6.25%%; GP28=left GP27=centre GP0=right; 1=black\n"
+              "[BARCODE SPEED TRIAL] slow trial with wheel trim; straight=10/11; inner=5; right-turn=10/0\n"
+              "[ALL TEST] straight PWM left=10%% right=11%%; inner=5%%; GP28=left GP27=centre GP0=right; 1=black\n"
               "[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders\n");
     if (ALL_TEST_WHITE_FOLLOW)
         tm_printf((UB *)"[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering\n"
-                  "[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%%), 1/0 left, 1/1 STOP; 1=black\n");
+                  "[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 10%%), 1/0 left, 1/1 STOP; 1=black\n");
     else
         tm_printf((UB *)"[ALL TEST] sensor response=%s; missing/invalid line stops motors; valid black auto-resumes; manual pause remains active\n",
               ALL_TEST_CONTINUE_ON_SENSOR ? "LOG ONLY (keep motors moving)" : "STOP/RECOVER");
