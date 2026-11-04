@@ -49,6 +49,7 @@ static UW median3(UW a, UW b, UW c)
     return b;
 }
 
+/* Pick the angle range for the fine scan from the coarse scan */
 EXPORT BOOL fine_scan_window(const scan_point_t * p_coarse, UW count,
                              UW * p_start_deg, UW * p_end_deg)
 {
@@ -117,6 +118,7 @@ EXPORT BOOL fine_scan_window(const scan_point_t * p_coarse, UW count,
     return TRUE;
 }
 
+/* Smooth scan readings with a 3-point median filter */
 EXPORT void scan_median3(const scan_point_t * p_in, scan_point_t * p_out,
                          UW count)
 {
@@ -147,6 +149,7 @@ EXPORT void scan_median3(const scan_point_t * p_in, scan_point_t * p_out,
     }
 }
 
+/* Check if a scan point is a valid close reading */
 static BOOL is_hit(const scan_point_t * p_point)
 {
     return ((ULTRASONIC_OK == p_point->status) &&
@@ -155,6 +158,7 @@ static BOOL is_hit(const scan_point_t * p_point)
                : FALSE;
 }
 
+/* Convert an angle and distance to x/y coordinates */
 static void point_to_xy(UW angle_deg, UW distance_mm, INT * p_x_mm,
                         INT * p_y_mm)
 {
@@ -176,6 +180,7 @@ static void point_to_xy(UW angle_deg, UW distance_mm, INT * p_x_mm,
     }
 }
 
+/* Update the left/right clearance from one scan point */
 static void clearance_update(const scan_point_t * p_point, INT x_limit_mm,
                              INT y_left_mm, INT y_right_mm,
                              obstacle_profile_t * p_out)
@@ -217,6 +222,7 @@ static void clearance_update(const scan_point_t * p_point, INT x_limit_mm,
     }
 }
 
+/* Build the obstacle's profile from the scan points */
 EXPORT BOOL obstacle_profile(const scan_point_t * p_fine, UW fine_count,
                              const scan_point_t * p_coarse, UW coarse_count,
                              obstacle_profile_t * p_out)
@@ -324,6 +330,7 @@ EXPORT BOOL obstacle_profile(const scan_point_t * p_fine, UW fine_count,
     return TRUE;
 }
 
+/* Confirm an obstacle from the last three readings */
 EXPORT BOOL obstacle_filter_update(UB * p_history, ultrasonic_status_t status,
                                    UW distance_mm)
 {
@@ -362,6 +369,7 @@ EXPORT BOOL obstacle_filter_update(UB * p_history, ultrasonic_status_t status,
     return (count >= CONFIRM_THRESHOLD) ? TRUE : FALSE;
 }
 
+/* Decide how to get around the obstacle */
 EXPORT void obstacle_plan(const obstacle_profile_t * p_profile, UW retries,
                           plan_t * p_plan)
 {

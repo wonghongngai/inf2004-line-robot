@@ -7,8 +7,8 @@
 #include "drv_rp2040.h"
 #include "drv_ultrasonic.h"
 
-#define US_TRIG_PIN (16U) /* Temporary, to be changed to 16 */
-#define US_ECHO_PIN (17U) /* Temporary, to be changed to 17 */
+#define US_TRIG_PIN (16U)
+#define US_ECHO_PIN (17U)
 
 #if ((US_ECHO_PIN & 1U) == 0U)
 #error "US_ECHO_PIN must be odd (PWM channel B)"
@@ -28,12 +28,13 @@
 /* Register field values */
 #define PWM_CSR_DIVMODE_LEVEL (1UL << 4) /* count only while pin B is high */
 #define PWM_DIV_INT_SHIFT     (4U)       /* DIV integer part is bits 11:4  */
-#define ECHO_CLKDIV_INT      (125UL)    /* 125 MHz / 125 = 1 count per us */
+#define ECHO_CLKDIV_INT       (125UL)    /* 125 MHz / 125 = 1 count per us */
 #define ECHO_CTR_MAX          (0xFFFFUL) /* 16-bit counter: 65 535 us max  */
 
 
-#define TRIG_PULSE_US (12U) /* datasheet needs >= 10 us; 12 gives margin */
+#define TRIG_PULSE_US (12U)
 
+/* Initialise the ultrasonic sensor */
 EXPORT void ultrasonic_init(void)
 {
     rp2040_timer_start();
@@ -54,6 +55,7 @@ EXPORT void ultrasonic_init(void)
     set_w(GPIO(US_ECHO_PIN), GPIO_OD);
 }
 
+/* Fire one ping and measure the distance in mm */
 EXPORT ultrasonic_status_t ultrasonic_measure_mm(UW   window_ms,
                                                  UW * p_distance_mm)
 {

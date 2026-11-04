@@ -163,6 +163,9 @@ EXPORT INT usermain(void)
 	er = subsystem4_init();
 	CHECK(er, "subsystem4_init");
 	if (er < E_OK) goto startup_failed;
+	er = subsystem5_init();
+	CHECK(er, "subsystem5_init");
+	if (er < E_OK) goto startup_failed;
 #endif
 
 	/* Phase 2: every subsystem starts its tasks */
@@ -175,6 +178,9 @@ EXPORT INT usermain(void)
 	if (er < E_OK) goto startup_failed;
 	er = subsystem4_start();
 	CHECK(er, "subsystem4_start");
+	if (er < E_OK) goto startup_failed;
+	er = subsystem5_start();
+	CHECK(er, "subsystem5_start");
 	if (er < E_OK) goto startup_failed;
 #endif
 	er = subsystem2_start();

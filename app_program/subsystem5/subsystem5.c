@@ -18,11 +18,13 @@
 
 #include "subsystem5.h"
 
+/* Create subsystem 5's kernel objects */
 EXPORT ER subsystem5_init(void)
 {
 	return E_OK;
 }
 
+/* Start the obstacle task */
 EXPORT ER subsystem5_start(void)
 {
 	ID tid = app_start_task(obstacle_task, S5_PRI_MAIN, 0, "obstacle");

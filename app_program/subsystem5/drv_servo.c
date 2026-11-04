@@ -36,6 +36,7 @@
 /* Last commanded angle (not measured: the servo can't report it). */
 static UW g_angle_deg = SERVO_ANGLE_CENTRE_DEG;
 
+/* Limit an angle to the servo's safe range */
 static UW servo_clamp_deg(UW angle_deg)
 {
     if (angle_deg < SERVO_ANGLE_MIN_DEG)
@@ -63,12 +64,14 @@ EXPORT UW servo_angle_to_pulse_us(UW angle_deg)
             SERVO_CAL_SPAN_DEG);
 }
 
+/* Command the servo to an angle */
 EXPORT void servo_set_angle(UW angle_deg)
 {
     g_angle_deg = servo_clamp_deg(angle_deg);
     pwm_set_cc(SERVO_PIN, servo_angle_to_pulse_us(g_angle_deg));
 }
 
+/* Work out how long the servo needs to reach a new angle */
 EXPORT UW servo_settle_ms(UW from_deg, UW to_deg)
 {
     UW delta_deg =
@@ -84,6 +87,7 @@ EXPORT UW servo_settle_ms(UW from_deg, UW to_deg)
            SERVO_SETTLE_MARGIN_MS;
 }
 
+/* Move the servo and wait until it has arrived */
 EXPORT void servo_move_and_settle(UW angle_deg)
 {
     UW wait_ms;
@@ -98,6 +102,7 @@ EXPORT void servo_move_and_settle(UW angle_deg)
     }
 }
 
+/* Initialise the servo */
 EXPORT void servo_init(void)
 {
     rp2040_timer_start();

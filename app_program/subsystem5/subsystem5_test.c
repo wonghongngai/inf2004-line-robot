@@ -9,6 +9,7 @@
 
 #if APP_TEST
 
+/* Run subsystem 5's self-tests */
 EXPORT void subsystem5_test(void)
 {
 	TEST_INIT();

@@ -34,6 +34,7 @@ static void coarse_scan(scan_point_t * p_points)
     }
 }
 
+/* Ping at small steps across an angle range */
 static UW fine_scan(UW start_deg, UW end_deg, scan_point_t * p_points)
 {
     UW angle_deg;
@@ -54,6 +55,7 @@ static UW fine_scan(UW start_deg, UW end_deg, scan_point_t * p_points)
     return count;
 }
 
+/* Turn an ultrasonic status into text */
 static const char * status_name(ultrasonic_status_t status)
 {
     switch (status)
@@ -67,6 +69,7 @@ static const char * status_name(ultrasonic_status_t status)
     }
 }
 
+/* Turn a plan decision into text */
 static const char * plan_name(plan_decision_t decision)
 {
     switch (decision)
@@ -80,6 +83,7 @@ static const char * plan_name(plan_decision_t decision)
     }
 }
 
+/* Main obstacle task: monitor, scan, profile and plan */
 EXPORT void obstacle_task(INT stacd, void * exinf)
 {
     s5_state_t          state   = S5_MONITORING;
