@@ -21,6 +21,16 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_INNER_PWM      10.0f
 #define ALL_RIGHT_BASE_PWM 22.0f
 #define ALL_RIGHT_TURN_LEFT_PWM 20.0f
+// #define ALL_BASE_PWM              16.0f
+// #define ALL_INNER_PWM             8.0f
+// #define ALL_RIGHT_BASE_PWM        18.0f
+// #define ALL_RIGHT_TURN_LEFT_PWM   16.0f
+
+// #define ALL_BASE_PWM              10.0f
+// #define ALL_INNER_PWM             5.0f
+// #define ALL_RIGHT_BASE_PWM        8.0f
+// #define ALL_RIGHT_TURN_LEFT_PWM   6.0f
+
 #define ALL_WHITE_CLEAR_MS 100u
 
 typedef struct {
