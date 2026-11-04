@@ -7,7 +7,7 @@
 #include "../app.h"
 #include "line_barcode.h"
 
-#define LINE_SERVICE_PIN_LEFT       7u
+#define LINE_SERVICE_PIN_LEFT       28u
 #define LINE_SERVICE_PIN_CENTRE     27u
 #define LINE_SERVICE_PIN_RIGHT      0u
 #define LINE_SERVICE_PRIORITY       16
@@ -50,6 +50,19 @@ ER line_service_lookup(uint8_t letter, uint8_t *p_command);
  * Always check the return code before using a snapshot.
  */
 ER line_service_snapshot(line_barcode_msg_t *p_msg);
+/* Sampling interval recorded at the first decoder fault; no console I/O. */
+uint32_t line_service_fault_interval_ms(void);
+/* Diagnostic counts of accepted bars/white runs; letter 0..25, 255 if none.
+ * Caller supplies three non-null output pointers. */
+/* Pop a completed debounced run. Non-null outputs; dropped is cumulative.
+ * White runs may be margins; this is a diagnostic stream, not a frame. */
+bool line_service_barcode_run(uint32_t *ms, unsigned *black, uint32_t *dropped);
+/* Current accepted level and time since its last accepted change.
+ * Outputs are meaningful while the service is enabled. Non-null pointers. */
+/* Sampled digital input and session HIGH/LOW edge totals, before debounce. */
+void line_service_barcode_raw(unsigned *level, unsigned *rises, unsigned *falls);
+void line_service_barcode_level(unsigned *black, uint32_t *age_ms);
+void line_service_barcode_debug(unsigned *black, unsigned *white, uint8_t *letter);
 ER line_service_receive(line_barcode_msg_t *p_msg, TMO timeout);
 
 #endif /* LINE_SERVICE_H */

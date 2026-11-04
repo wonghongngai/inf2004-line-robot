@@ -198,43 +198,52 @@ static uint8_t track_position(line_barcode_ctx_t const *p_ctx)
     return (position);
 }
 
-/* Classify each character locally to tolerate gradual changes in speed.
- * Reject overlaps, weak contrast, outliers and anything but three wide runs.
- */
+/* Classify bars and spaces separately within each nine-element character.
+ * Split at the strongest relative gap, requiring at least 1.5x separation.
+ * A colour with no distinct width groups contains only narrow elements. */
 static uint16_t decode_character(uint16_t const *p_runs, bool b_reverse)
 {
-    uint16_t minimum = LINE_BARCODE_RUN_MAX_MS;
-    uint16_t maximum = 0u;
-    uint16_t pattern = 0u;
-    uint8_t wide_count = 0u;
-    bool b_valid = true;
-
-    for (uint8_t idx = 0u; idx < BARCODE_ELEMENTS; idx++)
-    {
-        uint16_t width = p_runs[idx];
-        minimum = (width < minimum) ? width : minimum;
-        maximum = (width > maximum) ? width : maximum;
-    }
-    if ((minimum < BARCODE_MIN_RUN_MS)
-        || (maximum > LINE_BARCODE_RUN_MAX_MS)
-        || ((uint32_t)maximum * 2u < (uint32_t)minimum * 3u)
-        || ((uint32_t)maximum > (uint32_t)minimum * 4u))
-    {
-        b_valid = false;
-    }
-    for (uint8_t idx = 0u; idx < BARCODE_ELEMENTS; idx++)
-    {
-        uint8_t source = b_reverse ? (BARCODE_ELEMENTS - 1u - idx) : idx;
-        bool b_wide = ((uint32_t)p_runs[source] * 2u
-                       > (uint32_t)minimum + maximum);
-        pattern = (uint16_t)(pattern << 1u);
-        if (b_wide)
-        {
-            pattern |= 1u;
-            wide_count++;
+    uint16_t threshold[2] = {UINT16_MAX, UINT16_MAX};
+    for (unsigned colour = 0u; colour < 2u; ++colour) {
+        uint16_t sorted[5];
+        unsigned count = 0u;
+        for (unsigned i = colour; i < BARCODE_ELEMENTS; i += 2u) {
+            uint16_t width = p_runs[i];
+            if (width < BARCODE_MIN_RUN_MS || width > LINE_BARCODE_RUN_MAX_MS)
+                return 0u;
+            unsigned j = count++;
+            while (j > 0u && sorted[j - 1u] > width) {
+                sorted[j] = sorted[j - 1u];
+                --j;
+            }
+            sorted[j] = width;
+        }
+        unsigned split = 0u;
+        for (unsigned i = 1u; i < count; ++i) {
+            if ((uint32_t)sorted[i] * 2u < (uint32_t)sorted[i - 1u] * 3u)
+                continue;
+            if (split == 0u || (uint32_t)sorted[i] * sorted[split - 1u]
+                                > (uint32_t)sorted[split] * sorted[i - 1u])
+                split = i;
+        }
+        if (split != 0u) {
+            /* Reject a third width cluster or extreme variation within one. */
+            if ((uint32_t)sorted[split - 1u] > 2u * sorted[0]
+                || (uint32_t)sorted[count - 1u] > 2u * sorted[split])
+                return 0u;
+            threshold[colour] = sorted[split - 1u]
+                               + (sorted[split] - sorted[split - 1u]) / 2u;
         }
     }
-    return ((b_valid && (BARCODE_WIDE_COUNT == wide_count)) ? pattern : 0u);
+    uint16_t pattern = 0u;
+    unsigned wide_count = 0u;
+    for (unsigned i = 0u; i < BARCODE_ELEMENTS; ++i) {
+        unsigned source = b_reverse ? BARCODE_ELEMENTS - 1u - i : i;
+        bool wide = p_runs[source] > threshold[source & 1u];
+        pattern = (uint16_t)((pattern << 1u) | (wide ? 1u : 0u));
+        wide_count += wide ? 1u : 0u;
+    }
+    return wide_count == BARCODE_WIDE_COUNT ? pattern : 0u;
 }
 
 bool line_barcode_decode(uint16_t const *p_runs, uint8_t count,
@@ -390,7 +399,32 @@ static uint8_t barcode_update(line_barcode_ctx_t *p_ctx, uint16_t elapsed_ms,
         p_ctx->run_ms = 0u;
         p_ctx->flags = (uint8_t)((p_ctx->flags & ~BARCODE_FLAG_BLACK)
                                 | (b_black ? BARCODE_FLAG_BLACK : 0u));
-        verify_start(p_ctx);
+        if (!LINE_BARCODE_COUNT_A) verify_start(p_ctx);
+    }
+    if (LINE_BARCODE_COUNT_A)
+    {
+        /* run_count counts completed segments, starting at the first black
+         * bar. The surrounding white quiet zones are not segments. Wait for
+         * the trailing quiet zone so a longer pattern cannot match at 29. */
+        if (0u != (p_ctx->flags & BARCODE_FLAG_CAPTURE))
+        {
+            if (!b_black && p_ctx->run_ms >= LINE_BARCODE_QUIET_MS)
+            {
+                event = p_ctx->run_count == LINE_BARCODE_FRAME_RUNS
+                        ? LINE_BARCODE_EVT_BARCODE : LINE_BARCODE_EVT_INVALID;
+                *p_letter = 0u;
+                p_ctx->flags &= (uint8_t)~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
+                p_ctx->run_count = 0u;
+            }
+            else if ((b_black && p_ctx->run_count == LINE_BARCODE_FRAME_RUNS)
+                     || p_ctx->run_ms > LINE_BARCODE_RUN_MAX_MS)
+            {
+                event = LINE_BARCODE_EVT_INVALID;
+                p_ctx->flags &= (uint8_t)~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
+                p_ctx->run_count = 0u;
+            }
+        }
+        return event;
     }
     uint16_t quiet_required = BARCODE_MIN_QUIET_UNITS * first_narrow(p_ctx);
     if (!b_black && (LINE_BARCODE_FRAME_RUNS == p_ctx->run_count)
@@ -522,12 +556,22 @@ line_barcode_msg_t line_barcode_step(line_barcode_ctx_t *p_ctx,
                                   LINE_BARCODE_ERR_TIMING));
     }
     sensors &= LINE_BARCODE_SENSOR_MASK;
-    /* Debounce each bit independently, so scanner edges cannot delay line
-     * sensing. Each bit must agree with its previous sample before changing.
-     */
-    uint8_t unchanged = (uint8_t)(~(sensors ^ p_ctx->candidate) & 7u);
-    p_ctx->stable = (p_ctx->stable & ~unchanged) | (sensors & unchanged);
-    p_ctx->candidate = sensors;
+    /* A changed input starts a candidate interval. Only subsequent samples
+     * with that same level advance its age, so unobserved time before the
+     * first sample is never counted as stability. Inputs are independent. */
+    for (unsigned bit = 0u; bit < 3u; ++bit) {
+        uint8_t mask = (uint8_t)(1u << bit);
+        if ((sensors ^ p_ctx->candidate) & mask) {
+            p_ctx->candidate = (p_ctx->candidate & ~mask) | (sensors & mask);
+            p_ctx->candidate_ms[bit] = 0u;
+        } else {
+            unsigned age = p_ctx->candidate_ms[bit] + elapsed_ms;
+            p_ctx->candidate_ms[bit] = age < LINE_BARCODE_DEBOUNCE_MS
+                                      ? age : LINE_BARCODE_DEBOUNCE_MS;
+            if (p_ctx->candidate_ms[bit] >= LINE_BARCODE_DEBOUNCE_MS)
+                p_ctx->stable = (p_ctx->stable & ~mask) | (sensors & mask);
+        }
+    }
     uint8_t position = track_position(p_ctx);
     event = line_update(p_ctx, elapsed_ms, position);
     uint8_t barcode_event = LINE_BARCODE_EVT_STATUS;

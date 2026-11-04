@@ -1,5 +1,5 @@
 /* S2 motor driver + S3 sensor service, with one motor/queue-owning task.
- * TRACK layout: GP7=left, GP27=centre, GP0=right.
+ * TRACK layout: GP28=left, GP27=centre, GP0=right.
  */
 #include "line_follow_test.h"
 
@@ -28,7 +28,7 @@ static void follow_task(INT stacd, void *exinf)
     (void)exinf;
 
     tm_printf((UB *)"[LINE TEST] S2 motors + S3 TRACK sensors; 1=black\n"
-              "[LINE TEST] GP7=left, GP27=centre, GP0=right\n"
+              "[LINE TEST] GP28=left, GP27=centre, GP0=right\n"
               "[LINE TEST] starts in 5 seconds; runs for at most 30 seconds\n");
     tm_printf((UB *)"[LINE TEST] base=%d%% inner=%d%%; left=M1 GP8/9 right=M2 GP10/11\n",
               (int)FOLLOW_BASE_PWM, (int)FOLLOW_INNER_PWM);

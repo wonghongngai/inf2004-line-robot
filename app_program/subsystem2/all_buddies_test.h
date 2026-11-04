@@ -3,22 +3,14 @@
 #include "../app.h"
 #include "../subsystem3/line_barcode.h"
 #ifndef ALL_TEST_LINE_LAYOUT
-/* SIDE: GP7 is the offset barcode scanner, GP27/GP0 steer. TRACK disables
- * barcode decoding (GP7 over the track as a third line sensor). */
+/* SIDE: GP28 is the offset barcode scanner, GP27/GP0 steer. TRACK disables
+ * barcode decoding (GP28 over the track as a third line sensor). */
 #define ALL_TEST_LINE_LAYOUT LINE_BARCODE_LAYOUT_SIDE
 #endif
 #ifndef ALL_TEST_BARCODE_TURNS
 /* A stored barcode letter turns the next C/R-both-black junction into the
  * mapped movement instead of a stop. */
 #define ALL_TEST_BARCODE_TURNS 1
-#endif
-#ifndef ALL_TEST_DEFAULT_MAP
-/* MQTT builds wait for <client-id>/mapping; offline builds use A/B/C/Z. */
-#if TM_MQTT
-#define ALL_TEST_DEFAULT_MAP 0
-#else
-#define ALL_TEST_DEFAULT_MAP 1
-#endif
 #endif
 /* Junction movement, tune on hardware: forward until the wheels reach the
  * crossing, then a one-wheel pivot measured with S2's turn calibration. */

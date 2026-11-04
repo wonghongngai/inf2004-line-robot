@@ -37,6 +37,7 @@
  * CYW43_LINK_FAIL until the next power cycle, so re-issue the join on a fixed
  * backoff for as long as the link is down. */
 #define WIFI_REJOIN_DELAY_US (5 * 1000 * 1000ull)
+#define WIFI_CONNECT_TIMEOUT_US (45 * 1000 * 1000ull)
 
 /* Overridable from the makefile if an AP needs something else. MIXED accepts
  * both TKIP and AES; the driver treats it the same as WPA2_AES_PSK for a
@@ -275,7 +276,8 @@ void cyw43_utk_task(int32_t stacd, void *exinf)
 
 #if TM_NET_LWIP
     int32_t  prev_link_status = radio_status.link_status;
-    uint64_t rejoin_at = 0;
+    uint64_t rejoin_at = time_us_64() + WIFI_REJOIN_DELAY_US;
+    uint64_t connect_deadline = time_us_64() + WIFI_CONNECT_TIMEOUT_US;
 #endif
 
     for(;;) {
@@ -300,24 +302,28 @@ void cyw43_utk_task(int32_t stacd, void *exinf)
                           (int)radio_status.link_status);
             }
 
-            /* Negative == the association attempt is over and lost. Arm a
-             * retry; a positive-but-not-UP status (JOIN/NOIP) is still making
-             * progress, so leave it alone and let DHCP finish. */
-            rejoin_at = (radio_status.link_status < 0)?
-                        time_us_64() + WIFI_REJOIN_DELAY_US: 0;
+            /* DOWN also occurs after losing a previously working AP. */
+            rejoin_at = (radio_status.link_status <= CYW43_LINK_DOWN) ?
+                        time_us_64() + WIFI_REJOIN_DELAY_US : 0;
+            if (radio_status.link_status == CYW43_LINK_UP)
+                connect_deadline = 0;
+            else if (connect_deadline == 0)
+                connect_deadline = time_us_64() + WIFI_CONNECT_TIMEOUT_US;
         }
 
-        if(rejoin_at != 0 && time_us_64() >= rejoin_at) {
-            rejoin_at = 0;
-            if(radio_status.link_status < 0) {
-                (void)wifi_try_join();
-                /* Force the next iteration to treat whatever comes back as a
-                 * change, so the new outcome is always reported. Must be a
-                 * value cyw43_tcpip_link_status() can never return (it yields
-                 * -3..3), or a genuine repeat failure would be swallowed. */
-                prev_link_status = 0x7fffffff;
-            }
+        uint64_t network_now = time_us_64();
+        bool stalled = connect_deadline != 0 && network_now >= connect_deadline;
+        if (radio_status.link_status != CYW43_LINK_UP &&
+            (stalled || (rejoin_at != 0 && network_now >= rejoin_at))) {
+            tm_printf((UB*)"wifi: reconnecting (%s)\n",
+                      stalled ? "association/IP timeout" : "link down or join failed");
+            (void)cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
+            (void)wifi_try_join();
+            rejoin_at = network_now + WIFI_REJOIN_DELAY_US;
+            connect_deadline = network_now + WIFI_CONNECT_TIMEOUT_US;
+            prev_link_status = 0x7fffffff;
         }
+
 #else
         was_scanning = radio_status.scan_active != 0;
         cyw43_thread_enter();
@@ -340,6 +346,8 @@ void cyw43_utk_task(int32_t stacd, void *exinf)
          * again after connection_cb() schedules a retry. */
         if(radio_status.link_status == CYW43_LINK_UP) {
             mqtt_utk_start();
+        } else {
+            mqtt_utk_network_down();
         }
 #endif
 #endif

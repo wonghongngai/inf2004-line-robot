@@ -25,6 +25,76 @@ static line_barcode_map_t g_letter_map = {{0u}};
 /* Letter read from the last barcode, waiting for the next junction. */
 static line_barcode_nav_t g_nav = {0u};
 static uint32_t g_sample_ms = 0u;
+static unsigned g_debug_black, g_debug_white;
+static uint8_t g_debug_level, g_debug_letter = 0xffu;
+static uint32_t g_debug_edge_ms;
+static unsigned g_debug_raw, g_debug_raw_rises, g_debug_raw_falls;
+static bool g_debug_raw_valid;
+
+void line_service_barcode_raw(unsigned *level, unsigned *rises, unsigned *falls)
+{
+    if (tk_loc_mtx(g_h_line_mutex, TMO_FEVR) == E_OK) {
+        *level = g_debug_raw;
+        *rises = g_debug_raw_rises;
+        *falls = g_debug_raw_falls;
+        (void)tk_unl_mtx(g_h_line_mutex);
+    }
+}
+
+#define BARCODE_DEBUG_RUNS 64u
+static struct { uint32_t ms; uint8_t black; } g_debug_runs[BARCODE_DEBUG_RUNS];
+static unsigned g_debug_read, g_debug_write;
+static uint32_t g_debug_dropped;
+
+bool line_service_barcode_run(uint32_t *ms, unsigned *black, uint32_t *dropped)
+{
+    bool available = false;
+    if (tk_loc_mtx(g_h_line_mutex, TMO_FEVR) == E_OK) {
+        *dropped = g_debug_dropped;
+        if (g_debug_read != g_debug_write) {
+            *ms = g_debug_runs[g_debug_read].ms;
+            *black = g_debug_runs[g_debug_read].black;
+            g_debug_read = (g_debug_read + 1u) % BARCODE_DEBUG_RUNS;
+            available = true;
+        }
+        (void)tk_unl_mtx(g_h_line_mutex);
+    }
+    return available;
+}
+
+
+void line_service_barcode_level(unsigned *black, uint32_t *age_ms)
+{
+    if (tk_loc_mtx(g_h_line_mutex, TMO_FEVR) == E_OK) {
+        SYSTIM now = {0};
+        (void)tk_get_tim(&now);
+        *black = g_debug_level;
+        *age_ms = now.lo - g_debug_edge_ms;
+        (void)tk_unl_mtx(g_h_line_mutex);
+    }
+}
+
+void line_service_barcode_debug(unsigned *black, unsigned *white, uint8_t *letter)
+{
+    if (tk_loc_mtx(g_h_line_mutex, TMO_FEVR) == E_OK) {
+        *black = g_debug_black;
+        *white = g_debug_white;
+        *letter = g_debug_letter;
+        (void)tk_unl_mtx(g_h_line_mutex);
+    }
+}
+
+static uint32_t g_fault_interval_ms = 0u;
+
+uint32_t line_service_fault_interval_ms(void)
+{
+    uint32_t interval = 0u;
+    if (tk_loc_mtx(g_h_line_mutex, TMO_FEVR) == E_OK) {
+        interval = g_fault_interval_ms;
+        (void)tk_unl_mtx(g_h_line_mutex);
+    }
+    return interval;
+}
 static line_barcode_msg_t g_latest = {{0u, LINE_BARCODE_PAUSED}};
 
 /* All shared packed fields and the three-byte snapshot use this mutex.
@@ -284,10 +354,6 @@ static void line_service_task(INT start_code, void *p_extra)
     line_barcode_ctx_t context;
     SYSTIM now = {0};
     uint32_t previous_ms = 0u;
-#if APP_ALL_TEST
-    unsigned previous_inputs = 0xffu;
-    unsigned previous_filtered = 0xffu;
-#endif
     ER result = gpio_set_pin(LINE_SERVICE_PIN_LEFT, GPIO_MODE_IN);
     (void)start_code;
     (void)p_extra;
@@ -308,6 +374,8 @@ static void line_service_task(INT start_code, void *p_extra)
         (void)tk_can_wup(TSK_SELF);
         (void)tk_get_tim(&now);
         uint32_t elapsed_ms = now.lo - previous_ms;
+        /* A queued wakeup is not another elapsed sampling period. */
+        if (elapsed_ms == 0u) continue;
         previous_ms = now.lo;
         ER lock_result = tk_loc_mtx(g_h_line_mutex, TMO_FEVR);
         if (E_OK == lock_result)
@@ -316,9 +384,25 @@ static void line_service_task(INT start_code, void *p_extra)
             {
                 (void)line_barcode_set_layout(&context, g_layout);
                 g_control_flags &= (uint8_t)~SERVICE_FLAG_RESET;
+                g_debug_black = g_debug_white = 0u;
+                g_debug_level = 0u;
+                g_debug_letter = 0xffu;
+                g_debug_edge_ms = now.lo;
+                g_debug_raw_rises = g_debug_raw_falls = 0u;
+                g_debug_raw_valid = false;
+                g_debug_read = g_debug_write = 0u;
+                g_debug_dropped = 0u;
+                g_fault_interval_ms = 0u;
             }
             g_sample_ms = now.lo;
             uint8_t raw_inputs = read_sensors();
+            unsigned raw_barcode = (raw_inputs >> 2u) & 1u;
+            if (g_debug_raw_valid && raw_barcode != g_debug_raw) {
+                if (raw_barcode) ++g_debug_raw_rises;
+                else ++g_debug_raw_falls;
+            }
+            g_debug_raw = raw_barcode;
+            g_debug_raw_valid = true;
             uint8_t sensors = (uint8_t)(~(raw_inputs ^ g_black_raw) & 7u);
             line_barcode_msg_t msg = line_barcode_pack(sensors, 6u, 0u,
                 LINE_BARCODE_PAUSED, LINE_BARCODE_EVT_STATUS, 0u);
@@ -328,30 +412,44 @@ static void line_service_task(INT start_code, void *p_extra)
                 uint16_t elapsed = (elapsed_ms > UINT16_MAX)
                                    ? UINT16_MAX : (uint16_t)elapsed_ms;
                 msg = line_barcode_step(&context, sensors, elapsed);
+                if ((msg.data[1] & 7u) == LINE_BARCODE_FAULT
+                    && (g_control_flags & SERVICE_FLAG_PROCESS_FAULT) == 0u)
+                    g_fault_interval_ms = elapsed_ms;
             }
             if (E_OK != result)
             {
                 msg = line_barcode_pack(sensors, 6u, 0u, LINE_BARCODE_FAULT,
                     LINE_BARCODE_EVT_FAULT, LINE_BARCODE_ERR_LINE);
             }
+            /* Observe accepted levels only; console output stays in the controller.
+             * Session totals never reset on a white gap. Count a white
+             * space only when the next black bar closes it, excluding the
+             * leading/trailing margins of a scan separated by >=1s white. */
+            if ((g_control_flags & SERVICE_FLAG_ENABLED) != 0u
+                && (g_control_flags & SERVICE_FLAG_PROCESS_FAULT) == 0u) {
+                uint8_t black = (msg.data[0] & LINE_BARCODE_LEFT) != 0u;
+                if (black != g_debug_level) {
+                    unsigned next = (g_debug_write + 1u) % BARCODE_DEBUG_RUNS;
+                    if (next != g_debug_read) {
+                        g_debug_runs[g_debug_write].ms = now.lo - g_debug_edge_ms;
+                        g_debug_runs[g_debug_write].black = g_debug_level;
+                        g_debug_write = next;
+                    } else {
+                        ++g_debug_dropped;
+                    }
+                    if (black) {
+                        if (g_debug_black != 0u && now.lo - g_debug_edge_ms < 1000u)
+                            ++g_debug_white;
+                        ++g_debug_black;
+                    }
+                    g_debug_level = black;
+                    g_debug_edge_ms = now.lo;
+                }
+                if (((msg.data[1] >> 3u) & 7u) == LINE_BARCODE_EVT_BARCODE)
+                    g_debug_letter = msg.data[2] & LINE_BARCODE_LETTER_MASK;
+            }
             publish_sample(msg);
             (void)tk_unl_mtx(g_h_line_mutex);
-#if APP_ALL_TEST
-            /* Report transitions outside the shared mutex. Raw is the
-             * sampled GPIO level; filtered is the published black bit.
-             * Pulses shorter than the sampling interval may still be missed. */
-            unsigned inputs = raw_inputs & 3u;
-            unsigned filtered = msg.data[0] & 3u;
-            if (inputs != previous_inputs || filtered != previous_filtered) {
-                tm_printf((UB *)"[IR RAW] ms=%lu dt=%lu GP27=%u GP0=%u filtered_C=%u filtered_R=%u state=%u\n",
-                          (unsigned long)now.lo, (unsigned long)elapsed_ms,
-                          (unsigned)((inputs >> 1u) & 1u), (unsigned)(inputs & 1u),
-                          (unsigned)((filtered >> 1u) & 1u), (unsigned)(filtered & 1u),
-                          (unsigned)(msg.data[1] & 7u));
-                previous_inputs = inputs;
-                previous_filtered = filtered;
-            }
-#endif
         }
     }
 }
@@ -395,7 +493,7 @@ ER line_service_start(void)
         task_cfg.tskatr |= TA_ASSPRC;
 #if APP_ALL_TEST || APP_ROBOT_INTEGRATED
         /* Radio/lwIP runs at higher priority on core 0 and can hold it for
-         * seconds during bring-up. Keep the 10 ms sensor heartbeat on core 1,
+         * seconds during bring-up. Keep the 1 ms sensor heartbeat on core 1,
          * away from network work, whenever the motors depend on it. */
         task_cfg.assprc = TP_PRC2;
 #else

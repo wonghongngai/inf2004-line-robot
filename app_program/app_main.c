@@ -144,7 +144,7 @@ EXPORT INT usermain(void)
     if (bench_er == E_OK) bench_er = line_service_start();
     if (bench_er == E_OK) bench_er = line_demo_start();
     CHECK(bench_er, "barcode_bench_start");
-    tm_printf((UB *)"[APP] BARCODE BENCH: motors OFF; scanner GP7, centre GP27, right GP0\n");
+    tm_printf((UB *)"[APP] BARCODE BENCH: motors OFF; scanner GP28, centre GP27, right GP0\n");
     tk_slp_tsk(TMO_FEVR);
     return 0;
 #endif
@@ -163,6 +163,9 @@ EXPORT INT usermain(void)
 	er = subsystem4_init();
 	CHECK(er, "subsystem4_init");
 	if (er < E_OK) goto startup_failed;
+	er = subsystem5_init();
+	CHECK(er, "subsystem5_init");
+	if (er < E_OK) goto startup_failed;
 #endif
 
 	/* Phase 2: every subsystem starts its tasks */
@@ -175,6 +178,9 @@ EXPORT INT usermain(void)
 	if (er < E_OK) goto startup_failed;
 	er = subsystem4_start();
 	CHECK(er, "subsystem4_start");
+	if (er < E_OK) goto startup_failed;
+	er = subsystem5_start();
+	CHECK(er, "subsystem5_start");
 	if (er < E_OK) goto startup_failed;
 #endif
 	er = subsystem2_start();

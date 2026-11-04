@@ -68,7 +68,7 @@ GPIO numbers, not header pin numbers:
 | Right motor forward / reverse | GP10 / GP11 |
 | Left encoder A / B | GP26 / GP6 |
 | Right encoder A / B | GP2 / GP3 |
-| IR left / centre / right | GP7 / GP27 / GP0 |
+| IR left / centre / right | GP28 / GP27 / GP0 |
 | LSM303DLHC I2C0 SDA / SCL | GP4 / GP5 |
 
 Use the existing Robo Pico motor terminals/power supply and a common ground.

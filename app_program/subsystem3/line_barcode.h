@@ -11,8 +11,8 @@
 #define LINE_BARCODE_LAYOUT_TRACK    0u
 #define LINE_BARCODE_LAYOUT_SIDE     1u
 
-#define LINE_BARCODE_PERIOD_MS       10u
-#define LINE_BARCODE_DEBOUNCE        2u
+#define LINE_BARCODE_PERIOD_MS       1u
+#define LINE_BARCODE_DEBOUNCE_MS     3u
 #define LINE_BARCODE_LOST_MS         100u
 #if defined(APP_ALL_TEST) && APP_ALL_TEST
 /* Combined hardware trial: no line-search deadline. */
@@ -30,6 +30,11 @@
 #define LINE_BARCODE_JUNCTION_NUM    9u
 #define LINE_BARCODE_JUNCTION_DEN    2u
 #define LINE_BARCODE_FRAME_RUNS      29u
+/* Optional count-only trial. Default validates Code 39 width patterns,
+ * matching BARCODE.pptx: 29 segments alone cannot distinguish letters. */
+#ifndef LINE_BARCODE_COUNT_A
+#define LINE_BARCODE_COUNT_A 0
+#endif
 #define LINE_BARCODE_SENSOR_MASK     7u
 #define LINE_BARCODE_LEFT            4u
 #define LINE_BARCODE_CENTRE          2u
@@ -111,6 +116,7 @@ bool line_barcode_nav_update(line_barcode_nav_t *p_nav,
 
 typedef struct
 {
+    uint8_t candidate_ms[3]; /* elapsed stability since first candidate sample */
     uint8_t runs[37]; /* 29 widths, 10 bits per width, 6 spare bits. */
     uint32_t run_ms : 14;
     uint32_t lost_ms : 7;

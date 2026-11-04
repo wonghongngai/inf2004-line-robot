@@ -139,8 +139,8 @@ static void heartbeat_timeout(void *arg)
 static void retry_timeout(void *arg)
 {
     (void)arg;
+    /* The Wi-Fi owner starts the next attempt only when an IP is ready. */
     connecting = 0;
-    mqtt_utk_start();
 }
 
 static void connection_cb(mqtt_client_t *c, void *arg, mqtt_connection_status_t status)
@@ -216,6 +216,17 @@ static void publish_queued_telemetry(void)
     }
 }
 
+void mqtt_utk_network_down(void)
+{
+    sys_untimeout(retry_timeout, NULL);
+    sys_untimeout(heartbeat_timeout, NULL);
+    if (client != NULL && (connecting || mqtt_client_is_connected(client))) {
+        tm_printf((UB*)"mqtt: Wi-Fi unavailable; waiting for IP\n");
+        mqtt_disconnect(client);
+    }
+    connecting = 0;
+}
+
 void mqtt_utk_start(void)
 {
     struct mqtt_connect_client_info_t   client_info = {0};
@@ -251,6 +262,8 @@ void mqtt_utk_start(void)
     client_info.will_qos = 1;
     client_info.will_retain = 1;
 
+    tm_printf((UB*)"mqtt: connecting to " MQTT_BROKER_IP ":%u as " MQTT_CLIENT_ID "\n",
+              (unsigned)MQTT_BROKER_PORT);
     connecting = 1;
     err = mqtt_client_connect(client, &broker_addr, MQTT_BROKER_PORT,
                   connection_cb, NULL, &client_info);
