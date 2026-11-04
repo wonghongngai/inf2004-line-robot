@@ -7,8 +7,8 @@
 #include "drv_rp2040.h"
 #include "drv_ultrasonic.h"
 
-#define US_TRIG_PIN (6U) /* Temporary, to be changed to 16 */
-#define US_ECHO_PIN (7U) /* Temporary, to be changed to 17 */
+#define US_TRIG_PIN (16U) /* Temporary, to be changed to 16 */
+#define US_ECHO_PIN (17U) /* Temporary, to be changed to 17 */
 
 #if ((US_ECHO_PIN & 1U) == 0U)
 #error "US_ECHO_PIN must be odd (PWM channel B)"
