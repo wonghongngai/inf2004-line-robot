@@ -30,7 +30,7 @@
 #define LINE_BARCODE_JUNCTION_NUM    9u
 #define LINE_BARCODE_JUNCTION_DEN    2u
 #define LINE_BARCODE_FRAME_RUNS      29u
-/* Optional legacy count-only trial. Default validates Code 39 patterns,
+/* Optional count-only trial. Default validates Code 39 width patterns,
  * matching BARCODE.pptx: 29 segments alone cannot distinguish letters. */
 #ifndef LINE_BARCODE_COUNT_A
 #define LINE_BARCODE_COUNT_A 0

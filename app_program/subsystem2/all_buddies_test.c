@@ -17,10 +17,10 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_IMU_STALE_MS   100u
 #define ALL_LINE_READY_MS  500u
 #define ALL_LINE_REACQUIRE_MS 100u
-#define ALL_BASE_PWM       10.0f
-#define ALL_INNER_PWM      5.0f
-#define ALL_RIGHT_BASE_PWM 12.0f
-#define ALL_RIGHT_TURN_LEFT_PWM 10.0f
+#define ALL_BASE_PWM       12.5f
+#define ALL_INNER_PWM      6.25f
+#define ALL_RIGHT_BASE_PWM 15.0f
+#define ALL_RIGHT_TURN_LEFT_PWM 12.5f
 #define ALL_WHITE_CLEAR_MS 100u
 
 typedef struct {
@@ -764,7 +764,10 @@ report_status:
                       black ? "BLACK" : "WHITE", (unsigned long)duration,
                       (UINT)(duration < 40u), (unsigned long)dropped);
         }
-        if (ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_SIDE && t->phase == RUNNING) {
+        if (ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_SIDE) {
+            if (t->phase != RUNNING)
+                tm_printf((UB *)"[BARCODE INFO] phase=%u; last recorded counts/result below; scanning may be inactive\n",
+                          t->phase);
             unsigned raw_level = 0u, rises = 0u, falls = 0u;
             line_service_barcode_raw(&raw_level, &rises, &falls);
             tm_printf((UB *)"[BARCODE RAW] GP28=%u rises=%u falls=%u (before debounce, session totals)\n",
@@ -811,7 +814,7 @@ static void all_task(INT stacd, void *exinf)
     (void)exinf;
     tm_printf((UB *)"[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU\n[BARCODE BUILD] GP28 digital; cumulative counts; raw edges enabled\n[BARCODE DEBUG] duration logging enabled; minimum element=40ms; target=A\n"
               "[ALL TEST] keep stationary for IMU calibration; starts after 5s\n"
-              "[ALL TEST] straight PWM left=12.5%% right=14.2%%; inner=10%%; GP28=left GP27=centre GP0=right; 1=black\n"
+              "[ALL TEST] straight PWM left=12.5%% right=15%%; inner=6.25%%; GP28=left GP27=centre GP0=right; 1=black\n"
               "[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders\n");
     if (ALL_TEST_WHITE_FOLLOW)
         tm_printf((UB *)"[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering\n"
