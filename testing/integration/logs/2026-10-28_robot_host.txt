@@ -1,0 +1,13 @@
+Date: 2026-10-28 (Asia/Singapore)
+Revision: working tree based on 110d293
+Environment: WSL, host C compiler, undefined-behaviour sanitizer
+Command: sh testing/integration/run_robot_host_tests.sh
+Result: robot host tests: 167 checks passed
+
+Production motion_control.c and robot_control.c were exercised with mocked
+line-service and IMU snapshot interfaces. Includes a newer line fault winning
+over an older queued turn, turn timeout, hump continuation, steering, turn
+completion, latched sensor faults, encoder stalls, and standalone movement.
+
+Physical motor direction, encoder capture accuracy at speed, distance/angle
+calibration and real-track junction performance remain manual hardware checks.

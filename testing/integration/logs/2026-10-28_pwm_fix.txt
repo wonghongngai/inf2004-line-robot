@@ -1,0 +1,42 @@
+Date: 2026-10-28 (Asia/Singapore)
+Revision: working tree on 110d293, after report of nonmoving wheels
+Command: sh testing/integration/run_robot_host_tests.sh
+
+robot host tests: 167 checks passed
+motor PWM register regression: PASS (reset, counters, outputs, faults)
+
+Found and fixed:
+1. USE_PTMR=0 prevents kernel startup releasing PWM reset. pwm_set_pin now
+   releases it explicitly with a bounded RESET_DONE wait. No other PWM slices
+   are reset by this change.
+2. Default PWM divider=1 at 125 MHz with TOP=1000 gives about 125 kHz,
+   exceeding Robo Pico's documented 20 kHz limit. Motor driver now sets
+   divider=12.5 (register value 200), giving about 9.99 kHz.
+
+Regression executes real BSP PWM and motor driver source with a peripheral
+model initially holding PWM in reset. Checks old writes are ineffective,
+initialization releases PWM without clearing other reset bits, counters
+advance, divider readback is correct, left/right/both compare values are
+correct, STOP writes zero, and stuck reset/clock/pinmux faults are detected.
+
+Added integrated_motor_test: S2 timed raised-wheel pulses with S3 IR and S4
+IMU active. Snapshot diagnostics are printed with motors off. IR decisions
+remain paused, and automatic navigation/IMU stops are not used in this mode.
+
+Physical wheel movement and actual S3/S4 sensor readiness require a new
+hardware run. No flash or physical test was performed by Codex.
+
+Final firmware build command:
+PICO_SDK_PATH=/home/beii/pico/pico-sdk sh testing/integration/build_robot_profiles.sh
+
+integrated_test: build PASS
+motion: build PASS
+motion_demo: build PASS
+motor_test: build PASS
+integrated_motor_test: build PASS
+integrated_single: build PASS
+integrated: build PASS
+
+No compiler warnings/errors found in these build logs.
+Combined diagnostic UF2:
+build_make/mtk3pico_smp1_usb_cdc_wifi_integrated_motor_test.uf2

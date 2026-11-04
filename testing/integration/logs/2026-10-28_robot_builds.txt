@@ -1,0 +1,24 @@
+Date: 2026-10-28 (Asia/Singapore)
+Revision: working tree based on 110d293
+Environment: WSL, /usr/bin/arm-none-eabi-gcc, /home/beii/pico/pico-sdk
+Command: PICO_SDK_PATH=/home/beii/pico/pico-sdk sh testing/integration/build_robot_profiles.sh
+
+integrated_test: build PASS
+motion: build PASS
+motion_demo: build PASS
+motor_test: build PASS
+integrated_single: build PASS
+integrated: build PASS
+
+UF2 outputs in build_make:
+mtk3pico_smp1_usb_cdc_wifi_integrated_test.uf2
+mtk3pico_smp1_usb_cdc_wifi_motion.uf2
+mtk3pico_smp1_usb_cdc_wifi_motion_demo.uf2
+mtk3pico_smp1_usb_cdc_wifi_motor_test.uf2
+mtk3pico_smp0_usb_cdc_wifi_integrated.uf2
+mtk3pico_smp1_usb_cdc_wifi_integrated.uf2
+
+arm-none-eabi-nm of standalone motion ELF:
+No subsystem3, subsystem4, line_service, imu_task or lsm303 symbols.
+
+These are build/link checks. Images were not flashed or physically tested.

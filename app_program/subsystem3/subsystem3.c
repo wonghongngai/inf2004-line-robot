@@ -6,6 +6,7 @@
  */
 
 #include "subsystem3.h"
+#include "line_demo.h"
 
 EXPORT ID		mbx_samples;	/* IF-01 */
 EXPORT ID		mtx_stats;	/* IF-04 */
@@ -30,7 +31,7 @@ EXPORT ER subsystem3_init(void)
 	   holder is temporarily raised to the waiter's priority. */
 	cmtx.mtxatr = TA_INHERIT;
 	mtx_stats = tk_cre_mtx(&cmtx);
-	return (mtx_stats < E_OK) ? mtx_stats : E_OK;
+	return (mtx_stats < E_OK) ? mtx_stats : line_service_init();
 }
 
 EXPORT ER subsystem3_start(void)
@@ -38,5 +39,14 @@ EXPORT ER subsystem3_start(void)
 	/* Pinned to core 0 (TP_PRC1): opposite core to the producer */
 	ID tid = app_start_task(consumer_task, S3_PRI_CONSUMER, TP_PRC1,
 				"consumer_task");
-	return (tid < E_OK) ? tid : E_OK;
+	ER er = (tid < E_OK) ? tid : line_service_start();
+
+	/* Bench printout of barcode/junction events (no motors).  Not in
+	   test builds: the tests pause the service and change the map. */
+#if LINE_DEMO_ENABLE && !APP_TEST
+	if (er == E_OK) {
+		er = line_demo_start();
+	}
+#endif
+	return er;
 }

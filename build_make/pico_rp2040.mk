@@ -67,7 +67,7 @@ endif
 
 # Optional MQTT client on top of NET=lwip. Connects and publishes from the
 # same processor-1-owned task as everything else above -- see
-# lib/liblwip/sysdepend/pico_rp2040/mqtt_utk.c. Broker address and topic
+# app_program/subsystem1/mqtt_manager.c. Broker address and topic
 # come from config/wifi_secrets.h (gitignored; copy from
 # config/wifi_secrets.example.h), same as the WiFi credentials.
 MQTT ?= 0
@@ -84,6 +84,49 @@ endif
 # TEST=1 builds the subsystem self-tests into the image (APP_TEST=1 in C).
 # The image gets a _test suffix so it cannot be mistaken for the normal one.
 TEST ?= 0
+ROBOT_MODE ?= integrated
+MOTION_DEMO ?= 0
+ifneq ($(filter $(ROBOT_MODE),integrated integrated_motor_test barcode_test line_follow_test all_test motion motor_test),$(ROBOT_MODE))
+$(error Unknown ROBOT_MODE '$(ROBOT_MODE)'; use integrated, integrated_motor_test, barcode_test, line_follow_test, all_test, motion or motor_test)
+endif
+ifneq ($(filter $(MOTION_DEMO),0 1),$(MOTION_DEMO))
+$(error MOTION_DEMO must be 0 or 1)
+endif
+ifeq ($(MOTION_DEMO),1)
+ifneq ($(ROBOT_MODE),motion)
+$(error MOTION_DEMO=1 requires ROBOT_MODE=motion)
+endif
+ifeq ($(TEST),1)
+$(error MOTION_DEMO=1 cannot be combined with TEST=1)
+endif
+endif
+ifneq ($(filter motor_test integrated_motor_test,$(ROBOT_MODE)),)
+ifeq ($(TEST),1)
+$(error motor_test physically drives motors; use TEST=0)
+endif
+endif
+ifeq ($(ROBOT_MODE),all_test)
+ifneq ($(ALL_TEST_OFFLINE),1)
+ifneq ($(NET)$(MQTT),lwip1)
+$(error all_test requires NET=lwip MQTT=1)
+endif
+endif
+endif
+ifneq ($(filter barcode_test line_follow_test all_test,$(ROBOT_MODE)),)
+ifeq ($(TEST),1)
+$(error $(ROBOT_MODE) requires TEST=0 for live sensors)
+endif
+ifneq ($(CONSOLE),usb_cdc)
+$(error $(ROBOT_MODE) requires CONSOLE=usb_cdc)
+endif
+ifeq ($(CRASH_REPORT),1)
+$(error $(ROBOT_MODE) requires CRASH_REPORT=0; GP0 is an IR input)
+endif
+endif
+ROBOT_SUFFIX := _$(ROBOT_MODE)
+ifeq ($(MOTION_DEMO),1)
+ROBOT_SUFFIX := $(ROBOT_SUFFIX)_demo
+endif
 ifneq ($(filter $(TEST),0 1),$(TEST))
 $(error Unknown TEST '$(TEST)'; use 0 or 1)
 endif
@@ -116,7 +159,7 @@ endif
 # a live hazard: an SMP=1 build was once flashed in place of an SMP=0 one and
 # only the banner in the log revealed it.
 #
-EXE_FILE := mtk3pico_smp$(SMP)_$(CONSOLE)$(WIFI_SUFFIX)$(NET_SUFFIX)$(MQTT_SUFFIX)$(CRASH_SUFFIX)$(TEST_SUFFIX)
+EXE_FILE := mtk3pico_smp$(SMP)_$(CONSOLE)$(WIFI_SUFFIX)$(NET_SUFFIX)$(MQTT_SUFFIX)$(CRASH_SUFFIX)$(ROBOT_SUFFIX)$(TEST_SUFFIX)
 
 GCC := arm-none-eabi-gcc
 AS := arm-none-eabi-gcc
@@ -177,6 +220,12 @@ CFLAGS  += -DCNF_SMP=1
 ASFLAGS += -DCNF_SMP=1
 endif
 CFLAGS  += -DAPP_TEST=$(TEST)
+CFLAGS  += -DAPP_ROBOT_INTEGRATED=$(if $(filter integrated integrated_motor_test,$(ROBOT_MODE)),1,0)
+CFLAGS  += -DS2_MOTOR_HW_TEST=$(if $(filter motor_test integrated_motor_test,$(ROBOT_MODE)),1,0)
+CFLAGS  += -DS2_MOTION_DEMO=$(MOTION_DEMO) -DLINE_DEMO_ENABLE=$(if $(filter barcode_test,$(ROBOT_MODE)),1,0)
+CFLAGS += -DAPP_BARCODE_BENCH=$(if $(filter barcode_test,$(ROBOT_MODE)),1,0)
+CFLAGS += -DAPP_LINE_FOLLOW_TEST=$(if $(filter line_follow_test,$(ROBOT_MODE)),1,0)
+CFLAGS += -DAPP_ALL_TEST=$(if $(filter all_test,$(ROBOT_MODE)),1,0)
 CFLAGS  += -DTM_CONSOLE_UART=$(CRASH_REPORT)
 ifeq ($(CRASH_REPORT),0)
 CFLAGS  += -DBOARD_UART0_FREE=1
@@ -209,7 +258,7 @@ endif
 # before any recipe executes.
 ################################################################################
 
-PROFILE_ID := smp$(SMP)-$(CONSOLE)-wifi$(WIFI)-net$(NET)-mqtt$(MQTT)-crash$(CRASH_REPORT)-test$(TEST)
+PROFILE_ID := smp$(SMP)-$(CONSOLE)-wifi$(WIFI)-net$(NET)-mqtt$(MQTT)-crash$(CRASH_REPORT)-test$(TEST)-robot$(ROBOT_MODE)-demo$(MOTION_DEMO)
 PROFILE_FILE := .build_profile
 
 ifneq ($(strip $(shell cat $(PROFILE_FILE) 2>/dev/null)),$(PROFILE_ID))
@@ -443,7 +492,8 @@ mtkernel_3/cyw43/cyw43_lwip.o: $(CYW43_DRIVER_PATH)/src/cyw43_lwip.c
 ifeq ($(MQTT),1)
 
 MQTT_CORE_OBJS := ./mtkernel_3/lwip/apps/mqtt/mqtt.o
-MQTT_PORT_OBJS := ./mtkernel_3/lib/liblwip/sysdepend/pico_rp2040/mqtt_utk.o
+# Buddy 1's mqtt_manager.c is built by the application source discovery.
+MQTT_PORT_OBJS :=
 
 CFLAGS += -DTM_MQTT=1
 

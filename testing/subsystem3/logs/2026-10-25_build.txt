@@ -1,0 +1,31 @@
+Build verification, 2026-10-25 (Asia/Singapore)
+Base commit 83664de + working tree (source hashes in 2026-10-25_host.txt).
+SDK: /Users/shelmainechai/pico-sdk
+Options: SMP=1 CONSOLE=usb_cdc WIFI=cyw43 CRASH_REPORT=0
+line_barcode: strict ARM compile PASS (-Wall -Wextra -Werror)
+line_barcode_test: strict ARM compile PASS (-Wall -Wextra -Werror)
+line_service: strict ARM compile PASS (-Wall -Wextra -Werror)
+
+Starter baseline TEST=0
+Finished building target: mtk3pico_smp1_usb_cdc_wifi.elf
+arm-none-eabi-size mtk3pico_smp1_usb_cdc_wifi.elf
+   text	   data	    bss	    dec	    hex	filename
+ 285124	     88	  24476	 309688	  4b9b8	mtk3pico_smp1_usb_cdc_wifi.elf
+tools/elf2uf2 mtk3pico_smp1_usb_cdc_wifi.elf mtk3pico_smp1_usb_cdc_wifi.uf2
+ 
+
+Implemented TEST=0
+Finished building target: mtk3pico_smp1_usb_cdc_wifi.elf
+arm-none-eabi-size mtk3pico_smp1_usb_cdc_wifi.elf
+   text	   data	    bss	    dec	    hex	filename
+ 288828	     92	  24492	 313412	  4c844	mtk3pico_smp1_usb_cdc_wifi.elf
+tools/elf2uf2 mtk3pico_smp1_usb_cdc_wifi.elf mtk3pico_smp1_usb_cdc_wifi.uf2
+ 
+
+Implemented TEST=1
+Finished building target: mtk3pico_smp1_usb_cdc_wifi_test.elf
+arm-none-eabi-size mtk3pico_smp1_usb_cdc_wifi_test.elf
+   text	   data	    bss	    dec	    hex	filename
+ 294456	     92	  24492	 319040	  4de40	mtk3pico_smp1_usb_cdc_wifi_test.elf
+tools/elf2uf2 mtk3pico_smp1_usb_cdc_wifi_test.elf mtk3pico_smp1_usb_cdc_wifi_test.uf2
+ 

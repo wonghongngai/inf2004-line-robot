@@ -1,0 +1,37 @@
+Barcode sample revision verification, 2026-10-25 (Asia/Singapore).
+Base commit 83664de + uncommitted working tree. No on-target execution claimed.
+Host compiler: Apple clang version 17.0.0 (clang-1700.0.13.5)
+Flags: -std=c11 -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined -DAPP_TEST=1 -DLINE_BARCODE_HOST_TEST
+
+[TEST] S3-U18 PASS: supplied PDF A/Z width fixtures
+[TEST] S3-U19 PASS: mapped and unmapped letters; packed map
+[TEST] S3-U20 PASS: scanner edges never change steering
+[TEST] S3-U21 PASS: line loss during barcode capture
+[TEST] S3-U22 PASS: three-sensor junction profile
+[TEST] S3-U02 PASS: all eight sensor positions
+[TEST] S3-U03 PASS: single-sample noise rejected
+[TEST] S3-U04 PASS: persistent loss enters bounded search
+[TEST] S3-U05 PASS: line reacquired after search
+[TEST] S3-U06 PASS: search timeout requests stop
+[TEST] S3-U13 PASS: relative widths at multiple scan speeds
+[TEST] S3-U07 PASS: A-Z decode in both directions
+[TEST] S3-U08 PASS: sampled frames emit exactly one letter
+[TEST] S3-U09 PASS: zero-width malformed frame rejected
+[TEST] S3-U10 PASS: invalid inter-character gap rejected
+[TEST] S3-U11 PASS: missed sampling interval invalidates capture
+[TEST] S3-U12 PASS: three-byte wire layout
+context=48 bytes, navigation message=3 bytes
+
+
+Source SHA-256:
+f3bda7e17ce3bad721bf8c08f77893d3474e1a84c582831a919d554aed6e2679  app_program/subsystem3/line_barcode.c
+e94e6a8a8789028ac599c1d6a1fe39b7f1656e06584e53c3103f9b10b88f3e24  app_program/subsystem3/line_barcode.h
+a87f497a896078227553f9d95f4394bc3c37c05e1c517c685a5a87ab70f3af4c  app_program/subsystem3/line_barcode_test.c
+40ba371c584782dce3dd2439a5095b5459959173b599348cc094fe3cc92e9d01  app_program/subsystem3/line_service.c
+683117c9d63e9e16baf6bf31ffeec5093c6774fc668178d44c4e5262530c2791  app_program/subsystem3/line_service.h
+b9a94fcbb2271d5f4c0ab86b2dc7bb37ce14e4fe080c04a0d4bfc3b0816ebcae  app_program/subsystem3/subsystem3.c
+06b722558a9628d7227b7c00a254a574b9d5ac83106e6335dad5eeb3c2beb55c  app_program/subsystem3/subsystem3.h
+bc6853ff460768458860047f357ccc002f6a2d2ab3d3f34e6a00bb5fecc6489b  app_program/subsystem3/subsystem3_test.c
+b0ec4af7d83b52f85c1485ddd8ab6eaccb369b67e38e5fc71c66dd94534585e6  app_program/subsystem3/task_consumer.c
+468e381f8076eca4c41d0f1ac1d1b01b6ab432cfe91bdb7d9169b7e371b0a4ac  testing/subsystem3/fixtures/barcode_samples.h
+03ecd8a30c0bcd8183e496b7e0e99f858bfff9aa658ebfa6cc8efd36d21042b9  testing/subsystem3/fixtures/source_manifest.json

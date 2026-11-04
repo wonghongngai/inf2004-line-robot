@@ -3,6 +3,171 @@
 A starting point for your project: micro T-Kernel 3.0 running on **both cores**
 of the Pico W's RP2040, with a USB serial console and the WiFi driver built in.
 
+**Robot firmware:** see [motion hardware and integration](app_program/subsystem2/INTEGRATION.md)
+for wiring, calibration, and the `ROBOT_MODE=integrated`, `motion`, and
+`motor_test` builds. Images now include the mode in their name, for example
+`mtk3pico_smp1_usb_cdc_wifi_integrated_test.uf2`. The default integrated build
+keeps motors off until real motion and IR calibration are entered.
+
+**Buddy 1 + 2 + 3 + 4 combined test:** build from the project root:
+
+```sh
+make -C build_make ROBOT_MODE=all_test NET=lwip MQTT=1 TEST=0 CRASH_REPORT=0 PICO_SDK_PATH=/Users/aliciakan/pico/pico-sdk -j8
+```
+
+Flash `build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_all_test.uf2`.
+This runs S1's real Wi-Fi/MQTT queues, S2's motor driver, S3's line/barcode
+service and S4's IMU task together. The dedicated S2 test coordinator is the
+only motor writer and the only consumer of navigation events and MQTT commands.
+The older `integrated` profile retains its encoder-calibration requirements.
+
+Keep the robot stationary for IMU calibration. After at least five seconds,
+with a healthy calibrated IMU and a line beneath the centre sensor GP27, this test follows
+using the same 30%/15% PWM steering as `line_follow_test` below. Startup waits
+at most 15 seconds for IMU readiness. The clarified physical mounting is
+**GP7 left, GP27 centre, GP0 right**, all used for line following (TRACK
+layout). Centre alone on black commands straight movement; left/left+centre
+steer left, and right/centre+right steer right. All sensors use raw 1 on
+black, 0 on white. IMU I2C0 uses GP4 SDA and GP5 SCL.
+Raise the wheels for the first direction/steering test, then test on the line.
+Motor startup ramps from 0% to 30% in about 300 ms; steering uses the same
+rate limit. `ALL_TEST_CONTINUE_ON_SENSOR=1` in `all_buddies_test.h` makes
+sensor detections and failures report-only: collision, tilt, IMU faults,
+calibration/readiness, stale IMU samples, junction events, line queue errors and encoder-distance
+errors do not stop PWM. Missing/ambiguous black line or unavailable line
+readings stop both motors immediately; valid black automatically resumes.
+Startup begins after 5 seconds even if sensors are unavailable. Valid line
+patterns still steer; missing/ambiguous or unavailable line data stops
+both wheels. Restart uses the same smooth PWM ramp. Navigation faults are re-enabled for recovery.
+Manual MQTT PAUSE still stops immediately and RESUME restarts movement,
+even with failed sensors. The default run limit is zero (continuous).
+A positive `ALL_TEST_DURATION_MS` still stops the timed run. Motor/task
+initialization failure, clock failure or inability to run the control task
+can still leave motors stopped. Wi-Fi loss does not stop autonomous drive.
+Set `ALL_TEST_CONTINUE_ON_SENSOR=0` and rebuild to restore sensor stop and
+line-recovery behavior. Other firmware profiles retain their stop rules.
+
+The console prints `[ALL TEST]` status twice per second, and telemetry is
+queued once per second through the existing ten-byte binary protocol. S3's
+L/C/R bit order is converted to S1's documented order. The default TRACK
+layout disables barcode decoding because GP7 is a line sensor. For a
+separate offset-scanner mounting, explicitly change `ALL_TEST_LINE_LAYOUT`
+in `all_buddies_test.h` to `LINE_BARCODE_LAYOUT_SIDE`; only that layout
+decodes barcodes (A/B/C/Z map to left/right/straight/U-turn telemetry).
+This test continues through junctions and does not execute barcode turns. It does not run PID or encoder stall detection. Encoders are
+polled with a requested 1 ms sleep, while motor/sensor control runs every
+10 ms. Actual polling is slower due to kernel rounding and scheduling;
+verify counts at the intended speed. The log includes encoder ticks, the
+diagnostic status, and `height_valid`. MQTT queue-full messages print on
+status changes instead of once every second; connection failures still
+require working Wi-Fi/IP and broker settings.
+
+IMU events continue to print through `Buddy4 EVENT` logs. The periodic
+`status=` field reports sensor problems without stopping movement in the
+default continuous mode. Collision logs include the measured acceleration
+jump and threshold; the threshold remains 1200 mg.
+
+With positive measured `S2_LEFT_TICKS_PER_CM` and `S2_RIGHT_TICKS_PER_CM` in
+`app_program/subsystem2/subsystem2.h`, average wheel travel is supplied to
+S4 during forward line following, and accumulated distance is published.
+Either encoder's counting direction may be reversed. Fractions of a
+millimetre are retained in distance conversion and height integration.
+Paused/stopped movement is not included. The normal `integrated` profile
+also supplies distance during forward travel, excluding pivot turns.
+
+The measured distance scales from 2026-10-29 are now configured: left
+103.5267 ticks/cm, right 118.5634 ticks/cm. Turn scales and source trials
+are recorded in [CALIBRATION.md](app_program/subsystem2/CALIBRATION.md).
+Motion calibration is enabled; PID tuning and hardware validation remain.
+
+If either distance scale is unset/zero, startup reports height/distance
+unavailable, and a detected hump reports
+`height=unavailable (no wheel distance)` instead of implying a measured
+zero. To measure the scales, send MQTT PAUSE and confirm `phase=3` and
+PWM 0/0 before handling the robot. Do not use LINE_WAIT as a manual stop:
+black can automatically restart it. Record encoder counts, roll the robot straight through
+a measured 20 cm, and record the new counts. Each wheel's scale is its
+absolute count change divided by 20. Enter both values and rebuild. This
+does not by itself calibrate turns: only set `S2_CALIBRATION_READY=1`
+when distance and turn scales have both been measured, as in the current
+configuration.
+
+S4 logs each completed hump estimate and retains the highest completed
+height in its snapshot/telemetry. `height_valid=1` means wheel distance was
+available for a completed hump; it does not establish physical accuracy.
+Validate mounting (IMU X axis forward), sensor calibration, wheel slip,
+encoder counts, and estimates against a measured ramp. Tilting the sensor
+by hand without wheel travel cannot measure ramp height. Battery, speed,
+obstacle and scan telemetry remain **zero placeholders, not measurements**;
+distance/height are also placeholders until calibrated distance is available.
+Protocol v1 has no unavailable sentinel; check the serial availability log.
+
+Use the broker/client ID in `config/wifi_secrets.h` (topic overrides also
+apply). With Mosquitto clients installed, replace BROKER and CLIENT_ID:
+
+```sh
+mosquitto_sub -h BROKER -t 'CLIENT_ID/telemetry' -F '%x' | python3 tools/mqtt_binary.py stream
+python3 tools/mqtt_binary.py command pause | mosquitto_pub -h BROKER -t 'CLIENT_ID/command' -s
+python3 tools/mqtt_binary.py command resume | mosquitto_pub -h BROKER -t 'CLIENT_ID/command' -s
+python3 tools/mqtt_binary.py command status | mosquitto_pub -h BROKER -t 'CLIENT_ID/command' -s
+```
+
+Commands are raw binary bytes, never text or retained messages. RESET_STATS
+is explicitly rejected: S4 has no statistics-reset API. Status requests and
+telemetry remain active after a stop. A successful queue operation is not
+proof that the broker received a packet; check `mqtt: connected` and the
+subscriber. Confirm pause stops both motors and resume only works on a
+healthy line/IMU. Confirm loss of the line stops motors, brief/intermittent
+black readings do not restart it, and stable black automatically resumes
+following. Confirm manual PAUSE still blocks movement on black, and IMU
+faults/stale data still require reboot. Live network and physical behaviour
+still require hardware tests.
+
+Host regression checks for the coordinator, existing robot controller, and
+PWM driver run with `sh testing/integration/run_robot_host_tests.sh`.
+
+**Buddy 2 + 3 line-following test:** build from the project root:
+
+```sh
+make -C build_make ROBOT_MODE=line_follow_test TEST=0 CRASH_REPORT=0 PICO_SDK_PATH=/Users/aliciakan/pico/pico-sdk -j8
+```
+
+Flash `build_make/mtk3pico_smp1_usb_cdc_wifi_line_follow_test.uf2`.
+This dedicated open-loop test uses Buddy 2's motor driver and Buddy 3's
+sensor service. It does not start the normal motion controller, encoder PID,
+IMU, or barcode demo. It needs no encoder distance/angle calibration.
+The full integrated mode retains its calibration and IMU checks.
+
+The TRACK mounting uses GP7 left, GP27 centre and GP0 right. The centre
+sensor should see black when centred on the line. All three inputs are
+configured as raw 1 on black, 0 on white. Barcode decoding is disabled in
+this layout.
+
+After boot, motors stay off for five seconds. The test then runs for at most
+30 seconds: GP27 alone black gives 30% PWM on both wheels; GP7 or
+GP7+GP27 black gives left/right PWM 15%/30%; GP0 or GP27+GP0 black gives 30%/15%.
+The inner wheel slows to steer towards the line. These are initial test
+settings, not a measured vehicle speed; tune `FOLLOW_BASE_PWM` and
+`FOLLOW_INNER_PWM` in `app_program/subsystem2/line_follow_test.c` if needed.
+Every 250 ms the console reports tracking bits and commanded PWM.
+
+First verify with wheels raised: hold black beneath the centre sensor GP27
+before the five-second delay ends and check that both wheels turn forwards.
+Expose only GP7, then only GP0, and check the corresponding wheel slows.
+Remove black from all sensors: motors must stop and remain stopped until reboot.
+Next place the robot centred on a plain black line, power-cycle it, and
+observe its steering on the floor. Switch off motor power to end early.
+Stale samples, sensor faults, detected junctions, loss of all tracking
+inputs, and the 30-second limit latch a stop; reboot to retry. This test
+does not monitor encoder stalls or IMU tilt/collision events. Hardware
+tracking performance still needs verification on the actual robot.
+
+**Check all three on hardware (wheels raised):**
+`make ROBOT_MODE=integrated_motor_test -j8` in `build_make`, then flash
+`mtk3pico_smp1_usb_cdc_wifi_integrated_motor_test.uf2`. This runs S2 motor
+pulses with S3 IR/S4 IMU sampling and prints PWM/sensor diagnostics. It includes
+the PWM reset-release fix needed when `USE_PTMR=0`; rebuild older images.
+
 You need a **Raspberry Pi Pico W**, a USB cable, and a computer running
 macOS, Linux, or Windows with **WSL (Ubuntu)**. On Windows, run every
 command below inside the WSL Ubuntu terminal.
@@ -96,8 +261,8 @@ make -j8
 ```
 
 A successful build ends with a line like
-`tools/elf2uf2 mtk3pico_smp1_usb_cdc_wifi.elf mtk3pico_smp1_usb_cdc_wifi.uf2`.
-Your firmware is **`build_make/mtk3pico_smp1_usb_cdc_wifi.uf2`**.
+`tools/elf2uf2 mtk3pico_smp1_usb_cdc_wifi_integrated.elf mtk3pico_smp1_usb_cdc_wifi_integrated.uf2`.
+Your firmware is **`build_make/mtk3pico_smp1_usb_cdc_wifi_integrated.uf2`**.
 
 If `make` stops with an error, it tells you which one is wrong:
 `arm-none-eabi-gcc not found` means fix `PATH`, and
@@ -122,8 +287,8 @@ screen /dev/ttyACM0 115200            # Linux
 ```
 
 On Windows, use PuTTY or the VS Code *Serial Monitor* on the new COM port.
-You should see the task reports. Connect an LED with a 330 Ω resistor from
-**GP19** to GND to see subsystem 1's LED blink.
+You should see the motion and IMU reports. Robot profiles skip the example
+LED task; see the robot integration guide for motor/IR/IMU wiring.
 
 **2.5 Write your own code**
 
@@ -131,8 +296,9 @@ Your code lives in **`app_program/`**. Every `.c` file there, and in its
 subfolders, is compiled automatically.
 
 - **`app_main.c` → `usermain()` is where the program starts.** It first calls
-  every subsystem's `subsystemN_init()` (create kernel objects), then every
-  `subsystemN_start()` (start tasks). Read its comments first.
+  the selected subsystems' `subsystemN_init()` functions (create kernel
+  objects), then their `subsystemN_start()` functions (start tasks). The robot
+  build starts S2/S3/S4; standalone modes start S2 only.
 - **One folder per student:** `app_program/subsystem1/` … `subsystem5/`.
   Subsystems 1–4 hold a working example, one task each (LED, producer,
   consumer, monitor). Together they use the main micro T-Kernel APIs and
@@ -179,8 +345,9 @@ To set several options at once, list them all, separated by spaces. For
 example, to track down a crash in the test build while running on one core only:
 
 ```sh
-make SMP=0 TEST=1 CRASH_REPORT=1 -j8
-#  -> build_make/mtk3pico_smp0_usb_cdc_wifi_crash_test.uf2
+# Integrated IR uses GP0, so select standalone motion for UART crash reports:
+make ROBOT_MODE=motion SMP=0 TEST=1 CRASH_REPORT=1 -j8
+#  -> build_make/mtk3pico_smp0_usb_cdc_wifi_crash_motion_test.uf2
 ```
 
 Any option you leave out keeps its default (here `CONSOLE=usb_cdc` and
@@ -207,7 +374,7 @@ either setting. If a subsystem has claimed GP0/GP1 in `TEAM.md`, unplug that
 hardware before using `CRASH_REPORT=1`.
 
 The options are part of the image name, e.g.
-`mtk3pico_smp1_usb_cdc_wifi_test.uf2`, so you can always tell which build
+`mtk3pico_smp1_usb_cdc_wifi_integrated_test.uf2`, so you can always tell which build
 you are flashing. Switching options needs no `make clean`: the makefile
 notices and recompiles everything.
 

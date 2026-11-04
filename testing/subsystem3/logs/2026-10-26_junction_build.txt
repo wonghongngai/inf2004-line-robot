@@ -1,0 +1,14 @@
+Junction/mapping revision build, 2026-10-26. Options: SMP=1 CONSOLE=usb_cdc WIFI=cyw43 CRASH_REPORT=0
+Strict -Wall -Wextra -Werror ARM compile PASS: line_barcode line_service line_demo line_barcode_test subsystem3_test
+
+TEST=0
+arm-none-eabi-size mtk3pico_smp1_usb_cdc_wifi.elf
+   text	   data	    bss	    dec	    hex	filename
+ 291720	     92	  24508	 316320	  4d3a0	mtk3pico_smp1_usb_cdc_wifi.elf
+tools/elf2uf2 mtk3pico_smp1_usb_cdc_wifi.elf mtk3pico_smp1_usb_cdc_wifi.uf2
+
+TEST=1
+arm-none-eabi-size mtk3pico_smp1_usb_cdc_wifi_test.elf
+   text	   data	    bss	    dec	    hex	filename
+ 298980	     92	  24504	 323576	  4eff8	mtk3pico_smp1_usb_cdc_wifi_test.elf
+tools/elf2uf2 mtk3pico_smp1_usb_cdc_wifi_test.elf mtk3pico_smp1_usb_cdc_wifi_test.uf2

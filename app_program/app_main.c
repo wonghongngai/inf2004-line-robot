@@ -18,10 +18,10 @@
  *
  *	The example system: one subsystem per folder, one task each
  *	------------------------------------------------------------
- *	  subsystem1/  LED       blinks GP19, paced by a cyclic handler
+ *	  subsystem1/  WiFi/MQTT queues, serviced by the built-in radio task
  *	  subsystem2/  Producer  makes a "sample" every 300 ms     (core 1)
  *	  subsystem3/  Consumer  collects samples into statistics  (core 0)
- *	  subsystem4/  Monitor   prints reports, pauses/resumes the LED
+ *	  subsystem4/  Monitor   prints reports
  *	  subsystem5/  (empty template for the fifth student)
  *
  *	How they talk to each other (the interfaces, see TEAM.md section 5):
@@ -31,7 +31,7 @@
  *	  IF-03  S3 -> S4  message buffer mbf_summary + event flag flg_events
  *	                   (owned by S4)
  *	  IF-04  S4 -> S3  reads app_stats under mutex mtx_stats (owned by S3)
- *	  IF-05  S4 -> S1  suspends/resumes the LED task tid_led (owned by S1)
+ *	  IF-05  All -> S1 telemetry queue; S1 -> controller command queue
  *	The subsystem that RECEIVES or OWNS the data creates the object and
  *	publishes its ID in its header; the other side just uses it.
  *
@@ -45,7 +45,7 @@
  *	  mutex       tk_cre_mtx tk_loc_mtx tk_unl_mtx                  S3, S4
  *	  msg buffer  tk_cre_mbf tk_snd_mbf tk_rcv_mbf                  S3, S4
  *	  event flag  tk_cre_flg tk_set_flg tk_wai_flg                  S3, S4
- *	  cyclic      tk_cre_cyc tk_ref_cyc                             S1
+ *	  cyclic      available for periodic application work
  *	  alarm       tk_cre_alm tk_sta_alm tk_stp_alm                  S4
  *	  time        tk_get_tim                                        S2, S4
  *	  system      tk_ref_ver                                        app_main.c
@@ -54,6 +54,17 @@
  */
 
 #include "app.h"
+#if APP_ALL_TEST
+#include "subsystem2/all_buddies_test.h"
+#endif
+#if APP_LINE_FOLLOW_TEST
+#include "subsystem2/line_follow_test.h"
+#endif
+#if APP_BARCODE_BENCH
+#include "subsystem3/line_service.h"
+#include "subsystem3/line_demo.h"
+#include "subsystem2/drv_motor.h"
+#endif
 
 /*
  * Create and start one task (declared in app.h for every subsystem).
@@ -89,6 +100,10 @@ EXPORT ID app_start_task(FP entry, PRI pri, UW prc, const char *name)
 	/* tk_sta_tsk: DORMANT -> READY.  The int is passed as stacd. */
 	er = tk_sta_tsk(tid, 0);
 	CHECK(er, name);
+	if (er < E_OK) {
+		(void)tk_del_tsk(tid);
+		return er;
+	}
 	return tid;
 }
 
@@ -107,35 +122,95 @@ EXPORT INT usermain(void)
 	tm_printf((UB*)"single-core build\n");
 #endif
 
+#if APP_ALL_TEST
+    ER all_er = all_buddies_test_start();
+    CHECK(all_er, "all_buddies_test_start");
+    tk_slp_tsk(TMO_FEVR);
+    return 0;
+#endif
+
+#if APP_LINE_FOLLOW_TEST
+    /* Dedicated S2/S3 test owns motors and the IR event queue. */
+    ER follow_er = line_follow_test_start();
+    CHECK(follow_er, "line_follow_test_start");
+    tk_slp_tsk(TMO_FEVR);
+    return 0;
+#endif
+
+#if APP_BARCODE_BENCH
+    /* No motion task or robot adapter: the demo alone owns S3 events. */
+    ER bench_er = drv_motor_init();
+    if (bench_er == E_OK) bench_er = line_service_init();
+    if (bench_er == E_OK) bench_er = line_service_start();
+    if (bench_er == E_OK) bench_er = line_demo_start();
+    CHECK(bench_er, "barcode_bench_start");
+    tm_printf((UB *)"[APP] BARCODE BENCH: motors OFF; scanner GP28, centre GP27, right GP0\n");
+    tk_slp_tsk(TMO_FEVR);
+    return 0;
+#endif
+
 	/* Phase 1: every subsystem creates its kernel objects */
-	CHECK(subsystem1_init(), "subsystem1_init");
-	CHECK(subsystem2_init(), "subsystem2_init");
-	CHECK(subsystem3_init(), "subsystem3_init");
-	CHECK(subsystem4_init(), "subsystem4_init");
-	CHECK(subsystem5_init(), "subsystem5_init");
+	ER er = subsystem1_init();
+	CHECK(er, "subsystem1_init");
+	if (er < E_OK) goto startup_failed;
+	er = subsystem2_init();
+	CHECK(er, "subsystem2_init");
+	if (er < E_OK) goto startup_failed;
+#if APP_ROBOT_INTEGRATED
+	er = subsystem3_init();
+	CHECK(er, "subsystem3_init");
+	if (er < E_OK) goto startup_failed;
+	er = subsystem4_init();
+	CHECK(er, "subsystem4_init");
+	if (er < E_OK) goto startup_failed;
+#endif
 
 	/* Phase 2: every subsystem starts its tasks */
-	CHECK(subsystem1_start(), "subsystem1_start");
-	CHECK(subsystem2_start(), "subsystem2_start");
-	CHECK(subsystem3_start(), "subsystem3_start");
-	CHECK(subsystem4_start(), "subsystem4_start");
-	CHECK(subsystem5_start(), "subsystem5_start");
+	er = subsystem1_start();
+	CHECK(er, "subsystem1_start");
+	if (er < E_OK) goto startup_failed;
+#if APP_ROBOT_INTEGRATED
+	er = subsystem3_start();
+	CHECK(er, "subsystem3_start");
+	if (er < E_OK) goto startup_failed;
+	er = subsystem4_start();
+	CHECK(er, "subsystem4_start");
+	if (er < E_OK) goto startup_failed;
+#endif
+	er = subsystem2_start();
+	CHECK(er, "subsystem2_start");
+	if (er < E_OK) goto startup_failed;
 
-	tm_printf((UB*)"all subsystems started\n\n");
+#if APP_ROBOT_INTEGRATED
+#if S2_MOTOR_HW_TEST
+	tm_printf((UB*)"[APP] INTEGRATED MOTOR TEST: S2 motor pulses + S3 IR + S4 IMU; raise wheels\n\n");
+#else
+	tm_printf((UB*)"[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started\n\n");
+#endif
+#elif S2_MOTOR_HW_TEST
+	tm_printf((UB*)"[APP] MOTOR TEST: S2 only; S3/S4 are not started\n\n");
+#else
+	tm_printf((UB*)"[APP] STANDALONE MOTION: S2 only; S3/S4 are not started\n\n");
+#endif
 
 #if APP_TEST
 	/* Test build (make TEST=1): run every subsystem's tests in turn,
 	   here in the initial task, while the system is running.  Tests may
 	   call tk_dly_tsk() to let the other tasks work for a while. */
+	tm_printf((UB*)"[TEST] Connect serial monitor now; tests start in 10 seconds\n");
+	tk_dly_tsk(10000);
 	tm_printf((UB*)"[TEST] === test run start ===\n");
 	subsystem1_test();
 	subsystem2_test();
+#if APP_ROBOT_INTEGRATED
 	subsystem3_test();
 	subsystem4_test();
-	subsystem5_test();
+#endif
 	tm_printf((UB*)"[TEST] === test run end ===\n");
 #endif
 
+startup_failed:
+	/* Never start motion after a required service failed to start. */
 	/* Sleep forever.  Returning from usermain() would shut down. */
 	tk_slp_tsk(TMO_FEVR);
 	return 0;

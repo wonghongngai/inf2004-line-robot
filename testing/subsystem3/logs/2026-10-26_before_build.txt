@@ -1,0 +1,26 @@
+BEFORE version (no minimum-bit change) build, 2026-10-26. Options: SMP=1 CONSOLE=usb_cdc WIFI=cyw43 CRASH_REPORT=0
+Strict -Wall -Wextra -Werror ARM compile PASS: line_barcode line_service line_demo line_barcode_test subsystem3_test subsystem3
+
+TEST=0
+   text	   data	    bss	    dec	    hex	filename
+ 291172	     92	  24568	 315832	  4d1b8	mtk3pico_smp1_usb_cdc_wifi.elf
+
+TEST=1
+   text	   data	    bss	    dec	    hex	filename
+ 298220	     92	  24564	 322876	  4ed3c	mtk3pico_smp1_usb_cdc_wifi_test.elf
+
+Subsystem 3 static symbols (TEST=0 image, arm-none-eabi-nm -S):
+2000601f 00000001 b g_b_calibrated
+2000601e 00000001 b g_b_enabled
+2000601b 00000001 b g_b_process_fault
+2000601c 00000001 b g_b_queue_fault
+2000601d 00000001 b g_b_reset
+20006018 00000003 b g_black_raw
+20006024 00000004 b g_h_line_mutex
+20006028 00000004 B g_h_line_nav_q
+20006020 00000004 b g_h_line_task
+20005fd0 00000009 b g_latest
+20000118 00000001 d g_layout
+20005fe4 00000034 b g_letter_map
+20005fe0 00000002 b g_nav
+20005fdc 00000004 b g_sample_ms
