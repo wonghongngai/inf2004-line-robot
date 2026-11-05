@@ -109,6 +109,8 @@ void s1_deliver_command(const unsigned char *payload, unsigned int length)
     result = tk_snd_mbf(command_queue, command.bytes, S1_COMMAND_BYTES, TMO_POL);
     if (result < E_OK) {
         tm_printf((UB *)"Buddy 1: command queue full/error %d\n", result);
+    } else {
+        tm_printf((UB *)"Buddy 1: command queued=%u\n", (unsigned int)command.bytes[0]);
     }
 }
 

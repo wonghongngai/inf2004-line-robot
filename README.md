@@ -9,7 +9,7 @@ for wiring, calibration, and the `ROBOT_MODE=integrated`, `motion`, and
 `mtk3pico_smp1_usb_cdc_wifi_integrated_test.uf2`. The default integrated build
 keeps motors off until real motion and IR calibration are entered.
 
-**Buddy 1 + 2 + 3 + 4 combined test:** build from the project root:
+**Buddy 1 + 2 + 3 + 4 + 5 combined test:** build from the project root:
 
 ```sh
 make -C build_make ROBOT_MODE=all_test NET=lwip MQTT=1 TEST=0 CRASH_REPORT=0 PICO_SDK_PATH=/Users/aliciakan/pico/pico-sdk -j8
@@ -17,7 +17,13 @@ make -C build_make ROBOT_MODE=all_test NET=lwip MQTT=1 TEST=0 CRASH_REPORT=0 PIC
 
 Flash `build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_all_test.uf2`.
 This runs S1's real Wi-Fi/MQTT queues, S2's motor driver, S3's line/barcode
-service and S4's IMU task together. The dedicated S2 test coordinator is the
+service, S4's IMU task and S5's obstacle scanning task together. S5 uses GP14
+for the servo and GP16/GP17 for ultrasonic trigger/echo (PWM slices 7 and 0;
+the motors use slices 4 and 5). Look for `S5: MONITORING` on USB serial.
+S5 prints scan results and avoidance plans; it does not yet command the motors
+or populate MQTT obstacle/scan telemetry. An obstacle does not stop the robot
+through S5 in this build. Raise the wheels for scanning bench tests.
+The dedicated S2 test coordinator is the
 only motor writer and the only consumer of navigation events and MQTT commands.
 The older `integrated` profile retains its encoder-calibration requirements.
 

@@ -9,6 +9,7 @@
 #include "../subsystem1/subsystem1.h"
 #include "../subsystem3/line_service.h"
 #include "../subsystem4/subsystem4.h"
+#include "../subsystem5/subsystem5.h"
 
 enum { WAITING, SETTLING, RUNNING, PAUSED, STOPPED, LINE_WAIT };
 enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
@@ -453,6 +454,8 @@ static void commands(ALL_TEST *t, uint32_t now)
             stop_test(t, "MQTT command queue failed", S1_STATE_FAULT);
             break;
         }
+        tm_printf((UB *)"[ALL TEST] command received=%u phase=%u\n",
+                  (unsigned int)cmd.bytes[0], (unsigned int)t->phase);
         switch (cmd.bytes[0]) {
         case S1_COMMAND_STATUS:
             t->force_status = true;
@@ -812,7 +815,7 @@ static void all_task(INT stacd, void *exinf)
     uint32_t last_control;
     (void)stacd;
     (void)exinf;
-    tm_printf((UB *)"[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU\n[BARCODE BUILD] GP28 digital; cumulative counts; raw edges enabled\n[BARCODE DEBUG] duration logging enabled; minimum element=40ms; target=A\n"
+    tm_printf((UB *)"[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan\n[BARCODE BUILD] GP28 digital; cumulative counts; raw edges enabled\n[BARCODE DEBUG] duration logging enabled; minimum element=40ms; target=A\n"
               "[ALL TEST] keep stationary for IMU calibration; starts after 5s\n"
               "[ALL TEST] straight PWM left=12.5%% right=15%%; inner=6.25%%; GP28=left GP27=centre GP0=right; 1=black\n"
               "[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders\n");
@@ -879,9 +882,11 @@ ER all_buddies_test_start(void)
     /* Only these four letters request junction movements. */
     if (er == E_OK) er = line_service_set_mapping('A', 'F', 'Z', 'W');
     if (er == E_OK) er = subsystem4_init();
+    if (er == E_OK) er = subsystem5_init();
     if (er == E_OK) er = subsystem1_start();
     if (er == E_OK) er = line_service_start();
     if (er == E_OK) er = subsystem4_start();
+    if (er == E_OK) er = subsystem5_start();
     if (er == E_OK) {
         ID tid = app_start_task(all_task, 15, TP_PRC2, "all_buddies_test");
         er = tid < E_OK ? tid : E_OK;

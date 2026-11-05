@@ -67,6 +67,7 @@ static void incoming_publish_cb(void *arg, const char *topic, u32_t tot_len)
     (void)arg;
     rx_length = 0;
     rx_kind = RX_NONE;
+    tm_printf((UB *)"mqtt: RX topic=%s length=%lu\n", topic, (unsigned long)tot_len);
     if (topic_is(topic, MQTT_COMMAND_TOPIC) && tot_len == S1_COMMAND_BYTES) {
         rx_kind = RX_COMMAND;
     } else if (topic_is(topic, MQTT_MAPPING_TOPIC) && tot_len == S1_MAPPING_BYTES) {
@@ -92,6 +93,7 @@ static void incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
     if ((flags & MQTT_DATA_FLAG_LAST) != 0U) {
         if (rx_kind == RX_COMMAND && rx_length == S1_COMMAND_BYTES &&
             (rx_payload[0] & ~S1_COMMAND_MASK) == 0U) {
+            tm_printf((UB *)"mqtt: RX command=%u\n", (unsigned int)rx_payload[0]);
             s1_deliver_command(rx_payload, S1_COMMAND_BYTES);
         } else if (rx_kind == RX_MAPPING && rx_length == S1_MAPPING_BYTES) {
             s1_deliver_mapping(rx_payload, S1_MAPPING_BYTES); /* validates */
