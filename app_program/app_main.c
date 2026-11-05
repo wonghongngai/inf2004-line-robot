@@ -211,6 +211,7 @@ EXPORT INT usermain(void)
 #if APP_ROBOT_INTEGRATED
 	subsystem3_test();
 	subsystem4_test();
+	subsystem5_test();
 #endif
 	tm_printf((UB*)"[TEST] === test run end ===\n");
 #endif

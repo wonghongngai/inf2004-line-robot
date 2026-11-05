@@ -55,25 +55,15 @@ EXPORT void ultrasonic_init(void)
     set_w(GPIO(US_ECHO_PIN), GPIO_OD);
 }
 
-/* Fire one ping and measure the distance in mm */
-EXPORT ultrasonic_status_t ultrasonic_measure_mm(UW   window_ms,
-                                                 UW * p_distance_mm)
+/* TRUE between ultrasonic_ping_start() and ultrasonic_ping_finish() */
+static BOOL g_b_ping_armed = FALSE;
+
+/* Arm the echo timer and fire the trigger (non-blocking ping, part 1) */
+EXPORT BOOL ultrasonic_ping_start(void)
 {
-    UW   echo_us;
-    UW   distance_mm;
-    BOOL b_still_high;
-
-    /* never write through a NULL pointer */
-    if (NULL == p_distance_mm)
-    {
-        return ULTRASONIC_NO_ECHO;
-    }
-
-    *p_distance_mm = 0U;
-
     if (0U != gpio_get_val(US_ECHO_PIN))
     {
-        return ULTRASONIC_BUSY;
+        return FALSE; /* still busy with the last echo */
     }
 
     /* Zero the stopwatch and arm it */
@@ -85,8 +75,52 @@ EXPORT ultrasonic_status_t ultrasonic_measure_mm(UW   window_ms,
     rp2040_delay_us(TRIG_PULSE_US);
     gpio_set_val(US_TRIG_PIN, 0);
 
+    g_b_ping_armed = TRUE;
+    return TRUE;
+}
+
+/* Fire one ping and measure the distance in mm (blocking) */
+EXPORT ultrasonic_status_t ultrasonic_measure_mm(UW   window_ms,
+                                                 UW * p_distance_mm)
+{
+    /* never write through a NULL pointer */
+    if (NULL == p_distance_mm)
+    {
+        return ULTRASONIC_NO_ECHO;
+    }
+
+    *p_distance_mm = 0U;
+
+    if (!ultrasonic_ping_start())
+    {
+        return ULTRASONIC_BUSY;
+    }
+
     /* Sleep; the hardware counts only while ECHO is high */
     tk_dly_tsk(window_ms);
+
+    return ultrasonic_ping_finish(p_distance_mm);
+}
+
+/* Read and convert the echo time (non-blocking ping, part 2) */
+EXPORT ultrasonic_status_t ultrasonic_ping_finish(UW * p_distance_mm)
+{
+    UW   echo_us;
+    UW   distance_mm;
+    BOOL b_still_high;
+
+    if (NULL == p_distance_mm)
+    {
+        return ULTRASONIC_NO_ECHO;
+    }
+
+    *p_distance_mm = 0U;
+
+    if (!g_b_ping_armed)
+    {
+        return ULTRASONIC_NO_ECHO; /* no ping in flight */
+    }
+    g_b_ping_armed = FALSE;
 
     b_still_high = (0U != gpio_get_val(US_ECHO_PIN));
     echo_us      = in_w(ECHO_CTR_ADDR) & ECHO_CTR_MAX;

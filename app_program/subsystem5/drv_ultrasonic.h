@@ -43,4 +43,22 @@ IMPORT void ultrasonic_init(void);
  */
 IMPORT ultrasonic_status_t ultrasonic_measure_mm(UW   window_ms,
                                                  UW * p_distance_mm);
+
+/**
+ * Non-blocking ping, part 1: arm the echo timer and fire the trigger
+ * (busy-waits only the ~12 us trigger pulse).  The hardware times the
+ * echo on its own, so the caller can keep working (e.g. move the servo)
+ * and call ultrasonic_ping_finish() once the window has passed.
+ * @return FALSE (nothing fired) if ECHO is still high from the last ping.
+ */
+IMPORT BOOL ultrasonic_ping_start(void);
+
+/**
+ * Non-blocking ping, part 2: read and convert the echo time.  Call at
+ * least the listening window (e.g. ULTRASONIC_WINDOW_SCAN_MS) after
+ * ultrasonic_ping_start(); later is fine.
+ * @param  p_distance_mm  Out: distance in mm, or 0 if not ULTRASONIC_OK.
+ * @return What happened (NO_ECHO if no ping was started).
+ */
+IMPORT ultrasonic_status_t ultrasonic_ping_finish(UW * p_distance_mm);
 #endif /* DRV_ULTRASONIC_H */

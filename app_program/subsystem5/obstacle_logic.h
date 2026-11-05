@@ -11,17 +11,19 @@
 #include "drv_ultrasonic.h" /* ultrasonic_status_t */
 
 /* Scan geometry */
-#define SCAN_MIN_DEG    (30U) /* scans never go outside 30..150 deg     */
-#define SCAN_MAX_DEG    (150U)
+/* Scans never go outside 50..130 deg (was 30..150, then 60..120, on
+ * 2026-11-05): 40 deg either side of straight ahead. */
+#define SCAN_MIN_DEG    (50U)
+#define SCAN_MAX_DEG    (130U)
+/* Scans:
+ *  - coarse (FR5-1): jump to 50, 70, 90, 110, 130 in turn, ping at each;
+ *  - fine (FR5-2): glide smoothly between the coarse angles that saw the
+ *    obstacle, pinging every 5 deg (e.g. hits at 70 and 90 -> 70..90).
+ * The NFR5-2/NFR5-3 time limits are dropped for smoothness (2026-11-05). */
+#define COARSE_STEP_DEG (20U)
+#define COARSE_POINTS   (((SCAN_MAX_DEG - SCAN_MIN_DEG) / COARSE_STEP_DEG) + 1U)
 #define FINE_STEP_DEG   (5U)
-#define FINE_MARGIN_DEG (15U) /* half the coarse spacing */
 #define FINE_MAX_POINTS (((SCAN_MAX_DEG - SCAN_MIN_DEG) / FINE_STEP_DEG) + 1U)
-
-/* NFR5-3 budget: ~80 ms per fine point (measured 2026-11-01: 22 points
- * took 2299 ms with the 570 ms coarse scan).  At most 15 points (~1.2 s)
- * + coarse 0.57 s keeps detection -> decision under 2 s. */
-#define FINE_BUDGET_POINTS (15U)
-#define FINE_HALF_SPAN_DEG (((FINE_BUDGET_POINTS - 1U) / 2U) * FINE_STEP_DEG)
 
 #define D_DETECT_MM  (300U) /* detect at >= 30 cm */
 /* A reading counts as "something there" for profiling below this.
@@ -78,12 +80,15 @@ typedef struct
 } plan_t;
 
 /**
- * Choose the fine-scan window from a coarse scan: from (first hit - 15)
- * to (last hit + 15), limited to SCAN_MIN_DEG..SCAN_MAX_DEG.
- * A hit is an ULTRASONIC_OK reading under D_PROFILE_MM.
- * If that window has more than FINE_BUDGET_POINTS points, it is instead
- * the closest hit +/- FINE_HALF_SPAN_DEG (also limited to 30..150).
- * @return FALSE if there are no hits (obstacle gone: skip the fine scan).
+ * Choose the fine-scan angles from the coarse scan: from the first coarse
+ * angle that saw the obstacle to the last one (hits at 60 and 90 ->
+ * 70..90).  If only ONE coarse angle saw it, its edges lie somewhere
+ * towards the neighbouring coarse angles, so the window runs from the
+ * neighbour below to the neighbour above (hit at 90 only -> 70..110),
+ * limited to SCAN_MIN_DEG..SCAN_MAX_DEG.  A hit is an ULTRASONIC_OK
+ * reading under D_PROFILE_MM.
+ * @return FALSE if there are no hits (obstacle gone: skip the fine scan)
+ *         or a pointer is NULL.
  */
 IMPORT BOOL fine_scan_window(const scan_point_t * p_coarse, UW count,
                              UW * p_start_deg, UW * p_end_deg);

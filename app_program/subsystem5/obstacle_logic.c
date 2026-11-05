@@ -54,19 +54,16 @@ EXPORT BOOL fine_scan_window(const scan_point_t * p_coarse, UW count,
                              UW * p_start_deg, UW * p_end_deg)
 {
     UW   index;
-    UW   min_deg     = SCAN_MAX_DEG;
-    UW   max_deg     = SCAN_MIN_DEG;
-    UW   closest_mm  = D_PROFILE_MM;
-    UW   closest_deg = SERVO_ANGLE_CENTRE_DEG;
-    BOOL b_found     = FALSE;
+    UW   min_deg = SCAN_MAX_DEG;
+    UW   max_deg = SCAN_MIN_DEG;
+    BOOL b_found = FALSE;
 
     if ((NULL == p_coarse) || (NULL == p_start_deg) || (NULL == p_end_deg))
     {
         return FALSE;
     }
 
-    /* 1. Find the smallest and largest angle that saw something near,
-     *    and the closest hit (used if the window must be cut to budget) */
+    /* 1. Smallest and largest angle that saw something near */
     for (index = 0U; index < count; index++)
     {
         if ((ULTRASONIC_OK == p_coarse[index].status) &&
@@ -81,11 +78,6 @@ EXPORT BOOL fine_scan_window(const scan_point_t * p_coarse, UW count,
             {
                 max_deg = p_coarse[index].angle_deg;
             }
-            if (p_coarse[index].distance_mm < closest_mm)
-            {
-                closest_mm  = p_coarse[index].distance_mm;
-                closest_deg = p_coarse[index].angle_deg;
-            }
         }
     }
     if (!b_found)
@@ -93,28 +85,21 @@ EXPORT BOOL fine_scan_window(const scan_point_t * p_coarse, UW count,
         return FALSE;
     }
 
-    /* 2. Widen by the margin, without going outside 30..150.
-     *    unsigned values must never go below 0 */
-    *p_start_deg = (min_deg >= (SCAN_MIN_DEG + FINE_MARGIN_DEG))
-                       ? (min_deg - FINE_MARGIN_DEG)
-                       : SCAN_MIN_DEG;
-    *p_end_deg   = ((max_deg + FINE_MARGIN_DEG) <= SCAN_MAX_DEG)
-                       ? (max_deg + FINE_MARGIN_DEG)
-                       : SCAN_MAX_DEG;
+    /* 2. Two or more hits: the obstacle spans them, scan between them */
+    *p_start_deg = min_deg;
+    *p_end_deg   = max_deg;
 
-    /* 3. Too many points for the time budget (NFR5-3)?  Centre the window
-     *    on the closest hit instead.  End >= start here, so no underflow. */
-    if ((((*p_end_deg - *p_start_deg) / FINE_STEP_DEG) + 1U) >
-        FINE_BUDGET_POINTS)
+    /* 3. One hit: widen to the neighbouring coarse angles, inside
+     *    SCAN_MIN..SCAN_MAX (unsigned values must never go below 0) */
+    if (min_deg == max_deg)
     {
-        *p_start_deg = (closest_deg >= (SCAN_MIN_DEG + FINE_HALF_SPAN_DEG))
-                           ? (closest_deg - FINE_HALF_SPAN_DEG)
+        *p_start_deg = (min_deg >= (SCAN_MIN_DEG + COARSE_STEP_DEG))
+                           ? (min_deg - COARSE_STEP_DEG)
                            : SCAN_MIN_DEG;
-        *p_end_deg   = ((closest_deg + FINE_HALF_SPAN_DEG) <= SCAN_MAX_DEG)
-                           ? (closest_deg + FINE_HALF_SPAN_DEG)
+        *p_end_deg   = ((max_deg + COARSE_STEP_DEG) <= SCAN_MAX_DEG)
+                           ? (max_deg + COARSE_STEP_DEG)
                            : SCAN_MAX_DEG;
     }
-
     return TRUE;
 }
 
