@@ -14,7 +14,11 @@
 #define TRIG_SCALE        (1000)
 #define TRIG_STEP_DEG     (5)
 #define TRIG_MAX_DEG      (60)
-#define BEAM_SPREAD_X1000 (263) /* 2 x tan(7.5 deg) = 0.263: cone width */
+/* Echo cone half-width per mm of range: tan(20 deg) = 0.364.  Each edge the
+ * scan sees is pulled in by this x the closest distance.  The datasheet's
+ * 15 deg cone was far too narrow: 2026-11-06 a 210 mm box at 294 mm spanned
+ * 415 mm of readings (415 - 2 x 0.364 x 294 = 201 mm). */
+#define BEAM_HALF_X1000   (364)
 
 static const INT g_sin_x1000[] = {0,   87,  174, 259, 342, 423, 500,
                                   574, 643, 707, 766, 819, 866};
@@ -85,21 +89,17 @@ EXPORT BOOL fine_scan_window(const scan_point_t * p_coarse, UW count,
         return FALSE;
     }
 
-    /* 2. Two or more hits: the obstacle spans them, scan between them */
-    *p_start_deg = min_deg;
-    *p_end_deg   = max_deg;
-
-    /* 3. One hit: widen to the neighbouring coarse angles, inside
-     *    SCAN_MIN..SCAN_MAX (unsigned values must never go below 0) */
-    if (min_deg == max_deg)
-    {
-        *p_start_deg = (min_deg >= (SCAN_MIN_DEG + COARSE_STEP_DEG))
-                           ? (min_deg - COARSE_STEP_DEG)
-                           : SCAN_MIN_DEG;
-        *p_end_deg   = ((max_deg + COARSE_STEP_DEG) <= SCAN_MAX_DEG)
-                           ? (max_deg + COARSE_STEP_DEG)
-                           : SCAN_MAX_DEG;
-    }
+    /* 2. The obstacle's edges lie somewhere between the outermost hits and
+     *    the next coarse angles out, so widen by one coarse step each side
+     *    (2026-11-05: stopping at the last hit left the box's real left
+     *    edge unscanned and the robot clipped it).  Stay inside
+     *    SCAN_MIN..SCAN_MAX; unsigned values must never go below 0. */
+    *p_start_deg = (min_deg >= (SCAN_MIN_DEG + COARSE_STEP_DEG))
+                       ? (min_deg - COARSE_STEP_DEG)
+                       : SCAN_MIN_DEG;
+    *p_end_deg   = ((max_deg + COARSE_STEP_DEG) <= SCAN_MAX_DEG)
+                       ? (max_deg + COARSE_STEP_DEG)
+                       : SCAN_MAX_DEG;
     return TRUE;
 }
 
@@ -141,6 +141,46 @@ static BOOL is_hit(const scan_point_t * p_point)
             (p_point->distance_mm < D_PROFILE_MM))
                ? TRUE
                : FALSE;
+}
+
+/* Check if a scan point belongs to the box whose closest reading is
+ * 'closest_mm': a hit no more than NEAR_BAND_MM further than that */
+static BOOL is_near(const scan_point_t * p_point, UW closest_mm)
+{
+    return (is_hit(p_point) &&
+            (p_point->distance_mm <= (closest_mm + NEAR_BAND_MM)))
+               ? TRUE
+               : FALSE;
+}
+
+/* TRUE if two readings agree: both valid and within CLEAR_CONFIRM_MM */
+static BOOL readings_agree(const scan_point_t * p_a, const scan_point_t * p_b)
+{
+    UW diff_mm;
+
+    if ((ULTRASONIC_OK != p_a->status) || (ULTRASONIC_OK != p_b->status))
+    {
+        return FALSE;
+    }
+    diff_mm = (p_a->distance_mm > p_b->distance_mm)
+                  ? (p_a->distance_mm - p_b->distance_mm)
+                  : (p_b->distance_mm - p_a->distance_mm);
+    return (diff_mm <= CLEAR_CONFIRM_MM) ? TRUE : FALSE;
+}
+
+/* TRUE if fine point 'index' is backed up by a neighbouring angle */
+static BOOL confirmed(const scan_point_t * p_points, UW count, UW index)
+{
+    if ((index > 0U) && readings_agree(&p_points[index], &p_points[index - 1U]))
+    {
+        return TRUE;
+    }
+    if (((index + 1U) < count) &&
+        readings_agree(&p_points[index], &p_points[index + 1U]))
+    {
+        return TRUE;
+    }
+    return FALSE;
 }
 
 /* Convert an angle and distance to x/y coordinates */
@@ -222,6 +262,9 @@ EXPORT BOOL obstacle_profile(const scan_point_t * p_fine, UW fine_count,
     INT y_right_mm;
     INT width_mm;
     INT x_limit_mm;
+    INT beam_half_mm;
+    INT y_left_box_mm;
+    INT y_right_box_mm;
 
     if ((NULL == p_fine) || (NULL == p_coarse) || (NULL == p_out))
     {
@@ -249,14 +292,16 @@ EXPORT BOOL obstacle_profile(const scan_point_t * p_fine, UW fine_count,
         return FALSE;
     }
 
-    /* 2. Grow the run of neighbouring hits around it: that is the obstacle */
+    /* 2. Grow the run of neighbouring readings near the closest one: that
+     *    is the obstacle.  A farther surface seen past its edge is not. */
     first = closest_index;
-    while ((first > 0U) && is_hit(&p_fine[first - 1U]))
+    while ((first > 0U) && is_near(&p_fine[first - 1U], p_out->closest_mm))
     {
         first--;
     }
     last = closest_index;
-    while (((last + 1U) < fine_count) && is_hit(&p_fine[last + 1U]))
+    while (((last + 1U) < fine_count) &&
+           is_near(&p_fine[last + 1U], p_out->closest_mm))
     {
         last++;
     }
@@ -278,15 +323,36 @@ EXPORT BOOL obstacle_profile(const scan_point_t * p_fine, UW fine_count,
         }
     }
 
-    /* 4. Closest point, location and beam-corrected width */
+    /* 4. Closest point, location and beam-corrected width.  An edge is
+     *    pulled in by the cone's half-width only if the scan saw past it
+     *    (a reading beyond the run).  A run that reaches the end of the fine
+     *    scan may go on further: keep that edge where the last reading was
+     *    (2026-11-06: correcting a box cut off at 50 deg gave 75 mm for a
+     *    210 mm box). */
     p_out->closest_deg = p_fine[closest_index].angle_deg;
     point_to_xy(p_out->closest_deg, p_out->closest_mm, &x_mm, &y_mm);
     p_out->closest_x_mm = x_mm;
-    p_out->centre_y_mm  = (y_left_mm + y_right_mm) / 2;
 
-    width_mm = (y_left_mm - y_right_mm) -
-               (((INT)p_out->closest_mm * BEAM_SPREAD_X1000) / TRIG_SCALE);
-    p_out->width_mm = (width_mm > 0) ? (UW)width_mm : 0U;
+    beam_half_mm = ((INT)p_out->closest_mm * BEAM_HALF_X1000) / TRIG_SCALE;
+    y_left_box_mm  = y_left_mm;
+    y_right_box_mm = y_right_mm;
+    if ((last + 1U) < fine_count)
+    {
+        y_left_box_mm -= beam_half_mm; /* left edge seen (higher angles) */
+    }
+    if (first > 0U)
+    {
+        y_right_box_mm += beam_half_mm; /* right edge seen */
+    }
+    if (y_left_box_mm < y_right_box_mm)
+    {
+        /* Narrower than the cone: a post.  Collapse to its middle. */
+        y_left_box_mm  = (y_left_box_mm + y_right_box_mm) / 2;
+        y_right_box_mm = y_left_box_mm;
+    }
+    p_out->centre_y_mm = (y_left_box_mm + y_right_box_mm) / 2;
+    width_mm           = y_left_box_mm - y_right_box_mm;
+    p_out->width_mm    = (UW)width_mm;
 
     /* 5. Clearance: other objects level with this one, on either side.
      *    Fine points outside the run, then coarse points outside the
@@ -295,7 +361,9 @@ EXPORT BOOL obstacle_profile(const scan_point_t * p_fine, UW fine_count,
 
     for (index = 0U; index < fine_count; index++)
     {
-        if ((index < first) || (index > last))
+        /* Only readings a neighbouring angle confirms (NFR5-5) */
+        if (((index < first) || (index > last)) &&
+            confirmed(p_fine, fine_count, index))
         {
             clearance_update(&p_fine[index], x_limit_mm, y_left_mm, y_right_mm,
                              p_out);
@@ -438,4 +506,152 @@ EXPORT void obstacle_plan(const obstacle_profile_t * p_profile, UW retries,
     {
         p_plan->decision = (retries < MAX_RETRIES) ? PLAN_REVERSE : PLAN_STOP;
     }
+}
+/* ---- Bypass (FR5-4, FR5-5) ---- */
+
+/* Move list for a left pass; a right pass swaps the turn directions */
+static const bypass_step_t g_left_pass[BYPASS_STEPS] = {
+    {S5_MOVE_TURN_L, BYPASS_TURN_DEG, FALSE, FALSE},  /* T1 away from line */
+    {S5_MOVE_FWD, 0U, FALSE, FALSE},                  /* F1 out: from plan  */
+    {S5_MOVE_TURN_R, BYPASS_TURN_DEG, FALSE, FALSE},  /* T2 forward again  */
+    {S5_MOVE_FWD, BYPASS_PAST_CM, FALSE, FALSE},      /* F2 past the box   */
+    {S5_MOVE_TURN_R, BYPASS_TURN_DEG, FALSE, FALSE},  /* T3 towards line   */
+    {S5_MOVE_FWD, LINE_SEEK_MAX_CM, TRUE, TRUE},      /* F3 both sensors   */
+                                                      /*    over the line  */
+    {S5_MOVE_FWD, LINE_ALIGN_CM, FALSE, FALSE},       /* F4 wheels past it */
+    {S5_MOVE_TURN_L, LINE_TURN_MAX_DEG, TRUE, FALSE}, /* T4 until a sensor */
+                                                      /*    is on it again */
+};
+
+#define BYPASS_F1_INDEX (1U)
+#define MM_PER_CM       (10U)
+
+/* Step F1's distance, from the plan's shift */
+EXPORT UW bypass_side_cm(UW shift_mm)
+{
+    UW side_cm = (shift_mm + (MM_PER_CM - 1U)) / MM_PER_CM; /* round up */
+
+    if (side_cm < BYPASS_SIDE_MIN_CM)
+    {
+        side_cm = BYPASS_SIDE_MIN_CM;
+    }
+    if (side_cm > BYPASS_SIDE_MAX_CM)
+    {
+        side_cm = BYPASS_SIDE_MAX_CM;
+    }
+    return side_cm;
+}
+
+/* One move of the turn-and-box path */
+EXPORT BOOL bypass_step(const plan_t * p_plan, UW index,
+                        bypass_step_t * p_step)
+{
+    bypass_step_t step;
+
+    if ((NULL == p_plan) || (NULL == p_step) || (index >= BYPASS_STEPS) ||
+        ((PLAN_PASS_LEFT != p_plan->decision) &&
+         (PLAN_PASS_RIGHT != p_plan->decision)))
+    {
+        return FALSE;
+    }
+
+    step = g_left_pass[index];
+    if (BYPASS_F1_INDEX == index)
+    {
+        step.value = (UH)bypass_side_cm(p_plan->shift_mm);
+    }
+    if (PLAN_PASS_RIGHT == p_plan->decision)
+    {
+        if (S5_MOVE_TURN_L == step.move)
+        {
+            step.move = S5_MOVE_TURN_R;
+        }
+        else if (S5_MOVE_TURN_R == step.move)
+        {
+            step.move = S5_MOVE_TURN_L;
+        }
+        else
+        {
+            /* forward legs are the same both ways */
+        }
+    }
+    *p_step = step;
+    return TRUE;
+}
+
+/* ---- S5 -> VC request word (IF-10) ---- */
+
+/* Request word layout (see subsystem5.h) */
+#define REQ_KIND_SHIFT  (0U)
+#define REQ_KIND_MASK   (0x07U)
+#define REQ_MOVE_SHIFT  (3U)
+#define REQ_MOVE_MASK   (0x03U)
+#define REQ_LINE_SHIFT  (5U)
+#define REQ_SEQ_SHIFT   (6U)
+#define REQ_VALUE_SHIFT (10U)
+#define REQ_VALUE_MASK  (0x3FFU)
+#define REQ_UNUSED_LOW_SHIFT  (20U) /* bits 20-27 must be 0 */
+#define REQ_UNUSED_LOW_MASK   (0xFFU)
+#define REQ_MOVE_RESERVED     (3U)  /* move 3: invalid */
+#define REQ_LALL_SHIFT  (28U) /* line_all */
+#define REQ_UNUSED_SHIFT (29U)
+
+/* Pack a request into one 32-bit word */
+EXPORT UW s5_request_pack(const S5_REQUEST * p_req)
+{
+    UW value;
+
+    if (NULL == p_req)
+    {
+        return (UW)S5_REQ_SAFE_STOP; /* never publish garbage */
+    }
+
+    value = (p_req->value > S5_REQ_VALUE_MAX) ? S5_REQ_VALUE_MAX
+                                              : (UW)p_req->value;
+
+    return (((UW)p_req->kind & REQ_KIND_MASK) << REQ_KIND_SHIFT) |
+           (((UW)p_req->move & REQ_MOVE_MASK) << REQ_MOVE_SHIFT) |
+           ((p_req->b_stop_on_line ? 1UL : 0UL) << REQ_LINE_SHIFT) |
+           (((UW)p_req->seq & S5_REQ_SEQ_MASK) << REQ_SEQ_SHIFT) |
+           ((value & REQ_VALUE_MASK) << REQ_VALUE_SHIFT) |
+           ((p_req->b_line_all ? 1UL : 0UL) << REQ_LALL_SHIFT);
+}
+
+/* Unpack a request word, rejecting reserved values */
+EXPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req)
+{
+    UB kind;
+    UB move;
+
+    if (NULL == p_req)
+    {
+        return FALSE;
+    }
+
+    p_req->kind           = S5_REQ_NONE;
+    p_req->move           = S5_MOVE_FWD;
+    p_req->seq            = 0U;
+    p_req->b_stop_on_line = FALSE;
+    p_req->value          = 0U;
+    p_req->b_line_all     = FALSE;
+
+    kind = (UB)((word >> REQ_KIND_SHIFT) & REQ_KIND_MASK);
+    move = (UB)((word >> REQ_MOVE_SHIFT) & REQ_MOVE_MASK);
+
+    if ((kind > S5_REQ_SAFE_STOP) || (REQ_MOVE_RESERVED == move) ||
+        (0U != ((word >> REQ_UNUSED_LOW_SHIFT) & REQ_UNUSED_LOW_MASK)) ||
+        (0U != (word >> REQ_UNUSED_SHIFT)))
+    {
+        return FALSE; /* reserved: the VC must stop safely */
+    }
+
+    p_req->kind = kind;
+    p_req->move = move;
+    p_req->seq  = (UB)((word >> REQ_SEQ_SHIFT) & S5_REQ_SEQ_MASK);
+    p_req->b_stop_on_line =
+        (0U != ((word >> REQ_LINE_SHIFT) & 1U)) ? TRUE : FALSE;
+    p_req->value = (UH)((word >> REQ_VALUE_SHIFT) & REQ_VALUE_MASK);
+    p_req->b_line_all =
+        (0U != ((word >> REQ_LALL_SHIFT) & 1U)) ? TRUE : FALSE;
+    return TRUE;
 }

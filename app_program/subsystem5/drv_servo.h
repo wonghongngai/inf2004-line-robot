@@ -14,9 +14,10 @@
 
 #define SERVO_ANGLE_CENTRE_DEG (90U) /* straight ahead (after calibration) */
 
-/* safety limits: requests outside this range are clamped */
-#define SERVO_ANGLE_MIN_DEG (20U)
-#define SERVO_ANGLE_MAX_DEG (160U)
+/* Safety limits: requests outside this range are clamped.  50..130 is as
+ * far as the sensor holder can turn before it hits the car body. */
+#define SERVO_ANGLE_MIN_DEG (50U)
+#define SERVO_ANGLE_MAX_DEG (130U)
 
 /* ---- Smooth (gliding) motion ------------------------------------------
  * Angles in tenths of a degree ("ddeg", 900 = forward).  The position is
@@ -87,9 +88,6 @@ IMPORT void servo_set_angle(UW angle_deg);
  *  the on-target tests can check the calibration maths. */
 IMPORT UW servo_angle_to_pulse_us(UW angle_deg);
 
-/** Move to 'angle_deg' (clamped) and SLEEP until it has arrived.  Now a
- *  smooth glide (servo_glide_to); kept so callers need not change. */
-IMPORT void servo_move_and_settle(UW angle_deg);
 
 /** JUMP to 'angle_deg' (clamped) at the servo's full speed, then SLEEP
  *  servo_settle_ms() so the horn has stopped before a ping.  Used by the

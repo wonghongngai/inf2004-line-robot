@@ -275,13 +275,6 @@ EXPORT UW servo_settle_ms(UW from_deg, UW to_deg)
            SERVO_SETTLE_MARGIN_MS;
 }
 
-/* Move the servo and wait until it has arrived: now a smooth glide (the
- * old full-speed jump made the scan jerky and shook the robot) */
-EXPORT void servo_move_and_settle(UW angle_deg)
-{
-    servo_glide_to(angle_deg);
-}
-
 /* Jump straight to an angle at full speed, then wait for the horn */
 EXPORT void servo_jump_to(UW angle_deg)
 {

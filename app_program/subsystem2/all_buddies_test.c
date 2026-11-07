@@ -10,6 +10,7 @@
 #include "../subsystem3/line_service.h"
 #include "../subsystem4/subsystem4.h"
 #include "../subsystem5/subsystem5.h"
+#include "../subsystem5/s5_executor.h"
 
 enum { WAITING, SETTLING, RUNNING, PAUSED, STOPPED, LINE_WAIT };
 enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
@@ -58,7 +59,52 @@ typedef struct {
     int32_t turn_left0, turn_right0;
     bool turn_done_valid;
     bool leaving_junction;
+    /* S5 obstacle-avoidance hook (IF-10/IF-11, see s5_step below). */
+    S5_EXEC s5;
+    int32_t s5_left0, s5_right0;
 } ALL_TEST;
+
+/* S5 requests: HOLD replies once the robot has had this long to stop. */
+#define S5_HOLD_SETTLE_MS  150u
+/* ... and a move may take this long: 12.5-15 % PWM moves about
+ * 8-10 cm/s, so an 80 cm leg 4 needs about 10 s (2026-11-05 run). */
+#define S5_MOVE_TIMEOUT_MS 20000u
+/* S5 pivots: one wheel drives, the other is stopped, so the moving wheel
+ * runs on a circle of radius = the wheel spacing (centre to centre).  A
+ * turn of D degrees is D x pi / 180 x S5_PIVOT_TRACK_CM of wheel path, at
+ * that wheel's S5_*_TICKS_PER_CM.  This replaces S2's turn calibration x a
+ * scale (measured with the old polled encoder): at 127 % it asked for 2618
+ * ticks, about 104 deg, and the first turn overshot (2026-11-06).
+ * [VERIFY: measure the spacing; turns long -> lower it, short -> raise] */
+/* 12 (a guess) overshot; 10 cm (measured) turned about 10 deg short of
+ * 90 (2026-11-07), so 10 x 90 / 80 = 11.25.  It is the effective pivot
+ * radius, not the ruler distance: the stopped wheel also slips. */
+#define S5_PIVOT_TRACK_CM 11.25f
+/* ... at this PWM on the moving wheel.  12.5-15 % stalled mid-turn (the
+ * stopped wheel drags sideways): step 3 stopped dead after 2137 ticks and
+ * step 1 sat still for about 8 s (2026-11-06).  The 15 % cap only guarded
+ * against the old polled encoder miscounting; interrupts count at any
+ * speed.  [Tune] */
+#define S5_PIVOT_PWM 20.0f
+#define S5_PI 3.14159265f
+/* Straight legs: the leading wheel's PWM is cut by this much per cm it is
+ * ahead.  0.13 % per tick held the heading well before the encoder fix
+ * (3 %/cm x 3.3 at 76 ticks/cm); at 117.8 ticks/cm that is 15 %/cm. */
+#define S5_HEADING_KP 15.0f
+/* Ticks per real cm for S5's moves, from the hand-push calibration
+ * (S5_ENCODER_CAL) with the interrupt-driven encoder, 2026-11-06: three
+ * 100 cm pushes gave left 117.9 / 119.4 / 116.2 and right 118.6 / 122.5 /
+ * 119.9 (R/L 1.005-1.031).  These replace the old S5_DIST_SCALE (3.3) and
+ * S5_RIGHT_RATIO guesses, which only made up for counts the 1 ms polled
+ * encoder lost.  S2_*_TICKS_PER_CM (23.10 / 18.83) were also measured with
+ * the polled encoder; Buddy 2 should re-measure them. */
+#define S5_LEFT_TICKS_PER_CM  117.8f
+#define S5_RIGHT_TICKS_PER_CM 120.3f
+/* 1 = build the hand-push encoder calibration instead of the normal run
+ * (see encoder_cal_task).  Keep 0 for normal all_test images. */
+#ifndef S5_ENCODER_CAL
+#define S5_ENCODER_CAL 0
+#endif
 
 static const char *const command_names[4] = {"LEFT", "RIGHT", "STRAIGHT", "U-TURN"};
 
@@ -98,6 +144,7 @@ static void stop_test(ALL_TEST *t, const char *reason, unsigned state)
     }
     drv_motor_stop();
     t->left = t->right = 0.0f;
+    s5_exec_set_following(&t->s5, FALSE);
     if (t->phase != STOPPED) {
         t->phase = STOPPED;
         t->terminal_state = state;
@@ -117,6 +164,7 @@ static void wait_for_line(ALL_TEST *t)
     t->last_side = 0;
     drv_motor_stop();
     t->left = t->right = 0.0f;
+    s5_exec_set_following(&t->s5, FALSE);
     if (t->phase == LINE_WAIT) return;
     /* Keep sampling raw inputs while navigation is paused. This prevents
      * ordinary line absence from becoming S3's permanent search timeout.
@@ -369,6 +417,169 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
         t->stop_reason = NULL;
         apply_follow_pwm(t, ALL_BASE_PWM, ALL_BASE_PWM, now);
     }
+}
+
+/* ---- S5 obstacle-avoidance hook (added by Buddy 5; IF-10/IF-11) --------
+   The shared executor (subsystem5/s5_executor.c) runs the hand-shake and
+   calls back into the functions below, which drive with this loop's own
+   PWM levels and encoder-counted pivots (as turn_step). */
+typedef struct {
+    ALL_TEST *t;
+    uint32_t now;
+} AT_CTX;
+
+static void at_stop(void *p)
+{
+    ALL_TEST *t = ((AT_CTX *)p)->t;
+    drv_motor_stop();
+    t->left = t->right = 0.0f;
+    t->pwm_clock_started = false; /* next move ramps up from rest */
+}
+
+/* Remember where the encoders were when the move began. */
+static BOOL at_start_move(void *p, const S5_REQUEST *req)
+{
+    ALL_TEST *t = ((AT_CTX *)p)->t;
+    (void)req;
+    t->s5_left0 = t->left_ticks;
+    t->s5_right0 = t->right_ticks;
+    return true;
+}
+
+/* Distance a wheel has covered since the move began, in cm. */
+static float at_left_cm(const ALL_TEST *t)
+{
+    return (float)tick_delta(t->left_ticks, t->s5_left0) / S5_LEFT_TICKS_PER_CM;
+}
+
+static float at_right_cm(const ALL_TEST *t)
+{
+    return (float)tick_delta(t->right_ticks, t->s5_right0) / S5_RIGHT_TICKS_PER_CM;
+}
+
+/* Moving-wheel ticks for an S5 pivot of 'deg' degrees. */
+static float s5_pivot_ticks(UH deg, float ticks_per_cm)
+{
+    return (float)deg * S5_PI / 180.0f * S5_PIVOT_TRACK_CM * ticks_per_cm;
+}
+
+static UB at_run_move(void *p, const S5_REQUEST *req)
+{
+    AT_CTX *c = p;
+    ALL_TEST *t = c->t;
+    if (req->move == S5_MOVE_FWD) {
+        /* Hold the heading: both wheels start at their straight PWM and the
+           one that is ahead is slowed until the distances match. The
+           open-loop 12.5/15 % pair drifted badly after every restart
+           (2026-11-06: leg 2 left 72 cm, right 55 cm, about 80 deg off).
+           Only ever slow the wheel that is ahead, never speed one up: the
+           1 ms polled encoder miscounts the left wheel backwards above its
+           straight PWM (2026-11-06: at 16-22.5 % it read backwards, the
+           correction ran away and the robot veered right into the box). */
+        float left_cm = at_left_cm(t), right_cm = at_right_cm(t);
+        float err = S5_HEADING_KP * (right_cm - left_cm); /* > 0: right ahead */
+        float left_pwm = ALL_BASE_PWM, right_pwm = ALL_RIGHT_BASE_PWM;
+        if ((left_cm + right_cm) * 0.5f >= (float)req->value) return S5_EXEC_DONE;
+        if (err > 0.0f) right_pwm -= err;
+        else left_pwm += err;
+        if (left_pwm < 0.0f) left_pwm = 0.0f;
+        if (right_pwm < 0.0f) right_pwm = 0.0f;
+        apply_follow_pwm(t, left_pwm, right_pwm, c->now);
+    } else if (req->move == S5_MOVE_TURN_R) {
+        /* Right pivot moves the left wheel (as turn_step). */
+        if ((float)tick_delta(t->left_ticks, t->s5_left0) >=
+            s5_pivot_ticks(req->value, S5_LEFT_TICKS_PER_CM)) return S5_EXEC_DONE;
+        t->right = 0.0f;
+        apply_follow_pwm(t, S5_PIVOT_PWM, 0.0f, c->now);
+    } else {
+        /* Left pivot moves the right wheel. */
+        if ((float)tick_delta(t->right_ticks, t->s5_right0) >=
+            s5_pivot_ticks(req->value, S5_RIGHT_TICKS_PER_CM)) return S5_EXEC_DONE;
+        t->left = 0.0f;
+        apply_follow_pwm(t, 0.0f, S5_PIVOT_PWM, c->now);
+    }
+    return S5_EXEC_RUNNING;
+}
+
+/* Motors are off straight away; S5_HOLD_SETTLE_MS lets the robot coast. */
+static BOOL at_is_stopped(void *p)
+{
+    (void)p;
+    return true;
+}
+
+/* Steering sensors (SIDE: C and R; L is the barcode scanner). */
+#define AT_LINE_MASK (ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_SIDE ? \
+                      3u : LINE_BARCODE_SENSOR_MASK)
+
+static UB at_line_sensors(void *p)
+{
+    ALL_TEST *t = ((AT_CTX *)p)->t;
+    return t->line_er >= E_OK ? (UB)(t->line.data[0] & AT_LINE_MASK) : 0u;
+}
+
+static BOOL at_take_control(void *p)
+{
+    ALL_TEST *t = ((AT_CTX *)p)->t;
+    t->turn_stage = TURN_NONE; /* obstacle wins over a barcode turn */
+    t->corner_active = t->centre_pending = false;
+    if (line_service_enable(false) < E_OK) {
+        stop_test(t, "line pause for obstacle failed", S1_STATE_FAULT);
+        return false;
+    }
+    t->stop_reason = "obstacle: S5 has control";
+    t->force_status = true;
+    tm_printf((UB *)"[ALL TEST] obstacle: S5 has control\n");
+    return true;
+}
+
+/* Same clean-up as the end of a junction turn. */
+static BOOL at_give_back(void *p)
+{
+    ALL_TEST *t = ((AT_CTX *)p)->t;
+    if (line_service_enable(true) < E_OK) {
+        stop_test(t, "line resume after obstacle failed", S1_STATE_FAULT);
+        return false;
+    }
+    /* Rejoining at a slight angle can put both sensors on the line for a
+     * moment; without this the follower read it as a junction and stopped
+     * ("centre and right both black", 2026-11-06).  Same grace as after a
+     * junction turn: drive straight until the sensors clear and
+     * ALL_TEST_TURN_SETTLE_MS has passed. */
+    t->leaving_junction = true;
+    t->turn_done = ((AT_CTX *)p)->now;
+    t->steering_action = 0u;
+    t->white_clear_pending = false;
+    t->white_reported = false;
+    t->stop_reason = NULL;
+    t->force_status = true;
+    tm_printf((UB *)"[ALL TEST] obstacle handled; line following resumed\n");
+    return true;
+}
+
+static void at_safe_stop(void *p, const char *reason)
+{
+    stop_test(((AT_CTX *)p)->t, reason, S1_STATE_FAULT);
+}
+
+static BOOL at_may_follow(void *p)
+{
+    return ((AT_CTX *)p)->t->turn_stage == TURN_NONE;
+}
+
+static const S5_EXEC_OPS at_s5_ops = {
+    at_stop, at_start_move, at_run_move, at_is_stopped,
+    at_line_sensors, at_take_control, at_give_back, at_safe_stop, at_may_follow,
+    S5_HOLD_SETTLE_MS,
+    S5_MOVE_TIMEOUT_MS, /* low power: an 80 cm leg takes ~10 s here */
+    AT_LINE_MASK
+};
+
+/* Returns true while S5 has control, so line following is skipped. */
+static bool s5_step(ALL_TEST *t, uint32_t now)
+{
+    AT_CTX c = {t, now};
+    return s5_exec_step(&t->s5, &at_s5_ops, &c, now);
 }
 
 static void report_motor_outputs(void)
@@ -631,7 +842,8 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
         if ((uint32_t)(now - t->boot) >= ALL_READY_MS) {
             t->imu_fault = true;
             stop_test(t, "IMU readiness timeout", S1_STATE_FAULT);
-        } else if ((uint32_t)(now - t->boot) >= ALL_START_MS && imu_ready(t, now)) {
+        } else if ((uint32_t)(now - t->boot) >= ALL_START_MS && imu_ready(t, now) &&
+                   !s5_exec_startup_hold()) {
             t->imu_errors = t->imu.read_errors;
             if (line_service_enable(true) < E_OK) {
                 stop_test(t, "line enable failed", S1_STATE_FAULT);
@@ -706,7 +918,9 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
             }
             unsigned state = t->line.data[1] & 7u;
             if (t->phase == RUNNING) {
-                if (t->turn_stage != TURN_NONE) {
+                if (s5_step(t, now)) {
+                    /* S5 obstacle avoidance owns the motors this step. */
+                } else if (t->turn_stage != TURN_NONE) {
                     turn_step(t, now);
                 } else if (ALL_TEST_WHITE_FOLLOW) {
                     white_follow_step(t, now);
@@ -808,6 +1022,48 @@ report_status:
     report_telemetry(t, now);
 }
 
+#if S5_ENCODER_CAL
+/* Hand-push encoder calibration (S5_ENCODER_CAL 1): the motors stay off
+ * and both wheels' tick counts since reset are printed twice a second.
+ * Push the robot slowly and straight along a 100 cm tape line; the final
+ * counts / 100 are each wheel's ticks per real cm. */
+#define S5_CAL_PUSH_CM   100
+#define S5_CAL_REPORT_MS 500u
+
+static void encoder_cal_task(void)
+{
+    int32_t left0, right0, left, right, dl, dr, ratio_x1000;
+    SYSTIM now;
+    uint32_t last = 0u;
+
+    drv_motor_stop();
+    drv_encoder_get_counts(&left0, &right0);
+    tm_printf((UB *)"[ENC CAL] encoder calibration: motors OFF\n"
+                    "[ENC CAL] push the robot slowly and straight along a %d cm line,\n"
+                    "[ENC CAL] then read the last line: ticks/cm = count / %d\n",
+              S5_CAL_PUSH_CM, S5_CAL_PUSH_CM);
+    for (;;) {
+        drv_encoder_poll();
+        if (tk_get_tim(&now) == E_OK &&
+            (uint32_t)(now.lo - last) >= S5_CAL_REPORT_MS) {
+            drv_encoder_get_counts(&left, &right);
+            dl = left - left0;
+            dr = right - right0;
+            ratio_x1000 = (dl != 0) ? (dr * 1000) / dl : 0;
+            if (ratio_x1000 < 0) ratio_x1000 = -ratio_x1000;
+            /* Integers only: ticks/cm = count / 100 printed as x.yy */
+            tm_printf((UB *)"[ENC CAL] left=%ld right=%ld | if %d cm: L=%ld.%02ld R=%ld.%02ld ticks/cm, R/L=%ld.%03ld\n",
+                      (long)dl, (long)dr, S5_CAL_PUSH_CM,
+                      (long)(dl / S5_CAL_PUSH_CM), (long)((dl < 0 ? -dl : dl) % S5_CAL_PUSH_CM),
+                      (long)(dr / S5_CAL_PUSH_CM), (long)((dr < 0 ? -dr : dr) % S5_CAL_PUSH_CM),
+                      (long)(ratio_x1000 / 1000), (long)(ratio_x1000 % 1000));
+            last = now.lo;
+        }
+        (void)tk_dly_tsk(S2_ENCODER_POLL_MS);
+    }
+}
+#endif
+
 static void all_task(INT stacd, void *exinf)
 {
     ALL_TEST test = {0};
@@ -815,6 +1071,9 @@ static void all_task(INT stacd, void *exinf)
     uint32_t last_control;
     (void)stacd;
     (void)exinf;
+#if S5_ENCODER_CAL
+    encoder_cal_task(); /* never returns */
+#endif
     tm_printf((UB *)"[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan\n[BARCODE BUILD] GP28 digital; cumulative counts; raw edges enabled\n[BARCODE DEBUG] duration logging enabled; minimum element=40ms; target=A\n"
               "[ALL TEST] keep stationary for IMU calibration; starts after 5s\n"
               "[ALL TEST] straight PWM left=12.5%% right=15%%; inner=6.25%%; GP28=left GP27=centre GP0=right; 1=black\n"

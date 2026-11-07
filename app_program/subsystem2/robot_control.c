@@ -5,11 +5,15 @@
 #if APP_ROBOT_INTEGRATED && !APP_TEST
 #include "../subsystem3/line_service.h"
 #include "../subsystem4/subsystem4.h"
+#include "../subsystem5/subsystem5.h"
+#include "../subsystem5/s5_executor.h"
 
 static bool armed, halted, line_halt, turning, configured;
 static uint32_t last_imu_sample, imu_count, imu_errors, resumed_at, turn_started;
 static uint32_t rearm_since;
 static int32_t rearm_l, rearm_r;
+/* S5 obstacle-avoidance hook state (see avoid_step below). */
+static S5_EXEC vc_s5;
 
 /* Line stops (lost, unmapped junction, bad snapshot) may re-arm by
    themselves; any other stop is a safety stop and latches until reboot. */
@@ -19,6 +23,8 @@ static void stop_robot(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l,
     MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
     (void)motion_control_command(ctl, &stop, now, l, r);
     if (!halted) {
+        /* Tell S5 the robot is no longer following (no new obstacles). */
+        s5_exec_set_following(&vc_s5, FALSE);
         (void)line_service_enable(false);
         tm_printf((UB *)"[ROBOT] stopped: %s; %s\n", reason,
                   recoverable ? "re-arms when back on the line"
@@ -94,6 +100,116 @@ static bool line_snapshot_ok(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l,
     return false;
 }
 
+/* ---- S5 obstacle-avoidance hook (added by Buddy 5; IF-10/IF-11) --------
+   The VC stays the only motor commander. S5 only asks, through its request
+   word; the shared executor (subsystem5/s5_executor.c) runs the hand-shake
+   and calls back into the functions below, which drive through the motion
+   controller. */
+typedef struct {
+    MOTION_CONTROLLER *ctl;
+    uint32_t now;
+    int32_t l, r;
+} VC_CTX;
+
+static void vc_stop(void *p)
+{
+    VC_CTX *c = p;
+    MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
+    (void)motion_control_command(c->ctl, &stop, c->now, c->l, c->r);
+}
+
+static BOOL vc_start_move(void *p, const S5_REQUEST *req)
+{
+    VC_CTX *c = p;
+    MOTION_COMMAND cmd;
+    motion_control_step(c->ctl, c->now, c->l, c->r); /* STOPPING -> IDLE */
+    cmd.type = req->move == S5_MOVE_FWD ? MOTION_CMD_FORWARD_CM :
+               req->move == S5_MOVE_TURN_L ? MOTION_CMD_TURN_LEFT_DEG :
+               MOTION_CMD_TURN_RIGHT_DEG;
+    cmd.value = (float)req->value;
+    return motion_control_command(c->ctl, &cmd, c->now, c->l, c->r) == MOTION_RESULT_OK;
+}
+
+static UB vc_run_move(void *p, const S5_REQUEST *req)
+{
+    VC_CTX *c = p;
+    (void)req;
+    /* The motion controller runs forward moves and pivots itself. */
+    return (c->ctl->status.state == MOTION_STATE_IDLE && c->ctl->status.motion_complete)
+               ? S5_EXEC_DONE : S5_EXEC_RUNNING;
+}
+
+static BOOL vc_is_stopped(void *p)
+{
+    VC_CTX *c = p;
+    return c->ctl->status.state == MOTION_STATE_IDLE;
+}
+
+/* Steering sensors (SIDE layout: C and R; L is the barcode scanner). */
+#define VC_LINE_MASK (S2_LINE_LAYOUT == LINE_BARCODE_LAYOUT_SIDE ? \
+                      3u : LINE_BARCODE_SENSOR_MASK)
+
+static UB vc_line_sensors(void *p)
+{
+    line_barcode_msg_t msg = {{0u, 0u, 0u}};
+    (void)p;
+    return line_service_snapshot(&msg) >= E_OK ?
+           (UB)(msg.data[0] & VC_LINE_MASK) : 0u;
+}
+
+static BOOL vc_take_control(void *p)
+{
+    VC_CTX *c = p;
+    turning = false; /* obstacle wins over a barcode turn */
+    if (line_service_enable(false) < E_OK) {
+        halt(c->ctl, c->now, c->l, c->r, "line pause failed");
+        return false;
+    }
+    tm_printf((UB *)"[ROBOT] obstacle: S5 has control\n");
+    return true;
+}
+
+/* Same steps as the end of a barcode turn. */
+static BOOL vc_give_back(void *p)
+{
+    VC_CTX *c = p;
+    if (line_service_enable(true) < E_OK) {
+        halt(c->ctl, c->now, c->l, c->r, "line resume failed");
+        return false;
+    }
+    resumed_at = c->now;
+    line_unsafe_active = false;
+    tm_printf((UB *)"[ROBOT] obstacle handled, line following\n");
+    return true;
+}
+
+static void vc_safe_stop(void *p, const char *reason)
+{
+    VC_CTX *c = p;
+    halt(c->ctl, c->now, c->l, c->r, reason);
+}
+
+static BOOL vc_may_follow(void *p)
+{
+    (void)p;
+    return !turning;
+}
+
+static const S5_EXEC_OPS vc_s5_ops = {
+    vc_stop, vc_start_move, vc_run_move, vc_is_stopped,
+    vc_line_sensors, vc_take_control, vc_give_back, vc_safe_stop, vc_may_follow,
+    0u, /* HOLD replies as soon as the controller is IDLE */
+    S2_ROBOT_TURN_TIMEOUT_MS, /* 10 s per move, as for barcode turns */
+    VC_LINE_MASK
+};
+
+/* Returns true while S5 has control, so line following is skipped. */
+static bool avoid_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    VC_CTX c = {ctl, now, l, r};
+    return s5_exec_step(&vc_s5, &vc_s5_ops, &c, now);
+}
+
 void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
 {
     IMU_DATA imu;
@@ -134,7 +250,9 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         last_imu_sample = now;
     }
     if (!armed) {
-        /* Remain stationary throughout IMU baseline calibration. */
+        /* Remain stationary throughout IMU baseline calibration, and while
+           S5 holds at start-up (its servo swing shakes the IMU). */
+        if (s5_exec_startup_hold()) return;
         if (!S2_LINE_CALIBRATION_READY || now < S2_ROBOT_START_MS ||
             !imu.sensor_ok || !imu.calibrated || imu_count == 0 ||
             (uint32_t)(now - last_imu_sample) > S2_IMU_STALE_MS) return;
@@ -165,6 +283,8 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         halt(ctl, now, l, r, "IMU unsafe or stale");
         return;
     }
+    /* S5 obstacle avoidance takes control while it has a request. */
+    if (avoid_step(ctl, now, l, r)) return;
     /* Hump is terrain information; keep following, without inventing speed
        compensation before physical tuning. */
     if (turning) {
