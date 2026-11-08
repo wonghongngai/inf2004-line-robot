@@ -15,7 +15,7 @@
 #define BARCODE_CHAR_COUNT       3u
 #define BARCODE_WIDE_COUNT       3u
 #define BARCODE_STAR             0x094u
-#define BARCODE_MIN_RUN_MS       40u
+#define BARCODE_MIN_RUN_MS       LINE_BARCODE_MIN_RUN_MS
 #define BARCODE_MIN_QUIET_UNITS   10u
 #define BARCODE_MAX_STEP_MS      20u
 #define BARCODE_QUIET_MAX_MS     10000u
@@ -228,7 +228,11 @@ static uint16_t decode_character(uint16_t const *p_runs, bool b_reverse)
         }
         if (split != 0u) {
             /* Reject a third width cluster or extreme variation within one. */
-            if ((uint32_t)sorted[split - 1u] > 2u * sorted[0]
+            /* White spaces are compressed unevenly by the comparator.
+             * Keep bars strict, but allow up to 4x within narrow whites.
+             * The strongest split and exactly-three-wide rule still apply. */
+            unsigned narrow_spread = colour == 1u ? 4u : 2u;
+            if ((uint32_t)sorted[split - 1u] > narrow_spread * sorted[0]
                 || (uint32_t)sorted[count - 1u] > 2u * sorted[split])
                 return 0u;
             threshold[colour] = sorted[split - 1u]
@@ -261,11 +265,20 @@ bool line_barcode_decode(uint16_t const *p_runs, uint8_t count,
         uint16_t first = decode_character(p_runs, b_reverse);
         uint16_t last = decode_character(&p_runs[20], b_reverse);
         uint16_t symbol = decode_character(&p_runs[10], b_reverse);
-        uint16_t gap_min = p_runs[0];
-        for (uint8_t idx = 0u; idx < BARCODE_ELEMENTS; idx++)
-        {
-            gap_min = (p_runs[idx] < gap_min) ? p_runs[idx] : gap_min;
+        /* '*' has three narrow spaces and one wide space. Use the largest
+         * narrow space of the start marker, not the shortest measured run:
+         * the latter rejected a 27 ms gap when a squeezed space was 13 ms. */
+        uint16_t spaces[4];
+        for (unsigned i = 0u; i < 4u; ++i) {
+            uint16_t width = p_runs[2u * i + 1u];
+            unsigned j = i;
+            while (j > 0u && spaces[j - 1u] > width) {
+                spaces[j] = spaces[j - 1u];
+                --j;
+            }
+            spaces[j] = width;
         }
+        uint16_t gap_min = spaces[2];
         bool b_gaps = (p_runs[9] >= BARCODE_MIN_RUN_MS)
                        && (p_runs[19] >= BARCODE_MIN_RUN_MS)
                        && (p_runs[9] <= (2u * gap_min))
@@ -294,13 +307,15 @@ bool line_barcode_decode(uint16_t const *p_runs, uint8_t count,
 }
 
 /* Ten-bit widths are serialized explicitly; no ABI-dependent array padding. */
-static uint16_t read_width(line_barcode_ctx_t const *p_ctx, uint8_t index)
+uint16_t line_barcode_run_width(line_barcode_ctx_t const *p_ctx, uint8_t index)
 {
     uint16_t bit = (uint16_t)index * 10u;
     uint16_t pair = (uint16_t)(p_ctx->runs[bit / 8u]
                               | ((uint16_t)p_ctx->runs[(bit / 8u) + 1u] << 8u));
     return ((pair >> (bit % 8u)) & 0x3ffu);
 }
+
+#define read_width line_barcode_run_width
 
 static void write_width(line_barcode_ctx_t *p_ctx, uint8_t index,
                          uint16_t width)
@@ -345,7 +360,7 @@ static void verify_start(line_barcode_ctx_t *p_ctx)
         }
         else
         {
-            p_ctx->flags &= (uint8_t)~BARCODE_FLAG_CAPTURE;
+            /* Preserve raw runs; validate only once the frame is complete. */
         }
     }
 }
@@ -437,7 +452,7 @@ static uint8_t barcode_update(line_barcode_ctx_t *p_ctx, uint16_t elapsed_ms,
               && (b_black || (LINE_BARCODE_FRAME_RUNS != p_ctx->run_count)))
              || (b_black && (LINE_BARCODE_FRAME_RUNS == p_ctx->run_count)))
     {
-        event = (0u != (p_ctx->flags & BARCODE_FLAG_CONFIRMED))
+        event = (0u != (p_ctx->flags & BARCODE_FLAG_CAPTURE))
                 ? LINE_BARCODE_EVT_INVALID : LINE_BARCODE_EVT_STATUS;
         p_ctx->flags &= (uint8_t)~(BARCODE_FLAG_CAPTURE
                                   | BARCODE_FLAG_CONFIRMED);

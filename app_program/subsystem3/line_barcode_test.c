@@ -418,6 +418,51 @@ void line_barcode_test(void)
     TEST_CHECK("S3-U13", b_speeds, "relative widths at multiple scan speeds");
     TEST_CHECK("S3-U07", b_barcodes, "A-Z decode in both directions");
     TEST_CHECK("S3-U08", b_streams, "sampled frames emit exactly one letter");
+    /* A bad start must still retain all raw measurements for diagnosis. */
+    line_barcode_reset(&context);
+    commands = 0u;
+    build_frame(runs, 0u, false);
+    runs[1] = TEST_NARROW_MS; /* Corrupt the wide space of '*'. */
+    (void)feed(&context, 3u, TEST_QUIET_MS, &commands, &last_command);
+    for (uint8_t i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+        (void)feed(&context, (i & 1u) ? 3u : 7u, runs[i],
+                   &commands, &last_command);
+    (void)feed(&context, 3u, TEST_QUIET_MS, &commands, &last_command);
+    bool retained = context.run_count == LINE_BARCODE_FRAME_RUNS && commands == 0u;
+    for (uint8_t i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+        retained = retained && line_barcode_run_width(&context, i) == runs[i];
+    TEST_CHECK("S3-U14", retained, "malformed start retains all 29 raw widths without emitting letter");
+    /* Hardware scan supplied on 4 Nov: all edges present, squeezed whites. */
+    static uint16_t const measured_a[LINE_BARCODE_FRAME_RUNS] = {
+        101u,202u,140u,13u,318u,26u,309u,25u,141u,27u,
+        269u,64u,110u,48u,124u,191u,141u,20u,298u,16u,
+        137u,177u,132u,22u,296u,27u,304u,27u,150u
+    };
+    bool measured_ok = true;
+    for (unsigned direction = 0u; direction < 2u; ++direction) {
+        for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+            runs[i] = measured_a[direction ? LINE_BARCODE_FRAME_RUNS - 1u - i : i];
+        uint8_t letter = 0xffu;
+        measured_ok = measured_ok && line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter)
+                      && letter == 0u;
+        line_barcode_reset(&context);
+        commands = 0u;
+        last_command = 0xffu;
+        (void)feed(&context, 3u, 734u, &commands, &last_command);
+        for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+            (void)feed(&context, (i & 1u) ? 3u : 7u, runs[i], &commands, &last_command);
+        (void)feed(&context, 3u, 420u, &commands, &last_command);
+        measured_ok = measured_ok && commands == 1u && last_command == 0u;
+    }
+    TEST_CHECK("S3-U15", measured_ok, "recorded 29-run scan decodes A forward/reverse, raw and sampled");
+    for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i) runs[i] = measured_a[i];
+    runs[3] = LINE_BARCODE_MIN_RUN_MS - 1u;
+    TEST_CHECK("S3-U16", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
+               "sub-minimum white run remains invalid");
+    runs[3] = measured_a[3];
+    runs[9] = 1000u;
+    TEST_CHECK("S3-U17", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
+               "recorded scan with oversized character gap remains invalid");
     build_frame(runs, 0u, false);
     runs[0] = 0u;
     TEST_CHECK("S3-U09", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS,
