@@ -59,6 +59,10 @@ typedef struct {
     int32_t turn_left0, turn_right0;
     bool turn_done_valid;
     bool leaving_junction;
+    /* Line following's straight stretches are held straight by the
+       encoders (white_straight_step): ticks where the stretch began. */
+    bool straight_active;
+    int32_t straight_left0, straight_right0;
     /* S5 obstacle-avoidance hook (IF-10/IF-11, see s5_step below). */
     S5_EXEC s5;
     int32_t s5_left0, s5_right0;
@@ -99,7 +103,12 @@ typedef struct {
  * encoder lost.  S2_*_TICKS_PER_CM (23.10 / 18.83) were also measured with
  * the polled encoder; Buddy 2 should re-measure them. */
 #define S5_LEFT_TICKS_PER_CM  117.8f
-#define S5_RIGHT_TICKS_PER_CM 120.3f
+/* 120.3 (the push average) still drifted about 2 cm left per 50 cm
+ * (2026-11-08): the right wheel goes about 1.7 % further per tick, since
+ * drift = L^2 x error / (2 x track) gives error = 2 x 2 x 11.25 / 50^2.
+ * 120.3 x (1 - 0.017) = 118.3, near the first push (118.6).
+ * [Tune: still drifts left -> lower it; drifts right -> raise it] */
+#define S5_RIGHT_TICKS_PER_CM 118.3f
 /* 1 = build the hand-push encoder calibration instead of the normal run
  * (see encoder_cal_task).  Keep 0 for normal all_test images. */
 #ifndef S5_ENCODER_CAL
@@ -358,6 +367,35 @@ static void turn_step(ALL_TEST *t, uint32_t now)
     }
 }
 
+/* One step of a straight stretch in line following.  Open-loop 12.5/15 %
+ * drifted left (the right wheel was faster, 2026-11-08), so hold the
+ * heading with the encoders as S5's straight legs do: both wheels start at
+ * their straight PWM and the one that is ahead since the stretch began is
+ * slowed (never speed one up).  Uses S5's measured ticks/cm, since
+ * S2_*_TICKS_PER_CM still predate the interrupt encoder. */
+static void white_straight_step(ALL_TEST *t, uint32_t now)
+{
+    float left_cm, right_cm, err;
+    float left_pwm = ALL_BASE_PWM, right_pwm = ALL_RIGHT_BASE_PWM;
+
+    if (!t->straight_active) {
+        t->straight_active = true;
+        t->straight_left0 = t->left_ticks;
+        t->straight_right0 = t->right_ticks;
+    }
+    left_cm = (float)(t->left_ticks - t->straight_left0) / S5_LEFT_TICKS_PER_CM;
+    right_cm = (float)(t->right_ticks - t->straight_right0) / S5_RIGHT_TICKS_PER_CM;
+    err = S5_HEADING_KP * (right_cm - left_cm); /* > 0: right ahead */
+    if (err > 0.0f) right_pwm -= err;
+    else left_pwm += err;
+    if (left_pwm < 0.0f) left_pwm = 0.0f;
+    if (right_pwm < 0.0f) right_pwm = 0.0f;
+    /* apply_follow_pwm() turns a right value of exactly ALL_BASE_PWM into
+       ALL_RIGHT_BASE_PWM (the old trim): keep clear of that one value. */
+    if (right_pwm == ALL_BASE_PWM) right_pwm -= 0.01f;
+    apply_follow_pwm(t, left_pwm, right_pwm, now);
+}
+
 static void white_follow_step(ALL_TEST *t, uint32_t now)
 {
     unsigned sensors = t->line.data[0] & 3u; /* Ignore left entirely. */
@@ -415,8 +453,10 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
         apply_follow_pwm(t, 0.0f, ALL_BASE_PWM, now);
     } else {
         t->stop_reason = NULL;
-        apply_follow_pwm(t, ALL_BASE_PWM, ALL_BASE_PWM, now);
+        white_straight_step(t, now);
+        return; /* the stretch carries on: keep its starting ticks */
     }
+    t->straight_active = false; /* any other action ends the stretch */
 }
 
 /* ---- S5 obstacle-avoidance hook (added by Buddy 5; IF-10/IF-11) --------
@@ -548,6 +588,7 @@ static BOOL at_give_back(void *p)
      * ALL_TEST_TURN_SETTLE_MS has passed. */
     t->leaving_junction = true;
     t->turn_done = ((AT_CTX *)p)->now;
+    t->straight_active = false; /* next straight starts from here */
     t->steering_action = 0u;
     t->white_clear_pending = false;
     t->white_reported = false;

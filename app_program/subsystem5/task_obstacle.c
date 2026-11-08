@@ -65,7 +65,7 @@ static void s5_post_line(UB kind, UB move, UW value, BOOL b_stop_on_line,
     req.seq            = g_seq;
     req.b_stop_on_line = b_stop_on_line;
     req.value = (UH)((value > S5_REQ_VALUE_MAX) ? S5_REQ_VALUE_MAX : value);
-    req.b_line_all    = (b_stop_on_line && b_line_all) ? TRUE : FALSE;
+    req.b_line_all = (b_stop_on_line && b_line_all) ? TRUE : FALSE;
 
     g_s5_request = s5_request_pack(&req); /* one store */
 }
@@ -397,7 +397,8 @@ static void scan_and_plan(UW retries, plan_t * p_plan,
                   p_profile->closest_x_mm);
         tm_printf((UB *)"S5: centre y %d mm, width %u mm\n",
                   p_profile->centre_y_mm, p_profile->width_mm);
-        tm_printf((UB *)"S5: clear L %u mm, R %u mm (9999 = open)\n",
+        tm_printf((UB *)"S5: clear L %u mm, R %u mm (9999 = open, 9998 = "
+                        "not seen: the box runs past the scan)\n",
                   p_profile->clear_left_mm, p_profile->clear_right_mm);
     }
     else
@@ -407,6 +408,11 @@ static void scan_and_plan(UW retries, plan_t * p_plan,
 
     tm_printf((UB *)"S5: PLAN %s, shift %u mm\n", plan_name(p_plan->decision),
               p_plan->shift_mm);
+    if (p_plan->b_side_unseen)
+    {
+        tm_printf((UB *)"S5: WARNING: no side seen clear; passing on a side "
+                        "the scan never saw past\n");
+    }
 }
 
 /*
@@ -464,6 +470,196 @@ static UINT forward_watched(const bypass_step_t * p_step)
     }
 }
 
+/*
+ * F2, the watched pass: drive on with the sensor turned towards the box
+ * until it has been passed, then far enough for the robot's tail to clear
+ * its far end (see "Watched pass" in obstacle_logic.h).  Up to two
+ * stages: first bypass_pass_plan_cm() (where a box never seen ends it,
+ * and which is always driven in full), then on towards PASS_MAX_CM while
+ * the box is still beside.  Every side reading is logged.
+ * @return TRUE once past; FALSE on a failed or timed-out move, or a box
+ *         still beside at PASS_MAX_CM.
+ */
+static BOOL watch_pass(const plan_t *             p_plan,
+                       const obstacle_profile_t * p_profile)
+{
+    side_pass_t         side      = {FALSE, 0U};
+    const UW            gap_mm    = bypass_side_gap_mm(p_plan, p_profile);
+    const UW            near_mm   = bypass_side_near_mm(gap_mm);
+    UW                  stage_cm  = bypass_pass_plan_cm(p_profile);
+    UW                  driven_cm = 0U; /* finished stages */
+    UINT                pattern   = 0U;
+    UW                  distance_mm;
+    UW                  t0_us;
+    UW                  extra_cm;
+    ultrasonic_status_t status;
+    BOOL                b_passed = FALSE;
+
+    tm_printf((UB *)"S5: watching the box at %u deg (gap ~%u mm, beside "
+                    "< %u mm), plan %u cm, up to %u cm\n",
+              bypass_side_deg(p_plan->decision), gap_mm, near_mm, stage_cm,
+              PASS_MAX_CM);
+    servo_glide_to(bypass_side_deg(p_plan->decision));
+
+    while (!b_passed)
+    {
+        /* Start this stage, but don't wait: watch the side meanwhile */
+        (void)tk_clr_flg(flg_s5_evt,
+                         ~(S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED));
+        s5_post(S5_REQ_MOVE, S5_MOVE_FWD, stage_cm, FALSE);
+        t0_us = rp2040_time_us();
+
+        for (;;)
+        {
+            /* The controller may have halted (IMU, safety) and will never
+             * reply */
+            if ((rp2040_time_us() - t0_us) > ((UW)MOVE_TIMEOUT_MS * 1000U))
+            {
+                tm_printf((UB *)"S5: watched leg timed out\n");
+                return FALSE;
+            }
+
+            pattern = 0U;
+            if (E_OK == tk_wai_flg(flg_s5_evt,
+                                   S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED,
+                                   TWF_ORW, &pattern, TMO_POL))
+            {
+                break; /* this stage ended */
+            }
+
+            status =
+                ultrasonic_measure_mm(ULTRASONIC_WINDOW_SCAN_MS, &distance_mm);
+            tm_printf((UB *)"S5: side %u mm %s\n", distance_mm,
+                      status_name(status));
+            if (!b_passed &&
+                side_pass_update(&side, status, distance_mm, near_mm))
+            {
+                b_passed = TRUE; /* past the far end (by the side watch) */
+                if (0U != driven_cm)
+                {
+                    break; /* beyond the plan: drive on from here */
+                }
+                /* Inside the planned distance: never stop before it */
+                tm_printf((UB *)"S5: box looks passed inside the plan: "
+                                "finishing the plan's %u cm first\n",
+                          stage_cm);
+            }
+
+            tk_dly_tsk(MONITOR_GAP_MS); /* sensor needs >= 60 ms per cycle */
+        }
+
+        if (0U != (pattern & S5_EVT_MOVE_FAILED))
+        {
+            tm_printf((UB *)"S5: watched leg failed\n");
+            return FALSE;
+        }
+        if (b_passed)
+        {
+            break;
+        }
+
+        driven_cm += stage_cm;
+        if (!side.b_seen)
+        {
+            /* Too shallow to reach the beam: the plan's distance will do */
+            tm_printf((UB *)"S5: box not seen in %u cm (shallow)\n", driven_cm);
+            servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
+            return TRUE;
+        }
+        if (driven_cm >= PASS_MAX_CM)
+        {
+            tm_printf((UB *)"S5: box still beside after %u cm: too long\n",
+                      driven_cm);
+            return FALSE;
+        }
+
+        /* Box still beside the sensor: carry on towards the limit */
+        stage_cm = PASS_MAX_CM - driven_cm;
+        tm_printf((UB *)"S5: box still beside, up to %u cm more\n", stage_cm);
+    }
+
+    /* Passed: drive on (a new request cuts the running move short) */
+    extra_cm = bypass_after_clear_cm(gap_mm);
+    tm_printf((UB *)"S5: box passed, %u cm on for the tail\n", extra_cm);
+    if (S5_EVT_MOTION_DONE != s5_move(S5_MOVE_FWD, extra_cm, FALSE))
+    {
+        tm_printf((UB *)"S5: drive-on failed\n");
+        return FALSE;
+    }
+    servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
+    return TRUE;
+}
+
+/*
+ * After T3 (facing the line, servo at 90): is the box still straight
+ * ahead?  Two of three readings that are under 'limit_mm' OR too close to
+ * measure (TOO_NEAR: the box is right against the sensor) say yes.  A
+ * TOO_NEAR reading used to count as clear, and the robot drove on into a
+ * box it was touching (2026-11-08).  No echo / too far / busy count as
+ * clear.  Every reading is logged.
+ */
+static BOOL ahead_blocked(UW limit_mm)
+{
+    UW                  count = 0U;
+    UW                  near  = 0U;
+    UW                  distance_mm;
+    ultrasonic_status_t status;
+
+    for (count = 0U; count < 3U; count++)
+    {
+        status = ultrasonic_measure_mm(ULTRASONIC_WINDOW_SCAN_MS, &distance_mm);
+        if (((ULTRASONIC_OK == status) && (distance_mm < limit_mm)) ||
+            (ULTRASONIC_TOO_NEAR == status))
+        {
+            near++;
+        }
+        tm_printf((UB *)"S5: ahead %u mm %s\n", distance_mm,
+                  status_name(status));
+        tk_dly_tsk(MONITOR_GAP_MS); /* sensor needs >= 60 ms per cycle */
+    }
+    return (near >= 2U) ? TRUE : FALSE;
+}
+
+/* The opposite pivot (to undo T3) */
+static UB opposite_turn(UB move)
+{
+    return (S5_MOVE_TURN_L == move) ? S5_MOVE_TURN_R : S5_MOVE_TURN_L;
+}
+
+/*
+ * T3 has just turned the robot towards the line.  If the box is still
+ * ahead, undo the turn, drive PROBE_STEP_CM on and turn again, up to
+ * PROBE_TRIES times (the fallback when the side watch was fooled).
+ * @return FALSE if still blocked after that, or a move failed.
+ */
+static BOOL clear_ahead(const bypass_step_t * p_turn, UW limit_mm)
+{
+    bypass_step_t on = {S5_MOVE_FWD, PROBE_STEP_CM, FALSE, FALSE, FALSE, FALSE};
+    UW            tries = 0U;
+
+    while (ahead_blocked(limit_mm))
+    {
+        if (tries >= PROBE_TRIES)
+        {
+            tm_printf((UB *)"S5: box still ahead after %u tries\n", tries);
+            return FALSE;
+        }
+        tries++;
+        tm_printf((UB *)"S5: box still ahead (< %u mm): back, %u cm on, "
+                        "turn again (%u/%u)\n",
+                  limit_mm, PROBE_STEP_CM, tries, PROBE_TRIES);
+        if ((S5_EVT_MOTION_DONE !=
+             s5_move(opposite_turn(p_turn->move), p_turn->value, FALSE)) ||
+            (S5_EVT_MOTION_DONE != forward_watched(&on)) ||
+            (S5_EVT_MOTION_DONE != s5_move(p_turn->move, p_turn->value, FALSE)))
+        {
+            tm_printf((UB *)"S5: retry move failed\n");
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
 /* Short name of a bypass move, for the log */
 static const char * move_name(UB move)
 {
@@ -479,8 +675,9 @@ static const char * move_name(UB move)
 /*
  * Drive round the box on the turn-and-box path and back onto the line
  * behind it (FR5-4, FR5-5).  See the move list in obstacle_logic.h.  The
- * robot is at rest, servo at 90 (it stays there).  Ends facing along the
- * line; the caller then hands back to line following.
+ * robot is at rest, servo at 90 (it turns to the box's side only during
+ * F2).  Ends facing along the line; the caller then hands back to line
+ * following.
  * @return FALSE on any failure (caller stops safely).
  */
 static BOOL bypass_obstacle(const plan_t *             p_plan,
@@ -508,17 +705,22 @@ static BOOL bypass_obstacle(const plan_t *             p_plan,
         tm_printf((UB *)"S5: step %u/%u: %s %u %s%s\n", index + 1U,
                   BYPASS_STEPS, move_name(step.move), step.value,
                   (S5_MOVE_FWD == step.move) ? "cm" : "deg",
-                  step.b_stop_on_line ? " (until the line)" : "");
+                  step.b_watch_side     ? " (at most, watching the box)"
+                  : step.b_stop_on_line ? " (until the line)"
+                                        : "");
 
-        if (S5_MOVE_FWD == step.move)
+        if (step.b_watch_side)
+        {
+            result = watch_pass(p_plan, p_profile) ? S5_EVT_MOTION_DONE : 0U;
+        }
+        else if (S5_MOVE_FWD == step.move)
         {
             result = forward_watched(&step);
         }
         else
         {
             result = s5_move(step.move, step.value, step.b_stop_on_line);
-            if ((S5_EVT_MOTION_DONE != result) &&
-                (S5_EVT_LINE_FOUND != result))
+            if ((S5_EVT_MOTION_DONE != result) && (S5_EVT_LINE_FOUND != result))
             {
                 result = 0U;
             }
@@ -527,6 +729,12 @@ static BOOL bypass_obstacle(const plan_t *             p_plan,
         if (0U == result)
         {
             tm_printf((UB *)"S5: step %u failed\n", index + 1U);
+            return FALSE;
+        }
+        if (step.b_check_ahead &&
+            !clear_ahead(
+                &step, bypass_probe_mm(bypass_side_gap_mm(p_plan, p_profile))))
+        {
             return FALSE;
         }
         if (step.b_stop_on_line)

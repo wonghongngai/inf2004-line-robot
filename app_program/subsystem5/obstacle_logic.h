@@ -32,7 +32,7 @@
  * The robot must come to rest >= 10 cm from the obstacle, and the bypass
  * needs BYPASS_MIN_GAP_MM (half of this, 100 mm) in front of it for its
  * first pivot. */
-#define D_DETECT_MM  (200U)
+#define D_DETECT_MM (200U)
 
 /* A reading counts as "something there" for profiling below this.
  * Further than this is treated as clear. */
@@ -50,8 +50,12 @@
 #define CLEAR_CONFIRM_MM (100U)
 
 /* only objects up to this far beyond the closest point limit a sidestep */
-#define CLEARANCE_DEPTH_MM (500U)
-#define CLEARANCE_OPEN_MM  (9999U) /* "nothing seen on that side" */
+#define CLEARANCE_DEPTH_MM  (500U)
+#define CLEARANCE_OPEN_MM   (9999U) /* looked past that edge: nothing there */
+/* Never looked past that edge: the box's readings run on to the scan
+ * limit (50 or 130 deg) on that side, so the space beyond is unknown, not
+ * open (2026-11-08: a box running past 50 deg read "R 9999 = open"). */
+#define CLEARANCE_UNSEEN_MM (9998U)
 #define ROBOT_WIDTH_MM (150U) /* W_R: robot's widest point [VERIFY: measure] */
 #define PASS_MARGIN_MM (50U)  /* M: space kept from obstacles [VERIFY]       */
 #define CORRIDOR_HALF_MM ((ROBOT_WIDTH_MM / 2U) + PASS_MARGIN_MM) /* A5-1   */
@@ -77,8 +81,8 @@ typedef struct
     INT  closest_x_mm;   /* how far ahead the closest point is        */
     INT  centre_y_mm;    /* sideways centre: + left, - right          */
     UW   width_mm;       /* beam-corrected width                      */
-    UW   clear_left_mm;  /* gap beside the left edge, or OPEN         */
-    UW   clear_right_mm; /* gap beside the right edge, or OPEN        */
+    UW   clear_left_mm;  /* gap beside the left edge, OPEN or UNSEEN  */
+    UW   clear_right_mm; /* gap beside the right edge, OPEN or UNSEEN */
 } obstacle_profile_t;
 
 typedef enum
@@ -95,6 +99,8 @@ typedef struct
 {
     plan_decision_t decision;
     UW              shift_mm; /* sideways shift for PASS_LEFT/RIGHT, else 0 */
+    BOOL            b_side_unseen; /* the chosen side was never seen past
+                                    * the box: no side was seen clear    */
 } plan_t;
 
 /**
@@ -159,7 +165,10 @@ IMPORT void obstacle_plan(const obstacle_profile_t * p_profile, UW retries,
  * a left pass; a right pass is the mirror image:
  *   T1 turn L 90   F1 forward the plan's shift (out to the side), see
  *                  bypass_side_cm()
- *   T2 turn R 90   F2 forward BYPASS_PAST_CM   (past the box)
+ *   T2 turn R 90   F2 forward, watching the box sideways, until it has
+ *                  been passed (any depth), see "Watched pass" below
+ *                  [T3 is followed by a look ahead: box still in the
+ *                  way -> turn back, PROBE_STEP_CM on, turn again]
  *   T3 turn R 90   F3 forward until BOTH IR sensors have crossed onto
  *                  the line, at most LINE_SEEK_MAX_CM (NFR5-4)
  *                  F4 forward LINE_ALIGN_CM more (wheels past the line)
@@ -182,16 +191,12 @@ IMPORT void obstacle_plan(const obstacle_profile_t * p_profile, UW retries,
  * away and stopped on a later crossing (2026-11-07, runs 6 and 7).
  * Stopping when the first sensor reaches the line leaves the follower a
  * small correction instead.
- * Distances are fixed, not taken from the scan.  For the 210 x 60 mm box
- * stopped at about 20 cm: 20 cm out (plus the pivots' own sideways step)
- * clears its edge, 10.5 cm off the line, by about half the robot.  F2's
- * 30 cm, plus the two pivots' forward step (about half a wheel spacing
- * each), has to carry the robot's tail past the box's back face (about
- * 26 cm ahead of where it stopped).  [VERIFY on the floor] */
+ * F1 comes from the scan (the plan's shift); F2 from watching the box, so
+ * the box may be any depth up to about PASS_MAX_CM.  [VERIFY on the
+ * floor] */
 #define BYPASS_TURN_DEG      (90U)
 #define BYPASS_SIDE_MIN_CM   (10U)  /* F1: never less than this      */
 #define BYPASS_SIDE_MAX_CM   (40U)  /* F1: never more than this      */
-#define BYPASS_PAST_CM       (30U)  /* F2; 50 until 2026-11-07       */
 #define LINE_SEEK_MAX_CM     (50U)  /* NFR5-4: line within 50 cm      */
 #define LINE_ALIGN_CM        (4U)   /* F4: on past the line to pivot   */
 #define LINE_TURN_MAX_DEG    (120U) /* T4: turn this far at most       */
@@ -211,6 +216,8 @@ typedef struct
     UH   value;          /* deg or cm                                     */
     BOOL b_stop_on_line; /* F3, T4: end the move on the line              */
     BOOL b_line_all;     /* F3: only once every sensor has seen it        */
+    BOOL b_watch_side;   /* F2: watched pass, value = PASS_MAX_CM         */
+    BOOL b_check_ahead;  /* T3: look ahead afterwards, retry if blocked   */
 } bypass_step_t;
 
 /**
@@ -231,6 +238,118 @@ IMPORT UW bypass_side_cm(UW shift_mm);
  */
 IMPORT BOOL bypass_step(const plan_t * p_plan, UW index,
                         bypass_step_t * p_step);
+
+/* ---- Watched pass (F2) ------------------------------------------------
+ * After T2 the robot faces forward with the box beside it (on the right
+ * for a left pass).  The servo turns the sensor SIDE_LOOK_DEG towards the
+ * box (50 or 130: as far as the holder turns) and F2 drives on while it
+ * pings.  The echo cone is about +/-20 deg (the box-size calibration,
+ * 2026-11-06), so the beam meets the box's side face from gap x cot(60)
+ * to gap x cot(20) ahead of the sensor, 'gap' being how far the face is
+ * out to the side.
+ *   - Seen, then SIDE_CLEAR_COUNT clear readings in a row: the far end is
+ *     about gap x cot(60) ahead, so drive on that + the robot's tail +
+ *     PASS_MARGIN_MM (bypass_after_clear_cm), then T3.  If that happens
+ *     inside the planned distance (bypass_pass_plan_cm), the planned
+ *     distance is driven first anyway: F2 never ends before it.
+ *   - Never seen by bypass_pass_plan_cm(): a box too shallow to reach the
+ *     beam (under about gap x cot(60) - its front's distance); stop there.
+ *   - Seen but not passed by PASS_MAX_CM: too long a box, stop safely.
+ * The side watch can be fooled: a long smooth side meets the beam at
+ * 20-60 deg and reflects the sound away, so it reads clear while the
+ * robot is still beside it (2026-11-08: a 40 cm box "passed" after 1-2 cm
+ * and the robot hit it).  So the look ahead after T3 decides: facing the
+ * box square on, its echo is reliable.  Anything closer than
+ * bypass_probe_mm(), or too close to measure, means the box is still in
+ * the way: turn back, drive PROBE_STEP_CM on and turn again, at most
+ * PROBE_TRIES times (PROBE_STEP_CM x PROBE_TRIES covers a PASS_MAX_CM box).
+ * The pivots: each 90 deg one-wheel pivot moves the robot's centre about
+ * half a wheel spacing forward and half sideways, so T1 + T2 together
+ * about PIVOT_STEP_MM each way.  [VERIFY all lengths on the robot] */
+#define SIDE_LOOK_DEG       (40U)  /* servo 90 -/+ this               */
+#define PIVOT_STEP_MM       (100U) /* T1 + T2: forward and sideways   */
+#define ROBOT_TAIL_MM       (150U) /* sensor to the robot's rear      */
+#define BOX_UNSEEN_DEPTH_MM (60U)  /* depth assumed if never seen     */
+#define PASS_MAX_CM         (80U)  /* longest F2 (deepest box)        */
+/* T4 pivots on one wheel and swings the robot's back corner about 15 cm
+ * round towards the box: drive on this much more after "passed" so the
+ * corner clears the box's far end (2026-11-08: it hit the box's corner
+ * in the last turn).  [VERIFY] */
+#define TURN_SWEEP_MM       (100U)
+/* After T3: anything straight ahead closer than gap + this is the box
+ * still in the way.  2 x PASS_MARGIN_MM (100) let a 362 mm reading of the
+ * box's corner through as "clear" (2026-11-08).  [VERIFY] */
+#define PROBE_MARGIN_MM     (200U)
+/* Clear readings in a row = past.  One reading every ~75 ms at about
+ * 10 cm/s is about 0.75 cm of travel, so 10 is about 7-8 cm clear (2 was
+ * about 1.5 cm and was fooled by one corner echo, 2026-11-08). */
+#define SIDE_CLEAR_COUNT    (10U)
+#define COT_CLEAR_X1000     (577U)  /* cot(40 + 20 deg) x 1000         */
+#define INV_SIN_EDGE_X1000  (2924U) /* 1 / sin(40 - 20 deg) x 1000     */
+#define SIDE_NEAR_MAX_MM    (1000U) /* "beside" never further than this */
+#define PROBE_STEP_CM       (15U)   /* box still ahead: this much on   */
+#define PROBE_TRIES         (5U)    /* ... at most this many times     */
+                                    /* (75 cm: up to a PASS_MAX_CM box) */
+
+/* "Passed the box" detector for the watched pass */
+typedef struct
+{
+    BOOL b_seen;    /* the box has been seen beside the robot */
+    UB   clear_run; /* clear readings in a row since then     */
+} side_pass_t;
+
+/**
+ * Feed one side reading.  The box is seen when an OK reading is under
+ * 'near_mm'; it has been passed after SIDE_CLEAR_COUNT clear readings in
+ * a row since (OK >= near_mm, TOO_FAR or NO_ECHO).  TOO_NEAR and BUSY
+ * change nothing (NFR5-5); a near reading again resets the clear count.
+ * @return TRUE once the box has been passed; FALSE on NULL.
+ */
+IMPORT BOOL side_pass_update(side_pass_t * p_state, ultrasonic_status_t status,
+                             UW distance_mm, UW near_mm);
+
+/**
+ * How far out to the side the box's face is during F2, from the sensor:
+ * F1 (bypass_side_cm) + PIVOT_STEP_MM - the box's passing-side edge (centre
+ * y +/- half the width).  At least 50 mm; 0 if not a pass or NULL.
+ */
+IMPORT UW bypass_side_gap_mm(const plan_t *             p_plan,
+                             const obstacle_profile_t * p_profile);
+
+/**
+ * Side readings under this mean "the box is beside": the furthest point
+ * of the face inside the beam, gap / sin(20 deg), + PASS_MARGIN_MM, at
+ * most SIDE_NEAR_MAX_MM.
+ */
+IMPORT UW bypass_side_near_mm(UW gap_mm);
+
+/**
+ * F2's planned length if the box is never seen: the box's front (closest
+ * x less PIVOT_STEP_MM) + BOX_UNSEEN_DEPTH_MM + ROBOT_TAIL_MM +
+ * PASS_MARGIN_MM, in cm rounded up, within 10..PASS_MAX_CM.  10 if NULL.
+ */
+IMPORT UW bypass_pass_plan_cm(const obstacle_profile_t * p_profile);
+
+/**
+ * How far to drive on once the box has been passed: gap x cot(60 deg)
+ * (the far end is still that far ahead) + ROBOT_TAIL_MM + PASS_MARGIN_MM
+ * + TURN_SWEEP_MM (the last turn swings the back corner round), in cm
+ * rounded up.
+ */
+IMPORT UW bypass_after_clear_cm(UW gap_mm);
+
+/**
+ * After T3: a reading straight ahead under this means the box is still in
+ * the way: gap + PROBE_MARGIN_MM.
+ */
+IMPORT UW bypass_probe_mm(UW gap_mm);
+
+/**
+ * Servo angle that looks at the box during F2: the box is on the right
+ * for a left pass (90 - 40 = 50), on the left for a right pass (130).
+ * SERVO_ANGLE_CENTRE_DEG if not a pass.
+ */
+IMPORT UW bypass_side_deg(plan_decision_t decision);
 
 /* ---- S5 -> VC request word (IF-10), CR1 minimum-bit packing ---- */
 

@@ -11,14 +11,14 @@
 #define CONFIRM_THRESHOLD (2U)    /* 2 of the last 3 */
 
 /* sin and cos x 1000 for phi = 0, 5, ... 60 deg (scans stay within +/-60) */
-#define TRIG_SCALE        (1000)
-#define TRIG_STEP_DEG     (5)
-#define TRIG_MAX_DEG      (60)
+#define TRIG_SCALE      (1000)
+#define TRIG_STEP_DEG   (5)
+#define TRIG_MAX_DEG    (60)
 /* Echo cone half-width per mm of range: tan(20 deg) = 0.364.  Each edge the
  * scan sees is pulled in by this x the closest distance.  The datasheet's
  * 15 deg cone was far too narrow: 2026-11-06 a 210 mm box at 294 mm spanned
  * 415 mm of readings (415 - 2 x 0.364 x 294 = 201 mm). */
-#define BEAM_HALF_X1000   (364)
+#define BEAM_HALF_X1000 (364)
 
 static const INT g_sin_x1000[] = {0,   87,  174, 259, 342, 423, 500,
                                   574, 643, 707, 766, 819, 866};
@@ -333,7 +333,7 @@ EXPORT BOOL obstacle_profile(const scan_point_t * p_fine, UW fine_count,
     point_to_xy(p_out->closest_deg, p_out->closest_mm, &x_mm, &y_mm);
     p_out->closest_x_mm = x_mm;
 
-    beam_half_mm = ((INT)p_out->closest_mm * BEAM_HALF_X1000) / TRIG_SCALE;
+    beam_half_mm   = ((INT)p_out->closest_mm * BEAM_HALF_X1000) / TRIG_SCALE;
     y_left_box_mm  = y_left_mm;
     y_right_box_mm = y_right_mm;
     if ((last + 1U) < fine_count)
@@ -378,6 +378,19 @@ EXPORT BOOL obstacle_profile(const scan_point_t * p_fine, UW fine_count,
             clearance_update(&p_coarse[index], x_limit_mm, y_left_mm,
                              y_right_mm, p_out);
         }
+    }
+
+    /* 6. An edge the scan never saw past: its side is unknown, not open */
+    if ((0U == first) && (p_fine[0].angle_deg <= SCAN_MIN_DEG) &&
+        (CLEARANCE_OPEN_MM == p_out->clear_right_mm))
+    {
+        p_out->clear_right_mm = CLEARANCE_UNSEEN_MM; /* run reaches 50 */
+    }
+    if (((last + 1U) == fine_count) &&
+        (p_fine[last].angle_deg >= SCAN_MAX_DEG) &&
+        (CLEARANCE_OPEN_MM == p_out->clear_left_mm))
+    {
+        p_out->clear_left_mm = CLEARANCE_UNSEEN_MM; /* run reaches 130 */
     }
 
     return TRUE;
@@ -440,8 +453,9 @@ EXPORT void obstacle_plan(const obstacle_profile_t * p_profile, UW retries,
     }
 
     /* Safe default: if anything below can't decide, stop */
-    p_plan->decision = PLAN_STOP;
-    p_plan->shift_mm = 0U;
+    p_plan->decision      = PLAN_STOP;
+    p_plan->shift_mm      = 0U;
+    p_plan->b_side_unseen = FALSE;
 
     if (NULL == p_profile)
     {
@@ -472,9 +486,25 @@ EXPORT void obstacle_plan(const obstacle_profile_t * p_profile, UW retries,
     shift_left_mm  = (UW)(y_left_mm + (INT)CORRIDOR_HALF_MM);
     shift_right_mm = (UW)((INT)CORRIDOR_HALF_MM - y_right_mm);
 
-    /* Rule 3: is there room for the robot on each side? */
-    b_left_fits  = (p_profile->clear_left_mm >= PASS_GAP_MM) ? TRUE : FALSE;
-    b_right_fits = (p_profile->clear_right_mm >= PASS_GAP_MM) ? TRUE : FALSE;
+    /* Rule 3: is there room for the robot on each side?  First only the
+     * sides seen to be clear; a side never seen past (UNSEEN) is used only
+     * when neither side was seen clear, and the plan says so. */
+    b_left_fits  = ((p_profile->clear_left_mm >= PASS_GAP_MM) &&
+                    (CLEARANCE_UNSEEN_MM != p_profile->clear_left_mm))
+                       ? TRUE
+                       : FALSE;
+    b_right_fits = ((p_profile->clear_right_mm >= PASS_GAP_MM) &&
+                    (CLEARANCE_UNSEEN_MM != p_profile->clear_right_mm))
+                       ? TRUE
+                       : FALSE;
+    if (!b_left_fits && !b_right_fits)
+    {
+        b_left_fits =
+            (CLEARANCE_UNSEEN_MM == p_profile->clear_left_mm) ? TRUE : FALSE;
+        b_right_fits =
+            (CLEARANCE_UNSEEN_MM == p_profile->clear_right_mm) ? TRUE : FALSE;
+        p_plan->b_side_unseen = (b_left_fits || b_right_fits) ? TRUE : FALSE;
+    }
 
     /* Rule 4: choose */
     if (b_left_fits && b_right_fits)
@@ -511,16 +541,17 @@ EXPORT void obstacle_plan(const obstacle_profile_t * p_profile, UW retries,
 
 /* Move list for a left pass; a right pass swaps the turn directions */
 static const bypass_step_t g_left_pass[BYPASS_STEPS] = {
-    {S5_MOVE_TURN_L, BYPASS_TURN_DEG, FALSE, FALSE},  /* T1 away from line */
-    {S5_MOVE_FWD, 0U, FALSE, FALSE},                  /* F1 out: from plan  */
-    {S5_MOVE_TURN_R, BYPASS_TURN_DEG, FALSE, FALSE},  /* T2 forward again  */
-    {S5_MOVE_FWD, BYPASS_PAST_CM, FALSE, FALSE},      /* F2 past the box   */
-    {S5_MOVE_TURN_R, BYPASS_TURN_DEG, FALSE, FALSE},  /* T3 towards line   */
-    {S5_MOVE_FWD, LINE_SEEK_MAX_CM, TRUE, TRUE},      /* F3 both sensors   */
-                                                      /*    over the line  */
-    {S5_MOVE_FWD, LINE_ALIGN_CM, FALSE, FALSE},       /* F4 wheels past it */
-    {S5_MOVE_TURN_L, LINE_TURN_MAX_DEG, TRUE, FALSE}, /* T4 until a sensor */
-                                                      /*    is on it again */
+    /* move, value, stop on line, all sensors, watch side, check ahead */
+    {S5_MOVE_TURN_L, BYPASS_TURN_DEG, FALSE, FALSE, FALSE, FALSE}, /* T1 */
+    {S5_MOVE_FWD, 0U, FALSE, FALSE, FALSE, FALSE}, /* F1 out: plan */
+    {S5_MOVE_TURN_R, BYPASS_TURN_DEG, FALSE, FALSE, FALSE, FALSE}, /* T2 */
+    {S5_MOVE_FWD, PASS_MAX_CM, FALSE, FALSE, TRUE, FALSE}, /* F2 watched */
+    {S5_MOVE_TURN_R, BYPASS_TURN_DEG, FALSE, FALSE, FALSE, TRUE}, /* T3 */
+    {S5_MOVE_FWD, LINE_SEEK_MAX_CM, TRUE, TRUE, FALSE, FALSE},    /* F3 both */
+    /*   sensors over */
+    {S5_MOVE_FWD, LINE_ALIGN_CM, FALSE, FALSE, FALSE, FALSE},       /* F4    */
+    {S5_MOVE_TURN_L, LINE_TURN_MAX_DEG, TRUE, FALSE, FALSE, FALSE}, /* T4 */
+    /*   until a sensor */
 };
 
 #define BYPASS_F1_INDEX (1U)
@@ -543,8 +574,7 @@ EXPORT UW bypass_side_cm(UW shift_mm)
 }
 
 /* One move of the turn-and-box path */
-EXPORT BOOL bypass_step(const plan_t * p_plan, UW index,
-                        bypass_step_t * p_step)
+EXPORT BOOL bypass_step(const plan_t * p_plan, UW index, bypass_step_t * p_step)
 {
     bypass_step_t step;
 
@@ -579,22 +609,150 @@ EXPORT BOOL bypass_step(const plan_t * p_plan, UW index,
     return TRUE;
 }
 
+/* ---- Watched pass (F2) ---- */
+
+/* Detect the box passing by on the side */
+EXPORT BOOL side_pass_update(side_pass_t * p_state, ultrasonic_status_t status,
+                             UW distance_mm, UW near_mm)
+{
+    if (NULL == p_state)
+    {
+        return FALSE;
+    }
+
+    if ((ULTRASONIC_OK == status) && (distance_mm < near_mm))
+    {
+        p_state->b_seen    = TRUE;
+        p_state->clear_run = 0U;
+    }
+    else if ((ULTRASONIC_OK == status) || (ULTRASONIC_TOO_FAR == status) ||
+             (ULTRASONIC_NO_ECHO == status))
+    {
+        if (p_state->b_seen && (p_state->clear_run < 0xFFU))
+        {
+            p_state->clear_run++;
+        }
+    }
+    else
+    {
+        /* TOO_NEAR / BUSY: unknown, change nothing (NFR5-5) */
+    }
+
+    return (p_state->b_seen && (p_state->clear_run >= SIDE_CLEAR_COUNT))
+               ? TRUE
+               : FALSE;
+}
+
+/* Sideways distance to the box's face during F2 */
+EXPORT UW bypass_side_gap_mm(const plan_t *             p_plan,
+                             const obstacle_profile_t * p_profile)
+{
+    INT half_mm;
+    INT edge_mm;
+    INT gap_mm;
+
+    if ((NULL == p_plan) || (NULL == p_profile))
+    {
+        return 0U;
+    }
+
+    half_mm = (INT)(p_profile->width_mm / 2U);
+    if (PLAN_PASS_LEFT == p_plan->decision)
+    {
+        edge_mm = p_profile->centre_y_mm + half_mm; /* left edge, + left */
+    }
+    else if (PLAN_PASS_RIGHT == p_plan->decision)
+    {
+        edge_mm = half_mm - p_profile->centre_y_mm; /* right edge, mirrored */
+    }
+    else
+    {
+        return 0U;
+    }
+
+    gap_mm = (INT)(bypass_side_cm(p_plan->shift_mm) * MM_PER_CM) +
+             (INT)PIVOT_STEP_MM - edge_mm;
+    return (gap_mm < 50) ? 50U : (UW)gap_mm;
+}
+
+/* "Beside" threshold for the side readings */
+EXPORT UW bypass_side_near_mm(UW gap_mm)
+{
+    UW near_mm = ((gap_mm * INV_SIN_EDGE_X1000) / 1000U) + PASS_MARGIN_MM;
+
+    return (near_mm > SIDE_NEAR_MAX_MM) ? SIDE_NEAR_MAX_MM : near_mm;
+}
+
+/* F2's length if the box is never seen */
+EXPORT UW bypass_pass_plan_cm(const obstacle_profile_t * p_profile)
+{
+    INT front_mm;
+    UW  leg_cm;
+
+    if (NULL == p_profile)
+    {
+        return 10U;
+    }
+    front_mm = p_profile->closest_x_mm - (INT)PIVOT_STEP_MM;
+    if (front_mm < 0)
+    {
+        front_mm = 0;
+    }
+    leg_cm = ((UW)front_mm + BOX_UNSEEN_DEPTH_MM + ROBOT_TAIL_MM +
+              PASS_MARGIN_MM + (MM_PER_CM - 1U)) /
+             MM_PER_CM;
+    if (leg_cm < 10U)
+    {
+        leg_cm = 10U;
+    }
+    return (leg_cm > PASS_MAX_CM) ? PASS_MAX_CM : leg_cm;
+}
+
+/* Drive on after the box has been passed */
+EXPORT UW bypass_after_clear_cm(UW gap_mm)
+{
+    UW on_mm = ((gap_mm * COT_CLEAR_X1000) / 1000U) + ROBOT_TAIL_MM +
+               PASS_MARGIN_MM + TURN_SWEEP_MM;
+
+    return (on_mm + (MM_PER_CM - 1U)) / MM_PER_CM;
+}
+
+/* "Still in the way" threshold after T3 */
+EXPORT UW bypass_probe_mm(UW gap_mm)
+{
+    return gap_mm + PROBE_MARGIN_MM;
+}
+
+/* Servo angle that watches the box during F2 */
+EXPORT UW bypass_side_deg(plan_decision_t decision)
+{
+    if (PLAN_PASS_LEFT == decision)
+    {
+        return SERVO_ANGLE_CENTRE_DEG - SIDE_LOOK_DEG; /* box on the right */
+    }
+    if (PLAN_PASS_RIGHT == decision)
+    {
+        return SERVO_ANGLE_CENTRE_DEG + SIDE_LOOK_DEG; /* box on the left  */
+    }
+    return SERVO_ANGLE_CENTRE_DEG;
+}
+
 /* ---- S5 -> VC request word (IF-10) ---- */
 
 /* Request word layout (see subsystem5.h) */
-#define REQ_KIND_SHIFT  (0U)
-#define REQ_KIND_MASK   (0x07U)
-#define REQ_MOVE_SHIFT  (3U)
-#define REQ_MOVE_MASK   (0x03U)
-#define REQ_LINE_SHIFT  (5U)
-#define REQ_SEQ_SHIFT   (6U)
-#define REQ_VALUE_SHIFT (10U)
-#define REQ_VALUE_MASK  (0x3FFU)
-#define REQ_UNUSED_LOW_SHIFT  (20U) /* bits 20-27 must be 0 */
-#define REQ_UNUSED_LOW_MASK   (0xFFU)
-#define REQ_MOVE_RESERVED     (3U)  /* move 3: invalid */
-#define REQ_LALL_SHIFT  (28U) /* line_all */
-#define REQ_UNUSED_SHIFT (29U)
+#define REQ_KIND_SHIFT       (0U)
+#define REQ_KIND_MASK        (0x07U)
+#define REQ_MOVE_SHIFT       (3U)
+#define REQ_MOVE_MASK        (0x03U)
+#define REQ_LINE_SHIFT       (5U)
+#define REQ_SEQ_SHIFT        (6U)
+#define REQ_VALUE_SHIFT      (10U)
+#define REQ_VALUE_MASK       (0x3FFU)
+#define REQ_UNUSED_LOW_SHIFT (20U) /* bits 20-27 must be 0 */
+#define REQ_UNUSED_LOW_MASK  (0xFFU)
+#define REQ_MOVE_RESERVED    (3U)  /* move 3: invalid */
+#define REQ_LALL_SHIFT       (28U) /* line_all */
+#define REQ_UNUSED_SHIFT     (29U)
 
 /* Pack a request into one 32-bit word */
 EXPORT UW s5_request_pack(const S5_REQUEST * p_req)
@@ -606,8 +764,8 @@ EXPORT UW s5_request_pack(const S5_REQUEST * p_req)
         return (UW)S5_REQ_SAFE_STOP; /* never publish garbage */
     }
 
-    value = (p_req->value > S5_REQ_VALUE_MAX) ? S5_REQ_VALUE_MAX
-                                              : (UW)p_req->value;
+    value =
+        (p_req->value > S5_REQ_VALUE_MAX) ? S5_REQ_VALUE_MAX : (UW)p_req->value;
 
     return (((UW)p_req->kind & REQ_KIND_MASK) << REQ_KIND_SHIFT) |
            (((UW)p_req->move & REQ_MOVE_MASK) << REQ_MOVE_SHIFT) |
@@ -650,8 +808,7 @@ EXPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req)
     p_req->seq  = (UB)((word >> REQ_SEQ_SHIFT) & S5_REQ_SEQ_MASK);
     p_req->b_stop_on_line =
         (0U != ((word >> REQ_LINE_SHIFT) & 1U)) ? TRUE : FALSE;
-    p_req->value = (UH)((word >> REQ_VALUE_SHIFT) & REQ_VALUE_MASK);
-    p_req->b_line_all =
-        (0U != ((word >> REQ_LALL_SHIFT) & 1U)) ? TRUE : FALSE;
+    p_req->value      = (UH)((word >> REQ_VALUE_SHIFT) & REQ_VALUE_MASK);
+    p_req->b_line_all = (0U != ((word >> REQ_LALL_SHIFT) & 1U)) ? TRUE : FALSE;
     return TRUE;
 }
