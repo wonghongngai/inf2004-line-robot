@@ -62,10 +62,10 @@ fixed.
 | GP11 | S2 | right motor reverse (zero PWM) |
 | GP12 | | |
 | GP13 | | |
-| GP14 | kernel I2C1 | unused SDA boot assignment, kept away from encoder/IR |
+| GP14 | S5 | SG90 servo PWM (slice 7A, Robo Pico servo port 4); was the kernel's unused I2C1 SDA boot pin, S5 takes it over with `pwm_set_pin()` |
 | GP15 | kernel I2C1 | unused SCL boot assignment |
-| GP16 | | |
-| GP17 | | |
+| GP16 | S5 | HC-SR04P TRIG (SIO output, Grove 4) |
+| GP17 | S5 | HC-SR04P ECHO (PWM slice 0B input, gated echo timing, Grove 4) |
 | GP18 | | |
 | GP19 | *example:* S1 | external LED (LED + 330 Ω to GND) |
 | GP20 | | |
@@ -112,6 +112,8 @@ the drivers have no locking to stop it.
 | SPI1 | | | |
 | ADC | | | GP26–GP28 |
 | PWM slices 4, 5 | S2 | `motion_task` or bench task (mutually exclusive) | GP8-GP11 |
+| PWM slices 0, 7 | S5 | `obstacle_task` | GP17 (echo timing), GP14 (servo) |
+| IO_IRQ_BANK0 (GPIO interrupts, IRQ 13) | S2 | interrupt handler in `drv_encoder.c` (enabled on the core that calls `drv_encoder_init`) | edge interrupts on GP26/GP6 (left encoder), GP2/GP3 (right encoder) only. **[PROPOSED 2026-11-06, needs team agreement]** Any other GPIO interrupt must go through this handler; ask S2 |
 | WiFi radio, TCP/IP, MQTT | *kernel* | `cyw43_utk_task` (built in) | GP23–25, GP29 |
 
 ### WiFi and MQTT are special
@@ -150,7 +152,7 @@ change it only by team agreement. Write down every task you create.
 | 2 | 14–15 | *example:* producer_task – 14 – core 1 |
 | 3 | 16–17 | *example:* consumer_task – 16 – core 0 |
 | 4 | 18–19 | *example:* monitor_task – 18 – any |
-| 5 | 20–21 | |
+| 5 | 20–21 | obstacle_task – 20 – any |
 
 Core: `TP_PRC1` = core 0, `TP_PRC2` = core 1, or "any".
 
@@ -171,12 +173,20 @@ sends to it or waits on it. Agree on the data format before coding.
 | IF-07 | S3 to S2 robot adapter | S3 message buffer and snapshot API | `g_h_line_nav_q` | line positions and barcode/junction commands; one consumer, demo disabled | integrated build |
 | IF-08 | S4 to S2 robot adapter | snapshot under S4 mutex | `subsystem4_get_latest()` | IMU readiness, terrain and safety stop | integrated build |
 | IF-09 | Application to S2 | message buffer, separate STOP flag | `mbf_motion_cmd`, `flg_motion_stop` | `MOTION_COMMAND`; autonomous profiles reject external moves | motion build |
+| IF-10 | S5 → S2 robot adapter (VC), and the `all_test` loop | packed 32-bit request word, single writer, read with `subsystem5_get_request()` (owned by S5) | `subsystem5_get_request()` | `S5_REQUEST`: NONE / HOLD / MOVE{fwd cm, pivot deg, stop-on-line (first sensor, or with bit 28 `line_all` once every steering sensor has crossed)} / RESUME / SAFE_STOP plus a 4-bit seq; reserved values → VC stops (`E_PAR`). S5 posts HOLD at boot and the VC does not arm until S5 releases it (after the servo's start-up swing) | **proposed** by Buddy 5; needs Buddy 2's OK |
+| IF-11 | S2 robot adapter (VC), or the `all_test` loop → S5 | event flag (owned by S5) | `flg_s5_evt` | `S5_EVT_FOLLOWING` / `STOPPED` / `MOTION_DONE` / `LINE_FOUND` / `MOVE_FAILED` | **proposed** by Buddy 5; needs Buddy 2's OK |
 
 Robot modes and validation are documented in
 `app_program/subsystem2/INTEGRATION.md`. Active S2 tasks: motion/bench at 14 on
 core 1; compatibility producer at 15 only in integrated builds. S3 retains
 consumer at 17 and line service at 16 on core 0. S4 IMU runs at 18 on any core.
-S1/S5 are not started by these robot profiles. The 1 ms kernel timer supports
+S5 `obstacle_task` runs at 20 on any core in `integrated` and
+`integrated_motor_test`; S1 is not started by these robot profiles. While S5
+has a HOLD or MOVE request, the VC's `avoid_step()` hook in `robot_control.c`
+pauses line following and executes S5's moves; in `all_test` its loop
+does the same through `s5_step()` in `all_buddies_test.c`. Both run the one
+shared executor `subsystem5/s5_executor.c` (the IF-10/IF-11 hand-shake) and
+only supply their own drive functions (`S5_EXEC_OPS`). The 1 ms kernel timer supports
 the short requested encoder sleep; actual polling includes an extra tick of
 kernel rounding and scheduling overhead.
 
@@ -190,9 +200,9 @@ limit there. The numbers below are the example's usage.
 
 | Object | Limit | S1 | S2 | S3 | S4 | S5 |
 |---|---|---|---|---|---|---|
-| Task | 32 | 1 | 1 | 1 | 1 | |
+| Task | 32 | 1 | 1 | 1 | 1 | 1 |
 | Semaphore | 16 | | 1 | | | |
-| Event flag | 16 | | | | 1 | |
+| Event flag | 16 | | | | 1 | 1 |
 | Mailbox | 12 | | | 1 | | |
 | Mutex | 12 | | | 1 | | |
 | Message buffer | 12 | | | | 1 | |
