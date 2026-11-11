@@ -64,5 +64,13 @@ void line_service_barcode_raw(unsigned *level, unsigned *rises, unsigned *falls)
 void line_service_barcode_level(unsigned *black, uint32_t *age_ms);
 void line_service_barcode_debug(unsigned *black, unsigned *white, uint8_t *letter);
 ER line_service_receive(line_barcode_msg_t *p_msg, TMO timeout);
+/* Latest completed/rejected capture, copied outside the sampling task.
+ * sequence lets the logger detect a newer frame. Widths are elapsed ms. */
+typedef struct {
+    uint32_t sequence;
+    uint16_t widths[LINE_BARCODE_FRAME_RUNS];
+    uint8_t count, letter, event;
+} line_service_barcode_frame_t;
+void line_service_barcode_frame(line_service_barcode_frame_t *frame);
 
 #endif /* LINE_SERVICE_H */

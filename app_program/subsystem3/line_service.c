@@ -30,6 +30,15 @@ static uint8_t g_debug_level, g_debug_letter = 0xffu;
 static uint32_t g_debug_edge_ms;
 static unsigned g_debug_raw, g_debug_raw_rises, g_debug_raw_falls;
 static bool g_debug_raw_valid;
+static line_service_barcode_frame_t g_debug_frame;
+
+void line_service_barcode_frame(line_service_barcode_frame_t *frame)
+{
+    if (tk_loc_mtx(g_h_line_mutex, TMO_FEVR) == E_OK) {
+        *frame = g_debug_frame;
+        (void)tk_unl_mtx(g_h_line_mutex);
+    }
+}
 
 void line_service_barcode_raw(unsigned *level, unsigned *rises, unsigned *falls)
 {
@@ -411,7 +420,19 @@ static void line_service_task(INT start_code, void *p_extra)
             {
                 uint16_t elapsed = (elapsed_ms > UINT16_MAX)
                                    ? UINT16_MAX : (uint16_t)elapsed_ms;
+                uint8_t previous_count = context.run_count;
                 msg = line_barcode_step(&context, sensors, elapsed);
+                uint8_t capture_event = (msg.data[1] >> 3u) & 7u;
+                if (capture_event == LINE_BARCODE_EVT_BARCODE ||
+                    capture_event == LINE_BARCODE_EVT_INVALID) {
+                    ++g_debug_frame.sequence;
+                    g_debug_frame.count = context.run_count ? context.run_count : previous_count;
+                    g_debug_frame.event = capture_event;
+                    g_debug_frame.letter = capture_event == LINE_BARCODE_EVT_BARCODE ?
+                        (msg.data[2] & LINE_BARCODE_LETTER_MASK) : 0xffu;
+                    for (unsigned i = 0; i < g_debug_frame.count; ++i)
+                        g_debug_frame.widths[i] = line_barcode_run_width(&context, (uint8_t)i);
+                }
                 if ((msg.data[1] & 7u) == LINE_BARCODE_FAULT
                     && (g_control_flags & SERVICE_FLAG_PROCESS_FAULT) == 0u)
                     g_fault_interval_ms = elapsed_ms;
