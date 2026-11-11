@@ -25,6 +25,17 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_INNER_PWM      5.0f
 #define ALL_RIGHT_BASE_PWM 11.0f
 #define ALL_RIGHT_TURN_LEFT_PWM 10.0f
+/* Normal line-following cruise; legacy values above remain for S5 moves
+ * and existing turn profiles. Hardware trial: 12.5/15 instead of 10/11. */
+#define ALL_CRUISE_LEFT_PWM         12.5f
+#define ALL_CRUISE_RIGHT_PWM        15.0f
+#define ALL_STRAIGHT_KP              2.0f
+#define ALL_STRAIGHT_MAX_TRIM        2.5f
+#define ALL_STRAIGHT_TRIM_RATE       5.0f
+#define ALL_STRAIGHT_DEADBAND_CM     0.10f
+#define ALL_LINE_STEER_BOOST        4.0f  /* PWM points, outer wheel only */
+#define ALL_LINE_PWM_RATE          10.0f /* PWM points/second */
+#define ALL_LINE_CONFIRM_MS        30u
 #define ALL_WHITE_CLEAR_MS 100u
 
 typedef struct {
@@ -54,7 +65,10 @@ typedef struct {
     bool white_clear_pending, white_reported;
     uint32_t white_clear_since;
     unsigned steering_action;
+    unsigned steering_candidate;
+    uint32_t steering_candidate_since;
     unsigned white_report_pattern, white_report_action;
+    unsigned barcode_consumed_rises, barcode_consumed_falls;
     uint8_t pending_letter;          /* bit 7 = waiting, bits 4..0 = A=0..Z=25 */
     unsigned turn_stage, turn_command;
     uint32_t turn_started, turn_done;
@@ -65,6 +79,8 @@ typedef struct {
        encoders (white_straight_step): ticks where the stretch began. */
     bool straight_active;
     int32_t straight_left0, straight_right0;
+    float straight_trim;
+    uint32_t straight_updated;
     /* S5 obstacle-avoidance hook (IF-10/IF-11, see s5_step below). */
     S5_EXEC s5;
     int32_t s5_left0, s5_right0;
@@ -143,6 +159,20 @@ static void apply_follow_pwm(ALL_TEST *t, float left, float right, uint32_t now)
         t->left = left;
         t->right = right;
     }
+    drv_motor_set(t->left, t->right);
+}
+
+/* Normal line following only: ramp both acceleration and recovery, without
+ * directly zeroing a wheel. Safety stops and S5 retain their own paths. */
+static void apply_line_pwm(ALL_TEST *t, float left, float right, uint32_t now)
+{
+    uint32_t elapsed = t->pwm_clock_started ? now - t->pwm_updated : LINE_BARCODE_PERIOD_MS;
+    if (elapsed > 20u) elapsed = 20u;
+    float step = ALL_LINE_PWM_RATE * (float)elapsed / 1000.0f;
+    t->left = approach_pwm(t->left, left, step);
+    t->right = approach_pwm(t->right, right, step);
+    t->pwm_updated = now;
+    t->pwm_clock_started = true;
     drv_motor_set(t->left, t->right);
 }
 
@@ -314,8 +344,22 @@ static bool start_junction_turn(ALL_TEST *t, uint32_t now)
     return true;
 }
 
+/* Any scanner activity includes partial frames; only a completely absent
+ * scan allows an uncommanded crossing. S3 keeps ownership of decoding. */
+static bool junction_barcode_seen(const ALL_TEST *t)
+{
+    unsigned level = 1u, rises = t->barcode_consumed_rises;
+    unsigned falls = t->barcode_consumed_falls;
+    line_service_barcode_raw(&level, &rises, &falls);
+    return level != 0u || rises != t->barcode_consumed_rises ||
+           falls != t->barcode_consumed_falls || (t->pending_letter & 0x80u) != 0u;
+}
+
 static void finish_turn(ALL_TEST *t, uint32_t now)
 {
+    unsigned level = 0u;
+    line_service_barcode_raw(&level, &t->barcode_consumed_rises,
+                            &t->barcode_consumed_falls);
     t->turn_stage = TURN_NONE;
     t->turn_done = now;
     t->turn_done_valid = true;
@@ -376,25 +420,32 @@ static void turn_step(ALL_TEST *t, uint32_t now)
  * S2_*_TICKS_PER_CM still predate the interrupt encoder. */
 static void white_straight_step(ALL_TEST *t, uint32_t now)
 {
-    float left_cm, right_cm, err;
-    float left_pwm = ALL_BASE_PWM, right_pwm = ALL_RIGHT_BASE_PWM;
-
     if (!t->straight_active) {
         t->straight_active = true;
         t->straight_left0 = t->left_ticks;
         t->straight_right0 = t->right_ticks;
+        t->straight_trim = 0.0f;
+        t->straight_updated = now;
     }
-    left_cm = (float)(t->left_ticks - t->straight_left0) / S5_LEFT_TICKS_PER_CM;
-    right_cm = (float)(t->right_ticks - t->straight_right0) / S5_RIGHT_TICKS_PER_CM;
-    err = S5_HEADING_KP * (right_cm - left_cm); /* > 0: right ahead */
-    if (err > 0.0f) right_pwm -= err;
-    else left_pwm += err;
-    if (left_pwm < 0.0f) left_pwm = 0.0f;
-    if (right_pwm < 0.0f) right_pwm = 0.0f;
-    /* apply_follow_pwm() turns a right value of exactly ALL_BASE_PWM into
-       ALL_RIGHT_BASE_PWM (the old trim): keep clear of that one value. */
-    if (right_pwm == ALL_BASE_PWM) right_pwm -= 0.01f;
-    apply_follow_pwm(t, left_pwm, right_pwm, now);
+    float left_cm = (float)tick_delta(t->left_ticks, t->straight_left0) / S5_LEFT_TICKS_PER_CM;
+    float right_cm = (float)tick_delta(t->right_ticks, t->straight_right0) / S5_RIGHT_TICKS_PER_CM;
+    float error = right_cm - left_cm;
+    if (error > ALL_STRAIGHT_DEADBAND_CM) error -= ALL_STRAIGHT_DEADBAND_CM;
+    else if (error < -ALL_STRAIGHT_DEADBAND_CM) error += ALL_STRAIGHT_DEADBAND_CM;
+    else error = 0.0f;
+    float target = ALL_STRAIGHT_KP * error;
+    if (target > ALL_STRAIGHT_MAX_TRIM) target = ALL_STRAIGHT_MAX_TRIM;
+    if (target < -ALL_STRAIGHT_MAX_TRIM) target = -ALL_STRAIGHT_MAX_TRIM;
+    uint32_t elapsed = now - t->straight_updated;
+    if (elapsed > 20u) elapsed = 20u;
+    t->straight_updated = now;
+    t->straight_trim = approach_pwm(t->straight_trim, target,
+                                   ALL_STRAIGHT_TRIM_RATE * (float)elapsed / 1000.0f);
+    float left_pwm = ALL_CRUISE_LEFT_PWM, right_pwm = ALL_CRUISE_RIGHT_PWM;
+    /* Boost only: correction never removes the power needed to cruise. */
+    if (t->straight_trim > 0.0f) left_pwm += t->straight_trim;
+    else right_pwm -= t->straight_trim;
+    apply_line_pwm(t, left_pwm, right_pwm, now);
 }
 
 static void white_follow_step(ALL_TEST *t, uint32_t now)
@@ -413,9 +464,18 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
     t->corner_active = t->centre_pending = false;
     t->last_side = 0;
     if (sensors != 0u) {
-        t->steering_action = sensors;
+        if (sensors != t->steering_candidate) {
+            t->steering_candidate = sensors;
+            t->steering_candidate_since = now;
+        }
+        /* Junction handling below remains immediate; only single-sensor
+         * corrections need to persist before changing steering direction. */
+        if (sensors == 3u ||
+            (uint32_t)(now - t->steering_candidate_since) >= ALL_LINE_CONFIRM_MS)
+            t->steering_action = sensors;
         t->white_clear_pending = false;
     } else if (t->steering_action != 0u) {
+        t->steering_candidate = 0u;
         if (!t->white_clear_pending) {
             t->white_clear_pending = true;
             t->white_clear_since = now;
@@ -425,33 +485,43 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
             t->white_clear_pending = false;
         }
     }
+    if (sensors == 0u) t->steering_candidate = 0u;
     unsigned action = t->steering_action;
     if (!t->white_reported || sensors != t->white_report_pattern ||
         action != t->white_report_action) {
         tm_printf((UB *)"[WHITE STEER] C=%u R=%u action=%s%s\n",
                   (UINT)((sensors >> 1u) & 1u), (UINT)(sensors & 1u),
-                  action == 0u ? "STRAIGHT" : action == 1u ? "RIGHT target=10/0" :
-                  action == 2u ? "LEFT" : "STOP",
+                  action == 0u ? "STRAIGHT" : action == 1u ? "GENTLE RIGHT" :
+                  action == 2u ? "GENTLE LEFT" : "JUNCTION",
                   sensors == 0u && action != 0u ? " (confirming white 100ms)" : "");
         t->white_reported = true;
         t->white_report_pattern = sensors;
         t->white_report_action = action;
     }
+    bool barcode_seen = sensors == 3u && junction_barcode_seen(t);
     if (sensors == 3u && t->leaving_junction) {
         /* Still on the crossing just left by a movement. */
-        apply_follow_pwm(t, ALL_BASE_PWM, ALL_BASE_PWM, now);
+        apply_line_pwm(t, ALL_CRUISE_LEFT_PWM, ALL_CRUISE_RIGHT_PWM, now);
     } else if (sensors == 3u && start_junction_turn(t, now)) {
         turn_step(t, now);
+    } else if (sensors == 3u && !barcode_seen) {
+        t->leaving_junction = true;
+        t->turn_done = now;
+        t->steering_action = 0u;
+        t->white_clear_pending = false;
+        t->stop_reason = NULL;
+        apply_line_pwm(t, ALL_CRUISE_LEFT_PWM, ALL_CRUISE_RIGHT_PWM, now);
+        tm_printf((UB *)"[MOTION] junction: no barcode sensed; continuing forward\n");
     } else if (sensors == 3u) {
-        stop_test(t, "centre and right both black", S1_STATE_FAULT);
+        stop_test(t, "junction: incomplete or unmapped barcode", S1_STATE_FAULT);
     } else if (action == 1u) {
-        t->right = 0.0f;
-        t->stop_reason = "right black: turn right";
-        apply_follow_pwm(t, ALL_RIGHT_TURN_LEFT_PWM, 0.0f, now);
+        t->stop_reason = "right black: gradual right correction";
+        apply_line_pwm(t, ALL_CRUISE_LEFT_PWM + ALL_LINE_STEER_BOOST,
+                       ALL_CRUISE_RIGHT_PWM, now);
     } else if (action == 2u) {
-        t->left = 0.0f;
-        t->stop_reason = "centre black: turn left";
-        apply_follow_pwm(t, 0.0f, ALL_BASE_PWM, now);
+        t->stop_reason = "centre black: gradual left correction";
+        apply_line_pwm(t, ALL_CRUISE_LEFT_PWM,
+                       ALL_CRUISE_RIGHT_PWM + ALL_LINE_STEER_BOOST, now);
     } else {
         t->stop_reason = NULL;
         white_straight_step(t, now);
@@ -1133,12 +1203,12 @@ static void all_task(INT stacd, void *exinf)
 #endif
     tm_printf((UB *)"[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan\n[BARCODE BUILD] GP28 digital; cumulative counts; raw edges enabled\n[BARCODE DEBUG] duration logging enabled; minimum element=40ms; target=A\n"
               "[ALL TEST] keep stationary for IMU calibration; starts after 5s\n"
-              "[BARCODE SPEED TRIAL] slow trial with wheel trim; straight=10/11; inner=5; right-turn=10/0\n"
-              "[ALL TEST] straight PWM left=10%% right=11%%; inner=5%%; GP28=left GP27=centre GP0=right; 1=black\n"
+              "[LINE CRUISE] straight=12.5/15; gradual boost only, max +2.5 PWM points\n"
+              "[ALL TEST] straight PWM left=12.5%% right=15%%; inner=5%%; GP28=left GP27=centre GP0=right; 1=black\n"
               "[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders\n");
     if (ALL_TEST_WHITE_FOLLOW)
         tm_printf((UB *)"[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering\n"
-                  "[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 10%%), 1/0 left, 1/1 STOP; 1=black\n");
+                  "[ALL TEST] C/R=0/0 straight, 0/1 gradual right, 1/0 gradual left, 1/1 junction (forward if no barcode); 1=black\n");
     else
         tm_printf((UB *)"[ALL TEST] sensor response=%s; missing/invalid line stops motors; valid black auto-resumes; manual pause remains active\n",
               ALL_TEST_CONTINUE_ON_SENSOR ? "LOG ONLY (keep motors moving)" : "STOP/RECOVER");
