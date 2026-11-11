@@ -19,12 +19,14 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_IMU_STALE_MS   100u
 #define ALL_LINE_READY_MS  500u
 #define ALL_LINE_REACQUIRE_MS 100u
-/* Slower barcode trial: all motor targets reduced by 20%, trim retained.
- * PWM reduction is not a calibrated reduction in physical wheel speed. */
-#define ALL_BASE_PWM       10.0f
-#define ALL_INNER_PWM      5.0f
-#define ALL_RIGHT_BASE_PWM 11.0f
-#define ALL_RIGHT_TURN_LEFT_PWM 10.0f
+/* S5 bypass legs, junction movements and turn profiles. Back at the
+ * alicia values: the 20% slower trial (10/5/11/10) stalled S5's forward
+ * legs (2026-11-11: 10.0/8.3 PWM, encoders frozen, "leg timed out").
+ * Line following uses ALL_CRUISE_* below and is unaffected. */
+#define ALL_BASE_PWM       12.5f
+#define ALL_INNER_PWM      6.25f
+#define ALL_RIGHT_BASE_PWM 15.0f
+#define ALL_RIGHT_TURN_LEFT_PWM 12.5f
 /* Normal line-following cruise; legacy values above remain for S5 moves
  * and existing turn profiles. Hardware trial: 12.5/15 instead of 10/11. */
 #define ALL_CRUISE_LEFT_PWM         12.5f
@@ -33,10 +35,18 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_STRAIGHT_MAX_TRIM        2.5f
 #define ALL_STRAIGHT_TRIM_RATE       5.0f
 #define ALL_STRAIGHT_DEADBAND_CM     0.10f
-#define ALL_LINE_STEER_BOOST        4.0f  /* PWM points, outer wheel only */
-#define ALL_LINE_PWM_RATE          10.0f /* PWM points/second */
-#define ALL_LINE_CONFIRM_MS        30u
-#define ALL_WHITE_CLEAR_MS 100u
+#define ALL_LINE_STEER_BOOST        4.0f  /* PWM points added to the outer wheel */
+#define ALL_LINE_INNER_PWM          5.0f  /* inner wheel; 0 = full pivot */
+/* A correction still needed after this long is a tight bend: stop the inner
+ * wheel (pivot). 5/19 held for 2.5 s still ran wide on 2026-11-11. */
+#define ALL_LINE_HARD_MS          150u
+#define ALL_LINE_HARD_INNER_PWM     0.0f
+#define ALL_LINE_PWM_RATE          80.0f /* PWM points/second, speed-ups only */
+#define ALL_LINE_CONFIRM_MS         5u   /* only when reversing direction */
+/* Scanner edges older than this (GP28 white since) are not a barcode in
+ * progress; one stray 193 ms black 10 s earlier faulted a junction. */
+#define ALL_BARCODE_STALE_MS 1000u
+#define ALL_WHITE_CLEAR_MS  30u  /* hold a correction this long after white */
 
 typedef struct {
     unsigned phase, terminal_state, barcode;
@@ -67,6 +77,7 @@ typedef struct {
     unsigned steering_action;
     unsigned steering_candidate;
     uint32_t steering_candidate_since;
+    uint32_t steering_action_since;
     unsigned white_report_pattern, white_report_action;
     unsigned barcode_consumed_rises, barcode_consumed_falls;
     uint8_t pending_letter;          /* bit 7 = waiting, bits 4..0 = A=0..Z=25 */
@@ -162,15 +173,16 @@ static void apply_follow_pwm(ALL_TEST *t, float left, float right, uint32_t now)
     drv_motor_set(t->left, t->right);
 }
 
-/* Normal line following only: ramp both acceleration and recovery, without
- * directly zeroing a wheel. Safety stops and S5 retain their own paths. */
+/* Normal line following only: speed-ups are ramped for smooth starts, but a
+ * wheel being slowed takes its target at once so corrections bite in time.
+ * Safety stops and S5 retain their own paths. */
 static void apply_line_pwm(ALL_TEST *t, float left, float right, uint32_t now)
 {
     uint32_t elapsed = t->pwm_clock_started ? now - t->pwm_updated : LINE_BARCODE_PERIOD_MS;
     if (elapsed > 20u) elapsed = 20u;
     float step = ALL_LINE_PWM_RATE * (float)elapsed / 1000.0f;
-    t->left = approach_pwm(t->left, left, step);
-    t->right = approach_pwm(t->right, right, step);
+    t->left = left < t->left ? left : approach_pwm(t->left, left, step);
+    t->right = right < t->right ? right : approach_pwm(t->right, right, step);
     t->pwm_updated = now;
     t->pwm_clock_started = true;
     drv_motor_set(t->left, t->right);
@@ -348,6 +360,11 @@ static bool start_junction_turn(ALL_TEST *t, uint32_t now)
  * scan allows an uncommanded crossing. S3 keeps ownership of decoding. */
 static bool junction_barcode_seen(const ALL_TEST *t)
 {
+    if ((t->pending_letter & 0x80u) != 0u) return true;
+    unsigned black = 1u;
+    uint32_t white_ms = 0u;
+    line_service_barcode_level(&black, &white_ms);
+    if (black == 0u && white_ms >= ALL_BARCODE_STALE_MS) return false;
     unsigned level = 1u, rises = t->barcode_consumed_rises;
     unsigned falls = t->barcode_consumed_falls;
     line_service_barcode_raw(&level, &rises, &falls);
@@ -468,11 +485,14 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
             t->steering_candidate = sensors;
             t->steering_candidate_since = now;
         }
-        /* Junction handling below remains immediate; only single-sensor
-         * corrections need to persist before changing steering direction. */
-        if (sensors == 3u ||
-            (uint32_t)(now - t->steering_candidate_since) >= ALL_LINE_CONFIRM_MS)
+        /* Junctions and a first correction from straight act at once; only
+         * a reversal between left and right must persist briefly. */
+        if (sensors == 3u || t->steering_action == 0u ||
+            t->steering_action == 3u ||
+            (uint32_t)(now - t->steering_candidate_since) >= ALL_LINE_CONFIRM_MS) {
+            if (t->steering_action != sensors) t->steering_action_since = now;
             t->steering_action = sensors;
+        }
         t->white_clear_pending = false;
     } else if (t->steering_action != 0u) {
         t->steering_candidate = 0u;
@@ -483,17 +503,23 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
         if ((uint32_t)(now - t->white_clear_since) >= ALL_WHITE_CLEAR_MS) {
             t->steering_action = 0u;
             t->white_clear_pending = false;
+            /* Correction over: put the slowed inner wheel straight back to
+             * cruise, or its ramp keeps turning the robot past the line. */
+            if (t->left < ALL_CRUISE_LEFT_PWM) t->left = ALL_CRUISE_LEFT_PWM;
+            if (t->right < ALL_CRUISE_RIGHT_PWM) t->right = ALL_CRUISE_RIGHT_PWM;
         }
     }
     if (sensors == 0u) t->steering_candidate = 0u;
     unsigned action = t->steering_action;
+    float inner_pwm = (uint32_t)(now - t->steering_action_since) >= ALL_LINE_HARD_MS
+                      ? ALL_LINE_HARD_INNER_PWM : ALL_LINE_INNER_PWM;
     if (!t->white_reported || sensors != t->white_report_pattern ||
         action != t->white_report_action) {
         tm_printf((UB *)"[WHITE STEER] C=%u R=%u action=%s%s\n",
                   (UINT)((sensors >> 1u) & 1u), (UINT)(sensors & 1u),
-                  action == 0u ? "STRAIGHT" : action == 1u ? "GENTLE RIGHT" :
-                  action == 2u ? "GENTLE LEFT" : "JUNCTION",
-                  sensors == 0u && action != 0u ? " (confirming white 100ms)" : "");
+                  action == 0u ? "STRAIGHT" : action == 1u ? "RIGHT" :
+                  action == 2u ? "LEFT" : "JUNCTION",
+                  sensors == 0u && action != 0u ? " (confirming white)" : "");
         t->white_reported = true;
         t->white_report_pattern = sensors;
         t->white_report_action = action;
@@ -515,12 +541,12 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
     } else if (sensors == 3u) {
         stop_test(t, "junction: incomplete or unmapped barcode", S1_STATE_FAULT);
     } else if (action == 1u) {
-        t->stop_reason = "right black: gradual right correction";
+        t->stop_reason = "right black: right correction";
         apply_line_pwm(t, ALL_CRUISE_LEFT_PWM + ALL_LINE_STEER_BOOST,
-                       ALL_CRUISE_RIGHT_PWM, now);
+                       inner_pwm, now);
     } else if (action == 2u) {
-        t->stop_reason = "centre black: gradual left correction";
-        apply_line_pwm(t, ALL_CRUISE_LEFT_PWM,
+        t->stop_reason = "centre black: left correction";
+        apply_line_pwm(t, inner_pwm,
                        ALL_CRUISE_RIGHT_PWM + ALL_LINE_STEER_BOOST, now);
     } else {
         t->stop_reason = NULL;
