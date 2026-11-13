@@ -66,12 +66,10 @@ To run `all_test` without Wi-Fi, replace `NET=lwip MQTT=1` with
 `ALL_TEST_OFFLINE=1 WIFI=none NET=none MQTT=0`
 (→ `build_make/mtk3pico_smp1_usb_cdc_all_test.uf2`).
 
-Wi-Fi builds need `config/wifi_secrets.h` (gitignored, never commit it). It
-defines your network and broker: `WIFI_SSID`, `WIFI_PASSWORD`,
-`MQTT_BROKER_IP`, `MQTT_CLIENT_ID` and related settings (see
-`lib/libwifi/sysdepend/pico_rp2040/cyw43_utk.c` and
-`app_program/subsystem1/mqtt_manager.c`). The `wifi_secrets.example.h` that
-the makefile mentions is not in the repo yet; ask a teammate for theirs.
+Wi-Fi builds need `config/wifi_secrets.h` (gitignored, never commit it):
+copy `config/wifi_secrets.example.h` to `config/wifi_secrets.h` and fill in
+your network (`WIFI_SSID`, `WIFI_PASSWORD`) and broker (`MQTT_BROKER_IP`,
+`MQTT_BROKER_PORT`, `MQTT_CLIENT_ID`, `MQTT_TOPIC`).
 
 The mode and options are part of the image name, so check you are flashing
 the one you meant.
@@ -160,7 +158,7 @@ python3 tools/mqtt_binary.py command resume | mosquitto_pub -h BROKER -t 'CLIENT
 ```
 
 Commands are raw bytes, never text or retained messages. A local broker
-config is in `mosquitto-local.conf`.
+config is in `tools/mosquitto-local.conf`.
 
 **Barcode map:** the instructor sends the four letters just before the demo,
 so the map must come over MQTT. Today both builds still use a hard-coded map

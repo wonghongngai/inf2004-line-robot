@@ -1,6 +1,18 @@
-# Offline combined driving build
+# all_test offline profile (test harness only)
 
-Run `bash build_make/build_combined_current.sh` using MSYS bash on this machine.
+> **all_test only, and partly out of date.** `integrated` is the final
+> firmware (issue #4); this describes the `all_test` harness as of early
+> November. PWM values below may have been retuned since: the current
+> constants are at the top of `app_program/subsystem2/all_buddies_test.c`.
+> The barcode map is currently hard-coded in all_test (`A,F,Z,W`) and MQTT
+> maps are ignored (issue #38). Build commands: README section 1.
+
+Build (no Wi-Fi):
+
+```sh
+make -C build_make -j8 ROBOT_MODE=all_test ALL_TEST_OFFLINE=1 WIFI=none NET=none MQTT=0 TEST=0 CONSOLE=usb_cdc CRASH_REPORT=0
+```
+
 Flash `build_make/mtk3pico_smp1_usb_cdc_all_test.uf2`.
 
 This profile combines S2 motors/encoders, S3 TRACK line sensing, and S4 IMU.

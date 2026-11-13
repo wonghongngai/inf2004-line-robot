@@ -64,7 +64,7 @@ something that hasn't passed on the bench (L3).
 | ID | What | Level | How | Pass when |
 |---|---|---|---|---|
 | S1-U11 | Wi-Fi joins after boot | L3 | Power on 5×, read the connect time from the serial log | connects 5/5 within `[set]` s |
-| S1-U12 | Telemetry publish rate and validity | L3 | Broker from `mosquitto-local.conf`; subscribe and decode with `tools/mqtt_binary.py` for 5 min | ~1 packet/s, every packet is 10 bytes and decodes valid, no gaps over `[set]` s |
+| S1-U12 | Telemetry publish rate and validity | L3 | Broker from `tools/mosquitto-local.conf`; subscribe and decode with `tools/mqtt_binary.py` for 5 min | ~1 packet/s, every packet is 10 bytes and decodes valid, no gaps over `[set]` s |
 | S1-U13 | Reconnect after broker restart and after AP off/on | L3 | Stop the broker for 30 s, then restart it; repeat with the hotspot | publishing resumes within `[set]` s; motors unaffected (Wi-Fi loss must not stop driving) |
 | S1-U14 | PAUSE / RESUME / STATUS from the laptop | L3→L4 | Send each command 10×, film the wheels with the console visible | 10/10 obey; PAUSE stops within `[set]` ms |
 | S1-U15 | Letter-to-movement map sent from the PC over MQTT: valid, duplicate letters, reserved bits set | L3 | Publish 3 maps to `<id>/mapping` from the PC, then drive over a mapped barcode and junction | valid map **applied** (robot does the mapped move), both invalid rejected, old map kept (#38; pairs with S3-U27) |
