@@ -1,6 +1,7 @@
 # Project status
 
 **This is the one page that shows what is done and what is left.**
+What to test next, and how, is in [testing/TEST_PLAN.md](testing/TEST_PLAN.md).
 Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 
 ## Rules
@@ -36,7 +37,7 @@ Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 | MQTT connect + reconnect after AP or broker loss | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | — | Define S1-U tests (connect, publish rate, reconnect time); run on the bench with a broker and save logs |
 | Telemetry publish (state, speed, hump, obstacle…) | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | — | Check every field decodes correctly on the subscriber side; record the publish rate |
 | Barcode result events (`<id>/barcode`, QoS 1) | 🟡 | 🟡 host test exists | ⬜ | ⬜ | ⬜ | `testing/subsystem1/BARCODE_MQTT.md` (no result logged) | Run `barcode_queue_test.c` and log the result; then do a bench test with a real broker |
-| Run-time barcode letter → command mapping over MQTT | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | S3-U27 still PENDING | Run S3-U27 on target together with S3 |
+| Letter-to-movement map received over MQTT and **applied** | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | Both builds hard-code the map today; all_test ignores MQTT maps | #38: apply the MQTT map (go straight until one arrives), then S1-U15 and S3-U27 |
 
 ## Subsystem 2: Motors, encoders, PID, Vehicle Controller (Buddy 2)
 
@@ -55,11 +56,11 @@ Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 |---|---|---|---|---|---|---|---|
 | Line position from 3 IR sensors, noise rejection | ✅ | ✅ S3-U02–U03 | ⬜ | ⬜ | ⬜ | `testing/subsystem3/logs/2026-10-27_cr1_host.txt` | Run S3-U14–U17 on target; calibrate black/white on the real track |
 | Line loss → search → reacquire / fault | ✅ | ✅ S3-U04–U06 | ⬜ | ⬜ | ⬜ | same log | Test on the track: lift the robot off the line, time how long reacquiring takes |
-| Code 39 decode, forward + backward | ✅ | ✅ S3-U07–U13 | 🟡 only A and Z tested | ⬜ | ⬜ | Commit `208188b` (no test log) | Test all four command barcodes at real driving speed; log the decode rate per letter |
+| Code 39 decode A–Z, forward + backward | ✅ | ✅ S3-U07–U13 | 🟡 only A and Z tested | ⬜ | ⬜ | Commit `208188b` (no test log); all A–Z both ways required (prof, 13 Nov) | Test all four command barcodes at real driving speed; log the decode rate per letter |
 | Junction detection + barcode → command at next junction | ✅ | ✅ S3-U25–U26 | ⬜ | ⬜ | ⬜ | `testing/subsystem3/logs/2026-10-26_junction_host.txt` | Track test at each junction type |
 | Run-time letter mapping (S3-U27) | ✅ | ⬜ PENDING | ⬜ | ⬜ | — | — | Run on target together with S1 |
 
-## Subsystem 4: IMU, humps, tilt, collision (Buddy 4)
+## Subsystem 4: IMU, humps, tilt, lift-stop (Buddy 4)
 
 | Feature | Code | Host/Unit | Bench HW | Integrated | Track tuned | Evidence | Next action |
 |---|---|---|---|---|---|---|---|
@@ -67,7 +68,9 @@ Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 | Baseline calibration at start-up | ✅ | ⬜ | ⬜ | ⬜ | — | — | Bench test: keep the robot still for 1 s and log the baseline values |
 | Highest hump measurement | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | `README_BUDDY4.txt`: thresholds are placeholders | Collect IMU logs over real humps; set the thresholds from that data |
 | Tilt flag (used by S5 to ignore readings on ramps) | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | — | Check it latches **before** the ultrasonic sees the ramp (open risk) |
-| Collision detection → stop | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | — | Bench bump test; measure how long it takes to stop |
+| Lift → motors stop (replaces collision detection, removed 13 Nov) | ⬜ | ⬜ | ⬜ | ⬜ | — | — | #53: remove collision, add the lift check, then S4-U12 |
+| Motion classes (stationary, accelerating, turning, climbing, descending) | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | — | #42 |
+| Turn rate (magnetometer) | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | — | #43 |
 | Minimum-bit (CR1) version | ⬜ | ⬜ | — | — | — | README says it's the PRE version | Do the CR1 change and log before/after sizes |
 
 ## Subsystem 5: Ultrasonic scanning, profiling, avoidance (Buddy 5)
