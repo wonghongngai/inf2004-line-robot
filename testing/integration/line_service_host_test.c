@@ -5,6 +5,7 @@
 #define tm_printf(...) ((void)0)
 #define APP_ALL_TEST 1
 #define TK_SUPPORT_SMP 1
+#include "../../app_program/subsystem3/line_barcode.h"
 #define TASK_STACK_SIZE 2048
 #define TMO_FEVR (-1)
 #define TSK_SELF 0
@@ -50,7 +51,7 @@ static ER tk_slp_tsk(TMO timeout) { (void)timeout; return E_OK; }
 static ER tk_can_wup(ID id) { (void)id; return E_OK; }
 static ER tk_sta_tsk(ID id, INT code) { (void)id; (void)code; return E_OK; }
 static ID tk_cre_cyc(const T_CCYC *c)
-{ assert(c->cyctim == 10u); return 3; }
+{ assert(c->cyctim == LINE_BARCODE_PERIOD_MS); return 3; } /* 1 ms since b276d54 */
 static ER tk_ter_tsk(ID id) { (void)id; return E_OK; }
 static ER tk_del_tsk(ID id) { (void)id; return E_OK; }
 static ID tk_cre_tsk(const T_CTSK *c) { created_task = *c; return 4; }
