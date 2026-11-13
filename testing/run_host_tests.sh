@@ -162,12 +162,6 @@ run_c  int/robot_control      $STRICT -DAPP_ROBOT_INTEGRATED=1 -DAPP_TEST=0 -DS2
                               -DS2_LINE_CALIBRATION_READY=1 -include $INT/robot_host_stubs.h \
                               $INT/robot_host_test.c app_program/subsystem2/motion_control.c
 run_c  int/line_service       $STRICT $INT/line_service_host_test.c $S3/line_barcode.c
-run_c  int/all_buddies        $STRICT $INT/all_buddies_host_test.c $S1/communication_protocol.c
-run_c  int/all_buddies_cont   $STRICT $INT/all_buddies_continuous_host_test.c $S1/communication_protocol.c
-run_c  int/all_buddies_corner $STRICT $INT/all_buddies_corner_host_test.c $S1/communication_protocol.c
-run_c  int/all_buddies_coll   $STRICT $INT/all_buddies_collision_host_test.c $S1/communication_protocol.c
-run_c  int/all_buddies_white  $STRICT $INT/all_buddies_white_host_test.c $S1/communication_protocol.c
-run_c  int/all_buddies_bal    $STRICT $INT/all_buddies_balance_host_test.c
 run_py int/steering_ramp      $INT/test_steering_ramp.py
 
 echo

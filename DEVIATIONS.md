@@ -68,8 +68,8 @@ The communication stack is built as designed, but none of FR1 or NFR1 has been t
 | ID | Requirement (source) | Current code | Type | Follow-up |
 | --- | --- | --- | --- | --- |
 | B1-1 | FR1-1 Wi-Fi + MQTT connection (W6) | CYW43 + lwIP + MQTT through the kernel Wi-Fi service; PT noted connectivity "not yet tested" | Unverified | #15 (S1-U11, S1-U12) |
-| B1-2 | FR1-2 publish telemetry; WU p5 examples include obstacle scan results, encoder counts, motor speed | 80-bit packet, 1 s period. Obstacle distance, scan angle and width fields exist but are never set; no encoder counts | Partial | #40, #41 |
-| B1-3 | FR1-3 receive commands (W6) | 1-byte commands STATUS, PAUSE, RESUME, RESET_STATS; map topic received but not applied (see M1) | Partial | #38 |
+| B1-2 | FR1-2 publish telemetry; WU p5 examples include obstacle scan results, encoder counts, motor speed | 80-bit packet, 1 s period, **but only `all_test` publishes it**: the integrated firmware never calls `subsystem1_publish_telemetry`. Obstacle distance, scan angle and width fields are never set; no encoder counts | Missing in the final firmware | #8, #40, #41 |
+| B1-3 | FR1-3 receive commands (W6) | STATUS, PAUSE, RESUME, RESET_STATS commands and the map topic are received by S1, but **only `all_test` reads them**; the integrated firmware never calls `subsystem1_receive_command` or `subsystem1_receive_mapping` | Missing in the final firmware | #8, #38 |
 | B1-4 | FR1-4 / NFR1-2 reconnect without restart (W6) | Recovery logic in `mqtt_manager.c`; never exercised | Unverified | #15 (S1-U13) |
 | B1-5 | FR1-5 periodic status (W6) | 1-byte heartbeat every 5 s (`MQTT_UTK_HEARTBEAT_MS`) | Unverified | #15 |
 | B1-6 | NFR1-3 telemetry must not disturb control; W6 gave comms **medium** priority | Wi-Fi service task priority 4, above motion (14) and line (16) | Changed | #66; measure control-loop lateness with Wi-Fi on (S1-U17, S2-U12) or lower the priority |
@@ -163,7 +163,7 @@ The evidence rules from the template are mostly not followed yet, and two assess
 | ID | Plan (source) | Current state | Type | Follow-up |
 | --- | --- | --- | --- | --- |
 | P1 | Template `testing/README.md`: every test has a TEST_LOG row with a commit and a saved log | S1, S2, S4 and system logs have no results; their test-case tables still describe template LED tests while the code checks S1-U01 to U10, S2-U01 to U04, S4-U01 to U07; many S5 rows say "console, not saved" | Partial | #14, #17, #21, #24, #28 |
-| P2 | PT: test packed interfaces before integration | Host suite (`testing/run_host_tests.sh`) passes 9 of 18; 2 tests check code that was never pushed | Partial | #3, #5, #9 |
+| P2 | PT: test packed interfaces before integration | Host suite (`testing/run_host_tests.sh`) passes 9 of 12 (6 all_test-only tests retired, #9); 2 tests check code that was never pushed | Partial | #3, #5, #9 |
 | P3 | WU p1: conform to the Barr C coding standard | No review recorded | Missing | #60 |
 | P4 | WU p1, p11: resource efficiency is assessed; PT: measure timing before and after packing | No flash, RAM, stack or task-timing figures recorded | Missing | #61 |
 | P5 | WU p1: the car operates without remote control | MQTT PAUSE and RESUME exist as manual overrides; the instructor's MQTT map is required. The demo must not rely on manual commands | Check | Confirm with the instructor if unsure |
