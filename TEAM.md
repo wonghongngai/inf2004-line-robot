@@ -1,26 +1,14 @@
 # Team and subsystems
 
-Rows still marked *example* belong to the template's producer/consumer demo.
-S2 and S3 keep that code as a compatibility layer (`legacy_example.h`,
-`task_producer.c`, `task_consumer.c`), so those rows still describe real
-objects; remove them when that code is deleted.
-
-Fill this in at the start of the project and keep it up to date. It is the
-single place that says **who owns what**, so that five people can work in
-one firmware image without clashing over pins, priorities, or kernel objects.
-
-A **subsystem** is one student's part of the product, with its own folder.
-It may contain several tasks and own several peripherals (see section 3).
-
 Rule: **only the owner edits a subsystem's folders.** To change another
 subsystem, ask its owner or open a pull request for them to review.
 
 ## 1. Members and subsystems
 
 | # | Subsystem (what it does) | Name | Student ID | GitHub username | Code | Tests |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | 1 | Wi-Fi, MQTT, telemetry and commands | Kan Ka En | 2503598 | `dunnknow` | `app_program/subsystem1/` | `testing/subsystem1/` |
-| 2 | Motors, encoders, PID; hosts the Vehicle Controller (`robot_control.c`) | Zhi Xian Kang | 2503986 | `2andbeii` | `app_program/subsystem2/` | `testing/subsystem2/` |
+| 2 | Motors, encoders, PID; hosts the Vehicle Controller (`robot_control.c`) | Kang Zhi Xian | 2503986 | `2andbeii` | `app_program/subsystem2/` | `testing/subsystem2/` |
 | 3 | IR line following, Code 39 barcode, junctions | Chai Sook Hui | 2502871 | `chaisookhui` | `app_program/subsystem3/` | `testing/subsystem3/` |
 | 4 | IMU (LSM303DLHC): humps, tilt, lift-stop, collision | Lew Zhi Xin | 2503689 | `lewzhixin` | `app_program/subsystem4/` | `testing/subsystem4/` |
 | 5 | Ultrasonic + servo scanning, obstacle profiling, avoidance | Wong Hong Ngai | 2500434 | `wonghongngai` | `app_program/subsystem5/` | `testing/subsystem5/` |
@@ -32,23 +20,10 @@ row in this file (a pin, a peripheral, an interface ID), which anyone may do
 
 ## 2. Pins
 
-One owner per pin. Claim a pin here **before** you wire or code it.
-
-**Why:** two subsystems using the same pin is one of the most common and
-hardest-to-find mistakes in a team project. The code builds without any
-error, but the hardware misbehaves. Each subsystem can pass its own tests
-and then fail once they are combined, and two outputs driving the same pin
-against each other can damage it. Writing the claim down first means a clash
-is spotted when someone edits this table, not hours later on the bench.
-
-**No instructor check needed.** The team keeps this table itself. You do not
-need the instructor, or the rest of the team, to check or approve a claim:
-if the row is empty, fill it in and commit. If two people claim the same
-pin, they agree between themselves who moves. Only the *reserved* rows are
-fixed.
+One owner per pin.
 
 | Pin | Owner | Used for |
-|---|---|---|
+| --- | --- | --- |
 | GP23, GP24, GP25, GP29 | *reserved* | Pico W radio |
 | GP0 | S3 | right IR digital input; USB console only, CRASH_REPORT=0 |
 | GP1 | | (taken whenever the team builds with `CRASH_REPORT=1`) |
@@ -69,7 +44,7 @@ fixed.
 | GP16 | S5 | HC-SR04P TRIG (SIO output, Grove 4) |
 | GP17 | S5 | HC-SR04P ECHO (PWM slice 0B input, gated echo timing, Grove 4) |
 | GP18 | | |
-| GP19 | *example:* S1 | external LED (LED + 330 Ω to GND) |
+| GP19 | | |
 | GP20 | | |
 | GP21 | | |
 | GP22 | | |
@@ -82,7 +57,7 @@ fixed.
 **Subsystems, tasks and peripherals are three different things:**
 
 | Term | What it is | Example |
-|---|---|---|
+| --- | --- | --- |
 | **Subsystem** | one student's part of the product, one folder | "environment sensing", "motor control", "user interface" |
 | **Task** | one thread of execution. A subsystem may have **as many tasks as it needs** | a sampling task and a filtering task, both in "environment sensing" |
 | **Peripheral** | one hardware block on the RP2040 | I2C0, UART1, the ADC |
@@ -106,7 +81,7 @@ drive the same I2C or UART block at once, their transfers get mixed up, and
 the drivers have no locking to stop it.
 
 | Peripheral | Owner subsystem | Owning task | Pins |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | UART1 | | | |
 | I2C0 | S4 via kernel device `iica` | `imu_task` (plus existing startup probe) | GP4/GP5 |
 | I2C1 | kernel, unused by application | kernel driver | GP14/GP15 |
@@ -115,7 +90,7 @@ the drivers have no locking to stop it.
 | ADC | | | GP26–GP28 |
 | PWM slices 4, 5 | S2 | `motion_task` or bench task (mutually exclusive) | GP8-GP11 |
 | PWM slices 0, 7 | S5 | `obstacle_task` | GP17 (echo timing), GP14 (servo) |
-| IO_IRQ_BANK0 (GPIO interrupts, IRQ 13) | S2 | interrupt handler in `drv_encoder.c` (enabled on the core that calls `drv_encoder_init`) | edge interrupts on GP26/GP6 (left encoder), GP2/GP3 (right encoder) only. **[PROPOSED 2026-11-06, needs team agreement]** Any other GPIO interrupt must go through this handler; ask S2 |
+| IO_IRQ_BANK0 (GPIO interrupts, IRQ 13) | S2 | interrupt handler in `drv_encoder.c` (enabled on the core that calls `drv_encoder_init`) | edge interrupts on GP26/GP6 (left encoder), GP2/GP3 (right encoder) only. Any other GPIO interrupt must go through this handler; ask S2 |
 | WiFi radio, TCP/IP, MQTT | *kernel* | `cyw43_utk_task` (built in) | GP23–25, GP29 |
 
 ### WiFi and MQTT are special
@@ -128,11 +103,15 @@ task may call `cyw43_...`, lwIP or MQTT functions, not even from a
 What students *can* do:
 
 - **Read the connection state** from any task, which is always safe:
+
   ```c
+
   #include "cyw43_utk.h"
   T_CYW43_UTK_STATUS st;
   cyw43_utk_get_status(&st);   /* st.ready, st.link_status, st.ip_addr, ... */
+
   ```
+
 - **Send or receive data over the network** by adding code that *runs
   inside the service task*. The MQTT client is in
   `app_program/subsystem1/mqtt_manager.c`. It publishes a heartbeat
@@ -145,16 +124,43 @@ What students *can* do:
 
 ## 4. Task priorities
 
-1 is the highest. 1–4 are used by the kernel (USB console 3, WiFi 4). Each subsystem gets its own band by default;
+1 is the highest and 32 the lowest (`CNF_MAX_TSKPRI` in `config/config.h`).
+1–4 are used by the kernel. Each subsystem gets its own band by default;
 change it only by team agreement. Write down every task you create.
 
-| Subsystem | Priority band | Tasks (name – priority – core) |
-|---|---|---|
-| 1 | 12–13 | No application task; network service owns MQTT |
-| 2 | 14–15 | `motion_task` (or bench task) – 14 – core 1; *example:* `producer_task` – 15 – core 1 (integrated builds only) |
-| 3 | 16–17 | `line_service_task` – 16 – core 1 in `integrated`/`all_test`, core 0 otherwise; *example:* `consumer_task` – 17 – core 0; `line_demo_task` – 17 – core 0 (`barcode_test` only) |
-| 4 | 18–19 | `imu_task` – 18 – any |
-| 5 | 20–21 | `obstacle_task` – 20 – any |
+| Subsystem | Priority band |
+| --- | --- |
+| kernel | 1–4 |
+| *(unused)* | 5–11 |
+| 1 | 12–13 |
+| 2 | 14–15 |
+| 3 | 16–17 |
+| 4 | 18–19 |
+| 5 | 20–21 |
+
+Every task in the firmware, highest priority first. "Name" is the string
+passed to `app_start_task()`; the entry function is given where it differs.
+
+| Task | Owner | Priority | Core | Built in `ROBOT_MODE` | Source |
+| --- | --- | --- | --- | --- | --- |
+| initial task (runs `usermain()`, then the `TEST=1` self-tests, then sleeps) | kernel | 1 | — | all | `kernel/inittask/inittask.c` |
+| USB console service | kernel | 3 | core 0 | all (`CONSOLE=usb_cdc`) | `lib/libtm/.../usb/usb_console.c` |
+| `cyw43` (`cyw43_utk_task`): Wi-Fi, lwIP, MQTT, and S1's queues | kernel | 4 | core 0 | Wi-Fi builds | `lib/libwifi/.../cyw43_utk_kernel.c` |
+| — | S1 | — | — | — | no task of its own: `subsystem1_start()` only checks its queues |
+| `motion_task`: PID loop and the Vehicle Controller | S2 | 14 | core 1 | `integrated`, `motion` | `subsystem2/subsystem2.c` |
+| `motion_task` (entry `subsystem2_hw_test_task`): motor pulse bench | S2 | 14 | core 1 | `integrated_motor_test`, `motor_test` | `subsystem2/subsystem2.c` |
+| *example:* `producer_task` (compatibility) | S2 | 15 | core 1 | `integrated`, `integrated_motor_test` | `subsystem2/task_producer.c` |
+| `all_buddies_test` (entry `all_task`): whole-robot test loop | S2 | 15 | core 1 | `all_test` | `subsystem2/all_buddies_test.c` |
+| `line_follow_test` (entry `follow_task`) | S2 | 15 | core 1 | `line_follow_test` | `subsystem2/line_follow_test.c` |
+| `line_service_task`: IR sampling, barcode, junctions | S3 | 16 | core 1 in `integrated*` and `all_test`; core 0 in `line_follow_test`, `barcode_test` | all except `motion`, `motor_test` | `subsystem3/line_service.c` |
+| *example:* `consumer_task` (compatibility) | S3 | 17 | core 0 | `integrated`, `integrated_motor_test` | `subsystem3/task_consumer.c` |
+| `line_demo_task`: barcode bench | S3 | 17 | core 0 | `barcode_test` | `subsystem3/line_demo.c` |
+| `imu_task` | S4 | 18 | any | `integrated*`, `all_test` | `subsystem4/subsystem4.c` |
+| `obstacle` (entry `obstacle_task`): scan, profile, avoid | S5 | 20 | any | `integrated*`, `all_test` | `subsystem5/subsystem5.c` |
+
+`integrated*` means `integrated` and `integrated_motor_test`. The test loops
+at 15 replace `motion_task`: they drive the motors themselves, so the two are
+never built together.
 
 Core: `TP_PRC1` = core 0, `TP_PRC2` = core 1, or "any".
 
@@ -165,7 +171,7 @@ the kernel object and publishes its ID in its own `subsystemN.h`; the **user** o
 sends to it or waits on it. Agree on the data format before coding.
 
 | ID | From → To | Mechanism | Object ID name | Data / meaning | Agreed by |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | IF-01 | S2 → S3 | mailbox (owned by S3) | `mbx_samples` | `SAMPLE_MSG` in `subsystem2.h` | *example* |
 | IF-02 | S3 → S2 | semaphore + fixed memory pool (owned by S2) | `sem_slots`, `mpf_samples` | receiver returns the block, then 1 slot | *example* |
 | IF-03 | S3 → S4 | message buffer + event flag (owned by S4) | `mbf_summary`, `flg_events` | text line ≤ `S4_SUMMARY_MAX` bytes, then `FLG_BATCH` | *example* |
@@ -200,22 +206,44 @@ Each interface is tested by at least one integration test
 ## 6. Kernel object budget
 
 Limits are set in `config/config.h`. If the team needs more, raise the
-limit there. The numbers below are the example's usage.
+limit there. The counts below are what the code creates in
+`ROBOT_MODE=integrated` with Wi-Fi and the USB console (audited 2026-11-14).
 
-| Object | Limit | S1 | S2 | S3 | S4 | S5 |
-|---|---|---|---|---|---|---|
-| Task | 32 | 1 | 1 | 1 | 1 | 1 |
-| Semaphore | 16 | | 1 | | | |
-| Event flag | 16 | | | | 1 | 1 |
-| Mailbox | 12 | | | 1 | | |
-| Mutex | 12 | | | 1 | | |
-| Message buffer | 12 | | | | 1 | |
-| Fixed memory pool | 12 | | 1 | | | |
-| Variable memory pool | 12 | | | | | |
-| Cyclic handler | 12 | 1 | | | | |
-| Alarm handler | 12 | | | | 1 | |
+| Object | Limit | Kernel | S1 | S2 | S3 | S4 | S5 | Total |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Task | 32 | 3 | 0 | 2 | 2 | 1 | 1 | 9 |
+| Semaphore | 16 | 3 | | 1 | | | | 4 |
+| Event flag | 16 | 5 | | 1 | | | 1 | 7 |
+| Mailbox | 12 | | | | 1 | | | 1 |
+| Mutex | 12 | | | 1 | 2 | 1 | | 4 |
+| Message buffer | 12 | | 3 | 1 | 1 | | | 5 |
+| Fixed memory pool | 12 | | | 1 | | | | 1 |
+| Variable memory pool | 12 | | | | | | | 0 |
+| Cyclic handler | 12 | | | | 1 | | | 1 |
+| Alarm handler | 12 | | | | | | | 0 |
 
-(The kernel's USB and WiFi service tasks also use a few of these.)
+What each column is:
+
+- **Kernel:** tasks are the initial task, the USB console and `cyw43`.
+  Semaphores are the device-driver locks for the ADC, I2C0 and serial
+  drivers. Event flags are the device manager lock, the ADC, I2C0 and two for
+  UART0. A build without Wi-Fi or the USB console has one task fewer for each.
+- **S1:** `telemetry_queue`, `command_queue`, `mapping_queue`
+  (`subsystem1.c`). No task: `cyw43` services the queues.
+- **S2:** `motion_task`, `producer_task`; `mbf_motion_cmd`,
+  `mtx_motion_status`, `flg_motion_stop` (`subsystem2.c`); *example:*
+  `sem_slots`, `mpf_samples` (`task_producer.c`).
+- **S3:** `line_service_task`, `consumer_task`; `g_h_line_mutex`,
+  `g_h_line_nav_q`, the 1 ms `g_h_line_cycle` (`line_service.c`); *example:*
+  `mbx_samples`, `mtx_stats` (`subsystem3.c`).
+- **S4:** `imu_task`, `mtx_imu_data` (`subsystem4.c`).
+- **S5:** `obstacle_task`, `flg_s5_evt` (`subsystem5.c`).
+
+Other modes stay within these totals. `producer_task`, `consumer_task` and
+the *example* objects exist only in `integrated` and `integrated_motor_test`.
+The `all_test` and `line_follow_test` loops replace `motion_task`, `barcode_test`
+adds `line_demo_task`, and `motion` and `motor_test` create no S3–S5 objects
+(section 4).
 
 Buddy 1 integration: MQTT implementation moved from the library into subsystem1;
 the service entry point remains `mqtt_utk_start`. Subsystem4 no longer pauses the
