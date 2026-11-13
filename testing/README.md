@@ -68,6 +68,19 @@ sh testing/run_host_tests.sh s3/          # only subsystem 3
 sh testing/run_host_tests.sh -v int/      # integration tests, full output
 ```
 
+**Known failures.** A test that is broken for a tracked reason (e.g. code not
+pushed yet) is listed in `known_failure()` in `testing/run_host_tests.sh` with
+its issue number. It still runs and shows as `KNOWN`, but does not fail the
+run; any other failure does. Remove its line once it passes (the summary tells
+you). `--strict` treats known failures as failures too.
+
+**On GitHub.** The same script runs automatically on every pull request and
+every push to `main` (`.github/workflows/host-tests.yml`). The PR shows a
+**Host tests** check; its full output is attached to the run as
+`host-tests-output`. On GitHub's Linux machines the tests also run with
+AddressSanitizer and UndefinedBehaviorSanitizer, so they can catch memory bugs
+that a Windows build misses.
+
 It needs a C compiler (`cc`: MSYS2/MinGW on Windows, or Linux/macOS/WSL) and,
 for the two Python tests, `python3` or `python`. Each test is named
 `<area>/<what>` (`s1`..`s5`, `int`). The script keeps going after a failure,

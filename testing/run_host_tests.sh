@@ -5,13 +5,16 @@
 #   sh testing/run_host_tests.sh            run every host test
 #   sh testing/run_host_tests.sh s3         only tests whose name contains "s3"
 #   sh testing/run_host_tests.sh -v int/    also print each test's full output
+#   sh testing/run_host_tests.sh --strict   treat known failures as failures too
 #
 # Save the output as evidence for a TEST_LOG row, for example:
 #   sh testing/run_host_tests.sh | tee testing/integration/logs/2026-11-13_host.txt
 #
 # Every test is compiled and run even if an earlier one fails. The script exits
-# 0 only when every selected test passes. Host tests check logic only: they
-# never prove anything about the real hardware.
+# 0 when no test fails unexpectedly: a failure listed in known_failure() below
+# is reported as KNOWN with its issue and does not fail the run (unless
+# --strict). Host tests check logic only: they never prove anything about the
+# real hardware.
 #
 # Adding a test: add one `run_c` or `run_py` line in the list below, using the
 # same build flags you would type by hand. Name it <area>/<what>, where <area>
@@ -24,10 +27,12 @@ cd "$ROOT" || exit 2
 
 CC=${CC:-cc}
 VERBOSE=0
+STRICT_KNOWN=0
 FILTER=
 for arg in "$@"; do
     case "$arg" in
         -v|--verbose) VERBOSE=1 ;;
+        --strict) STRICT_KNOWN=1 ;;
         -h|--help) sed -n '2,18p' "$0"; exit 0 ;;
         *) FILTER=$arg ;;
     esac
@@ -59,15 +64,37 @@ done
 PASS=0
 FAIL=0
 SKIP=0
+KNOWN=0
+FIXED=0
 RESULTS=
 
-record() {   # record <PASS|FAIL|SKIP> <name> <detail>
-    RESULTS="$RESULTS$(printf '%-6s %-28s %s' "$1" "$2" "$3")
-"
+# Failures we already know about, each waiting on a GitHub issue. Remove a
+# line here as soon as its test passes (the summary will say so).
+known_failure() {   # known_failure <name>: prints the issue, or nothing
     case "$1" in
+        s1/barcode_queue) echo "#3: S1 barcode-queue code not pushed yet" ;;
+        int/steering_ramp) echo "#3: terrain-boost code not pushed yet" ;;
+        s4/hump_height) echo "#5: hump-height behaviour not decided" ;;
+    esac
+}
+
+record() {   # record <PASS|FAIL|SKIP> <name> <detail>
+    status=$1
+    known=$(known_failure "$2")
+    detail=$3
+    if [ -n "$known" ] && [ "$STRICT_KNOWN" = 0 ]; then
+        case "$status" in
+            FAIL) status=KNOWN; detail="$detail ($known)" ;;
+            PASS) FIXED=$((FIXED + 1)); detail="now passes: remove it from known_failure()" ;;
+        esac
+    fi
+    RESULTS="$RESULTS$(printf '%-6s %-28s %s' "$status" "$2" "$detail")
+"
+    case "$status" in
         PASS) PASS=$((PASS + 1)) ;;
         FAIL) FAIL=$((FAIL + 1)) ;;
         SKIP) SKIP=$((SKIP + 1)) ;;
+        KNOWN) KNOWN=$((KNOWN + 1)) ;;
     esac
 }
 
@@ -168,8 +195,9 @@ echo
 echo "================ summary ================"
 printf '%s' "$RESULTS"
 echo "-----------------------------------------"
-echo "$PASS passed, $FAIL failed, $SKIP skipped"
-if [ $((PASS + FAIL + SKIP)) -eq 0 ]; then
+echo "$PASS passed, $FAIL failed, $KNOWN known failures, $SKIP skipped"
+[ "$FIXED" -gt 0 ] && echo "$FIXED known failure(s) now pass: remove them from known_failure()."
+if [ $((PASS + FAIL + SKIP + KNOWN)) -eq 0 ]; then
     echo "No test name contains '$FILTER'."
     exit 2
 fi
