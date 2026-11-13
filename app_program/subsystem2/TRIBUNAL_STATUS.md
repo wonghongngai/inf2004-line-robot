@@ -1,5 +1,10 @@
 # S2 tribunal changes and remaining work
 
+> **Historical record** of the changes made for PreTri 1 (Week 8). For the
+> current state see `STATUS.md` and `DEVIATIONS.md`. Note: this file says tilt
+> is informational, but the integrated Vehicle Controller stops on tilt;
+> which is intended is decision #67.
+
 Only subsystem2 was edited. S5 avoidance is unchanged. Calibration, PWM and
 PID constants are unchanged; old calibration is not validated for IRQ counts.
 

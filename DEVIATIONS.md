@@ -68,8 +68,8 @@ The communication stack is built as designed, but none of FR1 or NFR1 has been t
 | ID | Requirement (source) | Current code | Type | Follow-up |
 | --- | --- | --- | --- | --- |
 | B1-1 | FR1-1 Wi-Fi + MQTT connection (W6) | CYW43 + lwIP + MQTT through the kernel Wi-Fi service; PT noted connectivity "not yet tested" | Unverified | #15 (S1-U11, S1-U12) |
-| B1-2 | FR1-2 publish telemetry; WU p5 examples include obstacle scan results, encoder counts, motor speed | 80-bit packet, 1 s period, **but only `all_test` publishes it**: the integrated firmware never calls `subsystem1_publish_telemetry`. Obstacle distance, scan angle and width fields are never set; no encoder counts | Missing in the final firmware | #8, #40, #41 |
-| B1-3 | FR1-3 receive commands (W6) | STATUS, PAUSE, RESUME, RESET_STATS commands and the map topic are received by S1, but **only `all_test` reads them**; the integrated firmware never calls `subsystem1_receive_command` or `subsystem1_receive_mapping` | Missing in the final firmware | #8, #38 |
+| B1-2 | FR1-2 publish telemetry; WU p5 examples include obstacle scan results, encoder counts, motor speed | 80-bit packet, 1 s period, **but only `all_test` publishes it**: the integrated firmware never calls `subsystem1_publish_telemetry`. Obstacle distance, scan angle and width fields are never set; no encoder counts | Missing in the final firmware | #72, #40, #41 |
+| B1-3 | FR1-3 receive commands (W6) | STATUS, PAUSE, RESUME, RESET_STATS commands and the map topic are received by S1, but **only `all_test` reads them**; the integrated firmware never calls `subsystem1_receive_command` or `subsystem1_receive_mapping` | Missing in the final firmware | #72, #38 |
 | B1-4 | FR1-4 / NFR1-2 reconnect without restart (W6) | Recovery logic in `mqtt_manager.c`; never exercised | Unverified | #15 (S1-U13) |
 | B1-5 | FR1-5 periodic status (W6) | 1-byte heartbeat every 5 s (`MQTT_UTK_HEARTBEAT_MS`) | Unverified | #15 |
 | B1-6 | NFR1-3 telemetry must not disturb control; W6 gave comms **medium** priority | Wi-Fi service task priority 4, above motion (14) and line (16) | Changed | #66; measure control-loop lateness with Wi-Fi on (S1-U17, S2-U12) or lower the priority |
@@ -114,14 +114,14 @@ Calibration, tilt and hump detection exist, but motion classes and turn rate (st
 | ID | Requirement (source) | Current code | Type | Follow-up |
 | --- | --- | --- | --- | --- |
 | B4-1 | FR4-1 calibrate before monitoring (W6) | 1 s stationary baseline at start; on-target check S4-U03 never logged | Unverified | #24 |
-| B4-2 | FR4-2 tilt and hump events with peak estimate (W6); WU: measure the highest hump peak | Implemented. Since `7f823b8` the estimator keeps the climb height after the descent; the host test expects 0. Thresholds are placeholders (`README_BUDDY4.txt`) | Partial | #5, #25, #27 |
+| B4-2 | FR4-2 tilt and hump events with peak estimate (W6); WU: measure the highest hump peak | Implemented. Since `7f823b8` the estimator keeps the climb height after the descent; the host test expects 0. Thresholds are placeholders (`subsystem4/README.md`) | Partial | #5, #25, #27 |
 | B4-3 | FR4-3 motion classification (W6); WU p8 events: stationary, accelerating, turning, climbing, descending | Only NORMAL, HUMP, TILT, COLLISION, FAULT safety states | Missing | #42 |
 | B4-4 | FR4-3 collision detection (W6) | Still implemented (1200 mg, tripped on motor start-up before) | Mandated removal (M2) | #53 |
 | B4-5 | FR4-4 report turn rate (W6, WU) | No turn rate; the LSM303DLHC has no gyroscope; magnetometer is read but unused | Missing | #43 |
 | B4-6 | PT decision: a normal hump must not cause an emergency stop; tilt and hump are informational (`TRIBUNAL_STATUS.md`) | The integrated VC halts on `IMU_MOTION_TILT` and `IMU_EVENT_TILT` (`robot_control.c`), so a steep hump could stop the robot | Changed (code and docs disagree) | #67; test with INT-11 (#36) |
 | B4-7 | NFR4-1 sample every 20 ms; NFR4-3 cycle within 20 ms | `S4_SAMPLE_PERIOD_MS` 20; S4-U05 checks the cycle time but was never run | Unverified | #24 |
 | B4-8 | NFR4-2 report a hump within 100 ms | Not measured; the collision part of NFR4-2 is void (M2) | Unverified | #27 |
-| B4-9 | CR1 minimum-bit representation | 4-byte `IMU_PACKED_MSG` exists (S4-U06), but `README_BUDDY4.txt` still calls this the "PRE" version; no before/after sizes | Partial | #25 (S4-U14) |
+| B4-9 | CR1 minimum-bit representation | 4-byte `IMU_PACKED_MSG` exists (S4-U06), but `subsystem4/README.md` still calls this the "PRE" version; no before/after sizes | Partial | #25 (S4-U14) |
 | B4-10 | WU deliverables: IMU module, hump algorithm, terrain analysis report | No report | Missing | #58 |
 
 ## Buddy 5: Ultrasonic scanning and avoidance

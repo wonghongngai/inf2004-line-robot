@@ -70,7 +70,7 @@ Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 |---|---|---|---|---|---|---|---|
 | LSM303DLHC driver on I2C0 (GP4/GP5) | ✅ | ⬜ | ⬜ | ⬜ | — | — | Claim GP4/GP5 in `TEAM.md`; replace the template S4 test cases with IMU ones |
 | Baseline calibration at start-up | ✅ | ⬜ | ⬜ | ⬜ | — | — | Bench test: keep the robot still for 1 s and log the baseline values |
-| Highest hump measurement | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | `README_BUDDY4.txt`: thresholds are placeholders | Collect IMU logs over real humps; set the thresholds from that data |
+| Highest hump measurement | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | `app_program/subsystem4/README.md`: thresholds are placeholders | Collect IMU logs over real humps; set the thresholds from that data |
 | Tilt flag (used by S5 to ignore readings on ramps) | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | — | Check it latches **before** the ultrasonic sees the ramp (open risk) |
 | Lift → motors stop (replaces collision detection, removed 13 Nov) | ⬜ | ⬜ | ⬜ | ⬜ | — | — | #53: remove collision, add the lift check, then S4-U12 |
 | Motion classes (stationary, accelerating, turning, climbing, descending) | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | — | #42 |
