@@ -83,14 +83,12 @@ something that hasn't passed on the bench (L3).
 |---|---|---|---|
 | `s2/motion_protocol`: compact command/status bytes | L1 | `sh testing/run_host_tests.sh s2/` | PASS |
 | `s2/motor_pwm`: PWM driver on modelled registers | L1 | same | PASS |
-| `int/robot_control`: VC line/barcode/IMU logic | L1 | `sh testing/run_host_tests.sh int/robot_control` | PASS (175 checks) |
+| `int/robot_control`: VC line/barcode/IMU logic, line-stop re-arm | L1 | `sh testing/run_host_tests.sh int/robot_control` | PASS (209 checks) |
 | S2-U01–U04: message size, forward target, STOP, stall → FAULT | L2 | `make TEST=1` | never logged |
-| `int/all_buddies*` (5 tests) | L1 | `sh testing/run_host_tests.sh int/all_buddies` | **FAIL**: expect the old PWM tuning |
-| `int/all_buddies_bal` | L1 | — | **FAIL**: uses fields removed in `ab62be5` |
 
 **Decided 13 Nov (#4):** `integrated` is the final firmware. Port the
-all_test tuning into it (#8) and retire the `all_buddies` host tests, moving
-their checks into `int/robot_control` (#9). Every L4 test runs on the
+all_test tuning into it (#8). The `all_buddies` host tests were retired (#9);
+their line-stop re-arm checks now live in `int/robot_control`. Every L4 test runs on the
 `ROBOT_MODE=integrated` image.
 
 **New:**

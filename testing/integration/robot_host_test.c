@@ -94,6 +94,17 @@ static void stopped(MOTION_CONTROLLER *ctl, uint32_t now)
     EXPECT(halted && ctl->status.left_pwm_percent == 0);
 }
 
+/* A queued LOST event makes a recoverable line stop. */
+static void line_stop(MOTION_CONTROLLER *ctl, uint32_t now)
+{
+    queued = snapshot;
+    queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_LOST << 3u);
+    has_event = true;
+    robot_control_step(ctl, now, 1, 1);
+    EXPECT(halted && line_halt && !enabled);
+    EXPECT(ctl->status.left_pwm_percent == 0 && ctl->status.right_pwm_percent == 0);
+}
+
 /* Stale, searching or paused snapshots must persist for S2_LINE_UNSAFE_MS
  * before the VC stops (one late sample must not latch a stop). */
 static void stopped_debounced(MOTION_CONTROLLER *ctl, uint32_t now)
@@ -161,6 +172,46 @@ int main(void)
         follow(&ctl); queued = snapshot;
         queued.data[1] = (uint8_t)(events[event] << 3u); has_event = true;
         stopped(&ctl, 5041);
+    }
+    /* Line stops re-arm by themselves after S2_LINE_REARM_MS of stable black
+     * on centre + right with the wheels still (ported from the retired
+     * all_buddies host tests, #9). */
+    {
+        const uint32_t t0 = 5041u, rearm = S2_LINE_REARM_MS;
+        follow(&ctl); line_stop(&ctl, t0);
+        robot_control_step(&ctl, t0 + 50u, 1, 1);
+        robot_control_step(&ctl, t0 + rearm - 1u, 1, 1);
+        EXPECT(halted && !enabled);                 /* not yet */
+        robot_control_step(&ctl, t0 + rearm, 1, 1);
+        EXPECT(!halted && enabled);                 /* re-armed on its own */
+
+        /* A brief loss of black restarts the wait. */
+        follow(&ctl); line_stop(&ctl, t0);
+        snapshot.data[0] = 0u; robot_control_step(&ctl, 5500u, 1, 1);
+        snapshot.data[0] = 3u | (2u << 3u);
+        robot_control_step(&ctl, t0 + rearm, 1, 1);
+        EXPECT(halted);
+        robot_control_step(&ctl, 5500u + rearm, 1, 1);
+        EXPECT(!halted && enabled);
+
+        /* Moving the robot by hand (encoders change) restarts the wait. */
+        follow(&ctl); line_stop(&ctl, t0);
+        robot_control_step(&ctl, 5500u, 5, 5);
+        robot_control_step(&ctl, t0 + rearm, 5, 5);
+        EXPECT(halted);
+        robot_control_step(&ctl, 5500u + rearm, 5, 5);
+        EXPECT(!halted && enabled);
+
+        /* An IMU (safety) stop never re-arms, even on stable black. */
+        follow(&ctl); fake_imu.event = IMU_EVENT_TILT;
+        robot_control_step(&ctl, t0, 1, 1);
+        EXPECT(halted && !line_halt);
+        fake_imu.event = IMU_EVENT_NONE;
+        for (uint32_t t = t0 + 100u; t <= t0 + 3u * rearm; t += 100u) {
+            fake_imu.sample_count++;
+            robot_control_step(&ctl, t, 1, 1);
+        }
+        EXPECT(halted && ctl.status.left_pwm_percent == 0);
     }
     follow(&ctl);
     queued = (line_barcode_msg_t){{0u, LINE_BARCODE_EVT_COMMAND << 3u, 0u}};

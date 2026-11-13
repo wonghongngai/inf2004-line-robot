@@ -127,9 +127,8 @@ Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 - [x] Delete the duplicate copies with " 2" in the name (done 2026-11-13: 8 files removed, all identical to or older than the originals).
 - [x] Stop committing build output: test `.exe` files and build `.log` files are untracked and gitignored (2026-11-13).
 - [x] One host-test runner: `sh testing/run_host_tests.sh` (2026-11-13).
-- [ ] Host tests: 9 of 18 pass (`af2da1c`). The rest need their owners:
+- [ ] Host tests: 9 of 12 pass. The 6 `int/all_buddies*` tests were retired (#9) now that `integrated` is final. The rest need their owners:
   - **zhi xian:** push the missing local code. `s1/barcode_queue` (barcode-over-MQTT queue) and `int/steering_ramp` (`update_terrain_boost`, `barcode_slow`) test code that isn't on any branch. Both tests came in with `673736f`.
-  - **Buddy 2 (all_test tuning):** `int/all_buddies` + 4 variants now compile and run, but expect the old PWM tuning (right 14.2 %, centre = straight); the code now gives 15 % and centre → 6.25/15. Update the expected values or the code. `int/all_buddies_bal` uses `straight_error_cm` / `ALL_TEST_STRAIGHT_MAX_TRIM`, which the straight-drive rewrite (`ab62be5`) removed.
   - **Buddy 4:** `s4/hump_height` expects the height to fall back to 0 after the descent. Since `7f823b8` the estimator deliberately keeps the climb height. Decide which is right and update the test or the code.
 - [ ] S1 barcode-over-MQTT code (`S1_BARCODE_RESULT`, barcode queue) isn't on any branch. Only its test and doc were committed (`673736f`). Ask zhi xian to push it.
 - [ ] Choose one integration branch (`alicia` or `double11`), merge into it, and delete the dead branches (`zhixin`, `integration`, `master`, …).
