@@ -1,203 +1,211 @@
-# micro T-Kernel 3.0 project for Raspberry Pi Pico W
+# INF2004 Group 17: autonomous line-following robot
 
-A starting point for your project: micro T-Kernel 3.0 running on **both cores**
-of the Pico W's RP2040, with a USB serial console and the WiFi driver built in.
+An autonomous robot car on a Raspberry Pi Pico W + Robo Pico, running
+micro T-Kernel 3.0 on **both cores** of the RP2040, written in C. It follows a
+line, decodes Code 39 barcodes, measures humps with an IMU, scans and avoids
+obstacles with an ultrasonic sensor, and reports telemetry over Wi-Fi/MQTT.
 
-**Final firmware (decided 13 Nov, issue #4):** `ROBOT_MODE=integrated` is the
-robot used for the demo. `ROBOT_MODE=all_test` and the other modes are test
-harnesses only; port any fix made there into the integrated build.
+| Page | What it tells you |
+|---|---|
+| [STATUS.md](STATUS.md) | What is done and what is left, with evidence |
+| [testing/TEST_PLAN.md](testing/TEST_PLAN.md) | What each buddy tests next, and how |
+| [testing/README.md](testing/README.md) | How to run and record a test |
+| [DEVIATIONS.md](DEVIATIONS.md) | Where the code differs from the Week 6 / PreTri 1 plan, and why |
+| [TEAM.md](TEAM.md) | Owners, pins and interfaces |
+| [GitHub issues](https://github.com/wonghongngai/inf2004-line-robot/issues) | Tasks, prefixed `S1:`–`S5:`, `INT:`, `SYS:`, `Team:`, `Repo:` |
 
-**Robot firmware:** see [motion hardware and integration](app_program/subsystem2/INTEGRATION.md)
-for wiring, calibration, and the `ROBOT_MODE=integrated`, `motion`, and
-`motor_test` builds. Images now include the mode in their name, for example
-`mtk3pico_smp1_usb_cdc_wifi_integrated_test.uf2`. The default integrated build
-keeps motors off until real motion and IR calibration are entered.
+New to the project? Set up the SDK and compiler first (section 4), then come
+back to section 1.
 
-**Buddy 1 + 2 + 3 + 4 + 5 combined test:** build from the project root:
+---
+
+## 1. Which firmware to use: `integrated` or `all_test`
+
+The same code builds into several firmware images, chosen with
+`ROBOT_MODE`. Two matter day to day:
+
+| | `ROBOT_MODE=all_test` | `ROBOT_MODE=integrated` |
+|---|---|---|
+| Purpose | **Try things out**: check a sensor, tune a number, watch what the robot does | **The robot**: what you demo, and where every requirement is proven |
+| How it runs | One test loop (`app_program/subsystem2/all_buddies_test.c`) drives the motors itself, with lots of `[ALL TEST]` console output. Safety stops can be made report-only (`ALL_TEST_CONTINUE_ON_SENSOR=1`) | Each buddy's task runs normally; the Vehicle Controller (`robot_control.c`, inside `motion_task`) coordinates them. Safety stops are always on |
+| Counts as evidence? | **No** | **Yes**: L4 tests and TEST_LOG results come from this build |
+
+**Decided 13 Nov 2026 (issue #4):** `integrated` is the final firmware.
+`all_test` and the other modes are test harnesses only.
+
+> ⚠️ Until issue #8 is done, `integrated` does **not** have the turning,
+> straight-driving and avoidance tuning added to `all_test` in early November,
+> so expect it to drive worse than `all_test` for now.
+
+### 1.1 Build
+
+Run from the repo root (Git Bash, WSL, macOS or Linux) with `PICO_SDK_PATH`
+set (section 4). `CRASH_REPORT=0` is required: GP0 is an IR input.
+
+**`integrated`**, with Wi-Fi and MQTT (the demo build):
 
 ```sh
-make -C build_make ROBOT_MODE=all_test NET=lwip MQTT=1 TEST=0 CRASH_REPORT=0 PICO_SDK_PATH=/Users/aliciakan/pico/pico-sdk -j8
+make -C build_make -j8 ROBOT_MODE=integrated WIFI=cyw43 NET=lwip MQTT=1 TEST=0 CONSOLE=usb_cdc CRASH_REPORT=0
 ```
 
-Flash `build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_all_test.uf2`.
-This runs S1's real Wi-Fi/MQTT queues, S2's motor driver, S3's line/barcode
-service, S4's IMU task and S5's obstacle scanning task together. S5 uses GP14
-for the servo and GP16/GP17 for ultrasonic trigger/echo (PWM slices 7 and 0;
-the motors use slices 4 and 5). Look for `S5: MONITORING` on USB serial.
-S5 prints scan results and avoidance plans; it does not yet command the motors
-or populate MQTT obstacle/scan telemetry. An obstacle does not stop the robot
-through S5 in this build. Raise the wheels for scanning bench tests.
-The dedicated S2 test coordinator is the
-only motor writer and the only consumer of navigation events and MQTT commands.
-The older `integrated` profile retains its encoder-calibration requirements.
+→ `build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_integrated.uf2`
 
-Keep the robot stationary for IMU calibration. After at least five seconds,
-with a healthy calibrated IMU and a line beneath the centre sensor GP27, this test follows
-using the same 30%/15% PWM steering as `line_follow_test` below. Startup waits
-at most 15 seconds for IMU readiness. The clarified physical mounting is
-**GP7 left, GP27 centre, GP0 right**, all used for line following (TRACK
-layout). Centre alone on black commands straight movement; left/left+centre
-steer left, and right/centre+right steer right. All sensors use raw 1 on
-black, 0 on white. IMU I2C0 uses GP4 SDA and GP5 SCL.
-Raise the wheels for the first direction/steering test, then test on the line.
-Motor startup ramps from 0% to 30% in about 300 ms; steering uses the same
-rate limit. `ALL_TEST_CONTINUE_ON_SENSOR=1` in `all_buddies_test.h` makes
-sensor detections and failures report-only: collision, tilt, IMU faults,
-calibration/readiness, stale IMU samples, junction events, line queue errors and encoder-distance
-errors do not stop PWM. Missing/ambiguous black line or unavailable line
-readings stop both motors immediately; valid black automatically resumes.
-Startup begins after 5 seconds even if sensors are unavailable. Valid line
-patterns still steer; missing/ambiguous or unavailable line data stops
-both wheels. Restart uses the same smooth PWM ramp. Navigation faults are re-enabled for recovery.
-Manual MQTT PAUSE still stops immediately and RESUME restarts movement,
-even with failed sensors. The default run limit is zero (continuous).
-A positive `ALL_TEST_DURATION_MS` still stops the timed run. Motor/task
-initialization failure, clock failure or inability to run the control task
-can still leave motors stopped. Wi-Fi loss does not stop autonomous drive.
-Set `ALL_TEST_CONTINUE_ON_SENSOR=0` and rebuild to restore sensor stop and
-line-recovery behavior. Other firmware profiles retain their stop rules.
+**`integrated` with the on-Pico self-tests** (the `TEST_CHECK`s in each
+`subsystemN_test.c`): the same command with `TEST=1`. About 10 s after boot it
+prints one `[TEST] <ID> PASS|FAIL` line per check.
 
-The console prints `[ALL TEST]` status twice per second, and telemetry is
-queued once per second through the existing ten-byte binary protocol. S3's
-L/C/R bit order is converted to S1's documented order. The default TRACK
-layout disables barcode decoding because GP7 is a line sensor. For a
-separate offset-scanner mounting, explicitly change `ALL_TEST_LINE_LAYOUT`
-in `all_buddies_test.h` to `LINE_BARCODE_LAYOUT_SIDE`; only that layout
-decodes barcodes (A/B/C/Z map to left/right/straight/U-turn telemetry).
-This test continues through junctions and does not execute barcode turns. It does not run PID or encoder stall detection. Encoders are
-polled with a requested 1 ms sleep, while motor/sensor control runs every
-10 ms. Actual polling is slower due to kernel rounding and scheduling;
-verify counts at the intended speed. The log includes encoder ticks, the
-diagnostic status, and `height_valid`. MQTT queue-full messages print on
-status changes instead of once every second; connection failures still
-require working Wi-Fi/IP and broker settings.
+**`all_test`**, with Wi-Fi and MQTT:
 
-IMU events continue to print through `Buddy4 EVENT` logs. The periodic
-`status=` field reports sensor problems without stopping movement in the
-default continuous mode. Collision logs include the measured acceleration
-jump and threshold; the threshold remains 1200 mg.
+```sh
+make -C build_make -j8 ROBOT_MODE=all_test NET=lwip MQTT=1 TEST=0 CONSOLE=usb_cdc CRASH_REPORT=0
+```
 
-With positive measured `S2_LEFT_TICKS_PER_CM` and `S2_RIGHT_TICKS_PER_CM` in
-`app_program/subsystem2/subsystem2.h`, average wheel travel is supplied to
-S4 during forward line following, and accumulated distance is published.
-Either encoder's counting direction may be reversed. Fractions of a
-millimetre are retained in distance conversion and height integration.
-Paused/stopped movement is not included. The normal `integrated` profile
-also supplies distance during forward travel, excluding pivot turns.
+→ `build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_all_test.uf2`
 
-The measured distance scales from 2026-10-29 are now configured: left
-103.5267 ticks/cm, right 118.5634 ticks/cm. Turn scales and source trials
-are recorded in [CALIBRATION.md](app_program/subsystem2/CALIBRATION.md).
-Motion calibration is enabled; PID tuning and hardware validation remain.
+To run `all_test` without Wi-Fi, replace `NET=lwip MQTT=1` with
+`ALL_TEST_OFFLINE=1 WIFI=none NET=none MQTT=0`
+(→ `build_make/mtk3pico_smp1_usb_cdc_all_test.uf2`).
 
-If either distance scale is unset/zero, startup reports height/distance
-unavailable, and a detected hump reports
-`height=unavailable (no wheel distance)` instead of implying a measured
-zero. To measure the scales, send MQTT PAUSE and confirm `phase=3` and
-PWM 0/0 before handling the robot. Do not use LINE_WAIT as a manual stop:
-black can automatically restart it. Record encoder counts, roll the robot straight through
-a measured 20 cm, and record the new counts. Each wheel's scale is its
-absolute count change divided by 20. Enter both values and rebuild. This
-does not by itself calibrate turns: only set `S2_CALIBRATION_READY=1`
-when distance and turn scales have both been measured, as in the current
-configuration.
+Wi-Fi builds need `config/wifi_secrets.h` (gitignored, never commit it). It
+defines your network and broker: `WIFI_SSID`, `WIFI_PASSWORD`,
+`MQTT_BROKER_IP`, `MQTT_CLIENT_ID` and related settings (see
+`lib/libwifi/sysdepend/pico_rp2040/cyw43_utk.c` and
+`app_program/subsystem1/mqtt_manager.c`). The `wifi_secrets.example.h` that
+the makefile mentions is not in the repo yet; ask a teammate for theirs.
 
-S4 logs each completed hump estimate and retains the highest completed
-height in its snapshot/telemetry. `height_valid=1` means wheel distance was
-available for a completed hump; it does not establish physical accuracy.
-Validate mounting (IMU X axis forward), sensor calibration, wheel slip,
-encoder counts, and estimates against a measured ramp. Tilting the sensor
-by hand without wheel travel cannot measure ramp height. Battery, speed,
-obstacle and scan telemetry remain **zero placeholders, not measurements**;
-distance/height are also placeholders until calibrated distance is available.
-Protocol v1 has no unavailable sentinel; check the serial availability log.
+The mode and options are part of the image name, so check you are flashing
+the one you meant.
 
-Use the broker/client ID in `config/wifi_secrets.h` (topic overrides also
-apply). With Mosquitto clients installed, replace BROKER and CLIENT_ID:
+### 1.2 Flash and watch
+
+1. Hold **BOOTSEL**, plug in the USB cable, release. A drive called **RPI-RP2** appears.
+2. Copy the `.uf2` onto it. The Pico reboots by itself.
+3. Open the USB serial port at 115200 baud. On Windows,
+   `testing/subsystem5/serial_monitor.ps1` reconnects after resets and saves
+   the log to `testing/subsystem5/logs/` (raw logs are gitignored; commit a
+   trimmed copy as test evidence). PuTTY, `screen` or the VS Code Serial
+   Monitor also work.
+
+Keep the robot still for the first second after boot: the IMU calibrates its
+baseline then. Both builds wait 5 s before driving.
+
+### 1.3 The workflow for any change
+
+1. **Try it in `all_test`**, wheels raised or on the track, using the extra
+   console output, until you find the right numbers or behaviour.
+2. **Put the change in the shared code**: the integrated path
+   (`robot_control.c`, `motion_control.c`) or your own subsystem's files. Never
+   leave a fix only in `all_buddies_test.c`.
+3. **Run the host tests**: `sh testing/run_host_tests.sh` (add a name filter
+   such as `s3/` or `int/` for a subset).
+4. **Flash `integrated` and test it there.** Save the log and add a Results
+   row to the right `testing/**/TEST_LOG.md` with the commit hash.
+5. **Only then** update the cell in [STATUS.md](STATUS.md).
+
+---
+
+## 2. Other firmware modes
+
+| `ROBOT_MODE=` | What it is for |
+|---|---|
+| `integrated` | The final robot (section 1) |
+| `all_test` | Whole-robot test harness (section 1) |
+| `integrated_motor_test` | Wheels raised: S2 motor pulses with S3 IR and S4 IMU sampling, prints PWM/sensor diagnostics |
+| `motor_test` | Wheels raised: S2 motors only (see `app_program/subsystem2/HARDWARE_TEST.md`) |
+| `motion` | S2 motion controller on its own (`MOTION_DEMO=1` for a scripted demo) |
+| `line_follow_test` | S2 + S3 open-loop line following, no IMU, encoders or barcodes (`app_program/subsystem2/line_follow_test.c`) |
+| `barcode_test` | S3 barcode bench, motors off (`app_program/subsystem3/line_demo.c`) |
+
+Wiring, calibration and motor checks: [app_program/subsystem2/INTEGRATION.md](app_program/subsystem2/INTEGRATION.md),
+[HARDWARE_TEST.md](app_program/subsystem2/HARDWARE_TEST.md) and
+[CALIBRATION.md](app_program/subsystem2/CALIBRATION.md).
+
+---
+
+## 3. Robot reference
+
+### 3.1 Sensors and pins
+
+Both builds use the **SIDE** line layout (`ALL_TEST_LINE_LAYOUT`,
+`S2_LINE_LAYOUT`):
+
+| Device | Pins | Owner |
+|---|---|---|
+| IR barcode scanner (offset beside the line) | GP28 | S3 |
+| IR centre / right (steering) | GP27 / GP0 | S3 |
+| IMU LSM303DLHC, I2C0 | GP4 SDA, GP5 SCL | S4 |
+| Ultrasonic HC-SR04P | GP16 TRIG, GP17 ECHO | S5 |
+| Scanning servo SG90 | GP14 (Robo Pico servo header) | S5 |
+| Motors / encoders | Robo Pico M1 (left), M2 (right); see `INTEGRATION.md` | S2 |
+
+IR inputs read raw 1 on black, 0 on white. Never use GP23/GP24/GP25/GP29:
+they are wired to the Pico W radio. Claim every pin in `TEAM.md` before wiring it.
+
+### 3.2 MQTT
+
+Topics are prefixed with `MQTT_CLIENT_ID` from `config/wifi_secrets.h`:
+
+| Topic | Direction | Payload |
+|---|---|---|
+| `<id>/telemetry` | car → PC | 10-byte binary packet once a second (layout in `app_program/subsystem1/README.md`) |
+| `<id>/command` | PC → car | 1 raw byte: STATUS, PAUSE, RESUME (RESET_STATS is rejected) |
+| `<id>/mapping` | PC → car | 3-byte letter-to-movement map (left, right, straight, U-turn) |
+
+With Mosquitto clients installed, replace `BROKER` and `CLIENT_ID`:
 
 ```sh
 mosquitto_sub -h BROKER -t 'CLIENT_ID/telemetry' -F '%x' | python3 tools/mqtt_binary.py stream
 python3 tools/mqtt_binary.py command pause | mosquitto_pub -h BROKER -t 'CLIENT_ID/command' -s
 python3 tools/mqtt_binary.py command resume | mosquitto_pub -h BROKER -t 'CLIENT_ID/command' -s
-python3 tools/mqtt_binary.py command status | mosquitto_pub -h BROKER -t 'CLIENT_ID/command' -s
 ```
 
-Commands are raw binary bytes, never text or retained messages. RESET_STATS
-is explicitly rejected: S4 has no statistics-reset API. Status requests and
-telemetry remain active after a stop. A successful queue operation is not
-proof that the broker received a packet; check `mqtt: connected` and the
-subscriber. Confirm pause stops both motors and resume only works on a
-healthy line/IMU. Confirm loss of the line stops motors, brief/intermittent
-black readings do not restart it, and stable black automatically resumes
-following. Confirm manual PAUSE still blocks movement on black, and IMU
-faults/stale data still require reboot. Live network and physical behaviour
-still require hardware tests.
+Commands are raw bytes, never text or retained messages. A local broker
+config is in `mosquitto-local.conf`.
 
-Host regression checks for the coordinator, existing robot controller, and
-PWM driver run with `sh testing/run_host_tests.sh` (all host tests; add a name
-filter such as `int/` to run a subset).
+**Barcode map:** the instructor sends the four letters just before the demo,
+so the map must come over MQTT. Today both builds still use a hard-coded map
+and `tools/mqtt_binary.py` cannot send a map yet; both are tracked in issue #38.
+Until a map arrives, the robot goes straight at junctions.
 
-**Buddy 2 + 3 line-following test:** build from the project root:
+**Telemetry fields not filled yet:** battery, and obstacle distance, scan
+angle and width (issue #40). They read as zero placeholders, not measurements.
+
+### 3.3 Host tests
 
 ```sh
-make -C build_make ROBOT_MODE=line_follow_test TEST=0 CRASH_REPORT=0 PICO_SDK_PATH=/Users/aliciakan/pico/pico-sdk -j8
+sh testing/run_host_tests.sh          # every PC-side test, with a PASS/FAIL summary
+sh testing/run_host_tests.sh s3/      # one area
 ```
 
-Flash `build_make/mtk3pico_smp1_usb_cdc_wifi_line_follow_test.uf2`.
-This dedicated open-loop test uses Buddy 2's motor driver and Buddy 3's
-sensor service. It does not start the normal motion controller, encoder PID,
-IMU, or barcode demo. It needs no encoder distance/angle calibration.
-The full integrated mode retains its calibration and IMU checks.
+Run them before every pull request. See [testing/README.md](testing/README.md).
 
-The TRACK mounting uses GP7 left, GP27 centre and GP0 right. The centre
-sensor should see black when centred on the line. All three inputs are
-configured as raw 1 on black, 0 on white. Barcode decoding is disabled in
-this layout.
+### 3.4 `all_test` switches
 
-After boot, motors stay off for five seconds. The test then runs for at most
-30 seconds: GP27 alone black gives 30% PWM on both wheels; GP7 or
-GP7+GP27 black gives left/right PWM 15%/30%; GP0 or GP27+GP0 black gives 30%/15%.
-The inner wheel slows to steer towards the line. These are initial test
-settings, not a measured vehicle speed; tune `FOLLOW_BASE_PWM` and
-`FOLLOW_INNER_PWM` in `app_program/subsystem2/line_follow_test.c` if needed.
-Every 250 ms the console reports tracking bits and commanded PWM.
+Set in `app_program/subsystem2/all_buddies_test.h` (or with `-D` on the make line):
 
-First verify with wheels raised: hold black beneath the centre sensor GP27
-before the five-second delay ends and check that both wheels turn forwards.
-Expose only GP7, then only GP0, and check the corresponding wheel slows.
-Remove black from all sensors: motors must stop and remain stopped until reboot.
-Next place the robot centred on a plain black line, power-cycle it, and
-observe its steering on the floor. Switch off motor power to end early.
-Stale samples, sensor faults, detected junctions, loss of all tracking
-inputs, and the 30-second limit latch a stop; reboot to retry. This test
-does not monitor encoder stalls or IMU tilt/collision events. Hardware
-tracking performance still needs verification on the actual robot.
-
-**Check all three on hardware (wheels raised):**
-`make ROBOT_MODE=integrated_motor_test -j8` in `build_make`, then flash
-`mtk3pico_smp1_usb_cdc_wifi_integrated_motor_test.uf2`. This runs S2 motor
-pulses with S3 IR/S4 IMU sampling and prints PWM/sensor diagnostics. It includes
-the PWM reset-release fix needed when `USE_PTMR=0`; rebuild older images.
-
-You need a **Raspberry Pi Pico W**, a USB cable, and a computer running
-macOS, Linux, or Windows with **WSL (Ubuntu)**. On Windows, run every
-command below inside the WSL Ubuntu terminal.
+| Switch | Default | Effect |
+|---|---|---|
+| `ALL_TEST_CONTINUE_ON_SENSOR` | `0` | `1` makes sensor detections and faults report-only (diagnostic bypass; never for evidence) |
+| `ALL_TEST_DURATION_MS` | `0` | `0` runs continuously; a positive value stops the run after that time |
+| `ALL_TEST_LINE_LAYOUT` | `LINE_BARCODE_LAYOUT_SIDE` | Line sensor layout |
+| `ALL_TEST_BARCODE_TURNS` | `1` | A stored barcode letter turns the next cross-junction into the mapped move |
+| `ALL_TEST_STOP_ON_COLLISION` | `1` | IMU collision stop; collision detection is being removed (issue #53) |
 
 ---
 
-## 1. Set up the Pico C SDK and the compiler
+## 4. Set up the Pico C SDK and the compiler
 
 You need two separate things:
 
 | What | Why | Where it comes from |
 |---|---|---|
-| **Pico C SDK** | USB and WiFi driver source code | `git clone` (step 1.2) |
-| **Arm GNU Toolchain** (`arm-none-eabi-gcc`) | the compiler | a separate download (step 1.3) |
+| **Pico C SDK** | USB and Wi-Fi driver source code | `git clone` (step 4.2) |
+| **Arm GNU Toolchain** (`arm-none-eabi-gcc`) | the compiler | a separate download (step 4.3) |
 
-> ⚠️ **The SDK does NOT include the compiler.** You must install the compiler
-> on its own and put its `bin` folder on your `PATH` (step 1.4).
+> ⚠️ **The SDK does NOT include the compiler.** Install the compiler on its
+> own and put its `bin` folder on your `PATH` (step 4.4).
 
-**1.1 Install the basic tools: git, make and a host C++ compiler**
+**4.1 Install the basic tools: git, make and a host C/C++ compiler**
 
 ```sh
 # macOS
@@ -207,39 +215,42 @@ xcode-select --install
 sudo apt update && sudo apt install -y git make g++
 ```
 
-**1.2 Download the Pico C SDK** (any folder works; this guide uses `~/pico`)
+On Windows without WSL, MSYS2 (UCRT64) provides `make`, `gcc` and `g++`.
+The host C++ compiler builds `build_make/tools/elf2uf2.exe` on the first
+build; the host C compiler runs the host tests.
+
+**4.2 Download the Pico C SDK** (any folder works; this guide uses `~/pico`)
 
 ```sh
 mkdir -p ~/pico && cd ~/pico
 git clone --branch 2.2.0 https://github.com/raspberrypi/pico-sdk.git
 cd pico-sdk
-git submodule update --init lib/tinyusb lib/cyw43-driver
+git submodule update --init lib/tinyusb lib/cyw43-driver lib/lwip
 ```
 
-The `submodule` line is required: it downloads the USB and WiFi drivers.
-(SDK 2.3.0 has also been tested and works.)
+The `submodule` line is required: it downloads the USB, Wi-Fi and TCP/IP
+(lwIP) code. SDK 2.3.0 has also been tested and works.
 
-**1.3 Install the Arm GNU Toolchain (the compiler)**
+**4.3 Install the Arm GNU Toolchain (the compiler)**
 
-- **macOS / Windows (WSL) / Linux:** download from
-  <https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads>.
+- Download from <https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads>.
   Pick the **AArch32 bare-metal target (arm-none-eabi)** package for your
-  computer. For WSL, choose the **Linux x86_64** `.tar.xz`.
-  Extract it, e.g. to `~/tools/arm-gnu-toolchain-<version>/`.
-- **Linux / WSL shortcut:** `sudo apt install -y gcc-arm-none-eabi`
-  installs it straight onto your PATH. If you use this, skip the PATH line in 1.4.
+  computer (for WSL, the **Linux x86_64** `.tar.xz`) and extract it, e.g. to
+  `~/tools/arm-gnu-toolchain-<version>/`.
+- **Linux / WSL shortcut:** `sudo apt install -y gcc-arm-none-eabi` puts it on
+  your PATH; then skip the PATH line in 4.4.
 
-Find the folder that contains `arm-none-eabi-gcc`. It is the toolchain's
-**`bin`** folder, e.g. `~/tools/arm-gnu-toolchain-15.3.rel1/bin`.
+The folder that contains `arm-none-eabi-gcc` is the toolchain's **`bin`**
+folder, e.g. `~/tools/arm-gnu-toolchain-15.3.rel1/bin`.
 
-**1.4 Tell your shell where the compiler and SDK are**
+**4.4 Tell your shell where the compiler and SDK are**
 
-Add these two lines to the end of `~/.zshrc` (macOS) or `~/.bashrc` (Linux/WSL),
-**changing both paths to match your computer**:
+Add these two lines to the end of `~/.zshrc` (macOS) or `~/.bashrc`
+(Linux/WSL/Git Bash), **changing both paths to match your computer**:
 
 ```sh
 export PATH="$HOME/tools/arm-gnu-toolchain-15.3.rel1/bin:$PATH"   # folder that contains arm-none-eabi-gcc
-export PICO_SDK_PATH="$HOME/pico/pico-sdk"                         # the SDK from step 1.2
+export PICO_SDK_PATH="$HOME/pico/pico-sdk"                         # the SDK from step 4.2
 ```
 
 Open a **new** terminal, then check both:
@@ -249,100 +260,40 @@ arm-none-eabi-gcc --version     # must print a version, not "command not found"
 ls $PICO_SDK_PATH               # must list the SDK files
 ```
 
-If `arm-none-eabi-gcc` is "not found", your `PATH` does not point to the
-toolchain's `bin` folder. Fix that before going further.
+If `make` later stops with `arm-none-eabi-gcc not found`, fix `PATH`; with
+`PICO_SDK_PATH is not set`, fix `PICO_SDK_PATH`.
+
+> ⚠️ **`PICO_SDK_PATH` must not contain spaces.** make splits paths on
+> spaces, so an SDK under a Windows user folder such as `C:/Users/First Last/`
+> fails with "does not look like a Pico C SDK folder". Use the folder's short
+> name instead (find it with `cmd /c dir /x C:\Users`), e.g.
+> `export PICO_SDK_PATH="C:/Users/FIRSTL~1/.pico-sdk/sdk/2.3.0"`, or move the
+> SDK to a path without spaces.
 
 ---
 
-## 2. Clone this repo and build the `.uf2` file
+## 5. Code layout
 
-**2.1 Clone your project**
-
-```sh
-cd ~/pico
-git clone <URL-of-this-repo> my-project
-cd my-project
-```
-
-**2.2 Build**
-
-```sh
-cd build_make
-make -j8
-```
-
-A successful build ends with a line like
-`tools/elf2uf2 mtk3pico_smp1_usb_cdc_wifi_integrated.elf mtk3pico_smp1_usb_cdc_wifi_integrated.uf2`.
-Your firmware is **`build_make/mtk3pico_smp1_usb_cdc_wifi_integrated.uf2`**.
-
-If `make` stops with an error, it tells you which one is wrong:
-`arm-none-eabi-gcc not found` means fix `PATH`, and
-`PICO_SDK_PATH is not set` means fix `PICO_SDK_PATH` (step 1.4).
-
-To build a single-core, UART-only or test version, see section 3.
-
-**2.3 Flash it onto the Pico W**
-
-1. Hold the **BOOTSEL** button and plug the Pico W into USB, then release.
-   A drive called **RPI-RP2** appears.
-2. Copy the `.uf2` file onto that drive. On WSL, run `explorer.exe .` in
-   `build_make` to open the folder in Windows. The Pico reboots by itself.
-
-**2.4 See the output**
-
-Open the Pico's USB serial port at 115200 baud:
-
-```sh
-screen /dev/tty.usbmodem* 115200      # macOS   (quit: Ctrl-A then K)
-screen /dev/ttyACM0 115200            # Linux
-```
-
-On Windows, use PuTTY or the VS Code *Serial Monitor* on the new COM port.
-You should see the motion and IMU reports. Robot profiles skip the example
-LED task; see the robot integration guide for motor/IR/IMU wiring.
-
-**2.5 Write your own code**
-
-Your code lives in **`app_program/`**. Every `.c` file there, and in its
-subfolders, is compiled automatically.
-
-- **`app_main.c` → `usermain()` is where the program starts.** It first calls
-  the selected subsystems' `subsystemN_init()` functions (create kernel
-  objects), then their `subsystemN_start()` functions (start tasks). The robot
-  build starts S2/S3/S4; standalone modes start S2 only.
-- **One folder per student:** `app_program/subsystem1/` … `subsystem5/`.
-  Subsystems 1–4 hold a working example, one task each (LED, producer,
-  consumer, monitor). Together they use the main micro T-Kernel APIs and
-  pass data between subsystems. Subsystem 5 is an empty template.
-  Replace the examples with your own subsystems.
-- `subsystemN.h` is that subsystem's public interface: the object IDs and
-  data formats the other subsystems may use.
-- `app.h` holds the definitions shared by the whole team.
-- **Drivers go in your subsystem folder too**, as a `drv_<name>.c` /
-  `drv_<name>.h` pair, e.g. `subsystem2/drv_ultrasonic.c`. They are compiled
-  automatically. Do not add drivers under `device/`: that folder holds the
-  kernel's own serial, I2C and ADC drivers, and adding to it means editing
-  kernel and makefile files shared by the whole team.
-
-**Working as a team:** record owners, pins, priorities and the interfaces
-between subsystems in **`TEAM.md`**, and record every test in **`testing/`**
-(see `testing/README.md`). `make TEST=1` builds a test image that runs all
-the subsystem tests at power-up. Short videos of tests and demos are shared
-as unlisted YouTube links, listed in **`videos/`**.
-
-Pins: use **GP0–GP22 and GP26–GP28**. GP0/GP1 are free unless your team
-builds with `CRASH_REPORT=1` (section 3), which needs them. Never use
-GP23/GP24/GP25/GP29: they are wired to the Pico W radio. The Pico W's
-on-board LED is also on the radio, so use an external LED instead.
-
-After editing, run `make -j8` again in `build_make` and copy the new `.uf2`.
+- **`app_program/app_main.c` → `usermain()` is where the program starts.** In
+  `integrated` it calls each subsystem's `subsystemN_init()` (create kernel
+  objects), then `subsystemN_start()` (start tasks). `all_test`,
+  `line_follow_test` and `barcode_test` start their own test task instead.
+- **One folder per buddy:** `app_program/subsystem1/` (Wi-Fi/MQTT) …
+  `subsystem5/` (ultrasonic). `subsystemN.h` is that subsystem's public
+  interface; `app.h` holds team-wide definitions.
+- **Drivers go in your subsystem folder** as `drv_<name>.c` / `drv_<name>.h`
+  (e.g. `subsystem5/drv_ultrasonic.c`). Every `.c` file under `app_program/`
+  is compiled automatically. Do not add drivers under `device/`: that holds
+  the kernel's own drivers, shared by the whole team.
+- **Branches:** `main` is the only long-lived branch. Branch off `main`, open a
+  pull request back into it, and delete the branch after merging.
 
 ---
 
-## 3. Build options: `SMP`, `CONSOLE`, `WIFI`, `TEST`, `CRASH_REPORT`
+## 6. Build options: `SMP`, `CONSOLE`, `WIFI`, `NET`, `MQTT`, `TEST`, `CRASH_REPORT`
 
-`make` on its own uses the defaults. To build differently, put options
-after `make`. They can be combined in any order:
+Options go after `make` in any order. They are not remembered: give them on
+every `make`, as the next plain `make` goes back to the defaults.
 
 ```sh
 make -j8                          # defaults: SMP=1 CONSOLE=usb_cdc WIFI=cyw43 TEST=0 CRASH_REPORT=0
@@ -352,60 +303,40 @@ make TEST=1 -j8                   # firmware with the subsystem self-tests
 make CRASH_REPORT=1 -j8           # also see crash reports, on GP0/GP1 (uses those pins)
 ```
 
-To set several options at once, list them all, separated by spaces. For
-example, to track down a crash in the test build while running on one core only:
+To debug a crash with `CRASH_REPORT=1`, use a mode that does not use GP0 as
+an IR input, e.g.:
 
 ```sh
-# Integrated IR uses GP0, so select standalone motion for UART crash reports:
 make ROBOT_MODE=motion SMP=0 TEST=1 CRASH_REPORT=1 -j8
 #  -> build_make/mtk3pico_smp0_usb_cdc_wifi_crash_motion_test.uf2
 ```
-
-Any option you leave out keeps its default (here `CONSOLE=usb_cdc` and
-`WIFI=cyw43`). Options are not remembered: give them on every `make`, as
-the next plain `make` goes back to the defaults.
 
 | Option | Values (**default**) | What it does | Image name | C macro your code can test |
 |---|---|---|---|---|
 | `SMP` | `0`, **`1`** | `1` runs the kernel on both RP2040 cores; `0` uses core 0 only | `smp1` / `smp0` | `TK_SUPPORT_SMP` (1 or 0) |
 | `CONSOLE` | **`usb_cdc`**, `uart` | where `tm_printf` output goes. `usb_cdc` = USB cable; `uart` = UART0 only (GP0 TX / GP1 RX, needs a USB-serial adapter) | `_usb_cdc` / `_uart` | `TM_CONSOLE_USB_CDC` |
 | `WIFI` | **`cyw43`**, `none` | `cyw43` powers up the Pico W radio and its driver task; `none` leaves the radio off | `_wifi` / *(nothing)* | `TM_WIFI_CYW43` |
+| `NET` | **`none`**, `lwip` | `lwip` adds the TCP/IP stack (needs `WIFI=cyw43` and the SDK's `lib/lwip`) | `_lwip` / *(nothing)* | `CYW43_LWIP` |
+| `MQTT` | **`0`**, `1` | `1` adds the MQTT client (needs `NET=lwip` and `config/wifi_secrets.h`) | `_mqtt` / *(nothing)* | `TM_MQTT` |
 | `TEST` | **`0`**, `1` | `1` compiles every `subsystemN_test.c` and runs the tests at power-up | `_test` / *(nothing)* | `APP_TEST` (1 or 0) |
-| `CRASH_REPORT` | **`0`**, `1` | `1` also copies the console to UART0 on **GP0 (TX) / GP1 (RX)**, 115200 baud, so you can see the last messages and the kernel's crash report (see below). **Uses GP0/GP1.** `CONSOLE=uart` always does this. | `_crash` / *(nothing)* | `TM_CONSOLE_UART` (1 or 0) |
+| `CRASH_REPORT` | **`0`**, `1` | `1` also copies the console to UART0 on **GP0 (TX) / GP1 (RX)**, 115200 baud, so you can see the last messages and the kernel's crash report. **Uses GP0/GP1.** `CONSOLE=uart` always does this | `_crash` / *(nothing)* | `TM_CONSOLE_UART` (1 or 0) |
+| `ROBOT_MODE` | **`integrated`**, see section 2 | which firmware to build | `_<mode>` | `APP_ROBOT_INTEGRATED`, `APP_ALL_TEST`, … |
 
-**Why `CRASH_REPORT` exists.** USB output is not sent the moment you call
-`tm_printf`: it waits in a buffer until the kernel's USB task sends it. If the
-program crashes, no task runs again, so the last messages and the kernel's
-crash report never reach your USB terminal. The terminal just goes quiet.
-UART output *is* sent at once, even inside the crash handler. So when you
-need to know why the Pico crashed or froze, build with `CRASH_REPORT=1`,
-connect a USB-serial adapter (adapter RX → GP0, adapter GND → GND), and read
-it at 115200 baud. Normal `tm_printf` output on USB works the same with
-either setting. If a subsystem has claimed GP0/GP1 in `TEAM.md`, unplug that
-hardware before using `CRASH_REPORT=1`.
+**Why `CRASH_REPORT` exists.** USB output waits in a buffer until the
+kernel's USB task sends it. If the program crashes, no task runs again, so
+the last messages and the crash report never reach your USB terminal. UART
+output is sent at once, even inside the crash handler. So when you need to
+know why the Pico crashed or froze, build with `CRASH_REPORT=1`, connect a
+USB-serial adapter (adapter RX → GP0, adapter GND → GND), and read it at
+115200 baud. Unplug the IR sensor on GP0 first.
 
-The options are part of the image name, e.g.
-`mtk3pico_smp1_usb_cdc_wifi_integrated_test.uf2`, so you can always tell which build
-you are flashing. Switching options needs no `make clean`: the makefile
-notices and recompiles everything.
-
-Using an option in C code:
-
-```c
-#if TK_SUPPORT_SMP
-    ctsk.tskatr |= TA_ASSPRC;   /* core affinity only exists on the dual-core build */
-#endif
-
-#if APP_TEST
-    /* code that only exists in the test build */
-#endif
-```
+Switching options needs no `make clean`: the makefile notices and recompiles
+everything.
 
 ### Where the options live in the makefile
 
-All five are handled in **`build_make/pico_rp2040.mk`**. To find each piece, search the file for the
-names in the left column (e.g. `grep -n "TEST" build_make/pico_rp2040.mk`).
-Each option goes through the same steps:
+All options are handled in **`build_make/pico_rp2040.mk`**. Each goes through
+the same steps (search the file for the names in the middle column):
 
 | Step | What to look for | Example for `TEST` |
 |---|---|---|
@@ -414,20 +345,12 @@ Each option goes through the same steps:
 | 3. Image-name suffix | `NAME_SUFFIX :=` and the `EXE_FILE :=` line | `TEST_SUFFIX := _test` |
 | 4. C macro for the code | a `CFLAGS += -D...` line | `CFLAGS += -DAPP_TEST=$(TEST)` |
 | 5. Rebuild on change | the `PROFILE_ID :=` line | `...-test$(TEST)` |
-| 6. Extra source files (`CONSOLE`, `WIFI` only) | an `ifeq ($(CONSOLE),usb_cdc)` or `ifeq ($(WIFI),cyw43)` block that adds the USB/radio files and SDK include paths | — |
 
-- **Changing a default:** edit the `?=` line from step 1, e.g.
-  `CONSOLE ?= uart`. Every `make` without that option then uses the new value.
-- **Adding your own option** (say `DEBUG=1` to turn on extra prints): copy
-  how `TEST` is done. Add steps 1 to 5 next to the `TEST` lines, then
-  use `#if APP_DEBUG` in your code. **Step 5 matters:** without it, switching
-  the option can quietly link files that were compiled with the old setting.
-- **Kernel settings** such as the maximum number of tasks, semaphores or
-  mailboxes are not make options. They are in `config/config.h` (`CNF_MAX_...`).
-
-The makefile also has `NET=lwip` and `MQTT=1` (TCP/IP and MQTT over WiFi).
-They need the SDK's `lib/lwip` submodule and a `config/wifi_secrets.h`
-(copy `config/wifi_secrets.example.h`). This guide does not cover them.
+Adding your own option: copy how `TEST` is done (steps 1 to 5). **Step 5
+matters:** without it, switching the option can quietly link files that
+were compiled with the old setting. Kernel limits (maximum tasks,
+semaphores, …) are not make options; they are in `config/config.h`
+(`CNF_MAX_...`).
 
 ---
 
