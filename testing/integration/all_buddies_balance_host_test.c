@@ -4,22 +4,8 @@
 #undef main
 #include "../../app_program/subsystem1/communication_protocol.c"
 
-/* Unused service boundaries required by the older coordinator harness. */
-uint32_t line_service_fault_interval_ms(void) { return 0; }
-ER line_service_lookup(uint8_t letter, uint8_t *command)
-{ (void)letter; (void)command; return E_PAR; }
-ER line_service_set_mapping(char l, char r, char s, char u)
-{ (void)l; (void)r; (void)s; (void)u; return E_OK; }
-INT subsystem1_receive_mapping(S1_MAPPING *m, TMO timeout)
-{ (void)m; (void)timeout; return E_TMOUT; }
-bool line_service_barcode_run(uint32_t *ms, unsigned *black, uint32_t *dropped)
-{ (void)ms; (void)black; (void)dropped; return false; }
-void line_service_barcode_raw(unsigned *level, unsigned *rises, unsigned *falls)
-{ *level = *rises = *falls = 0; }
-void line_service_barcode_level(unsigned *black, uint32_t *age)
-{ *black = 0; *age = 0; }
-void line_service_barcode_debug(unsigned *black, unsigned *white, uint8_t *letter)
-{ *black = *white = 0; *letter = 0; }
+/* Service stubs (line_service_*, subsystem1_receive_mapping, s5_exec_*) come
+ * from all_buddies_host_test.c. */
 
 int main(void)
 {

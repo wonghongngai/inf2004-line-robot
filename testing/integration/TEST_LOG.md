@@ -31,3 +31,5 @@ Add a new row for every run. Never edit or delete old rows.
 | 2026-10-28 | INT-04 | working tree on `110d293` | Codex | PASS | `logs/2026-10-28_robot_builds.txt` | Six UF2 profiles built; standalone motion ELF has no S3/S4 symbols |
 | 2026-10-28 | INT-05 | working tree on `110d293` | Codex | PASS | `logs/2026-10-28_pwm_fix.txt` | Real PWM BSP/motor driver against modeled RP2040 registers; includes divider=12.5 |
 | 2026-10-28 | INT-06 | working tree on `110d293` | Codex | PASS | `logs/2026-10-28_pwm_fix.txt` | All seven final profiles rebuilt with reset/frequency fixes; physical retest pending |
+| 2026-11-13 | INT-03 | `af2da1c` | Claude, host | PASS | `logs/2026-11-13_host_tests.txt` | `int/robot_control`: 175 checks (adds S2_LINE_UNSAFE_MS debounce checks). S5 executor stubbed as idle, so avoidance hand-over is not covered. No physical robot test |
+| 2026-11-13 | INT-05 | `af2da1c` | Claude, host | PASS | `logs/2026-11-13_host_tests.txt` | `s2/motor_pwm`, same modelled-register test as 2026-10-28 |

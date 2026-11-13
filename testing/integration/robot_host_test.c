@@ -30,6 +30,16 @@ ER line_service_receive(line_barcode_msg_t *msg, TMO timeout)
     *msg = queued; has_event = false; return E_OK;
 }
 
+/* S5 executor: modelled as idle (no obstacle, no start-up hold), so these
+ * tests exercise the VC's own line/barcode/IMU logic. Avoidance hand-over is
+ * not covered here. */
+static unsigned s5_steps;
+void s5_exec_set_following(S5_EXEC *p_x, BOOL b_following)
+{ (void)p_x; (void)b_following; }
+BOOL s5_exec_startup_hold(void) { return FALSE; }
+BOOL s5_exec_step(S5_EXEC *p_x, const S5_EXEC_OPS *p_ops, void *p_ctx, UW now_ms)
+{ (void)p_x; (void)p_ops; (void)p_ctx; (void)now_ms; ++s5_steps; return FALSE; }
+
 static MOTION_CONFIG config(void)
 {
     return (MOTION_CONFIG){
@@ -47,6 +57,11 @@ static void reset(MOTION_CONTROLLER *ctl)
     MOTION_CONFIG cfg = config();
     armed = halted = turning = configured = false;
     last_imu_sample = imu_count = imu_errors = resumed_at = turn_started = 0;
+    /* Controller state added after 2026-10-28 (line-stop debounce/re-arm, S5). */
+    line_halt = line_unsafe_active = false;
+    line_unsafe_since = rearm_since = 0;
+    rearm_l = rearm_r = 0;
+    memset(&vc_s5, 0, sizeof(vc_s5));
     has_event = enabled = false; snapshot_error = E_OK;
     memset(&fake_imu, 0, sizeof(fake_imu));
     fake_imu.sensor_ok = fake_imu.calibrated = TRUE;
@@ -77,6 +92,23 @@ static void stopped(MOTION_CONTROLLER *ctl, uint32_t now)
     fake_imu.sample_count++;
     robot_control_step(ctl, now + 1, 1, 1);
     EXPECT(halted && ctl->status.left_pwm_percent == 0);
+}
+
+/* Stale, searching or paused snapshots must persist for S2_LINE_UNSAFE_MS
+ * before the VC stops (one late sample must not latch a stop). */
+static void stopped_debounced(MOTION_CONTROLLER *ctl, uint32_t now)
+{
+    robot_control_step(ctl, now, 1, 1);
+    EXPECT(!halted);
+    /* Keep the IMU heartbeat fresh (S2_IMU_STALE_MS) so only the line
+     * condition can cause the stop. */
+    for (uint32_t t = now + 50u; t < now + S2_LINE_UNSAFE_MS; t += 50u) {
+        fake_imu.sample_count++;
+        robot_control_step(ctl, t, 1, 1);
+        EXPECT(!halted);
+    }
+    fake_imu.sample_count++;
+    stopped(ctl, now + S2_LINE_UNSAFE_MS);
 }
 
 int main(void)
@@ -121,9 +153,9 @@ int main(void)
     follow(&ctl); fake_imu.sensor_ok = FALSE; stopped(&ctl, 5041);
     follow(&ctl); fake_imu.read_errors++; stopped(&ctl, 5041);
     follow(&ctl); stopped(&ctl, 5101); /* stale IMU heartbeat */
-    follow(&ctl); snapshot_error = E_TMOUT; stopped(&ctl, 5041);
+    follow(&ctl); snapshot_error = E_TMOUT; stopped_debounced(&ctl, 5041);
     follow(&ctl); snapshot.data[1] = LINE_BARCODE_FAULT; stopped(&ctl, 5041);
-    follow(&ctl); snapshot.data[1] = LINE_BARCODE_SEARCH; stopped(&ctl, 5041);
+    follow(&ctl); snapshot.data[1] = LINE_BARCODE_SEARCH; stopped_debounced(&ctl, 5041);
     for (unsigned event = 0; event < 3; ++event) {
         const unsigned events[] = {LINE_BARCODE_EVT_LOST, LINE_BARCODE_EVT_FAULT, LINE_BARCODE_EVT_JUNCTION};
         follow(&ctl); queued = snapshot;

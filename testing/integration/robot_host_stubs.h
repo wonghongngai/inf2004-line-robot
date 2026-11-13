@@ -7,6 +7,8 @@
 typedef int ID, ER, INT, BOOL, TMO;
 typedef int32_t W;
 typedef uint32_t UW;
+typedef int16_t H;
+typedef uint16_t UH;
 typedef unsigned char UB;
 typedef struct { void *next; } T_MSG;
 #define IMPORT extern
@@ -15,6 +17,8 @@ typedef struct { void *next; } T_MSG;
 #define FALSE 0
 #define E_OK 0
 #define E_PAR (-17)
+#define E_OBJ (-41)
+#define E_NOEXS (-42)
 #define E_TMOUT (-50)
 #define TMO_POL 0
 int tm_printf(UB *format, ...);

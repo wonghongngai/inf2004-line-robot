@@ -29,6 +29,8 @@ ER subsystem1_init(void);
 ER subsystem1_start(void);
 ER subsystem4_init(void);
 ER subsystem4_start(void);
+ER subsystem5_init(void);
+ER subsystem5_start(void);
 
 #include "../../app_program/subsystem2/all_buddies_test.c"
 
@@ -55,6 +57,15 @@ ER subsystem1_init(void) { return E_OK; }
 ER subsystem1_start(void) { return E_OK; }
 ER subsystem4_init(void) { return E_OK; }
 ER subsystem4_start(void) { return E_OK; }
+ER subsystem5_init(void) { return E_OK; }
+ER subsystem5_start(void) { return E_OK; }
+/* S5 executor modelled as idle (no obstacle, no start-up hold): these tests
+ * cover the all_test line/IMU/telemetry logic, not avoidance. */
+void s5_exec_set_following(S5_EXEC *p_x, BOOL b_following)
+{ (void)p_x; (void)b_following; }
+BOOL s5_exec_startup_hold(void) { return FALSE; }
+BOOL s5_exec_step(S5_EXEC *p_x, const S5_EXEC_OPS *p_ops, void *p_ctx, UW now_ms)
+{ (void)p_x; (void)p_ops; (void)p_ctx; (void)now_ms; return FALSE; }
 ER drv_motor_init(void) { drv_motor_stop(); return E_OK; }
 ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS *d) { memset(d, 0, sizeof(*d)); return E_OK; }
 void drv_motor_set(float l, float r) { motor_left = l; motor_right = r; }
@@ -74,6 +85,25 @@ ER line_service_set_layout(uint8_t layout)
 ER line_service_enable(bool on)
 { if (enable_error < E_OK) return enable_error; enabled = on; has_event = false; return E_OK; }
 ER line_service_snapshot(line_barcode_msg_t *out) { *out = fake_line; return line_error; }
+/* Barcode mapping and diagnostics (added to all_test after 2026-10-28).
+ * Mapping always succeeds; diagnostics report "nothing captured". */
+ER line_service_set_mapping(char l, char r, char s, char u)
+{ (void)l; (void)r; (void)s; (void)u; return E_OK; }
+ER line_service_lookup(uint8_t letter, uint8_t *p_command)
+{ (void)letter; (void)p_command; return E_NOEXS; }
+uint32_t line_service_fault_interval_ms(void) { return 0u; }
+bool line_service_barcode_run(uint32_t *ms, unsigned *black, uint32_t *dropped)
+{ (void)ms; (void)black; (void)dropped; return false; }
+void line_service_barcode_raw(unsigned *level, unsigned *rises, unsigned *falls)
+{ *level = 0u; *rises = 0u; *falls = 0u; }
+void line_service_barcode_level(unsigned *black, uint32_t *age_ms)
+{ *black = 0u; *age_ms = 0u; }
+void line_service_barcode_debug(unsigned *black, unsigned *white, uint8_t *letter)
+{ *black = 0u; *white = 0u; *letter = 0u; }
+void line_service_barcode_frame(line_service_barcode_frame_t *frame)
+{ memset(frame, 0, sizeof(*frame)); }
+INT subsystem1_receive_mapping(S1_MAPPING *mapping, TMO timeout)
+{ (void)mapping; (void)timeout; return E_TMOUT; }
 ER line_service_receive(line_barcode_msg_t *out, TMO timeout)
 {
     (void)timeout;

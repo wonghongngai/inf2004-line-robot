@@ -15,6 +15,8 @@ testing/
 └── system/                tests of the whole product against its requirements (shared)
 ```
 
+**What to test, per buddy, and in what order: see [TEST_PLAN.md](TEST_PLAN.md).**
+
 ## Three levels of test
 
 | Level | ID format | Tests what | Written by | Where |
