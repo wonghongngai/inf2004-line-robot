@@ -2,6 +2,7 @@
 
 **This is the one page that shows what is done and what is left.**
 What to test next, and how, is in [testing/TEST_PLAN.md](testing/TEST_PLAN.md).
+Where the code differs from the Week 6 / PreTri plan, and why, is in [DEVIATIONS.md](DEVIATIONS.md).
 Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 
 ## Rules
