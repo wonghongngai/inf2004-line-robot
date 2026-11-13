@@ -29,3 +29,10 @@ config/wifi_secrets.h
 
 # macOS
 .DS_Store
+
+# Raw serial captures from testing/subsystem5/serial_monitor.ps1 can be tens of
+# MB. Commit a trimmed copy (the runs a TEST_LOG row cites) under another name.
+testing/**/logs/*_console.txt
+
+# Personal AI-assistant notes
+*.local.md

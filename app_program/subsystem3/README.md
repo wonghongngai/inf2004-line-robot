@@ -245,11 +245,7 @@ Flash `build_make/mtk3pico_smp1_usb_cdc_wifi_test.uf2` for on-target tests.
 Portable host tests, including the supplied A/Z fixtures:
 
 ```sh
-cc -std=c11 -Wall -Wextra -Werror -pedantic \
-  -fsanitize=address,undefined -DAPP_TEST=1 -DLINE_BARCODE_HOST_TEST \
-  app_program/subsystem3/line_barcode.c \
-  app_program/subsystem3/line_barcode_test.c -o /tmp/subsystem3-tests
-/tmp/subsystem3-tests
+sh testing/run_host_tests.sh s3/line_barcode
 ```
 
 See `testing/subsystem3/TEST_LOG.md` and its saved logs. Successful host tests and
@@ -300,11 +296,11 @@ Optional legacy count-only behaviour is available with
 Host checks from the repository root:
 
 ```sh
-cc -DAPP_ALL_TEST=1 -Iapp_program/subsystem3 testing/subsystem3/pptx_samples_test.c app_program/subsystem3/line_barcode.c -o /tmp/pptx-barcode-test
-/tmp/pptx-barcode-test
-cc -DAPP_ALL_TEST=1 -DLINE_BARCODE_COUNT_A=1 -Iapp_program/subsystem3 testing/subsystem3/count_a_test.c app_program/subsystem3/line_barcode.c -o /tmp/count-a-test
-/tmp/count-a-test
+sh testing/run_host_tests.sh s3/
 ```
+
+This runs `s3/line_barcode`, `s3/pptx_samples` and `s3/count_a`. Build flags
+live in `testing/run_host_tests.sh`.
 
 The slide fixtures measure the EMF bar geometry for A/F/Z/W/X and a PNG row
 above the licence overlay for Y; tests check direct decoding and sampled

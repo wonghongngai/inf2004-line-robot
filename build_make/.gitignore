@@ -4,3 +4,9 @@
 **/*.d
 **/*.o
 tools/elf2uf2
+
+# Host test programs and build logs are generated output, never committed.
+# Test results go in testing/**/TEST_LOG.md with a log in testing/**/logs/.
+*.exe
+# tools/elf2uf2.exe too: make builds it from tools/elf2uf2/main.cpp (needs c++).
+*.log

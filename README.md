@@ -130,7 +130,8 @@ faults/stale data still require reboot. Live network and physical behaviour
 still require hardware tests.
 
 Host regression checks for the coordinator, existing robot controller, and
-PWM driver run with `sh testing/integration/run_robot_host_tests.sh`.
+PWM driver run with `sh testing/run_host_tests.sh` (all host tests; add a name
+filter such as `int/` to run a subset).
 
 **Buddy 2 + 3 line-following test:** build from the project root:
 

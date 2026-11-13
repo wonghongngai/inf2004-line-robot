@@ -117,6 +117,9 @@ Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 
 - [ ] Fill in `TEAM.md` (owners, GitHub usernames, pins, interfaces). It still has the template's example rows.
 - [ ] One shared build script with relative paths and `PICO_SDK_PATH` from the environment. The current `build_make/build_*.sh` scripts hardcode one teammate's machine.
-- [ ] Delete the duplicate copies with " 2" in the name: `subsystem1/README 2.md`, `communication_protocol 2.c/.h`, `testing/subsystem1/BINARY_CHANGE 2.md`. They're left out of the build because of the space in the name, but they confuse people.
+- [x] Delete the duplicate copies with " 2" in the name (done 2026-11-13: 8 files removed, all identical to or older than the originals).
+- [x] Stop committing build output: test `.exe` files and build `.log` files are untracked and gitignored (2026-11-13).
+- [x] One host-test runner: `sh testing/run_host_tests.sh` (2026-11-13). Currently 7 of 18 pass. The 11 failures are stale tests or stubs (phase 3 of the test cleanup).
+- [ ] S1 barcode-over-MQTT code (`S1_BARCODE_RESULT`, barcode queue) isn't on any branch. Only its test and doc were committed (`673736f`). Ask zhi xian to push it.
 - [ ] Choose one integration branch (`alicia` or `double11`), merge into it, and delete the dead branches (`zhixin`, `integration`, `master`, …).
 - [ ] Commit the untracked S5 console logs and link them from the test-log result rows.

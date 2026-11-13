@@ -55,6 +55,41 @@ Test IDs never change and are never reused, even if a test is dropped.
    the commit you tested (`git rev-parse --short HEAD`), who ran it,
    PASS/FAIL, and the log file. Commit the log and the table together.
 
+## Host (PC) tests
+
+Logic that doesn't need the Pico (packing, decoding, controllers) is tested on
+the PC. One script builds and runs all of them:
+
+```sh
+sh testing/run_host_tests.sh              # every host test
+sh testing/run_host_tests.sh s3/          # only subsystem 3
+sh testing/run_host_tests.sh -v int/      # integration tests, full output
+```
+
+It needs a C compiler (`cc`: MSYS2/MinGW on Windows, or Linux/macOS/WSL) and,
+for the two Python tests, `python3` or `python`. Each test is named
+`<area>/<what>` (`s1`..`s5`, `int`). The script keeps going after a failure,
+prints a PASS/FAIL summary with the commit, and exits non-zero if anything
+failed. **Run it before opening a pull request.**
+
+To record a run, save the output to the right `logs/` folder and add a
+Results row for each test ID it covers:
+
+```sh
+sh testing/run_host_tests.sh | tee testing/integration/logs/2026-11-13_host.txt
+```
+
+To add a host test, add one `run_c` (or `run_py`) line to the list in
+`testing/run_host_tests.sh`, with its build flags. Don't copy build commands
+into READMEs; point to the script instead. Never commit the built `.exe`
+files (they are gitignored).
+
+Raw serial captures (`*_console.txt` from `serial_monitor.ps1`) are gitignored
+because they can be tens of MB. Commit a trimmed copy of the runs a Results row
+cites, saved under a different name (for example `2026-11-08_S5-U06.txt`).
+
+Host tests check logic only. They never replace a hardware test.
+
 ## Videos of tests and demos
 
 A manual test (an LED, a motor, a sensor reacting) is best shown with a short

@@ -27,10 +27,10 @@ negative `[BARCODE MQTT] enqueue` result. Queued events are lost on reboot.
 `enqueue=0` means queued, not delivered. The broker acknowledgement has its
 own log entry; it does not confirm that a subscriber processed the message.
 
-Host queue test:
+Host queue test (build flags live in `testing/run_host_tests.sh`):
 
-```
-gcc -std=c11 -Wall -Wextra -Werror testing/subsystem1/barcode_queue_test.c app_program/subsystem1/communication_protocol.c -o build_make/barcode-queue-tests.exe
+```sh
+sh testing/run_host_tests.sh s1/barcode_queue
 ```
 
 Broker delivery still requires a connected hardware test.
