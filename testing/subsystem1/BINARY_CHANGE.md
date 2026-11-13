@@ -64,10 +64,12 @@ needed for heartbeat; it was not part of the agreed telemetry fields.
 Reproduce the host codec test:
 
 ```sh
-cc -std=c11 -O2 -Wall -Wextra -Werror -fsanitize=address,undefined -Iapp_program/subsystem1 testing/subsystem1/protocol_test.c app_program/subsystem1/communication_protocol.c -o /tmp/s1-protocol-test
-/tmp/s1-protocol-test
-python3 -m unittest discover -s testing/subsystem1 -p 'test_*.py'
+sh testing/run_host_tests.sh s1/
 ```
+
+This runs `s1/protocol` (C codec, with ASan/UBSan where the compiler supports
+them) and `s1/binary_cli` (`test_binary.py`). Build flags live in
+`testing/run_host_tests.sh`.
 
 ## Performance and hardware evidence still required
 

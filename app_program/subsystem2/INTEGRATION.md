@@ -164,7 +164,7 @@ bench pulse immediately.
 From the repository root:
 
 ```sh
-sh testing/integration/run_robot_host_tests.sh
+sh testing/run_host_tests.sh int/
 PICO_SDK_PATH=/path/to/pico-sdk sh testing/integration/build_robot_profiles.sh
 ```
 

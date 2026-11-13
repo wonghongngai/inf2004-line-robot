@@ -12,9 +12,9 @@ Define a test here before running it. Test IDs never change.
 |---|---|---|---|---|---|
 | INT-01 | samples flow from S2 to S3 (≥ 5 in 2 s) | IF-01, IF-02 | auto | `subsystem3_test.c` | `[TEST] INT-01 PASS` |
 | INT-02 | summary lines flow from S3 to S4 (≥ 2 in 3.5 s) | IF-03 | auto | `subsystem4_test.c` | `[TEST] INT-02 PASS` |
-| INT-03 | Robot adapter readiness, steering, junction turns, faults and standalone motion | IF-06, IF-07 | host auto | `sh testing/integration/run_robot_host_tests.sh` | 167 assertions pass |
+| INT-03 | Robot adapter readiness, steering, junction turns, faults and standalone motion | IF-06, IF-07 | host auto | `sh testing/run_host_tests.sh int/robot_control` (was `run_robot_host_tests.sh` until 2026-11-13) | 167 assertions pass |
 | INT-04 | Six hardware firmware profiles compile and produce UF2 files | IF-06, IF-07, IF-08 | build | `PICO_SDK_PATH=... sh testing/integration/build_robot_profiles.sh` | Six build PASS lines |
-| INT-05 | PWM works after boot with PWM initially held in reset | S2 hardware driver | host auto | `sh testing/integration/run_robot_host_tests.sh` | `motor PWM register regression: PASS` |
+| INT-05 | PWM works after boot with PWM initially held in reset | S2 hardware driver | host auto | `sh testing/run_host_tests.sh s2/motor_pwm` (was `run_robot_host_tests.sh` until 2026-11-13) | `motor PWM register regression: PASS` |
 | INT-06 | Seven firmware profiles including combined motor/IR/IMU diagnostic | IF-06, IF-07, IF-08 | build | `PICO_SDK_PATH=... sh testing/integration/build_robot_profiles.sh` | Seven build PASS lines |
 
 *Method:* **auto** = `TEST_CHECK` in code, result printed on the console;
