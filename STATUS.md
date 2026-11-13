@@ -89,7 +89,7 @@ Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 | Test | Status | Evidence | Next action |
 |---|---|---|---|
 | INT-01 S2 → S3 samples, INT-02 S3 → S4 summaries | ⬜ | — (these are still the template's example tests) | Replace them with the real interfaces from `TEAM.md` §5 |
-| INT-03 robot adapter / VC (host, simulated) | ✅ | `logs/2026-10-28_robot_host.txt` | Rerun on the current commit |
+| INT-03 robot adapter / VC (host, simulated) | ✅ | `logs/2026-11-13_host_tests.txt` (`af2da1c`) | Add a host test of the S5 avoidance hand-over (currently stubbed as idle) |
 | INT-04/06 all firmware profiles build | ✅ (28 Oct) | `logs/2026-10-28_robot_builds.txt` | Rerun on the current commit: the `integrated` UF2 is from 8 Nov, older than the latest fixes |
 | **Integrated firmware drives the full course on the robot** | ⬜ | — | Main goal: see *Top priorities* below |
 
@@ -119,7 +119,11 @@ Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 - [ ] One shared build script with relative paths and `PICO_SDK_PATH` from the environment. The current `build_make/build_*.sh` scripts hardcode one teammate's machine.
 - [x] Delete the duplicate copies with " 2" in the name (done 2026-11-13: 8 files removed, all identical to or older than the originals).
 - [x] Stop committing build output: test `.exe` files and build `.log` files are untracked and gitignored (2026-11-13).
-- [x] One host-test runner: `sh testing/run_host_tests.sh` (2026-11-13). Currently 7 of 18 pass. The 11 failures are stale tests or stubs (phase 3 of the test cleanup).
+- [x] One host-test runner: `sh testing/run_host_tests.sh` (2026-11-13).
+- [ ] Host tests: 9 of 18 pass (`af2da1c`). The rest need their owners:
+  - **zhi xian:** push the missing local code. `s1/barcode_queue` (barcode-over-MQTT queue) and `int/steering_ramp` (`update_terrain_boost`, `barcode_slow`) test code that isn't on any branch. Both tests came in with `673736f`.
+  - **Buddy 2 (all_test tuning):** `int/all_buddies` + 4 variants now compile and run, but expect the old PWM tuning (right 14.2 %, centre = straight); the code now gives 15 % and centre → 6.25/15. Update the expected values or the code. `int/all_buddies_bal` uses `straight_error_cm` / `ALL_TEST_STRAIGHT_MAX_TRIM`, which the straight-drive rewrite (`ab62be5`) removed.
+  - **Buddy 4:** `s4/hump_height` expects the height to fall back to 0 after the descent. Since `7f823b8` the estimator deliberately keeps the climb height. Decide which is right and update the test or the code.
 - [ ] S1 barcode-over-MQTT code (`S1_BARCODE_RESULT`, barcode queue) isn't on any branch. Only its test and doc were committed (`673736f`). Ask zhi xian to push it.
 - [ ] Choose one integration branch (`alicia` or `double11`), merge into it, and delete the dead branches (`zhixin`, `integration`, `master`, …).
 - [ ] Commit the untracked S5 console logs and link them from the test-log result rows.

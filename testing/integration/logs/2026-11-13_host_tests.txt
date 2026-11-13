@@ -1,0 +1,93 @@
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: af2da1c
+
+s1/protocol                  PASS
+s1/barcode_queue             FAIL (compile)
+   45 |     result.letter = 0; result.runs = 23;
+      |           ^
+testing/subsystem1/barcode_queue_test.c:45:30: error: request for member 'runs' in something not a structure or union
+   45 |     result.letter = 0; result.runs = 23;
+      |                              ^
+testing/subsystem1/barcode_queue_test.c:50:11: error: request for member 'runs' in something not a structure or union
+   50 |     result.runs = 30;
+      |           ^
+testing/subsystem1/barcode_queue_test.c:52:11: error: request for member 'runs' in something not a structure or union
+   52 |     result.runs = 29; result.letter = '?';
+      |           ^
+testing/subsystem1/barcode_queue_test.c:52:29: error: request for member 'letter' in something not a structure or union
+   52 |     result.runs = 29; result.letter = '?';
+      |                             ^
+cc1.exe: all warnings being treated as errors
+
+s1/binary_cli                PASS
+s2/motion_protocol           PASS
+s2/motor_pwm                 PASS
+s3/line_barcode              PASS
+s3/pptx_samples              PASS
+s3/count_a                   PASS
+s4/hump_height               FAIL (run, exit 127)
+Assertion failed: current_height_mm == 0 && peak_height_mm == 20, file testing/integration/hump_height_host_test.c, line 36
+
+int/robot_control            PASS
+int/line_service             PASS
+int/all_buddies              FAIL (run, exit 127)
+Assertion failed: t.phase == RUNNING && motor_left == 12.5f && motor_right == 14.2f, file testing/integration/all_buddies_host_test.c, line 146
+
+int/all_buddies_cont         FAIL (run, exit 127)
+Assertion failed: motor_left > 0 && motor_right > 0, file testing/integration/all_buddies_continuous_host_test.c, line 25
+
+int/all_buddies_corner       FAIL (run, exit 127)
+Assertion failed: t.phase == RUNNING && motor_left == 12.5f && motor_right == 14.2f, file testing/integration/all_buddies_host_test.c, line 146
+
+int/all_buddies_coll         FAIL (run, exit 127)
+Assertion failed: t.phase == RUNNING && motor_left == 12.5f && motor_right == 14.2f, file testing/integration/all_buddies_host_test.c, line 146
+
+int/all_buddies_white        FAIL (run, exit 127)
+Assertion failed: t.phase == RUNNING && motor_left == 12.5f && motor_right == 14.2f, file testing/integration/all_buddies_white_host_test.c, line 14
+
+int/all_buddies_bal          FAIL (compile)
+testing/integration/all_buddies_balance_host_test.c:28:5: note: in expansion of macro 'EXPECT'
+   28 |     EXPECT(!t.straight_active && t.straight_error_cm == 0);
+      |     ^~~~~~
+testing/integration/all_buddies_balance_host_test.c:38:14: error: 'ALL_TEST' has no member named 'straight_error_cm'; did you mean 'straight_trim'?
+   38 |     EXPECT(t.straight_error_cm == 0);
+      |              ^~~~~~~~~~~~~~~~~
+testing/integration/all_buddies_balance_host_test.c:38:5: note: in expansion of macro 'EXPECT'
+   38 |     EXPECT(t.straight_error_cm == 0);
+      |     ^~~~~~
+testing/integration/all_buddies_balance_host_test.c:41:14: error: 'ALL_TEST' has no member named 'straight_error_cm'; did you mean 'straight_trim'?
+   41 |     EXPECT(t.straight_error_cm == 0);
+      |              ^~~~~~~~~~~~~~~~~
+testing/integration/all_buddies_balance_host_test.c:41:5: note: in expansion of macro 'EXPECT'
+   41 |     EXPECT(t.straight_error_cm == 0);
+      |     ^~~~~~
+
+int/steering_ramp            FAIL (exit 1)
+Traceback (most recent call last):
+  File "C:\Users\Hong Ngai\Desktop\Y2S1\INF2004 Embedded Systems Programming\Project\inf2004-line-robot\testing\integration\test_steering_ramp.py", line 11, in <module>
+    functions = source[source.index('static void update_terrain_boost'):source.index('static void stop_test')]
+                       ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: substring not found
+
+
+================ summary ================
+PASS   s1/protocol                  
+FAIL   s1/barcode_queue             compile error
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/count_a                   
+FAIL   s4/hump_height               assertion/run error
+PASS   int/robot_control            
+PASS   int/line_service             
+FAIL   int/all_buddies              assertion/run error
+FAIL   int/all_buddies_cont         assertion/run error
+FAIL   int/all_buddies_corner       assertion/run error
+FAIL   int/all_buddies_coll         assertion/run error
+FAIL   int/all_buddies_white        assertion/run error
+FAIL   int/all_buddies_bal          compile error
+FAIL   int/steering_ramp            python test failed
+-----------------------------------------
+9 passed, 9 failed, 0 skipped
