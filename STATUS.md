@@ -12,6 +12,9 @@ Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
    it" counts as 🟡, not ✅.
 2. **"Integrated" means `ROBOT_MODE=integrated`.** Working in `all_test`,
    `line_follow_test` or `barcode_test` alone does **not** count.
+   **Decided 13 Nov (#4):** `integrated` is the final firmware for the
+   demo. `all_test` is a test harness only: a behaviour change is not done
+   until it is in the integrated build and tested there.
 3. Every row that isn't ✅ has a **Next action** that one person can pick up.
    When there's a GitHub issue for it, link the issue in that column.
 4. Update this file in the same PR or commit as the test-log row that
@@ -108,9 +111,9 @@ Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 
 1. **Make `integrated` the real robot.** Move the all_test tuning (turning,
    driving straight, avoidance handover) out of `all_buddies_test.c` into
-   `robot_control.c` / `task_motion.c`. Rebuild, flash, and log the result.
-   (Alternative: the team formally decides `all_test` is the final mode, and
-   updates this page and the build scripts to match.)
+   `robot_control.c` / `task_motion.c`. Rebuild, flash, and log the result
+   (#8). Keep the tuning numbers in one place both builds use, so they can't
+   drift apart again.
 2. **MQTT**: write the S1 tests and get a bench run with a real broker.
 3. **Barcode**: test all four commands at driving speed.
 4. **S4 thresholds** from real hump logs.

@@ -88,10 +88,10 @@ something that hasn't passed on the bench (L3).
 | `int/all_buddies*` (5 tests) | L1 | `sh testing/run_host_tests.sh int/all_buddies` | **FAIL**: expect the old PWM tuning |
 | `int/all_buddies_bal` | L1 | — | **FAIL**: uses fields removed in `ab62be5` |
 
-**Decide first:** is the final robot `integrated` or `all_test`? If it's
-`integrated`, port the all_test tuning into it and retire the `all_buddies`
-host tests. If it's `all_test`, update their expected values to the current
-tuning.
+**Decided 13 Nov (#4):** `integrated` is the final firmware. Port the
+all_test tuning into it (#8) and retire the `all_buddies` host tests, moving
+their checks into `int/robot_control` (#9). Every L4 test runs on the
+`ROBOT_MODE=integrated` image.
 
 **New:**
 

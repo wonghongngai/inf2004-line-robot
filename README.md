@@ -3,6 +3,10 @@
 A starting point for your project: micro T-Kernel 3.0 running on **both cores**
 of the Pico W's RP2040, with a USB serial console and the WiFi driver built in.
 
+**Final firmware (decided 13 Nov, issue #4):** `ROBOT_MODE=integrated` is the
+robot used for the demo. `ROBOT_MODE=all_test` and the other modes are test
+harnesses only; port any fix made there into the integrated build.
+
 **Robot firmware:** see [motion hardware and integration](app_program/subsystem2/INTEGRATION.md)
 for wiring, calibration, and the `ROBOT_MODE=integrated`, `motion`, and
 `motor_test` builds. Images now include the mode in their name, for example
