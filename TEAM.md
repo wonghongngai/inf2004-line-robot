@@ -1,7 +1,9 @@
 # Team and subsystems
 
-The tables are pre-filled with the **example** in `app_program/` (marked
-*example*). Replace those rows with your own as you replace the example code.
+Rows still marked *example* belong to the template's producer/consumer demo.
+S2 and S3 keep that code as a compatibility layer (`legacy_example.h`,
+`task_producer.c`, `task_consumer.c`), so those rows still describe real
+objects; remove them when that code is deleted.
 
 Fill this in at the start of the project and keep it up to date. It is the
 single place that says **who owns what**, so that five people can work in
@@ -15,13 +17,13 @@ subsystem, ask its owner or open a pull request for them to review.
 
 ## 1. Members and subsystems
 
-| # | Subsystem (what it does) | Student ID | GitHub username | Code | Tests |
-|---|---|---|---|---|---|
-| 1 | WiFi / MQTT communication | | | `app_program/subsystem1/` | `testing/subsystem1/` |
-| 2 | *example:* Producer: makes a sample every 300 ms | | | `app_program/subsystem2/` | `testing/subsystem2/` |
-| 3 | *example:* Consumer: collects samples into statistics | | | `app_program/subsystem3/` | `testing/subsystem3/` |
-| 4 | *example:* Monitor: prints reports, pauses the LED | | | `app_program/subsystem4/` | `testing/subsystem4/` |
-| 5 | | | | `app_program/subsystem5/` | `testing/subsystem5/` |
+| # | Subsystem (what it does) | Name | Student ID | GitHub username | Code | Tests |
+|---|---|---|---|---|---|---|
+| 1 | Wi-Fi, MQTT, telemetry and commands | Kan Ka En | 2503598 | `dunnknow` | `app_program/subsystem1/` | `testing/subsystem1/` |
+| 2 | Motors, encoders, PID; hosts the Vehicle Controller (`robot_control.c`) | Zhi Xian Kang | 2503986 | `2andbeii` | `app_program/subsystem2/` | `testing/subsystem2/` |
+| 3 | IR line following, Code 39 barcode, junctions | Chai Sook Hui | 2502871 | `chaisookhui` | `app_program/subsystem3/` | `testing/subsystem3/` |
+| 4 | IMU (LSM303DLHC): humps, tilt, lift-stop, collision | Lew Zhi Xin | 2503689 | `lewzhixin` | `app_program/subsystem4/` | `testing/subsystem4/` |
+| 5 | Ultrasonic + servo scanning, obstacle profiling, avoidance | Wong Hong Ngai | 2500434 | `wonghongngai` | `app_program/subsystem5/` | `testing/subsystem5/` |
 
 Shared files (`app_program/app_main.c`, `app_program/app.h`, this file)
 are changed only by agreement of the team. The exception is claiming an empty
@@ -149,10 +151,10 @@ change it only by team agreement. Write down every task you create.
 | Subsystem | Priority band | Tasks (name – priority – core) |
 |---|---|---|
 | 1 | 12–13 | No application task; network service owns MQTT |
-| 2 | 14–15 | *example:* producer_task – 14 – core 1 |
-| 3 | 16–17 | *example:* consumer_task – 16 – core 0 |
-| 4 | 18–19 | *example:* monitor_task – 18 – any |
-| 5 | 20–21 | obstacle_task – 20 – any |
+| 2 | 14–15 | `motion_task` (or bench task) – 14 – core 1; *example:* `producer_task` – 15 – core 1 (integrated builds only) |
+| 3 | 16–17 | `line_service_task` – 16 – core 1 in `integrated`/`all_test`, core 0 otherwise; *example:* `consumer_task` – 17 – core 0; `line_demo_task` – 17 – core 0 (`barcode_test` only) |
+| 4 | 18–19 | `imu_task` – 18 – any |
+| 5 | 20–21 | `obstacle_task` – 20 – any |
 
 Core: `TP_PRC1` = core 0, `TP_PRC2` = core 1, or "any".
 
@@ -179,7 +181,9 @@ sends to it or waits on it. Agree on the data format before coding.
 Robot modes and validation are documented in
 `app_program/subsystem2/INTEGRATION.md`. Active S2 tasks: motion/bench at 14 on
 core 1; compatibility producer at 15 only in integrated builds. S3 retains
-consumer at 17 and line service at 16 on core 0. S4 IMU runs at 18 on any core.
+consumer at 17 on core 0, and runs the line service at 16 on core 1 in
+`integrated` and `all_test` (away from the radio on core 0; core 0 in the
+other modes). S4 IMU runs at 18 on any core.
 S5 `obstacle_task` runs at 20 on any core in `integrated` and
 `integrated_motor_test`; S1 is not started by these robot profiles. While S5
 has a HOLD or MOVE request, the VC's `avoid_step()` hook in `robot_control.c`
