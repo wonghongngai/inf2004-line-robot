@@ -1,17 +1,56 @@
 # Team and subsystems
 
+This file is the **target design** of the final firmware, `ROBOT_MODE=integrated`
+(decided in #4), and **who builds each part**. It describes the robot as it
+should be at the demo, not as it is today:
+
+- what is done, with evidence: [STATUS.md](STATUS.md)
+- where the code or the plan differs from the Week 6 / PreTri 1 design, and why:
+  [DEVIATIONS.md](DEVIATIONS.md)
+
+Where the team has not decided yet, the current value is shown and tagged
+**TBD** with its issue. When the issue is decided, update the row here.
+
 Rule: **only the owner edits a subsystem's folders.** To change another
 subsystem, ask its owner or open a pull request for them to review.
 
 ## 1. Members and subsystems
 
-| # | Subsystem (what it does) | Name | Student ID | GitHub username | Code | Tests |
+| # | Subsystem (finished scope) | Name | Student ID | GitHub username | Code | Tests |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Wi-Fi, MQTT, telemetry and commands | Kan Ka En | 2503598 | `dunnknow` | `app_program/subsystem1/` | `testing/subsystem1/` |
-| 2 | Motors, encoders, PID; hosts the Vehicle Controller (`robot_control.c`) | Kang Zhi Xian | 2503986 | `2andbeii` | `app_program/subsystem2/` | `testing/subsystem2/` |
-| 3 | IR line following, Code 39 barcode, junctions | Chai Sook Hui | 2502871 | `chaisookhui` | `app_program/subsystem3/` | `testing/subsystem3/` |
-| 4 | IMU (LSM303DLHC): humps, tilt, lift-stop, collision | Lew Zhi Xin | 2503689 | `lewzhixin` | `app_program/subsystem4/` | `testing/subsystem4/` |
-| 5 | Ultrasonic + servo scanning, obstacle profiling, avoidance | Wong Hong Ngai | 2500434 | `wonghongngai` | `app_program/subsystem5/` | `testing/subsystem5/` |
+| 1 | Wi-Fi and MQTT link; telemetry, PC commands, barcode result events, receiving the letter-to-movement map | Kan Ka En | 2503598 | `dunnknow` | `app_program/subsystem1/` | `testing/subsystem1/` |
+| 2 | Motors, encoders, PID speed control; forward, reverse, turn and stop; the Vehicle Controller (`robot_control.c`) that coordinates every subsystem | Kang Zhi Xian | 2503986 | `2andbeii` | `app_program/subsystem2/` | `testing/subsystem2/` |
+| 3 | IR line following and line-loss handling; Code 39 barcodes A–Z in both directions; junctions, acting on the stored letter at the next cross-junction | Chai Sook Hui | 2502871 | `chaisookhui` | `app_program/subsystem3/` | `testing/subsystem3/` |
+| 4 | IMU (LSM303DLHC): calibration, humps and highest-hump height, tilt, lift-stop, motion classes, turn rate. No collision detection (removed by the instructor, #53) | Lew Zhi Xin | 2503689 | `lewzhixin` | `app_program/subsystem4/` | `testing/subsystem4/` |
+| 5 | Ultrasonic + servo scanning, obstacle profiling, avoidance planning, line recovery, ignoring humps and the floor while tilted | Wong Hong Ngai | 2500434 | `wonghongngai` | `app_program/subsystem5/` | `testing/subsystem5/` |
+
+### Work allocation
+
+Each buddy owns their subsystem's code, its tests in `testing/subsystemN/`,
+and these write-up deliverables:
+
+| # | Deliverables | Issue |
+| --- | --- | --- |
+| 1 | Communication API, telemetry framework, MQTT documentation, telemetry demo | #55 |
+| 2 | Motion library, PID tuning report, motion accuracy evaluation | #56 |
+| 3 | Line-following module, barcode decoder, navigation command interface | #57 |
+| 4 | IMU module, hump algorithm, terrain analysis report | #58 |
+| 5 | Scanning, obstacle profiling, avoidance and recovery | #59 |
+
+Shared by the whole team: Barr-C coding standard review (#60), resource
+efficiency report (#61), Tribunal 2 evidence pack (#63), integration tests
+(`testing/integration/`).
+
+Work that crosses subsystems has a lead owner:
+
+| Work | Lead | With | Issue |
+| --- | --- | --- | --- |
+| Connect the integrated firmware to MQTT: telemetry, commands, letter map | S2 (VC) | S1 | #72 |
+| Apply the MQTT letter map; remove the hard-coded maps | S3 | S2 | #38 |
+| Reverse motion (`moveBackward`), used by S5 and barcode re-scan | S2 | S3, S5 | #39 |
+| Obstacle scan results in telemetry | S5 | S1 | #40 |
+| Encoder counts and motor speed in telemetry | S1 | S2 | #41 |
+| Remove the template's producer/consumer compatibility code (`task_producer.c`, `task_consumer.c`, `legacy_example.h`) | S2 | S3 | — |
 
 Shared files (`app_program/app_main.c`, `app_program/app.h`, this file)
 are changed only by agreement of the team. The exception is claiming an empty
@@ -25,22 +64,22 @@ One owner per pin.
 | Pin | Owner | Used for |
 | --- | --- | --- |
 | GP23, GP24, GP25, GP29 | *reserved* | Pico W radio |
-| GP0 | S3 | right IR digital input; USB console only, CRASH_REPORT=0 |
-| GP1 | | (taken whenever the team builds with `CRASH_REPORT=1`) |
+| GP0 | S3 | right IR, digital input (steering). Needs `CRASH_REPORT=0` |
+| GP1 | | free (the final build uses `CRASH_REPORT=0`, so the crash UART does not take it) |
 | GP2 | S2 | right encoder A |
 | GP3 | S2 | right encoder B |
 | GP4 | S4 | I2C0 SDA, LSM303DLHC |
 | GP5 | S4 | I2C0 SCL, LSM303DLHC |
 | GP6 | S2 | left encoder B |
-| GP7 | S3 | left IR digital input |
+| GP7 | | free. Only needed if #7 returns to three steering sensors (Week 6 left IR) |
 | GP8 | S2 | left motor forward PWM |
-| GP9 | S2 | left motor reverse (zero PWM) |
+| GP9 | S2 | left motor reverse PWM (#39) |
 | GP10 | S2 | right motor forward PWM |
-| GP11 | S2 | right motor reverse (zero PWM) |
+| GP11 | S2 | right motor reverse PWM (#39) |
 | GP12 | | |
 | GP13 | | |
-| GP14 | S5 | SG90 servo PWM (slice 7A, Robo Pico servo port 4); was the kernel's unused I2C1 SDA boot pin, S5 takes it over with `pwm_set_pin()` |
-| GP15 | kernel I2C1 | unused SCL boot assignment |
+| GP14 | S5 | SG90 servo PWM (slice 7A, Robo Pico servo port 4) |
+| GP15 | | free (the kernel does not start I2C1) |
 | GP16 | S5 | HC-SR04P TRIG (SIO output, Grove 4) |
 | GP17 | S5 | HC-SR04P ECHO (PWM slice 0B input, gated echo timing, Grove 4) |
 | GP18 | | |
@@ -49,8 +88,11 @@ One owner per pin.
 | GP21 | | |
 | GP22 | | |
 | GP26 | S2 | left encoder A; ADC pin initialization disabled |
-| GP27 | S3 | centre IR digital input; ADC pin initialization disabled |
-| GP28 | | (ADC2 capable) |
+| GP27 | S3 | centre IR, digital input (steering); ADC pin initialization disabled |
+| GP28 | S3 | offset barcode scanner IR, digital input; ADC pin initialization disabled |
+
+IR layout: SIDE (GP27 and GP0 steer, GP28 reads barcodes beside the line).
+**TBD #7**: confirm this layout.
 
 ## 3. Peripherals
 
@@ -83,13 +125,13 @@ the drivers have no locking to stop it.
 | Peripheral | Owner subsystem | Owning task | Pins |
 | --- | --- | --- | --- |
 | UART1 | | | |
-| I2C0 | S4 via kernel device `iica` | `imu_task` (plus existing startup probe) | GP4/GP5 |
-| I2C1 | kernel, unused by application | kernel driver | GP14/GP15 |
+| I2C0 | S4 via kernel device `iica` | `imu_task` | GP4/GP5 |
+| I2C1 | not started | — | — |
 | SPI0 | | | |
 | SPI1 | | | |
-| ADC | | | GP26–GP28 |
-| PWM slices 4, 5 | S2 | `motion_task` or bench task (mutually exclusive) | GP8-GP11 |
-| PWM slices 0, 7 | S5 | `obstacle_task` | GP17 (echo timing), GP14 (servo) |
+| ADC | unused: the kernel driver is enabled but every IR input is digital | — | — |
+| PWM slices 4, 5 | S2 | `motion_task` | GP8–GP11 |
+| PWM slices 0, 7 | S5 | `obstacle` (`obstacle_task`) | GP17 (echo timing), GP14 (servo) |
 | IO_IRQ_BANK0 (GPIO interrupts, IRQ 13) | S2 | interrupt handler in `drv_encoder.c` (enabled on the core that calls `drv_encoder_init`) | edge interrupts on GP26/GP6 (left encoder), GP2/GP3 (right encoder) only. Any other GPIO interrupt must go through this handler; ask S2 |
 | WiFi radio, TCP/IP, MQTT | *kernel* | `cyw43_utk_task` (built in) | GP23–25, GP29 |
 
@@ -105,28 +147,23 @@ What students *can* do:
 - **Read the connection state** from any task, which is always safe:
 
   ```c
-
   #include "cyw43_utk.h"
   T_CYW43_UTK_STATUS st;
   cyw43_utk_get_status(&st);   /* st.ready, st.link_status, st.ip_addr, ... */
-
   ```
 
-- **Send or receive data over the network** by adding code that *runs
-  inside the service task*. The MQTT client is in
-  `app_program/subsystem1/mqtt_manager.c`. It publishes a heartbeat
-  today. A "cloud / reporting" subsystem would add a kernel object
-  (e.g. a message buffer) that application tasks fill. The MQTT code then
-  reads it with `TMO_POL` (never blocking) and publishes it.
-  Because this changes shared library code, **agree it with the team and
-  the instructor first**, and record it as an interface in section 5.
-  It needs the `NET=lwip MQTT=1` build (README section 3).
+- **Send or receive data over the network** through S1's message buffers.
+  The MQTT client in `app_program/subsystem1/mqtt_manager.c` runs inside the
+  service task: it drains the outgoing buffers with `TMO_POL` (never
+  blocking) and publishes them, and fills the incoming ones from the
+  subscribed topics. The interfaces are IF-05, IF-06, IF-12 and IF-13 in section 5. It needs
+  the `NET=lwip MQTT=1` build (README section 1.1).
 
 ## 4. Task priorities
 
 1 is the highest and 32 the lowest (`CNF_MAX_TSKPRI` in `config/config.h`).
-1–4 are used by the kernel. Each subsystem gets its own band by default;
-change it only by team agreement. Write down every task you create.
+1–4 are used by the kernel. Each subsystem gets its own band; change it only
+by team agreement. Write down every task you create.
 
 | Subsystem | Priority band |
 | --- | --- |
@@ -138,67 +175,60 @@ change it only by team agreement. Write down every task you create.
 | 4 | 18–19 |
 | 5 | 20–21 |
 
-Every task in the firmware, highest priority first. "Name" is the string
-passed to `app_start_task()`; the entry function is given where it differs.
+**TBD #66**: the Week 6 design made S5 the highest-priority subsystem; this
+order makes it the lowest, and puts the Wi-Fi service above the control
+tasks. Record the reason with measured timing, or change the bands.
 
-| Task | Owner | Priority | Core | Built in `ROBOT_MODE` | Source |
+Tasks in the final firmware, highest priority first:
+
+| Task | Owner | Priority | Core | Role | Source |
 | --- | --- | --- | --- | --- | --- |
-| initial task (runs `usermain()`, then the `TEST=1` self-tests, then sleeps) | kernel | 1 | — | all | `kernel/inittask/inittask.c` |
-| USB console service | kernel | 3 | core 0 | all (`CONSOLE=usb_cdc`) | `lib/libtm/.../usb/usb_console.c` |
-| `cyw43` (`cyw43_utk_task`): Wi-Fi, lwIP, MQTT, and S1's queues | kernel | 4 | core 0 | Wi-Fi builds | `lib/libwifi/.../cyw43_utk_kernel.c` |
-| — | S1 | — | — | — | no task of its own: `subsystem1_start()` only checks its queues |
-| `motion_task`: PID loop and the Vehicle Controller | S2 | 14 | core 1 | `integrated`, `motion` | `subsystem2/subsystem2.c` |
-| `motion_task` (entry `subsystem2_hw_test_task`): motor pulse bench | S2 | 14 | core 1 | `integrated_motor_test`, `motor_test` | `subsystem2/subsystem2.c` |
-| *example:* `producer_task` (compatibility) | S2 | 15 | core 1 | `integrated`, `integrated_motor_test` | `subsystem2/task_producer.c` |
-| `all_buddies_test` (entry `all_task`): whole-robot test loop | S2 | 15 | core 1 | `all_test` | `subsystem2/all_buddies_test.c` |
-| `line_follow_test` (entry `follow_task`) | S2 | 15 | core 1 | `line_follow_test` | `subsystem2/line_follow_test.c` |
-| `line_service_task`: IR sampling, barcode, junctions | S3 | 16 | core 1 in `integrated*` and `all_test`; core 0 in `line_follow_test`, `barcode_test` | all except `motion`, `motor_test` | `subsystem3/line_service.c` |
-| *example:* `consumer_task` (compatibility) | S3 | 17 | core 0 | `integrated`, `integrated_motor_test` | `subsystem3/task_consumer.c` |
-| `line_demo_task`: barcode bench | S3 | 17 | core 0 | `barcode_test` | `subsystem3/line_demo.c` |
-| `imu_task` | S4 | 18 | any | `integrated*`, `all_test` | `subsystem4/subsystem4.c` |
-| `obstacle` (entry `obstacle_task`): scan, profile, avoid | S5 | 20 | any | `integrated*`, `all_test` | `subsystem5/subsystem5.c` |
-
-`integrated*` means `integrated` and `integrated_motor_test`. The test loops
-at 15 replace `motion_task`: they drive the motors themselves, so the two are
-never built together.
+| initial task | kernel | 1 | — | runs `usermain()` (and the `TEST=1` self-tests), then sleeps | `kernel/inittask/inittask.c` |
+| USB console service | kernel | 3 | core 0 | serial console | `lib/libtm/.../usb/usb_console.c` |
+| `cyw43` (`cyw43_utk_task`) | kernel | 4 | core 0 | Wi-Fi, lwIP, MQTT; runs S1's MQTT client and services S1's buffers | `lib/libwifi/.../cyw43_utk_kernel.c` |
+| — | S1 | — | — | no task of its own: all S1 network code runs in `cyw43` | `subsystem1/` |
+| `motion_task` | S2 | 14 | core 1 | PID loop and the Vehicle Controller | `subsystem2/subsystem2.c` |
+| `line_service_task` | S3 | 16 | core 1 | IR sampling (1 ms), barcode decoding, junctions; on core 1, away from the radio | `subsystem3/line_service.c` |
+| `imu_task` | S4 | 18 | any | IMU sampling (20 ms), terrain and safety state | `subsystem4/subsystem4.c` |
+| `obstacle` (`obstacle_task`) | S5 | 20 | any | scan, profile, plan, request avoidance moves | `subsystem5/subsystem5.c` |
 
 Core: `TP_PRC1` = core 0, `TP_PRC2` = core 1, or "any".
+
+Test harnesses (`all_test`, `line_follow_test`, `barcode_test`, `motor_test`,
+`motion`, `integrated_motor_test`; README section 2) add or replace tasks
+inside the owning subsystem's band. They are not part of this design.
 
 ## 5. Interfaces between subsystems
 
 Every arrow between two subsystems is listed here. The **provider** creates
-the kernel object and publishes its ID in its own `subsystemN.h`; the **user** only
-sends to it or waits on it. Agree on the data format before coding.
+the kernel object and publishes its ID or access function in its own
+`subsystemN.h`; the **user** only sends to it or reads it. Agree on the data
+format before coding.
 
-| ID | From → To | Mechanism | Object ID name | Data / meaning | Agreed by |
-| --- | --- | --- | --- | --- | --- |
-| IF-01 | S2 → S3 | mailbox (owned by S3) | `mbx_samples` | `SAMPLE_MSG` in `subsystem2.h` | *example* |
-| IF-02 | S3 → S2 | semaphore + fixed memory pool (owned by S2) | `sem_slots`, `mpf_samples` | receiver returns the block, then 1 slot | *example* |
-| IF-03 | S3 → S4 | message buffer + event flag (owned by S4) | `mbf_summary`, `flg_events` | text line ≤ `S4_SUMMARY_MAX` bytes, then `FLG_BATCH` | *example* |
-| IF-04 | S4 → S3 | shared data under a mutex (owned by S3) | `app_stats`, `mtx_stats` | `APP_STATS`, read only while locked | *example* |
-| IF-05 | All → S1 | telemetry queue | `subsystem1_publish_telemetry` | nonblocking message buffer | Buddy 1 |
-| IF-06 | S1 → controller | command queue | `subsystem1_receive_command` | message buffer receive | Buddy 1 |
-| IF-07 | S3 to S2 robot adapter | S3 message buffer and snapshot API | `g_h_line_nav_q` | line positions and barcode/junction commands; one consumer, demo disabled | integrated build |
-| IF-08 | S4 to S2 robot adapter | snapshot under S4 mutex | `subsystem4_get_latest()` | IMU readiness, terrain and safety stop | integrated build |
-| IF-09 | Application to S2 | message buffer, separate STOP flag | `mbf_motion_cmd`, `flg_motion_stop` | `MOTION_COMMAND`; autonomous profiles reject external moves | motion build |
-| IF-10 | S5 → S2 robot adapter (VC), and the `all_test` loop | packed 32-bit request word, single writer, read with `subsystem5_get_request()` (owned by S5) | `subsystem5_get_request()` | `S5_REQUEST`: NONE / HOLD / MOVE{fwd cm, pivot deg, stop-on-line (first sensor, or with bit 28 `line_all` once every steering sensor has crossed)} / RESUME / SAFE_STOP plus a 4-bit seq; reserved values → VC stops (`E_PAR`). S5 posts HOLD at boot and the VC does not arm until S5 releases it (after the servo's start-up swing) | **proposed** by Buddy 5; needs Buddy 2's OK |
-| IF-11 | S2 robot adapter (VC), or the `all_test` loop → S5 | event flag (owned by S5) | `flg_s5_evt` | `S5_EVT_FOLLOWING` / `STOPPED` / `MOTION_DONE` / `LINE_FOUND` / `MOVE_FAILED` | **proposed** by Buddy 5; needs Buddy 2's OK |
+The Vehicle Controller (VC, `robot_control.c`, in S2's `motion_task`) is the
+one place that reads every subsystem and decides what the robot does: safety
+first, then S5 avoidance, then line following.
 
-Robot modes and validation are documented in
-`app_program/subsystem2/INTEGRATION.md`. Active S2 tasks: motion/bench at 14 on
-core 1; compatibility producer at 15 only in integrated builds. S3 retains
-consumer at 17 on core 0, and runs the line service at 16 on core 1 in
-`integrated` and `all_test` (away from the radio on core 0; core 0 in the
-other modes). S4 IMU runs at 18 on any core.
-S5 `obstacle_task` runs at 20 on any core in `integrated` and
-`integrated_motor_test`; S1 is not started by these robot profiles. While S5
-has a HOLD or MOVE request, the VC's `avoid_step()` hook in `robot_control.c`
-pauses line following and executes S5's moves; in `all_test` its loop
-does the same through `s5_step()` in `all_buddies_test.c`. Both run the one
-shared executor `subsystem5/s5_executor.c` (the IF-10/IF-11 hand-shake) and
-only supply their own drive functions (`S5_EXEC_OPS`). The 1 ms kernel timer supports
-the short requested encoder sleep; actual polling includes an extra tick of
-kernel rounding and scheduling overhead.
+| ID | From → To | Mechanism | Object ID / function | Data / meaning | Agreed by | Issue |
+| --- | --- | --- | --- | --- | --- | --- |
+| IF-05 | VC → S1 | message buffer, nonblocking send (owned by S1) | `subsystem1_publish_telemetry()` | 80-bit telemetry packet once a second: state, faults, speed, distance, line sensors, barcode, highest hump, encoder counts, obstacle scan results (layout in `subsystem1/README.md`) | Buddy 1; VC side pending | #72, #40, #41 |
+| IF-06 | S1 → VC | message buffer, polled with `TMO_POL` (owned by S1) | `subsystem1_receive_command()` | PC commands STATUS, PAUSE, RESUME, RESET_STATS | Buddy 1; VC side pending | #72, #49 |
+| IF-07 | S3 → VC | S3 message buffer and snapshot API | `g_h_line_nav_q` | line positions; barcode letter and junction command; one consumer | integrated build | #38, #68 |
+| IF-08 | S4 → VC, S5 | snapshot under S4 mutex | `subsystem4_get_latest()` | IMU calibrated, terrain (hump, tilt, highest-hump height), lift-stop, motion class, turn rate. S5 ignores readings while tilted or on a hump (A5-2) | integrated build | #53, #42, #43, #44, #67 |
+| IF-09 | Application → S2 | message buffer, separate STOP flag | `mbf_motion_cmd`, `flg_motion_stop` | `MOTION_COMMAND` (forward, reverse, turn, stop); autonomous profiles reject external moves | motion build | #39 |
+| IF-10 | S5 → VC | packed 32-bit request word, single writer, read with `subsystem5_get_request()` (owned by S5) | `subsystem5_get_request()` | `S5_REQUEST`: NONE / HOLD / MOVE{fwd or reverse cm, pivot deg, stop-on-line (first sensor, or with bit 28 `line_all` once every steering sensor has crossed)} / RESUME / SAFE_STOP plus a 4-bit seq; reserved values → VC stops (`E_PAR`). S5 posts HOLD at boot and the VC does not arm until S5 releases it (after the servo's start-up swing) | **proposed** by Buddy 5; needs Buddy 2's OK | #39 |
+| IF-11 | VC → S5 | event flag (owned by S5) | `flg_s5_evt` | `S5_EVT_FOLLOWING` / `STOPPED` / `MOTION_DONE` / `LINE_FOUND` / `MOVE_FAILED` | **proposed** by Buddy 5; needs Buddy 2's OK | — |
+| IF-12 | S1 → VC → S3 | message buffer (owned by S1), then S3 setter | `subsystem1_receive_mapping()`, `line_service_set_mapping()` | 4-letter letter-to-movement map sent from the PC before the demo. Until a map arrives, the robot goes straight at junctions. No hard-coded map | pending | #72, #38 |
+| IF-13 | S3 → S1 | message buffer (owned by S1), nonblocking send | *to be named* | barcode result event: frame, valid/invalid, letter, run count; published on `<id>/barcode` with QoS 1 (`testing/subsystem1/BARCODE_MQTT.md`) | pending | #3, #16 |
+
+While S5 has a HOLD or MOVE request, the VC's `avoid_step()` in
+`robot_control.c` pauses line following and executes S5's moves through the
+shared executor `subsystem5/s5_executor.c` (the IF-10/IF-11 hand-shake).
+
+Still to define (TBD): the start command and Idle/Ready state (#48); one
+producer and a clear/latch rule for every event bit (#50); command handling
+when Wi-Fi drops (#49); whether tilt stops the robot (#67); line loss: stop
+and wait, or search (#68).
 
 Each interface is tested by at least one integration test
 (`testing/integration/TEST_LOG.md`).
@@ -206,18 +236,19 @@ Each interface is tested by at least one integration test
 ## 6. Kernel object budget
 
 Limits are set in `config/config.h`. If the team needs more, raise the
-limit there. The counts below are what the code creates in
-`ROBOT_MODE=integrated` with Wi-Fi and the USB console (audited 2026-11-14).
+limit there. The counts are for the final firmware: the objects the code
+creates today, without the template's producer/consumer code, plus the
+**planned** objects marked (+).
 
 | Object | Limit | Kernel | S1 | S2 | S3 | S4 | S5 | Total |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Task | 32 | 3 | 0 | 2 | 2 | 1 | 1 | 9 |
-| Semaphore | 16 | 3 | | 1 | | | | 4 |
+| Task | 32 | 3 | 0 | 1 | 1 | 1 | 1 | 7 |
+| Semaphore | 16 | 3 | | | | | | 3 |
 | Event flag | 16 | 5 | | 1 | | | 1 | 7 |
-| Mailbox | 12 | | | | 1 | | | 1 |
-| Mutex | 12 | | | 1 | 2 | 1 | | 4 |
-| Message buffer | 12 | | 3 | 1 | 1 | | | 5 |
-| Fixed memory pool | 12 | | | 1 | | | | 1 |
+| Mailbox | 12 | | | | | | | 0 |
+| Mutex | 12 | | | 1 | 1 | 1 | | 3 |
+| Message buffer | 12 | | 3 + 1 (+) | 1 | 1 | | | 6 |
+| Fixed memory pool | 12 | | | | | | | 0 |
 | Variable memory pool | 12 | | | | | | | 0 |
 | Cyclic handler | 12 | | | | 1 | | | 1 |
 | Alarm handler | 12 | | | | | | | 0 |
@@ -227,25 +258,14 @@ What each column is:
 - **Kernel:** tasks are the initial task, the USB console and `cyw43`.
   Semaphores are the device-driver locks for the ADC, I2C0 and serial
   drivers. Event flags are the device manager lock, the ADC, I2C0 and two for
-  UART0. A build without Wi-Fi or the USB console has one task fewer for each.
+  UART0.
 - **S1:** `telemetry_queue`, `command_queue`, `mapping_queue`
-  (`subsystem1.c`). No task: `cyw43` services the queues.
-- **S2:** `motion_task`, `producer_task`; `mbf_motion_cmd`,
-  `mtx_motion_status`, `flg_motion_stop` (`subsystem2.c`); *example:*
-  `sem_slots`, `mpf_samples` (`task_producer.c`).
-- **S3:** `line_service_task`, `consumer_task`; `g_h_line_mutex`,
-  `g_h_line_nav_q`, the 1 ms `g_h_line_cycle` (`line_service.c`); *example:*
-  `mbx_samples`, `mtx_stats` (`subsystem3.c`).
+  (`subsystem1.c`); (+) the barcode event queue for IF-13.
+- **S2:** `motion_task`; `mbf_motion_cmd`, `mtx_motion_status`,
+  `flg_motion_stop` (`subsystem2.c`).
+- **S3:** `line_service_task`; `g_h_line_mutex`, `g_h_line_nav_q`, the 1 ms
+  `g_h_line_cycle` (`line_service.c`).
 - **S4:** `imu_task`, `mtx_imu_data` (`subsystem4.c`).
 - **S5:** `obstacle_task`, `flg_s5_evt` (`subsystem5.c`).
 
-Other modes stay within these totals. `producer_task`, `consumer_task` and
-the *example* objects exist only in `integrated` and `integrated_motor_test`.
-The `all_test` and `line_follow_test` loops replace `motion_task`, `barcode_test`
-adds `line_demo_task`, and `motion` and `motor_test` create no S3–S5 objects
-(section 4).
-
-Buddy 1 integration: MQTT implementation moved from the library into subsystem1;
-the service entry point remains `mqtt_utk_start`. Subsystem4 no longer pauses the
-removed LED demo. Team review of this shared build/interface change is required
-before merging. See `app_program/subsystem1/README.md`.
+Add a row entry here before creating any new object.
