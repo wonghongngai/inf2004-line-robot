@@ -11,10 +11,10 @@
 Build (no Wi-Fi):
 
 ```sh
-make -C build_make -j8 ROBOT_MODE=all_test ALL_TEST_OFFLINE=1 WIFI=none NET=none MQTT=0 TEST=0 CONSOLE=usb_cdc CRASH_REPORT=0
+sh build.sh all_test_offline
 ```
 
-Flash `build_make/mtk3pico_smp1_usb_cdc_all_test.uf2`.
+Flash `build_make/robot-all_test-offline.uf2`.
 
 This profile combines S2 motors/encoders, S3 TRACK line sensing, and S4 IMU.
 S1 command/telemetry queues are initialized, but Wi-Fi and MQTT are disabled.

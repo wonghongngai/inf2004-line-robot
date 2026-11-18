@@ -1,18 +1,19 @@
 # Motion control with line sensing and IMU
 
-Run commands from `build_make` in the configured WSL/Linux terminal. The default
-is `ROBOT_MODE=integrated`. Every mode includes the real motor and encoder
-drivers. Standalone images do not compile, link, or start S3/S4; they also skip
-the LED and template subsystem. The kernel's USB/WiFi/I2C services remain.
+Run commands from the repo root with `build.sh` (README section 1.1). Every
+mode includes the real motor and encoder drivers. Standalone images
+(`motor_test`, `motion`) do not compile, link, or start S3/S4/S5; they also
+skip the template producer task. The kernel's USB and I2C services remain;
+only `integrated` and `all_test` turn on Wi-Fi.
 
-| Build | Behaviour after boot | UF2 (default SMP/USB/WiFi) |
+| Build | Behaviour after boot | UF2 (in `build_make/`) |
 | --- | --- | --- |
-| `make ROBOT_MODE=motor_test -j8` | After 5 s, timed wheel/pivot pulses, then stops. No calibration needed. Raise wheels. | `mtk3pico_smp1_usb_cdc_wifi_motor_test.uf2` |
-| `make ROBOT_MODE=integrated_motor_test -j8` | Same raised-wheel pulses with S3 IR and S4 IMU tasks active; prints PWM and sensor diagnostics after each pulse. | `mtk3pico_smp1_usb_cdc_wifi_integrated_motor_test.uf2` |
-| `make ROBOT_MODE=motion -j8` | Motors idle; accepts `subsystem2_send_command()` from application code. | `mtk3pico_smp1_usb_cdc_wifi_motion.uf2` |
-| `make ROBOT_MODE=motion MOTION_DEMO=1 -j8` | After 5 s: forward 20 cm, left 90 degrees, forward 20 cm, right 90 degrees. 1.5 s pauses; stops after sequence or timeout. Needs motion calibration. | `mtk3pico_smp1_usb_cdc_wifi_motion_demo.uf2` |
-| `make ROBOT_MODE=integrated -j8` | Waits for calibration/readiness, then follows the line and executes mapped junction turns. | `mtk3pico_smp1_usb_cdc_wifi_integrated.uf2` |
-| `make ROBOT_MODE=integrated TEST=1 -j8` | S2/S3/S4 software self-tests; automatic driving disabled. | `mtk3pico_smp1_usb_cdc_wifi_integrated_test.uf2` |
+| `sh build.sh motor_test` | After 5 s, timed wheel/pivot pulses, then stops. No calibration needed. Raise wheels. | `robot-motor_test.uf2` |
+| `sh build.sh integrated_motor_test` | Same raised-wheel pulses with S3 IR and S4 IMU tasks active; prints PWM and sensor diagnostics after each pulse. | `robot-integrated_motor_test.uf2` |
+| `sh build.sh motion` | Motors idle; accepts `subsystem2_send_command()` from application code. | `robot-motion.uf2` |
+| `sh build.sh motion MOTION_DEMO=1` | After 5 s: forward 20 cm, left 90 degrees, forward 20 cm, right 90 degrees. 1.5 s pauses; stops after sequence or timeout. Needs motion calibration. | `robot-motion-demo.uf2` |
+| `sh build.sh integrated` | Waits for calibration/readiness, then follows the line and executes mapped junction turns. | `robot-integrated.uf2` |
+| `sh build.sh integrated TEST=1` | S2/S3/S4 software self-tests; automatic driving disabled. | `robot-integrated-test.uf2` |
 
 There is no serial command parser: the USB console prints status, and the
 standalone demo supplies commands automatically. `TEST=1` and the motor bench
