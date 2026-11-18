@@ -71,7 +71,7 @@ One owner per pin.
 | GP4 | S4 | I2C0 SDA, LSM303DLHC |
 | GP5 | S4 | I2C0 SCL, LSM303DLHC |
 | GP6 | S2 | left encoder B |
-| GP7 | | free. Only needed if #7 returns to three steering sensors (Week 6 left IR) |
+| GP7 | | free (was the Week 6 left IR; unused in the SIDE layout) |
 | GP8 | S2 | left motor forward PWM |
 | GP9 | S2 | left motor reverse PWM (#39) |
 | GP10 | S2 | right motor forward PWM |
@@ -91,8 +91,9 @@ One owner per pin.
 | GP27 | S3 | centre IR, digital input (steering); ADC pin initialization disabled |
 | GP28 | S3 | offset barcode scanner IR, digital input; ADC pin initialization disabled |
 
-IR layout: SIDE (GP27 and GP0 steer, GP28 reads barcodes beside the line).
-**TBD #7**: confirm this layout.
+IR layout: SIDE, as wired on the robot. GP27 (centre) and GP0 (right) steer,
+and GP28 (left) reads barcodes beside the line. Each sensor's digital output
+(D0) is wired; the analog outputs (A0) are not connected.
 
 ## 3. Peripherals
 
