@@ -134,7 +134,10 @@ Both builds use the **SIDE** line layout (`ALL_TEST_LINE_LAYOUT`,
 | IMU LSM303DLHC, I2C0 | GP4 SDA, GP5 SCL | S4 |
 | Ultrasonic HC-SR04P | GP16 TRIG, GP17 ECHO | S5 |
 | Scanning servo SG90 | GP14 (Robo Pico servo header) | S5 |
-| Motors / encoders | Robo Pico M1 (left), M2 (right); see `INTEGRATION.md` | S2 |
+| Left motor, Robo Pico M1 | GP8 forward, GP9 reverse | S2 |
+| Right motor, Robo Pico M2 | GP10 forward, GP11 reverse | S2 |
+| Left encoder | GP26 A, GP6 B | S2 |
+| Right encoder | GP2 A, GP3 B | S2 |
 
 IR inputs read raw 1 on black, 0 on white. Never use GP23/GP24/GP25/GP29:
 they are wired to the Pico W radio. Claim every pin in `TEAM.md` before wiring it.
@@ -296,13 +299,17 @@ every `make`, as the next plain `make` goes back to the defaults.
 ```sh
 make -j8                          # defaults: SMP=1 CONSOLE=usb_cdc WIFI=cyw43 TEST=0 CRASH_REPORT=0
 make SMP=0 -j8                    # single-core build
-make CONSOLE=uart WIFI=none -j8   # no USB console, radio off (no Pico SDK needed)
+make ROBOT_MODE=motion CONSOLE=uart WIFI=none -j8   # no USB console, radio off (no Pico SDK needed)
 make TEST=1 -j8                   # firmware with the subsystem self-tests
-make CRASH_REPORT=1 -j8           # also see crash reports, on GP0/GP1 (uses those pins)
+make ROBOT_MODE=motion CRASH_REPORT=1 -j8           # also see crash reports, on GP0/GP1 (uses those pins)
 ```
 
-To debug a crash with `CRASH_REPORT=1`, use a mode that does not use GP0 as
-an IR input, e.g.:
+`CONSOLE=uart` and `CRASH_REPORT=1` put UART0 on GP0/GP1, and GP0 is the
+right IR sensor. Use them only with a mode that does not read the IR sensors
+(`motion` or `motor_test`). Every other mode refuses to build: `line_service.c`
+stops with `#error "IR_RIGHT uses GP0..."`. Unplug the IR sensor from GP0
+first, or UART transmit and the sensor output drive the same wire. To debug a
+crash, e.g.:
 
 ```sh
 make ROBOT_MODE=motion SMP=0 TEST=1 CRASH_REPORT=1 -j8
@@ -312,7 +319,7 @@ make ROBOT_MODE=motion SMP=0 TEST=1 CRASH_REPORT=1 -j8
 | Option | Values (**default**) | What it does | Image name | C macro your code can test |
 |---|---|---|---|---|
 | `SMP` | `0`, **`1`** | `1` runs the kernel on both RP2040 cores; `0` uses core 0 only | `smp1` / `smp0` | `TK_SUPPORT_SMP` (1 or 0) |
-| `CONSOLE` | **`usb_cdc`**, `uart` | where `tm_printf` output goes. `usb_cdc` = USB cable; `uart` = UART0 only (GP0 TX / GP1 RX, needs a USB-serial adapter) | `_usb_cdc` / `_uart` | `TM_CONSOLE_USB_CDC` |
+| `CONSOLE` | **`usb_cdc`**, `uart` | where `tm_printf` output goes. `usb_cdc` = USB cable; `uart` = UART0 only (GP0 TX / GP1 RX, needs a USB-serial adapter). **Uses GP0/GP1**, so not with the IR sensors (see above) | `_usb_cdc` / `_uart` | `TM_CONSOLE_USB_CDC` |
 | `WIFI` | **`cyw43`**, `none` | `cyw43` powers up the Pico W radio and its driver task; `none` leaves the radio off | `_wifi` / *(nothing)* | `TM_WIFI_CYW43` |
 | `NET` | **`none`**, `lwip` | `lwip` adds the TCP/IP stack (needs `WIFI=cyw43` and the SDK's `lib/lwip`) | `_lwip` / *(nothing)* | `CYW43_LWIP` |
 | `MQTT` | **`0`**, `1` | `1` adds the MQTT client (needs `NET=lwip` and `config/wifi_secrets.h`) | `_mqtt` / *(nothing)* | `TM_MQTT` |
