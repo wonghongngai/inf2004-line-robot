@@ -123,7 +123,7 @@ Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 ## Housekeeping
 
 - [ ] Fill in `TEAM.md` (owners, GitHub usernames, pins, interfaces). It still has the template's example rows.
-- [ ] One shared build script with relative paths and `PICO_SDK_PATH` from the environment. The current `build_make/build_*.sh` scripts hardcode one teammate's machine.
+- [ ] One shared build script with relative paths and `PICO_SDK_PATH` from the environment (#11). `sh build.sh <mode>` replaces the old per-machine `build_*_current.sh` scripts; tick this once every buddy has built `integrated` with it.
 - [x] Delete the duplicate copies with " 2" in the name (done 2026-11-13: 8 files removed, all identical to or older than the originals).
 - [x] Stop committing build output: test `.exe` files and build `.log` files are untracked and gitignored (2026-11-13).
 - [x] One host-test runner: `sh testing/run_host_tests.sh` (2026-11-13).

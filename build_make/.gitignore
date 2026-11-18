@@ -4,6 +4,8 @@
 **/*.d
 **/*.o
 tools/elf2uf2
+# build.sh's temporary exit-status file
+.build_status
 
 # Host test programs and build logs are generated output, never committed.
 # Test results go in testing/**/TEST_LOG.md with a log in testing/**/logs/.
