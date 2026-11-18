@@ -51,7 +51,7 @@ it produced, and saves the full output to `build_make/build_<mode>.log`
 sh build.sh integrated
 ```
 
-→ `build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_integrated.uf2`
+→ `build_make/robot-integrated.uf2`
 
 **`integrated` with the on-Pico self-tests** (the `TEST_CHECK`s in each
 `subsystemN_test.c`): `sh build.sh integrated TEST=1`. About 10 s
@@ -59,9 +59,9 @@ after boot it prints one `[TEST] <ID> PASS|FAIL` line per check. This image
 does not drive the robot by itself (section 2.1).
 
 **`all_test`**, with Wi-Fi and MQTT: `sh build.sh all_test`
-(→ `build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_all_test.uf2`).
+(→ `build_make/robot-all_test.uf2`).
 Without Wi-Fi: `sh build.sh all_test_offline`
-(→ `build_make/mtk3pico_smp1_usb_cdc_all_test.uf2`).
+(→ `build_make/robot-all_test-offline.uf2`).
 
 Every mode builds with `TEST=0 CONSOLE=usb_cdc CRASH_REPORT=0`
 (`CRASH_REPORT=0` is required: GP0 is an IR input). Any `VAR=value` after the
@@ -113,31 +113,32 @@ baseline then. Both builds wait 5 s before driving.
 
 Build any of them with `sh build.sh <mode>` (section 1.1). Only
 `integrated` and `all_test` use Wi-Fi and MQTT; the others build with
-`WIFI=none NET=none MQTT=0`. Every image lands in `build_make/` and starts
-with `mtk3pico_smp1_usb_cdc`. Only `integrated` counts as evidence; every
+`WIFI=none NET=none MQTT=0`. Every image lands in `build_make/` and is named
+`robot-<mode>`, plus a suffix for any setting that differs from the mode's
+usual build (section 6). Only `integrated` counts as evidence; every
 other mode is a test or bench build.
 
-| Command | Image (`mtk3pico_smp1_usb_cdc…`) | What it is for |
+| Command | Image | What it is for |
 | --- | --- | --- |
-| `sh build.sh integrated` | `…_wifi_lwip_mqtt_integrated.uf2` | The final robot (section 1) |
-| `sh build.sh all_test` | `…_wifi_lwip_mqtt_all_test.uf2` | Whole-robot test harness (section 1) |
-| `sh build.sh all_test_offline` | `…_all_test.uf2` | `all_test` without Wi-Fi (`ROBOT_MODE=all_test ALL_TEST_OFFLINE=1`) |
-| `sh build.sh integrated_motor_test` | `…_integrated_motor_test.uf2` | Wheels raised: S2 motor pulses with S3 IR and S4 IMU sampling, prints PWM/sensor diagnostics |
-| `sh build.sh motor_test` | `…_motor_test.uf2` | Wheels raised: S2 motors only (see `app_program/subsystem2/HARDWARE_TEST.md`) |
-| `sh build.sh motion` | `…_motion.uf2` | S2 motion controller on its own |
-| `sh build.sh line_follow_test` | `…_line_follow_test.uf2` | S2 + S3 open-loop line following, no IMU, encoders or barcodes (`app_program/subsystem2/line_follow_test.c`) |
-| `sh build.sh barcode_test` | `…_barcode_test.uf2` | S3 barcode bench, motors off (`app_program/subsystem3/line_demo.c`) |
+| `sh build.sh integrated` | `robot-integrated.uf2` | The final robot (section 1) |
+| `sh build.sh all_test` | `robot-all_test.uf2` | Whole-robot test harness (section 1) |
+| `sh build.sh all_test_offline` | `robot-all_test-offline.uf2` | `all_test` without Wi-Fi (`ROBOT_MODE=all_test ALL_TEST_OFFLINE=1`) |
+| `sh build.sh integrated_motor_test` | `robot-integrated_motor_test.uf2` | Wheels raised: S2 motor pulses with S3 IR and S4 IMU sampling, prints PWM/sensor diagnostics |
+| `sh build.sh motor_test` | `robot-motor_test.uf2` | Wheels raised: S2 motors only (see `app_program/subsystem2/HARDWARE_TEST.md`) |
+| `sh build.sh motion` | `robot-motion.uf2` | S2 motion controller on its own |
+| `sh build.sh line_follow_test` | `robot-line_follow_test.uf2` | S2 + S3 open-loop line following, no IMU, encoders or barcodes (`app_program/subsystem2/line_follow_test.c`) |
+| `sh build.sh barcode_test` | `robot-barcode_test.uf2` | S3 barcode bench, motors off (`app_program/subsystem3/line_demo.c`) |
 
 ### 2.1 Test variants
 
 Add these after the mode. Each one changes the image name, so a variant can't
 be mistaken for the normal build.
 
-| Command | Image (`mtk3pico_smp1_usb_cdc…`) | What it adds |
+| Command | Image | What it adds |
 | --- | --- | --- |
-| `sh build.sh integrated TEST=1` | `…_wifi_lwip_mqtt_integrated_test.uf2` | On-Pico self-tests (the `TEST_CHECK`s in each `subsystemN_test.c`); about 10 s after boot, one `[TEST] <ID> PASS\|FAIL` line per check |
-| `sh build.sh motion TEST=1` | `…_motion_test.uf2` | The same self-tests in the standalone motion build |
-| `sh build.sh motion MOTION_DEMO=1` | `…_motion_demo.uf2` | Scripted S2 motion demo (`motion` only; cannot be combined with `TEST=1`) |
+| `sh build.sh integrated TEST=1` | `robot-integrated-test.uf2` | On-Pico self-tests (the `TEST_CHECK`s in each `subsystemN_test.c`); about 10 s after boot, one `[TEST] <ID> PASS\|FAIL` line per check |
+| `sh build.sh motion TEST=1` | `robot-motion-test.uf2` | The same self-tests in the standalone motion build |
+| `sh build.sh motion MOTION_DEMO=1` | `robot-motion-demo.uf2` | Scripted S2 motion demo (`motion` only; cannot be combined with `TEST=1`) |
 | `sh build.sh all_test ALL_TEST_CONTINUE_ON_SENSOR=1` | same as `all_test` | Safety stops become report-only (diagnostic bypass; never for evidence). More switches in section 3.4 |
 
 > ⚠️ **A `TEST=1` image does not drive the robot by itself.** It leaves out
@@ -369,19 +370,30 @@ crash, e.g.:
 
 ```sh
 make ROBOT_MODE=motion SMP=0 TEST=1 CRASH_REPORT=1 -j8
-#  -> build_make/mtk3pico_smp0_usb_cdc_wifi_crash_motion_test.uf2
+#  -> build_make/robot-motion-wifi-smp0-crash-test.uf2
 ```
 
 | Option | Values (**default**) | What it does | Image name | C macro your code can test |
 | --- | --- | --- | --- | --- |
-| `SMP` | `0`, **`1`** | `1` runs the kernel on both RP2040 cores; `0` uses core 0 only | `smp1` / `smp0` | `TK_SUPPORT_SMP` (1 or 0) |
-| `CONSOLE` | **`usb_cdc`**, `uart` | where `tm_printf` output goes. `usb_cdc` = USB cable; `uart` = UART0 only (GP0 TX / GP1 RX, needs a USB-serial adapter). **Uses GP0/GP1**, so not with the IR sensors (see above) | `_usb_cdc` / `_uart` | `TM_CONSOLE_USB_CDC` |
-| `WIFI` | **`cyw43`**, `none` | `cyw43` powers up the Pico W radio and its driver task; `none` leaves the radio off | `_wifi` / *(nothing)* | `TM_WIFI_CYW43` |
-| `NET` | **`none`**, `lwip` | `lwip` adds the TCP/IP stack (needs `WIFI=cyw43` and the SDK's `lib/lwip`) | `_lwip` / *(nothing)* | `CYW43_LWIP` |
-| `MQTT` | **`0`**, `1` | `1` adds the MQTT client (needs `NET=lwip` and `config/wifi_secrets.h`) | `_mqtt` / *(nothing)* | `TM_MQTT` |
-| `TEST` | **`0`**, `1` | `1` compiles every `subsystemN_test.c` and runs the tests at power-up | `_test` / *(nothing)* | `APP_TEST` (1 or 0) |
-| `CRASH_REPORT` | **`0`**, `1` | `1` also copies the console to UART0 on **GP0 (TX) / GP1 (RX)**, 115200 baud, so you can see the last messages and the kernel's crash report. **Uses GP0/GP1.** `CONSOLE=uart` always does this | `_crash` / *(nothing)* | `TM_CONSOLE_UART` (1 or 0) |
-| `ROBOT_MODE` | **`integrated`**, see section 2 | which firmware to build | `_<mode>` | `APP_ROBOT_INTEGRATED`, `APP_ALL_TEST`, … |
+| `SMP` | `0`, **`1`** | `1` runs the kernel on both RP2040 cores; `0` uses core 0 only | `-smp0` / *(nothing)* | `TK_SUPPORT_SMP` (1 or 0) |
+| `CONSOLE` | **`usb_cdc`**, `uart` | where `tm_printf` output goes. `usb_cdc` = USB cable; `uart` = UART0 only (GP0 TX / GP1 RX, needs a USB-serial adapter). **Uses GP0/GP1**, so not with the IR sensors (see above) | *(nothing)* / `-uart` | `TM_CONSOLE_USB_CDC` |
+| `WIFI` | **`cyw43`**, `none` | `cyw43` powers up the Pico W radio and its driver task; `none` leaves the radio off | network suffix, see below | `TM_WIFI_CYW43` |
+| `NET` | **`none`**, `lwip` | `lwip` adds the TCP/IP stack (needs `WIFI=cyw43` and the SDK's `lib/lwip`) | network suffix, see below | `CYW43_LWIP` |
+| `MQTT` | **`0`**, `1` | `1` adds the MQTT client (needs `NET=lwip` and `config/wifi_secrets.h`) | network suffix, see below | `TM_MQTT` |
+| `TEST` | **`0`**, `1` | `1` compiles every `subsystemN_test.c` and runs the tests at power-up | `-test` / *(nothing)* | `APP_TEST` (1 or 0) |
+| `CRASH_REPORT` | **`0`**, `1` | `1` also copies the console to UART0 on **GP0 (TX) / GP1 (RX)**, 115200 baud, so you can see the last messages and the kernel's crash report. **Uses GP0/GP1.** `CONSOLE=uart` always does this | `-crash` / *(nothing)* (`-uart` covers it with `CONSOLE=uart`) | `TM_CONSOLE_UART` (1 or 0) |
+| `ROBOT_MODE` | **`integrated`**, see section 2 | which firmware to build | `robot-<mode>` | `APP_ROBOT_INTEGRATED`, `APP_ALL_TEST`, … |
+
+**Image names** are `robot-<mode>[-<network>][-demo][-smp0][-uart|-crash][-test].uf2`.
+A suffix appears only when a setting differs from the mode's usual build, so
+two different builds never share a name (an SMP=1 image was once flashed in
+place of an SMP=0 one). The network suffix names the `WIFI`/`NET`/`MQTT`
+combination: `-offline` (`none`/`none`/`0`), `-wifi` (`cyw43`/`none`/`0`),
+`-lwip` (`cyw43`/`lwip`/`0`) or `-mqtt` (`cyw43`/`lwip`/`1`). It is left out
+when it is the mode's usual one: `mqtt` for `integrated` and `all_test`,
+`offline` for every other mode. So a plain `make` (`WIFI=cyw43 NET=none`)
+gives `robot-integrated-wifi.uf2`, while `sh build.sh integrated` gives
+`robot-integrated.uf2`.
 
 **Why `CRASH_REPORT` exists.** USB output waits in a buffer until the
 kernel's USB task sends it. If the program crashes, no task runs again, so

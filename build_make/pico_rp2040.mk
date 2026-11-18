@@ -40,14 +40,11 @@ ifneq ($(filter $(WIFI),none cyw43),$(WIFI))
 $(error Unknown WIFI '$(WIFI)'; use none or cyw43)
 endif
 
-ifeq ($(WIFI),cyw43)
-WIFI_SUFFIX := _wifi
-# SMP=0 is supported: the radio service task simply drops its TP_PRC1 affinity
-# request when TK_SUPPORT_SMP is off (see cyw43_utk_kernel.c), the same way the
-# USB console task already did. Everything touching the radio and lwIP still
-# runs on that one task, which is what docs/RELEASE.md safety rule 6 actually
-# requires -- single-core satisfies it trivially.
-endif
+# WIFI=cyw43 with SMP=0 is supported: the radio service task simply drops its
+# TP_PRC1 affinity request when TK_SUPPORT_SMP is off (see cyw43_utk_kernel.c),
+# the same way the USB console task already did. Everything touching the radio
+# and lwIP still runs on that one task, which is what docs/RELEASE.md safety
+# rule 6 actually requires -- single-core satisfies it trivially.
 
 # Optional lwIP network stack on top of WIFI=cyw43. NO_SYS=1 (raw API, no
 # tcpip thread): everything that calls into lwIP -- cyw43_poll(),
@@ -62,7 +59,6 @@ ifeq ($(NET),lwip)
 ifneq ($(WIFI),cyw43)
 $(error NET=lwip requires WIFI=cyw43)
 endif
-NET_SUFFIX := _lwip
 endif
 
 # Optional MQTT client on top of NET=lwip. Connects and publishes from the
@@ -78,11 +74,10 @@ ifeq ($(MQTT),1)
 ifneq ($(NET),lwip)
 $(error MQTT=1 requires NET=lwip)
 endif
-MQTT_SUFFIX := _mqtt
 endif
 
 # TEST=1 builds the subsystem self-tests into the image (APP_TEST=1 in C).
-# The image gets a _test suffix so it cannot be mistaken for the normal one.
+# The image gets a -test suffix so it cannot be mistaken for the normal one.
 TEST ?= 0
 ROBOT_MODE ?= integrated
 MOTION_DEMO ?= 0
@@ -123,15 +118,8 @@ ifeq ($(CRASH_REPORT),1)
 $(error $(ROBOT_MODE) requires CRASH_REPORT=0; GP0 is an IR input)
 endif
 endif
-ROBOT_SUFFIX := _$(ROBOT_MODE)
-ifeq ($(MOTION_DEMO),1)
-ROBOT_SUFFIX := $(ROBOT_SUFFIX)_demo
-endif
 ifneq ($(filter $(TEST),0 1),$(TEST))
 $(error Unknown TEST '$(TEST)'; use 0 or 1)
-endif
-ifeq ($(TEST),1)
-TEST_SUFFIX := _test
 endif
 
 # CRASH_REPORT=1 also copies every console line to UART0 on GP0 (TX) /
@@ -149,17 +137,43 @@ endif
 ifeq ($(CONSOLE),uart)
 override CRASH_REPORT := 1
 endif
-ifeq ($(CONSOLE)$(CRASH_REPORT),usb_cdc1)
-CRASH_SUFFIX := _crash
-endif
+################################################################################
+# Image name (issue #80)
+#
+# Every image is flashed by hand from a downloads folder, so two different
+# builds must never share a name: an SMP=1 build was once flashed in place of
+# an SMP=0 one and only the banner in the log revealed it.  The name starts
+# with the mode and adds a suffix only for a setting that differs from that
+# mode's usual build, so the builds people flash every day get short names:
+#
+#   robot-<mode>[-<network>][-demo][-smp0][-uart|-crash][-test]
+#
+#   robot-integrated.uf2             sh build.sh integrated
+#   robot-integrated-test.uf2        sh build.sh integrated TEST=1
+#   robot-all_test-offline.uf2       sh build.sh all_test_offline
+#   robot-motion-smp0.uf2            sh build.sh motion SMP=0
+#
+# <network> names the WIFI/NET/MQTT combination (the checks above allow only
+# these four) and is left out when it is the mode's usual one: mqtt for
+# integrated and all_test, offline for every other mode (the presets in
+# ../build.sh). A plain 'make' builds WIFI=cyw43 NET=none, so it names its
+# image robot-integrated-wifi.
+################################################################################
 
-#
-# Images are named after the profile they were built with.  Every image is
-# flashed by hand from a downloads folder, so identically-named artifacts are
-# a live hazard: an SMP=1 build was once flashed in place of an SMP=0 one and
-# only the banner in the log revealed it.
-#
-EXE_FILE := mtk3pico_smp$(SMP)_$(CONSOLE)$(WIFI_SUFFIX)$(NET_SUFFIX)$(MQTT_SUFFIX)$(CRASH_SUFFIX)$(ROBOT_SUFFIX)$(TEST_SUFFIX)
+IMAGE_NET_none-none-0  := offline
+IMAGE_NET_cyw43-none-0 := wifi
+IMAGE_NET_cyw43-lwip-0 := lwip
+IMAGE_NET_cyw43-lwip-1 := mqtt
+IMAGE_NET := $(IMAGE_NET_$(WIFI)-$(NET)-$(MQTT))
+IMAGE_NET_USUAL := $(if $(filter integrated all_test,$(ROBOT_MODE)),mqtt,offline)
+
+NAME_NET     := $(if $(filter-out $(IMAGE_NET_USUAL),$(IMAGE_NET)),-$(IMAGE_NET))
+NAME_DEMO    := $(if $(filter 1,$(MOTION_DEMO)),-demo)
+NAME_SMP     := $(if $(filter 0,$(SMP)),-smp0)
+NAME_CONSOLE := $(if $(filter uart,$(CONSOLE)),-uart,$(if $(filter 1,$(CRASH_REPORT)),-crash))
+NAME_TEST    := $(if $(filter 1,$(TEST)),-test)
+
+EXE_FILE := robot-$(ROBOT_MODE)$(NAME_NET)$(NAME_DEMO)$(NAME_SMP)$(NAME_CONSOLE)$(NAME_TEST)
 
 GCC := arm-none-eabi-gcc
 AS := arm-none-eabi-gcc
