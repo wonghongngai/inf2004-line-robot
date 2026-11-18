@@ -30,7 +30,7 @@
 #define S4_TILT_DELTA_MG            180
 #define S4_TILT_CONFIRM_SAMPLES    10U
 #define S4_COLLISION_DELTA_MG       1200  /* 1200 tripped on motor start-up jolt */
-#define S4_HUMP_ENTRY_MG            60
+#define S4_HUMP_ENTRY_MG            85
 #define S4_HUMP_OPPOSITE_MG          60
 #define S4_HUMP_SETTLE_MG           40
 #define S4_HUMP_SETTLE_SAMPLES      5U
