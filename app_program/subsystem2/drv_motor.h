@@ -13,7 +13,7 @@
 ER drv_motor_init(void);
 
 /*
- * Set left and right forward motor speed as percentages.
+ * Set signed PWM percentages: positive forward, negative reverse.
  */
 void drv_motor_set(
     float left_percent,

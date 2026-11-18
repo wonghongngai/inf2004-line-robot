@@ -318,12 +318,14 @@ static bool test_loss_during_scan(void)
     uint8_t letter = 0u;
     line_barcode_reset(&context);
     (void)feed(&context, 3u, TEST_QUIET_MS, &count, &letter);
-    for (uint8_t idx = 0u; idx < 10u; idx++)
+    (void)feed(&context, 7u, g_sample_a[0], &count, &letter);
+    bool b_scanning = (LINE_BARCODE_SCANNING == context.state);
+    for (uint8_t idx = 1u; idx < 10u; idx++)
     {
         uint8_t sensors = (0u == (idx & 1u)) ? 7u : 3u;
         (void)feed(&context, sensors, g_sample_a[idx], &count, &letter);
     }
-    bool b_scanning = (LINE_BARCODE_SCANNING == context.state);
+    b_scanning = b_scanning && (LINE_BARCODE_SCANNING == context.state);
     (void)feed(&context, 0u, 150u, &count, &letter);
     return (b_scanning && (LINE_BARCODE_SEARCH == context.state));
 }

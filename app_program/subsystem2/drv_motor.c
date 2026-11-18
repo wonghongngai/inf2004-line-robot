@@ -12,10 +12,7 @@
  *      M2A = GP10
  *      M2B = GP11
  *
- * This project has no backwards command.
- *
- * MxA is therefore currently treated as the forward PWM output while
- * MxB remains LOW.
+ * MxA drives forward and MxB drives reverse.
  *
  * Actual motor direction depends on physical motor wiring.  If a motor
  * rotates backwards during hardware testing, swap the physical motor wires
@@ -186,68 +183,25 @@ ER drv_motor_init(void)
     return E_OK;
 }
 
-void drv_motor_set(
-    float left_percent,
-    float right_percent
-)
+/* Both inputs share a PWM slice. Update them together so a direction
+ * change cannot latch a cycle with both inputs driven. */
+static void set_motor_pwm(UINT forward_pin, float percent)
 {
-    /*
-     * Left motor forward PWM.
-     */
-    (void)pwm_set_cc(
-        MOTOR_LEFT_FORWARD_PIN,
-        percent_to_cc(left_percent)
-    );
+    UW forward = percent_to_cc(percent);
+    UW reverse = percent_to_cc(-percent);
+    out_w(MOTOR_PWM_REG((forward_pin >> 1u) & 7u, PWM_CHx_CC),
+          forward | (reverse << 16u));
+}
 
-    /*
-     * No backwards movement.
-     */
-    (void)pwm_set_cc(
-        MOTOR_LEFT_REVERSE_PIN,
-        0U
-    );
-
-    /*
-     * Right motor forward PWM.
-     */
-    (void)pwm_set_cc(
-        MOTOR_RIGHT_FORWARD_PIN,
-        percent_to_cc(right_percent)
-    );
-
-    /*
-     * No backwards movement.
-     */
-    (void)pwm_set_cc(
-        MOTOR_RIGHT_REVERSE_PIN,
-        0U
-    );
+void drv_motor_set(float left_percent, float right_percent)
+{
+    set_motor_pwm(MOTOR_LEFT_FORWARD_PIN, left_percent);
+    set_motor_pwm(MOTOR_RIGHT_FORWARD_PIN, right_percent);
 }
 
 void drv_motor_stop(void)
 {
-    /*
-     * Set every motor-driver input to zero.
-     */
-    (void)pwm_set_cc(
-        MOTOR_LEFT_FORWARD_PIN,
-        0U
-    );
-
-    (void)pwm_set_cc(
-        MOTOR_LEFT_REVERSE_PIN,
-        0U
-    );
-
-    (void)pwm_set_cc(
-        MOTOR_RIGHT_FORWARD_PIN,
-        0U
-    );
-
-    (void)pwm_set_cc(
-        MOTOR_RIGHT_REVERSE_PIN,
-        0U
-    );
+    drv_motor_set(0.0f, 0.0f);
 }
 
 ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS *out)

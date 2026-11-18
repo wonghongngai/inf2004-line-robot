@@ -596,8 +596,9 @@ line_barcode_msg_t line_barcode_step(line_barcode_ctx_t *p_ctx,
         barcode_event = barcode_update(p_ctx, elapsed_ms, &letter);
         junction_event = side_junction_update(p_ctx);
     }
+    /* Slowdown needs to start at capture, before the start symbol is verified. */
     if ((LINE_BARCODE_FOLLOW == p_ctx->state)
-        && (0u != (p_ctx->flags & BARCODE_FLAG_CONFIRMED)))
+        && (0u != (p_ctx->flags & BARCODE_FLAG_CAPTURE)))
     {
         p_ctx->state = LINE_BARCODE_SCANNING;
     }
@@ -624,6 +625,10 @@ line_barcode_msg_t line_barcode_step(line_barcode_ctx_t *p_ctx,
     }
     line_barcode_msg_t msg = line_barcode_pack(p_ctx->stable, position, 0u,
                                                p_ctx->state, event, fault);
+    if ((p_ctx->flags & BARCODE_FLAG_CAPTURE) != 0u)
+    {
+        msg.data[1] |= LINE_BARCODE_CAPTURE_ACTIVE;
+    }
     if (LINE_BARCODE_EVT_BARCODE == event)
     {
         msg.data[2] = (uint8_t)((msg.data[2] & ~LINE_BARCODE_LETTER_MASK)

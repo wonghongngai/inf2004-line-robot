@@ -38,6 +38,7 @@
 #define LINE_BARCODE_COUNT_A 0
 #endif
 #define LINE_BARCODE_SENSOR_MASK     7u
+#define LINE_BARCODE_CAPTURE_ACTIVE  (1u << 6u)
 #define LINE_BARCODE_LEFT            4u
 #define LINE_BARCODE_CENTRE          2u
 #define LINE_BARCODE_RIGHT           1u
@@ -75,7 +76,7 @@
 
 /* Explicit wire layout, independent of ABI/bit-field ordering:
  * byte 0: sensors[2:0], position[5:3], command[7:6].
- * byte 1: state[2:0], event[5:3], reserved[7:6]=0.
+ * byte 1: state[2:0], event[5:3], barcode capture active[6], reserved[7]=0.
  * byte 2: decoded letter[4:0] (A=0..Z=25), fault bitmask[7:5].
  * Letter valid only on BARCODE or COMMAND events.
  * Position 0..4 = far left, left, centred, right, far right;

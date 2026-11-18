@@ -1,0 +1,4 @@
+# Vendor code (micro T-Kernel, device drivers, BSP) is left as shipped.
+# Team code under app_program/ has its own .clang-format.
+DisableFormat: true
+SortIncludes: Never

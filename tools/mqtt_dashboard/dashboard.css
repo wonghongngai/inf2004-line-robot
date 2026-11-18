@@ -1,0 +1,61 @@
+:root {
+  color-scheme: dark;
+  font-family: "Avenir Next", system-ui, sans-serif;
+  background: #0c1420;
+  color: #eaf2fa;
+  --muted: #a9bbcd;
+  --border: #293b4d;
+  --accent: #77e7c4;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { width: min(1120px, calc(100% - 36px)); margin: 0 auto; padding: 42px 0; }
+header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.4rem); letter-spacing: -.05em; }
+h2 { margin: 0 0 14px; font-size: 1.1rem; }
+p { margin: 8px 0 0; color: var(--muted); }
+.eyebrow { color: var(--accent); font-size: .75rem; font-weight: 700; letter-spacing: .14em; }
+.badge {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  padding: 8px 14px;
+  font-size: .875rem;
+  font-weight: 650;
+}
+.badge[data-tone="good"] { color: var(--accent); border-color: #356c62; }
+.badge[data-tone="warn"] { color: #ffcb86; border-color: #745735; }
+.summary, .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.summary { margin-bottom: 16px; }
+.summary > div, .card {
+  background: #141f2e;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+}
+.summary > div { border-top: 2px solid #477e82; }
+.summary span, dt, .sensors > div { color: var(--muted); font-size: .875rem; }
+.summary strong { display: block; margin-top: 7px; font-size: 1.15rem; }
+dl { margin: 0; }
+dl > div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
+dl > div:last-child { padding-bottom: 0; }
+dd { margin: 0; text-align: right; overflow-wrap: anywhere; font-size: .875rem; font-weight: 650; }
+.sensors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+.sensors > div { background: #0e1826; padding: 9px; border-radius: 8px; text-align: center; }
+.sensors strong { display: block; color: #eaf2fa; margin-top: 4px; }
+.sensors strong[data-active="1"] { color: var(--accent); }
+@media (max-width: 850px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 570px) {
+  main { padding: 24px 0; }
+  .grid, .summary { grid-template-columns: 1fr; }
+}

@@ -274,10 +274,10 @@ has 29 alternating segments: 15 black bars and 14 internal white gaps. Letter
 identity comes from widths, not segment count. Both scan directions work.
 GP28 is the offset barcode sensor; centre/right continue steering.
 
-The combined controller uses A=LEFT, F=RIGHT, Z=STRAIGHT and W=U-TURN
-at the next C/R-both-black junction. All other A-Z letters are decoded and
-logged without a barcode movement assignment. This fixed map is installed
-in MQTT and offline builds; incoming MQTT mapping updates are ignored.
+The combined controller starts with A=LEFT, F=RIGHT, Z=STRAIGHT and W=U-TURN.
+In MQTT-enabled `all_test`, a valid mapping message replaces those assignments.
+The controller looks up each detected letter at the next C/R-both-black junction.
+Letters outside the current map have no barcode movement assignment.
 An unmapped letter replaces any previously pending letter. The existing
 C/R-both-black stop rule still applies without a mapped movement.
 The existing movement advance/pivot calibration and timeout still apply.
