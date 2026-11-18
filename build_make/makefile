@@ -95,4 +95,9 @@ clean:
 	-$(RM) $(OBJS) $(SECONDARY_SIZE) $(ASM_DEPS) $(S_UPPER_DEPS) $(C_DEPS) $(EXE_FILE).elf $(EXE_FILE).map
 	-@echo ' '
 
-.PHONY: all clean dependents
+# Print the image name for the current profile (used by ../build.sh to report
+# which .uf2 it produced).
+print-exe:
+	@echo $(EXE_FILE)
+
+.PHONY: all clean dependents print-exe
