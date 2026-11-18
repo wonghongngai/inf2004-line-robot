@@ -2,6 +2,7 @@
 # Shared firmware build script (issue #11). Same command on every machine:
 #
 #     sh build.sh <mode> [VAR=value ...]
+#     sh build.sh all [VAR=value ...]
 #
 # Needs only arm-none-eabi-gcc on PATH and PICO_SDK_PATH in the environment
 # (README section 4). Runs from any folder. Extra VAR=value arguments go
@@ -11,12 +12,16 @@
 #     sh build.sh all_test ALL_TEST_CONTINUE_ON_SENSOR=1
 #
 # Prints the path of the .uf2 it produced. The full make output is shown and
-# also saved to build_make/build_<mode>.log.
+# also saved to build_make/build_<mode>[_<options>].log.
+#
+# 'all' builds every mode and test variant one after another and prints a
+# PASS/FAIL/SKIP table (run it before opening a pull request).
 set -eu
 
 usage() {
 	cat <<'EOF'
 Usage: sh build.sh <mode> [VAR=value ...]
+       sh build.sh all [VAR=value ...]
 
 Modes:
   integrated             final robot firmware, Wi-Fi + MQTT (the demo build)
@@ -27,10 +32,24 @@ Modes:
   motion                 S2 motion controller (add MOTION_DEMO=1 for the demo)
   line_follow_test       S2 + S3 open-loop line following
   barcode_test           S3 barcode bench, motors off
+  all                    build every mode and test variant, print a summary
 
 Every mode builds with TEST=0 CONSOLE=usb_cdc CRASH_REPORT=0 unless overridden.
 EOF
 }
+
+# Every build 'all' runs: each mode, plus the test variants in README 2.1.
+ALL_BUILDS='integrated
+integrated TEST=1
+all_test
+all_test_offline
+integrated_motor_test
+motor_test
+motion
+motion TEST=1
+motion MOTION_DEMO=1
+line_follow_test
+barcode_test'
 
 if [ $# -lt 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
 	usage
@@ -38,24 +57,9 @@ if [ $# -lt 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
 	exit 2
 fi
 
+script=$0
 mode=$1
 shift
-
-offline="WIFI=none NET=none MQTT=0"
-case $mode in
-	integrated)       preset="ROBOT_MODE=integrated WIFI=cyw43 NET=lwip MQTT=1" ;;
-	all_test)         preset="ROBOT_MODE=all_test WIFI=cyw43 NET=lwip MQTT=1" ;;
-	all_test_offline) preset="ROBOT_MODE=all_test ALL_TEST_OFFLINE=1 $offline" ;;
-	integrated_motor_test | motor_test | motion | line_follow_test | barcode_test)
-	                  preset="ROBOT_MODE=$mode $offline" ;;
-	*)
-		echo "build.sh: unknown mode '$mode'" >&2
-		echo >&2
-		usage >&2
-		exit 2
-		;;
-esac
-preset="TEST=0 CONSOLE=usb_cdc CRASH_REPORT=0 $preset"
 
 for arg in "$@"; do
 	case $arg in
@@ -64,15 +68,45 @@ for arg in "$@"; do
 	esac
 done
 
-# Work out the effective MQTT setting (preset first, later arguments win).
-mqtt=0
-for arg in $preset "$@"; do
-	case $arg in MQTT=*) mqtt=${arg#MQTT=} ;; esac
-done
+# The preset make variables for a mode. Prints nothing for an unknown mode.
+preset_for() {
+	offline="WIFI=none NET=none MQTT=0"
+	case $1 in
+		integrated)       p="ROBOT_MODE=integrated WIFI=cyw43 NET=lwip MQTT=1" ;;
+		all_test)         p="ROBOT_MODE=all_test WIFI=cyw43 NET=lwip MQTT=1" ;;
+		all_test_offline) p="ROBOT_MODE=all_test ALL_TEST_OFFLINE=1 $offline" ;;
+		integrated_motor_test | motor_test | motion | line_follow_test | barcode_test)
+		                  p="ROBOT_MODE=$1 $offline" ;;
+		*) return 0 ;;
+	esac
+	echo "TEST=0 CONSOLE=usb_cdc CRASH_REPORT=0 $p"
+}
 
-# Go to build_make/ (next to this script) wherever it was started from. Everything below
-# is relative to this folder.
-cd "$(dirname "$0")/build_make"
+# Effective MQTT setting of a VAR=value list (later words win).
+mqtt_of() {
+	m=0
+	for a in "$@"; do
+		case $a in MQTT=*) m=${a#MQTT=} ;; esac
+	done
+	echo "$m"
+}
+
+# Log file for a mode and its extra options, e.g. build_motion_TEST=1.log.
+log_for() {
+	l=build_$1
+	shift
+	for a in "$@"; do
+		l=${l}_$(printf '%s' "$a" | tr -c 'A-Za-z0-9=_.-' '_')
+	done
+	echo "$l.log"
+}
+
+if [ "$mode" != all ] && [ -z "$(preset_for "$mode")" ]; then
+	echo "build.sh: unknown mode '$mode'" >&2
+	echo >&2
+	usage >&2
+	exit 2
+fi
 
 if [ -z "${PICO_SDK_PATH:-}" ]; then
 	echo "build.sh: PICO_SDK_PATH is not set. See README section 4.4, e.g." >&2
@@ -88,7 +122,64 @@ case $PICO_SDK_PATH in
 		;;
 esac
 
-if [ "$mqtt" = 1 ] && [ ! -f ../config/wifi_secrets.h ]; then
+# Go to build_make/ (next to this script) wherever it was started from.
+# Everything below is relative to this folder.
+cd "$(dirname "$script")/build_make"
+script=../build.sh
+
+if [ "$mode" = all ]; then
+	out=$(mktemp)
+	trap 'rm -f "$out"' EXIT
+	# Options given after 'all' are added to every build. They are re-split
+	# on spaces below, so values containing spaces are not supported here.
+	extra=$*
+	pass=0 fail=0 skip=0 summary=""
+	total=$(printf '%s\n' "$ALL_BUILDS" | wc -l | tr -d ' ')
+	n=0
+	# Read the list on fd 3 so the builds cannot consume it from stdin.
+	while IFS= read -r spec <&3; do
+		n=$((n + 1))
+		name="$spec${extra:+ $extra}"
+		# shellcheck disable=SC2086
+		set -- $spec $extra
+		m=$1
+		shift
+		# shellcheck disable=SC2086
+		if [ "$(mqtt_of $(preset_for "$m") "$@")" = 1 ] && [ ! -f ../config/wifi_secrets.h ]; then
+			result="SKIP  $name  (needs config/wifi_secrets.h)"
+			skip=$((skip + 1))
+			printf 'build.sh all: [%s/%s] %s ... skipped (no config/wifi_secrets.h)\n' "$n" "$total" "$name"
+		else
+			printf 'build.sh all: [%s/%s] %s ... ' "$n" "$total" "$name"
+			start=$(date +%s)
+			if sh "$script" "$m" "$@" > "$out" 2>&1 < /dev/null; then
+				result="PASS  $name  -> $(sed -n 's/^Built: //p' "$out")"
+				pass=$((pass + 1))
+				echo "ok ($(( $(date +%s) - start ))s)"
+			else
+				result="FAIL  $name  (see build_make/$(log_for "$m" "$@"))"
+				fail=$((fail + 1))
+				echo "FAILED ($(( $(date +%s) - start ))s)"
+			fi
+		fi
+		summary="$summary$result
+"
+	done 3<<EOF
+$ALL_BUILDS
+EOF
+	echo
+	echo "----------------------------------------------------------------"
+	printf '%s' "$summary"
+	echo "----------------------------------------------------------------"
+	echo "$pass passed, $fail failed, $skip skipped"
+	[ "$fail" = 0 ]
+	exit
+fi
+
+preset=$(preset_for "$mode")
+
+# shellcheck disable=SC2086
+if [ "$(mqtt_of $preset "$@")" = 1 ] && [ ! -f ../config/wifi_secrets.h ]; then
 	echo "build.sh: $mode needs config/wifi_secrets.h (Wi-Fi and MQTT broker settings)." >&2
 	echo "Copy config/wifi_secrets.example.h to config/wifi_secrets.h and fill it in." >&2
 	echo "Never commit it. Or build without Wi-Fi: add WIFI=none NET=none MQTT=0." >&2
@@ -96,7 +187,7 @@ if [ "$mqtt" = 1 ] && [ ! -f ../config/wifi_secrets.h ]; then
 fi
 
 jobs=$(nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)
-log=build_$mode.log
+log=$(log_for "$mode" "$@")
 
 echo "build.sh: make -j$jobs $preset $*"
 # $preset is split on spaces on purpose; it holds only VAR=value words.

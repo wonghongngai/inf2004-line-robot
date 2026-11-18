@@ -42,7 +42,8 @@ The same code builds into several firmware images, chosen with
 Everyone builds with the same script, `build.sh` in the repo root. Run it from Git
 Bash, WSL, macOS or Linux, with `arm-none-eabi-gcc` on `PATH` and
 `PICO_SDK_PATH` set (section 4). It works from any folder, prints the `.uf2`
-it produced, and saves the full output to `build_make/build_<mode>.log`.
+it produced, and saves the full output to `build_make/build_<mode>.log`
+(with any extra options added to the name, e.g. `build_motion_TEST=1.log`).
 
 **`integrated`**, with Wi-Fi and MQTT (the demo build):
 
@@ -66,7 +67,8 @@ Every mode builds with `TEST=0 CONSOLE=usb_cdc CRASH_REPORT=0`
 (`CRASH_REPORT=0` is required: GP0 is an IR input). Any `VAR=value` after the
 mode is passed to make and overrides the preset, e.g.
 `sh build.sh all_test ALL_TEST_CONTINUE_ON_SENSOR=1`.
-`sh build.sh --help` lists the modes.
+`sh build.sh --help` lists the modes, and `sh build.sh all` builds every one
+(section 2.2).
 
 The script runs plain make, so the equivalent by hand is, for example,
 `make -C build_make -j8 ROBOT_MODE=integrated WIFI=cyw43 NET=lwip MQTT=1 TEST=0 CONSOLE=usb_cdc CRASH_REPORT=0`.
@@ -147,6 +149,20 @@ be mistaken for the normal build.
 `TEST=1` is rejected for `motor_test`, `integrated_motor_test`,
 `all_test`, `all_test_offline`, `line_follow_test` and `barcode_test`: these
 drive the motors or need live sensors.
+
+### 2.2 Build everything before a pull request
+
+```sh
+sh build.sh all
+```
+
+Builds every mode in section 2 and every `TEST=1` / `MOTION_DEMO=1` variant
+in section 2.1 (11 builds, about a minute), then prints one
+`PASS`/`FAIL`/`SKIP` line per build with its `.uf2` or the log to read. It
+exits non-zero if any build failed, so a change that breaks a mode you did
+not touch shows up before review. Without `config/wifi_secrets.h` the three
+Wi-Fi builds are skipped, not failed. Options after `all` are added to every
+build, e.g. `sh build.sh all SMP=0`.
 
 Wiring, calibration and motor checks: [app_program/subsystem2/INTEGRATION.md](app_program/subsystem2/INTEGRATION.md),
 [HARDWARE_TEST.md](app_program/subsystem2/HARDWARE_TEST.md) and
