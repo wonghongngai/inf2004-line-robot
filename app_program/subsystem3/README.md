@@ -238,10 +238,10 @@ BARR-C certification is claimed.
 ## Build and verification
 
 ```sh
-make -C build_make PICO_SDK_PATH="$HOME/pico-sdk" TEST=1 -j8
+sh build.sh integrated TEST=1
 ```
 
-Flash `build_make/mtk3pico_smp1_usb_cdc_wifi_test.uf2` for on-target tests.
+Flash `build_make/robot-integrated-test.uf2` for on-target tests.
 Portable host tests, including the supplied A/Z fixtures:
 
 ```sh
