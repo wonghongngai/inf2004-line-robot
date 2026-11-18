@@ -36,3 +36,4 @@ testing/**/logs/*_console.txt
 
 # Personal AI-assistant notes
 *.local.md
+*.claude
