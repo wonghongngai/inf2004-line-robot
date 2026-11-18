@@ -3,7 +3,7 @@
  * Buddy 4 -- IMU & Terrain Monitoring (final requirements).
  *
  * Implements:
- * - 20 ms IMU sampling
+ * - 10 ms IMU sampling
  * - stationary calibration
  * - hump/ramp detection
  * - ramp-height estimation
@@ -19,22 +19,22 @@
 
 /* RTOS configuration. */
 #define S4_PRI_IMU                  18
-#define S4_SAMPLE_PERIOD_MS         20
-#define S4_CALIBRATION_SAMPLES      50U
-#define S4_PRINT_PERIOD_SAMPLES     50u
+#define S4_SAMPLE_PERIOD_MS         10
+#define S4_CALIBRATION_SAMPLES     100U
+#define S4_PRINT_PERIOD_SAMPLES    100U
 
 /*
  * Initial detection thresholds.
  * These MUST be tuned from the real robot logs.
  */
 #define S4_TILT_DELTA_MG            180
-#define S4_TILT_CONFIRM_SAMPLES     5U
+#define S4_TILT_CONFIRM_SAMPLES    10U
 #define S4_COLLISION_DELTA_MG       1200  /* 1200 tripped on motor start-up jolt */
-#define S4_HUMP_ENTRY_MG            180
-#define S4_HUMP_OPPOSITE_MG         120
-#define S4_HUMP_SETTLE_MG           80
+#define S4_HUMP_ENTRY_MG            60
+#define S4_HUMP_OPPOSITE_MG          60
+#define S4_HUMP_SETTLE_MG           40
 #define S4_HUMP_SETTLE_SAMPLES      5U
-#define S4_HUMP_TIMEOUT_SAMPLES     75U
+#define S4_HUMP_TIMEOUT_SAMPLES    150U
 
 /*
  * Ramp-height output range.

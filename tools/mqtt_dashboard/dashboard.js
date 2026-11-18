@@ -52,7 +52,8 @@ function render(snapshot) {
   put("barcode-letter", !data ? empty : letter == null ? "Not published" :
       letter === 0 ? "None yet" : String.fromCharCode(64 + letter));
   put("barcode", directions[data?.barcode] ?? empty);
-  put("hump", hasFault(2) ? "Unreliable" : measure(data?.highest_hump_mm, "mm"));
+  put("hump", data?.highest_hump_mm > 0 ? measure(data.highest_hump_mm, "mm") :
+      hasFault(2) ? "Unreliable" : data ? "No measurement yet" : empty);
   put("obstacle", optionalMeasure(data?.obstacle_cm, "cm"));
   put("angle", optionalMeasure(data?.scan_deg, "°"));
   put("width", optionalMeasure(data?.obstacle_width_cm, "cm"));
