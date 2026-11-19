@@ -330,17 +330,6 @@ static bool test_loss_during_scan(void)
     return (b_scanning && (LINE_BARCODE_SEARCH == context.state));
 }
 
-static bool test_track_layout(void)
-{
-    line_barcode_ctx_t context;
-    uint8_t count = 0u;
-    uint8_t letter = 0u;
-    bool b_valid = line_barcode_set_layout(&context, LINE_BARCODE_LAYOUT_TRACK);
-    line_barcode_msg_t msg = feed(&context, 7u, 50u, &count, &letter);
-    return (b_valid && (LINE_BARCODE_JUNCTION == (msg.data[1] & 7u))
-            && !line_barcode_set_layout(&context, 2u));
-}
-
 static void test_sample_contract(void)
 {
 #ifndef LINE_BARCODE_HOST_TEST
@@ -353,7 +342,8 @@ static void test_sample_contract(void)
                "scanner edges never change steering");
     TEST_CHECK("S3-U21", test_loss_during_scan(),
                "line loss during barcode capture");
-    TEST_CHECK("S3-U22", test_track_layout(), "three-sensor junction profile");
+    /* S3-U22 (TRACK layout junction) retired 19 Nov: both builds use SIDE.
+     * Invalid-layout rejection is still checked on target by S3-U24. */
     TEST_CHECK("S3-U25", test_side_junction(),
                "SIDE cross-junction reported once, wide bars ignored");
     TEST_CHECK("S3-U26", test_barcode_then_junction(),
@@ -433,7 +423,7 @@ void line_barcode_test(void)
     bool retained = context.run_count == LINE_BARCODE_FRAME_RUNS && commands == 0u;
     for (uint8_t i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
         retained = retained && line_barcode_run_width(&context, i) == runs[i];
-    TEST_CHECK("S3-U14", retained, "malformed start retains all 29 raw widths without emitting letter");
+    TEST_CHECK("S3-U39", retained, "malformed start retains all 29 raw widths without emitting letter");
     /* Hardware scan supplied on 4 Nov: all edges present, squeezed whites. */
     static uint16_t const measured_a[LINE_BARCODE_FRAME_RUNS] = {
         101u,202u,140u,13u,318u,26u,309u,25u,141u,27u,
@@ -456,7 +446,7 @@ void line_barcode_test(void)
         (void)feed(&context, 3u, 420u, &commands, &last_command);
         measured_ok = measured_ok && commands == 1u && last_command == 0u;
     }
-    TEST_CHECK("S3-U15", measured_ok, "recorded 29-run scan decodes A forward/reverse, raw and sampled");
+    TEST_CHECK("S3-U40", measured_ok, "recorded 29-run scan decodes A forward/reverse, raw and sampled");
     /* Hardware scans of A on 19 Nov after rebalancing the GP28 comparator
      * (testing/subsystem5/logs/2026-11-19_183720_console.txt). Scan speed
      * changed within characters; the old strongest-gap split rejected
@@ -518,11 +508,11 @@ void line_barcode_test(void)
                "19 Nov medium-size scans decode A forward/reverse");
     for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i) runs[i] = measured_a[i];
     runs[3] = LINE_BARCODE_MIN_RUN_MS - 1u;
-    TEST_CHECK("S3-U16", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
+    TEST_CHECK("S3-U41", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
                "sub-minimum white run remains invalid");
     runs[3] = measured_a[3];
     runs[9] = 1000u;
-    TEST_CHECK("S3-U17", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
+    TEST_CHECK("S3-U42", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
                "recorded scan with oversized character gap remains invalid");
     build_frame(runs, 0u, false);
     runs[0] = 0u;

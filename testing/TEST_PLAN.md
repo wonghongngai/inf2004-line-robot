@@ -117,10 +117,16 @@ INT-08–INT-10 in integrated mode.
 
 | Test | Level | How | Status |
 |---|---|---|---|
-| `s3/line_barcode`: S3-U02–U13, U18–U22, U25–U26 | L1 | `sh testing/run_host_tests.sh s3/` | PASS |
-| `s3/pptx_samples`, `s3/count_a`: slide barcode fixtures | L1 | same | PASS |
+| `s3/line_barcode`: S3-U02–U13, U18–U21, U25–U26, U36–U42 | L1 | `sh testing/run_host_tests.sh s3/` | PASS |
+| `s3/pptx_samples`: slide barcode fixtures | L1 | same | PASS |
+| `s3/line_service`: S3-U14–U17, U23–U24, U27 on the PC, plus U43–U46 (queue/timing fault latching, barcode → COMMAND through the service) | L1 | same | PASS |
 | `int/line_service`: 1 ms sampling, pins, 30 ms freshness | L1 | `sh testing/run_host_tests.sh int/line_service` | PASS |
-| S3-U01, U14–U17, U23–U24, U27 | L2 | `make TEST=1` | PENDING since 25–27 Oct |
+| S3-U14–U17, U23–U24, U27 | L2 | `make TEST=1` | PENDING since 25–27 Oct |
+
+Retired 19 Nov (see `subsystem3/TEST_LOG.md`): S3-U01 (template consumer, #74),
+S3-U22 (TRACK layout, unused) and the `s3/count_a` host test with the
+count-only decoder mode it tested. The old S3-M01–M05 physical cases are
+superseded by the IDs below.
 
 > ⚠️ **Layout:** both builds now default to SIDE layout: GP28 is the offset
 > barcode scanner and GP27/GP0 steer (`ALL_TEST_LINE_LAYOUT` and
@@ -132,16 +138,16 @@ INT-08–INT-10 in integrated mode.
 
 | ID | What | Level | How | Pass when |
 |---|---|---|---|---|
-| S3-U28 | IR calibration on the real track | L3 | Log the raw value of each sensor over black tape and over white floor, under the room lights | clear gap between the black and white values on every sensor; values in `README.md` |
+| S3-U28 | IR calibration on the real track | L3 | The sensors use their digital D0 outputs, so there is no raw analog value. With the robot still, under the room lights, check each sensor's comparator reads black on black tape and white on white floor. Then scan the large barcode and log the narrow-bar and narrow-space widths for GP28 | every sensor reads black and white correctly; GP28 narrow bar and narrow space within 30 ms of each other (19 Nov final setting: ~13 ms bias); setting recorded in `README.md` |
 | S3-U29 | Follows a straight 18 mm line | L4 | 3 m straight, 5 runs, cruise speed | 5/5 stay on the line |
 | S3-U30 | Follows the course's curves and corners | L4 | Each curve or corner type × 5 | 5/5 without losing the line |
-| S3-U31 | Line lost → search → reacquire on hardware | L4 | Lift the robot off the line and put it back; time it | reacquires within `[set]` ms; reports FAULT after `LINE_BARCODE_SEARCH_MS` if the line isn't found |
+| S3-U31 | Line lost → search → reacquire on hardware | L4 | Lift the robot off the line and put it back; time it | reacquires within `[set]` ms; reports FAULT after `LINE_BARCODE_SEARCH_MS` if the line isn't found. `all_test` sets `LINE_BARCODE_SEARCH_MS` to 0 (no deadline), so the FAULT step only applies in the integrated firmware; which one is final is #4 |
 | S3-U32 | The 4 letters received over MQTT (#38), at driving speed | L4 | Send a map from the PC; 10 passes × 4 barcodes, both directions, each followed by a cross-junction | ≥ `[set]` / 10 correct letters each, and the mapped move done at the next junction; log the decode rate per letter |
 | S3-U35 | All A–Z decode in both directions | L3 | Print A–Z from the tec-it Code 39 generator; pass each barcode both ways at cruise speed | 26/26 letters correct in both directions (prof requirement, 13 Nov) |
-| S3-U33 | Bad barcodes cause no action | L4 | An unmapped letter and a damaged barcode, 5 passes each | 0 wrong commands |
+| S3-U33 | Bad barcodes cause no action | L4 | An unmapped letter and a damaged barcode, 5 passes each | 0 wrong commands. The S3 logic is already covered on the PC by S3-U46; this is the on-robot check |
 | S3-U34 | Speed limit for decoding | L3/L4 | Increase the speed until decoding fails | highest reliable speed recorded; cruise speed set below it |
 
-**Done when:** U01–U34 pass, and barcode turns work end-to-end (INT-08).
+**Done when:** every S3 test that is not retired passes (U02–U42 except U22), and barcode turns work end-to-end (INT-08).
 
 ---
 

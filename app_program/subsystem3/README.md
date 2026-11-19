@@ -296,13 +296,12 @@ The existing movement advance/pivot calibration and timeout still apply.
 Leave white margins before and after the barcode. The leading margin must
 last at least 100 ms and at least ten narrow-bar durations; the trailing
 margin must also last ten narrow-bar durations. Narrow segments must last
-at least 40 ms for this decoder. Keep scan speed steady. Internal wide white
-gaps may exceed 100 ms in this pattern-based mode. Do not scan through the
-licence text overprinted on some slide examples.
+at least 10 ms (`LINE_BARCODE_MIN_RUN_MS`) for this decoder. Keep scan speed
+steady. Internal wide white gaps may exceed 100 ms in this pattern-based mode.
+Do not scan through the licence text overprinted on some slide examples.
 
-Optional legacy count-only behaviour is available with
-`LINE_BARCODE_COUNT_A=1`; it accepts any 29-segment pattern as A and uses
-100 ms white gaps to delimit frames. It is disabled by default.
+The legacy count-only mode (`LINE_BARCODE_COUNT_A`, any 29-segment pattern
+read as A) was removed on 19 Nov; no build used it.
 
 Host checks from the repository root:
 
@@ -310,8 +309,8 @@ Host checks from the repository root:
 sh testing/run_host_tests.sh s3/
 ```
 
-This runs `s3/line_barcode`, `s3/pptx_samples` and `s3/count_a`. Build flags
-live in `testing/run_host_tests.sh`.
+This runs `s3/line_barcode` and `s3/pptx_samples`. Build flags live in
+`testing/run_host_tests.sh`.
 
 The slide fixtures measure the EMF bar geometry for A/F/Z/W/X and a PNG row
 above the licence overlay for Y; tests check direct decoding and sampled

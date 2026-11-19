@@ -104,7 +104,7 @@ The decoder is the best-tested part of the project on the PC, but the sensor lay
 | B3-4 | FR3-3 decode navigation barcodes (W6); prof: all A to Z, both directions | Decoder handles A to Z both ways on the PC (S3-U07); on hardware only A and Z were tried (`208188b`) | Partial | #23 (S3-U32, S3-U35) |
 | B3-5 | W6 statechart 3: an invalid barcode is ignored and line tracking continues | Matches; now also planned: reverse and re-scan a failed barcode | Changed (addition) | #39 |
 | B3-6 | Sampling: periodic sensor processing (W6) | Period changed from 10 ms to 1 ms on 3 Nov (`b276d54`) for barcode resolution | Changed | Record CPU cost in the resource report (#61) |
-| B3-7 | NFR3-1 robust to lighting, track and speed changes; NFR3-2 reliable recognition | No track or lighting tests recorded; on-target tests S3-U01, U14 to U17, U23, U24, U27 pending since late October | Unverified | #21, #22, #23 |
+| B3-7 | NFR3-1 robust to lighting, track and speed changes; NFR3-2 reliable recognition | No track or lighting tests recorded; on-target tests S3-U14 to U17, U23, U24, U27 pending since late October (S3-U01 retired 19 Nov) | Unverified | #21, #22, #23 |
 | B3-8 | WU deliverables: line-following module, barcode decoder, navigation command interface | Code and S3 README exist; README map section is out of date (says MQTT maps are ignored) | Partial | #57 |
 
 ## Buddy 4: IMU, humps, tilt
