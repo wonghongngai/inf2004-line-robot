@@ -1,6 +1,6 @@
 # Buddy 4: IMU, humps, tilt (subsystem 4)
 
-The IMU task samples an LSM303DLHC (accelerometer + magnetometer) every 20 ms,
+The IMU task reads the LSM303DLHC (accelerometer + magnetometer) every 10 ms,
 calibrates a baseline at start-up, detects tilt and humps, estimates the
 highest hump, and publishes a snapshot for the Vehicle Controller and
 telemetry.

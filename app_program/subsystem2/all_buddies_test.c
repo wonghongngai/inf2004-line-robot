@@ -1321,10 +1321,12 @@ static void all_task(INT stacd, void *exinf)
     test.pwm_ramp_per_second = ALL_TEST_PWM_RAMP_PER_SECOND;
     tm_printf((UB *)"[ALL TEST] smooth motor start: 100 PWM percentage points/second\n");
     drv_encoder_get_counts(&test.left_ticks, &test.right_ticks);
-    wheel_odometry_init(&test.odometry, S2_LEFT_TICKS_PER_CM,
-                        S2_RIGHT_TICKS_PER_CM, test.left_ticks, test.right_ticks);
+    /* Height and telemetry use the same interrupt encoder calibration as
+     * straight driving and obstacle avoidance in this test harness. */
+    wheel_odometry_init(&test.odometry, S5_LEFT_TICKS_PER_CM,
+                        S5_RIGHT_TICKS_PER_CM, test.left_ticks, test.right_ticks);
     if (!test.odometry.available)
-        tm_printf((UB *)"[ALL TEST] height/distance unavailable: set measured S2_LEFT/RIGHT_TICKS_PER_CM; raw ticks are logged\n");
+        tm_printf((UB *)"[ALL TEST] height/distance unavailable: check S5_LEFT/RIGHT_TICKS_PER_CM; raw ticks are logged\n");
     tm_printf((UB *)"[ALL TEST] run limit=%lu ms (0=continuous)\n",
               (unsigned long)test.duration_ms);
     test.force_status = true;

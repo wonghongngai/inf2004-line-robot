@@ -16,11 +16,12 @@
 #include "subsystem4.h"
 #include "drv_lsm303dlhc.h"
 #include <stdint.h>
-#define S4_HUMP_REARM_FLAT_SAMPLES 25U
-#define S4_HUMP_ENTRY_CONFIRM_SAMPLES 4U
-#define S4_MOVEMENT_HOLD_SAMPLES 5U
-#define S4_HUMP_EXIT_FLAT_MG 180
-#define S4_HUMP_EXIT_FLAT_SAMPLES 4U
+#define S4_HUMP_REARM_FLAT_SAMPLES 50U
+#define S4_HUMP_ENTRY_CONFIRM_SAMPLES 6U
+#define S4_MOVEMENT_HOLD_SAMPLES 10U
+#define S4_HUMP_FILTER_SAMPLES 5U
+#define S4_HUMP_EXIT_FLAT_MG 40
+#define S4_HUMP_EXIT_FLAT_SAMPLES 8U
 
 typedef enum {
     HUMP_IDLE = 0,
@@ -39,6 +40,7 @@ typedef struct {
 typedef struct {
     HUMP_PHASE phase;
     INT first_sign;
+    BOOL descent_started;
     W peak_mg;
     UW age_samples;
     UW settle_samples;
@@ -92,6 +94,7 @@ LOCAL void reset_hump_detector(void)
 {
     hump_state.phase = HUMP_IDLE;
     hump_state.first_sign = 0;
+    hump_state.descent_started = FALSE;
     hump_state.peak_mg = 0;
     hump_state.age_samples = 0U;
     hump_state.settle_samples = 0U;
@@ -358,9 +361,8 @@ LOCAL BOOL update_hump(W forward_mg,
     }
 
     /*
-     * After one completed hump, require a sustained flat period before
-     * allowing another hump. This prevents one physical hump from
-     * generating repeated events.
+     * After completion or timeout, require a sustained flat period
+     * before another slope can start a measurement.
      */
     if (!hump_armed) {
 
@@ -388,8 +390,11 @@ LOCAL BOOL update_hump(W forward_mg,
         hump_state.age_samples++;
 
         if (hump_state.age_samples > S4_HUMP_TIMEOUT_SAMPLES) {
+            hump_armed = FALSE;
+            hump_rearm_count = 0U;
             reset_hump_detector();
             reset_height_tracker();
+            tm_printf((UB *)"Buddy4: hump timed out; waiting for level ground\n");
             return FALSE;
         }
     }
@@ -403,13 +408,12 @@ LOCAL BOOL update_hump(W forward_mg,
         /*
          * A hump may only begin when:
          *   1. the robot has moved recently, and
-         *   2. the forward-axis slope exceeds the entry threshold.
+         *   2. the filtered forward-axis tilt reaches the entry threshold.
          *
-         * Four consecutive same-direction samples are required so a
+         * Consecutive same-direction samples are required so a
          * short motor-start vibration does not become a hump.
          */
-        if (moving &&
-            (abs_forward >= S4_HUMP_ENTRY_MG)) {
+        if (moving && abs_forward >= S4_HUMP_ENTRY_MG) {
 
             current_sign = sign_w(forward_mg);
 
@@ -472,6 +476,13 @@ LOCAL BOOL update_hump(W forward_mg,
     }
 
     case HUMP_FIRST_SLOPE:
+
+        /* A shallow downhill reading closes this crossing's height record. */
+        if (!hump_state.descent_started && forward_mg * hump_state.first_sign < 0) {
+            hump_state.descent_started = TRUE;
+            tm_printf((UB *)"Buddy4: hump descent started; uphill rise=%u mm\n",
+                      peak_height_mm);
+        }
 
         if (abs_forward > hump_state.peak_mg) {
             hump_state.peak_mg = abs_forward;
@@ -613,6 +624,11 @@ EXPORT void imu_task(INT stacd, void *exinf)
     W dx;
     W dy;
     W completed_hump_peak;
+    /* Moving average of the last five forward samples for hump detection. */
+    W hump_samples[S4_HUMP_FILTER_SAMPLES] = {0};
+    W hump_sum = 0;
+    UW hump_next = 0U;
+    UW hump_count = 0U;
     W last_hump_peak = 0;
     W pitch_deg = 0;
     W collision_delta_mg = 0;
@@ -675,6 +691,9 @@ EXPORT void imu_task(INT stacd, void *exinf)
             hump_armed = TRUE;
             hump_rearm_count = 0U;
             movement_hold_samples = 0U;
+            hump_sum = 0;
+            hump_next = 0U;
+            hump_count = 0U;
             reset_hump_detector();
             reset_height_tracker();
         }
@@ -740,6 +759,9 @@ EXPORT void imu_task(INT stacd, void *exinf)
             if (have_previous && detect_collision(&sample, &previous_sample, &collision_delta_mg)) {
                 motion = IMU_MOTION_COLLISION;
                 event = IMU_EVENT_COLLISION;
+                hump_sum = 0;
+                hump_next = 0U;
+                hump_count = 0U;
                 reset_hump_detector();
                 reset_height_tracker();
                 tilt_samples = 0U;
@@ -749,9 +771,26 @@ EXPORT void imu_task(INT stacd, void *exinf)
                           previous_sample.ax_mg, previous_sample.ay_mg, previous_sample.az_mg,
                           sample.ax_mg, sample.ay_mg, sample.az_mg);
             } else {
+                if (hump_count == S4_HUMP_FILTER_SAMPLES) {
+                    hump_sum -= hump_samples[hump_next];
+                } else {
+                    hump_count++;
+                }
+                hump_samples[hump_next] = dy;
+                hump_sum += dy;
+                hump_next = (hump_next + 1U) % S4_HUMP_FILTER_SAMPLES;
+                W hump_dy = hump_sum / (W)hump_count;
+
                 hump_was_active = (hump_state.phase != HUMP_IDLE);
+                if (!hump_was_active && hump_armed &&
+                    abs_w(hump_dy) >= S4_HUMP_OPPOSITE_MG) {
+                    tm_printf((UB *)
+                              "HUMP DEBUG: raw=%d filtered=%d moving=%d dist=%u entry=%u\n",
+                              dy, hump_dy, movement_hold_samples > 0U,
+                              distance_mm, hump_state.entry_samples);
+                }
                 hump_completed = update_hump(
-                    dy,
+                    hump_dy,
                     movement_hold_samples > 0U,
                     distance_mm,
                     &completed_hump_peak);
@@ -784,8 +823,8 @@ EXPORT void imu_task(INT stacd, void *exinf)
                      * When the hump starts on this exact cycle, the current
                      * entry sample has already been included above.
                      */
-                    if (hump_was_active) {
-                        update_height_estimate(distance_mm, dy);
+                    if (hump_was_active && !hump_state.descent_started) {
+                        update_height_estimate(distance_mm, hump_dy);
                     }
 
                     motion = IMU_MOTION_HUMP;
@@ -796,9 +835,10 @@ EXPORT void imu_task(INT stacd, void *exinf)
                     event = IMU_EVENT_HUMP;
                     last_hump_peak = completed_hump_peak;
                     if (height_distance_seen) {
-                        if (peak_height_mm > last_ramp_height)
+                        if (peak_height_mm > last_ramp_height) {
                             last_ramp_height = peak_height_mm;
-                        last_ramp_height_valid = TRUE;
+                            last_ramp_height_valid = TRUE;
+                        }
                         tm_printf((UB *)
                                   "Buddy4 EVENT: HUMP height=%u mm highest=%u mm peak=%d mg\n",
                                   peak_height_mm, last_ramp_height, last_hump_peak);
@@ -853,7 +893,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
         previous_sample = sample;
         have_previous = TRUE;
 
-        /* Maintain approximately 20 ms between task cycles. */
+        /* Maintain the configured interval between task cycles. */
         tk_get_tim(&cycle_end);
         cycle_ms = cycle_end.lo - cycle_start.lo;
 
