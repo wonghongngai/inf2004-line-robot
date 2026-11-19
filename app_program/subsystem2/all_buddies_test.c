@@ -31,7 +31,11 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
  * and existing turn profiles. Hardware trial: 12.5/15 instead of 10/11. */
 #define ALL_CRUISE_LEFT_PWM         12.5f
 #define ALL_CRUISE_RIGHT_PWM        15.0f
-#define ALL_BARCODE_SCAN_PWM_SCALE   0.75f /* Half PWM stalled at the first bar. */
+/* Scan slow-down. 0.5 stalled at the first bar; 0.75 (18 Nov) scanned so
+ * slowly that a wide space took ~750 ms and a lost narrow bar pushed the
+ * merged white past LINE_BARCODE_RUN_MAX_MS (1000 ms), aborting the frame
+ * (19 Nov). 0.9 scans about 20% faster. */
+#define ALL_BARCODE_SCAN_PWM_SCALE   0.9f
 #define ALL_STRAIGHT_KP              2.0f
 #define ALL_STRAIGHT_MAX_TRIM        2.5f
 #define ALL_STRAIGHT_TRIM_RATE       5.0f
@@ -42,6 +46,12 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
  * wheel (pivot). 5/19 held for 2.5 s still ran wide on 2026-11-11. */
 #define ALL_LINE_HARD_MS          150u
 #define ALL_LINE_HARD_INNER_PWM     0.0f
+/* Inner (left) wheel during a LEFT correction while a barcode is being
+ * scanned: no pivot. GP28 sits on the left, so stopping the left wheel
+ * nearly stopped the scanner and stretched one element mid-character
+ * (19 Nov: a 165 ms narrow space read 391 ms during six LEFT corrections,
+ * frame rejected). 6.25 stalled from rest; scaled by the scan factor. */
+#define ALL_LINE_SCAN_INNER_PWM     8.0f
 #define ALL_LINE_PWM_RATE          80.0f /* PWM points/second, speed-ups only */
 #define ALL_LINE_CONFIRM_MS         5u   /* only when reversing direction */
 /* Scanner edges older than this (GP28 white since) are not a barcode in
@@ -178,11 +188,17 @@ static void apply_follow_pwm(ALL_TEST *t, float left, float right, uint32_t now)
 /* Normal line following only: speed-ups are ramped for smooth starts, but a
  * wheel being slowed takes its target at once so corrections bite in time.
  * Safety stops and S5 retain their own paths. */
+/* GP28 (offset scanner) is on a bar or a barcode capture is in progress. */
+static bool barcode_scanning(const ALL_TEST *t)
+{
+    return ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_SIDE &&
+           ((t->line.data[0] & LINE_BARCODE_LEFT) != 0u ||
+            (t->line.data[1] & LINE_BARCODE_CAPTURE_ACTIVE) != 0u);
+}
+
 static void apply_line_pwm(ALL_TEST *t, float left, float right, uint32_t now)
 {
-    if (ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_SIDE &&
-        ((t->line.data[0] & LINE_BARCODE_LEFT) != 0u ||
-         (t->line.data[1] & LINE_BARCODE_CAPTURE_ACTIVE) != 0u)) {
+    if (barcode_scanning(t)) {
         left *= ALL_BARCODE_SCAN_PWM_SCALE;
         right *= ALL_BARCODE_SCAN_PWM_SCALE;
     }
@@ -566,7 +582,9 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
                        inner_pwm, now);
     } else if (action == 2u) {
         t->stop_reason = "centre black: left correction";
-        apply_line_pwm(t, inner_pwm,
+        /* Keep the scanner side moving over the bars: no left-wheel pivot. */
+        float left_inner = barcode_scanning(t) ? ALL_LINE_SCAN_INNER_PWM : inner_pwm;
+        apply_line_pwm(t, left_inner,
                        ALL_CRUISE_RIGHT_PWM + ALL_LINE_STEER_BOOST, now);
     } else {
         t->stop_reason = NULL;
