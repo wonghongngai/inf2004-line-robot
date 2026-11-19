@@ -17,12 +17,13 @@
 #include "drv_lsm303dlhc.h"
 #include <stdint.h>
 #define S4_HUMP_REARM_FLAT_SAMPLES 50U
-#define S4_HUMP_ENTRY_CONFIRM_SAMPLES 6U
+#define S4_HUMP_ENTRY_CONFIRM_SAMPLES 5U
 #define S4_MOVEMENT_HOLD_SAMPLES 10U
 #define S4_HUMP_FILTER_SAMPLES 5U
 #define S4_HUMP_EXIT_FLAT_MG 40
 #define S4_HUMP_EXIT_FLAT_SAMPLES 8U
-
+#define S4_HEIGHT_CAL_NUM 25
+#define S4_HEIGHT_CAL_DEN 11
 typedef enum {
     HUMP_IDLE = 0,
     HUMP_FIRST_SLOPE,
@@ -149,6 +150,21 @@ LOCAL W estimate_pitch_deg(W forward_mg)
     return (W)(90 * sign);
 }
 
+LOCAL W calibrated_height_mm(int64_t raw_milli_mm)
+{
+    int64_t calibrated_milli_mm;
+
+    if (raw_milli_mm <= 0) {
+        return 0;
+    }
+
+    calibrated_milli_mm =
+        (raw_milli_mm * S4_HEIGHT_CAL_NUM) /
+        S4_HEIGHT_CAL_DEN;
+
+    return (W)(calibrated_milli_mm / 1000);
+}
+
 LOCAL void update_height_estimate(UW distance_mm, W forward_mg)
 {
     W aligned_forward;
@@ -196,7 +212,7 @@ LOCAL void update_height_estimate(UW distance_mm, W forward_mg)
     }
 
     current_height_mm =
-        (W)(current_height_milli_mm / 1000);
+        calibrated_height_mm(current_height_milli_mm);
 
     if ((UW)current_height_mm > peak_height_mm) {
         peak_height_mm = (UW)current_height_mm;
@@ -802,7 +818,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
                         hump_entry_height_milli_mm;
 
                     current_height_mm =
-                        (W)(current_height_milli_mm / 1000);
+                        calibrated_height_mm(current_height_milli_mm);
 
                     if (current_height_mm > 0) {
                         peak_height_mm = (UW)current_height_mm;
