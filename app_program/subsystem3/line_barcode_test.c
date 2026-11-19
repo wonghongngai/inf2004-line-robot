@@ -479,15 +479,43 @@ void line_barcode_test(void)
                        && letter == 0u;
         }
     }
-    TEST_CHECK("S3-U18", scans_ok,
+    TEST_CHECK("S3-U36", scans_ok,
                "19 Nov hardware scans with uneven speed decode A forward/reverse");
     /* Rank-based rule still needs separation: 1.10x between the shortest
      * wide bar and longest narrow bar of the start marker must fail. */
     build_frame(runs, 0u, false);
     runs[0] = (uint16_t)((runs[4] * 10u) / 11u);   /* narrow bar near wide */
-    TEST_CHECK("S3-U19", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS,
+    TEST_CHECK("S3-U37", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS,
                                               &last_command),
                "wide/narrow separation below 1.15x rejected");
+    /* Medium-size A (about 0.73x the large print) on 19 Nov, after the GP28
+     * comparator was retuned to a ~37 ms bar/space bias. Scanned in reverse;
+     * narrow bars read 28-50 ms. Before retuning they read 5 ms or vanished. */
+    static uint16_t const medium_19nov[3][LINE_BARCODE_FRAME_RUNS] = {
+        {28u,96u,164u,84u,166u,106u,31u,245u,34u,114u,184u,110u,34u,266u,33u,
+         123u,33u,116u,192u,115u,28u,112u,190u,111u,184u,109u,36u,260u,34u},
+        {28u,99u,170u,88u,173u,109u,33u,268u,32u,110u,178u,110u,32u,263u,30u,
+         115u,33u,114u,187u,110u,29u,112u,183u,105u,175u,104u,37u,251u,34u},
+        {50u,80u,177u,82u,164u,112u,30u,257u,31u,103u,178u,106u,31u,247u,31u,
+         108u,30u,107u,173u,106u,29u,109u,182u,106u,190u,102u,46u,250u,44u}
+    };
+    bool medium_ok = true;
+    for (unsigned scan = 0u; scan < 3u; ++scan) {
+        for (unsigned direction = 0u; direction < 2u; ++direction) {
+            for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+                runs[i] = medium_19nov[scan][direction ? LINE_BARCODE_FRAME_RUNS - 1u - i : i];
+            uint8_t letter = 0xffu;
+            medium_ok = medium_ok && line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter)
+                        && letter == 0u;
+        }
+    }
+    /* Direct decode only. A sampled feed in this build does not match the
+     * robot: with bars as sensors 7 the SIDE in-frame junction rule
+     * (4.5x the frame's first narrow bar, 28 ms here) fires on a 164 ms
+     * wide bar; with C/R white, as all_test reads over a barcode, the
+     * 2 s line-search deadline (disabled in APP_ALL_TEST) faults first. */
+    TEST_CHECK("S3-U38", medium_ok,
+               "19 Nov medium-size scans decode A forward/reverse");
     for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i) runs[i] = measured_a[i];
     runs[3] = LINE_BARCODE_MIN_RUN_MS - 1u;
     TEST_CHECK("S3-U16", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
