@@ -17,12 +17,13 @@
 #include "drv_lsm303dlhc.h"
 #include <stdint.h>
 #define S4_HUMP_REARM_FLAT_SAMPLES 50U
-#define S4_HUMP_ENTRY_CONFIRM_SAMPLES 6U
+#define S4_HUMP_ENTRY_CONFIRM_SAMPLES 5U
 #define S4_MOVEMENT_HOLD_SAMPLES 10U
 #define S4_HUMP_FILTER_SAMPLES 5U
 #define S4_HUMP_EXIT_FLAT_MG 40
 #define S4_HUMP_EXIT_FLAT_SAMPLES 8U
-
+#define S4_HEIGHT_CAL_NUM 25
+#define S4_HEIGHT_CAL_DEN 11
 typedef enum {
     HUMP_IDLE = 0,
     HUMP_FIRST_SLOPE,
@@ -149,6 +150,21 @@ LOCAL W estimate_pitch_deg(W forward_mg)
     return (W)(90 * sign);
 }
 
+LOCAL W calibrated_height_mm(int64_t raw_milli_mm)
+{
+    int64_t calibrated_milli_mm;
+
+    if (raw_milli_mm <= 0) {
+        return 0;
+    }
+
+    calibrated_milli_mm =
+        (raw_milli_mm * S4_HEIGHT_CAL_NUM) /
+        S4_HEIGHT_CAL_DEN;
+
+    return (W)(calibrated_milli_mm / 1000);
+}
+
 LOCAL void update_height_estimate(UW distance_mm, W forward_mg)
 {
     W aligned_forward;
@@ -196,7 +212,7 @@ LOCAL void update_height_estimate(UW distance_mm, W forward_mg)
     }
 
     current_height_mm =
-        (W)(current_height_milli_mm / 1000);
+        calibrated_height_mm(current_height_milli_mm);
 
     if ((UW)current_height_mm > peak_height_mm) {
         peak_height_mm = (UW)current_height_mm;
@@ -477,25 +493,24 @@ LOCAL BOOL update_hump(W forward_mg,
 
     case HUMP_FIRST_SLOPE:
 
-        /* A shallow downhill reading closes this crossing's height record. */
-        if (!hump_state.descent_started && forward_mg * hump_state.first_sign < 0) {
-            hump_state.descent_started = TRUE;
-            tm_printf((UB *)"Buddy4: hump descent started; uphill rise=%u mm\n",
-                      peak_height_mm);
-        }
+        tm_printf((UB *)
+            "HUMP ACTIVE: forward=%d abs=%d dist=%u height=%u\n",
+            forward_mg,
+            abs_forward,
+            distance_mm,
+            peak_height_mm);
 
         if (abs_forward > hump_state.peak_mg) {
             hump_state.peak_mg = abs_forward;
         }
 
         /*
-         * A complete hump must eventually contain a significant slope
-         * in the opposite direction.
-         */
-        if (sign_w(forward_mg) != hump_state.first_sign &&
-            abs_forward >= S4_HUMP_OPPOSITE_MG) {
-
-            hump_state.phase = HUMP_OPPOSITE_SLOPE;
+        * Once a confirmed hump returns close to level ground,
+        * begin checking that it remains flat.
+        */
+        if (abs_forward <= S4_HUMP_EXIT_FLAT_MG) {
+            hump_state.phase = HUMP_SETTLING;
+            hump_state.settle_samples = 1U;
         }
 
         break;
@@ -520,6 +535,7 @@ LOCAL BOOL update_hump(W forward_mg,
     case HUMP_SETTLING:
 
         if (abs_forward <= S4_HUMP_EXIT_FLAT_MG) {
+
             hump_state.settle_samples++;
 
             if (hump_state.settle_samples >=
@@ -537,22 +553,17 @@ LOCAL BOOL update_hump(W forward_mg,
                 return TRUE;
             }
 
-        } else if (abs_forward >= S4_HUMP_OPPOSITE_MG) {
-            /*
-             * Still clearly on the descending slope. Return to the
-             * opposite-slope phase and wait for flat again.
-             */
-            hump_state.settle_samples = 0U;
-            hump_state.phase = HUMP_OPPOSITE_SLOPE;
-
         } else {
+
             /*
-             * Small noisy excursion: keep the existing settling progress.
-             */
+            * Robot is not flat yet.
+            * Continue tracking the hump.
+            */
+            hump_state.settle_samples = 0U;
+            hump_state.phase = HUMP_FIRST_SLOPE;
         }
 
         break;
-
     default:
         reset_hump_detector();
         reset_height_tracker();
@@ -807,7 +818,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
                         hump_entry_height_milli_mm;
 
                     current_height_mm =
-                        (W)(current_height_milli_mm / 1000);
+                        calibrated_height_mm(current_height_milli_mm);
 
                     if (current_height_mm > 0) {
                         peak_height_mm = (UW)current_height_mm;
@@ -823,7 +834,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
                      * When the hump starts on this exact cycle, the current
                      * entry sample has already been included above.
                      */
-                    if (hump_was_active && !hump_state.descent_started) {
+                    if (hump_was_active) {
                         update_height_estimate(distance_mm, hump_dy);
                     }
 
