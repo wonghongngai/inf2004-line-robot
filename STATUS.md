@@ -3,7 +3,7 @@
 **This is the one page that shows what is done and what is left.**
 What to test next, and how, is in [testing/TEST_PLAN.md](testing/TEST_PLAN.md).
 Where the code differs from the Week 6 / PreTri plan, and why, is in [DEVIATIONS.md](DEVIATIONS.md).
-Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
+Last updated: 2026-11-19, subsystem 3 rows only (`fix/barcode-decoder-ratio` @ `cc239d5`) · other sections as of 2026-11-13 (`double11` @ `1d78677`)
 
 ## Rules
 
@@ -58,11 +58,13 @@ Last updated: 2026-11-13 · Branch: `double11` @ `1d78677`
 
 | Feature | Code | Host/Unit | Bench HW | Integrated | Track tuned | Evidence | Next action |
 |---|---|---|---|---|---|---|---|
-| Line position from 3 IR sensors, noise rejection | ✅ | ✅ S3-U02–U03 | ⬜ | ⬜ | ⬜ | `testing/subsystem3/logs/2026-10-27_cr1_host.txt` | Run S3-U14–U17 on target; calibrate black/white on the real track |
-| Line loss → search → reacquire / fault | ✅ | ✅ S3-U04–U06 | ⬜ | ⬜ | ⬜ | same log | Test on the track: lift the robot off the line, time how long reacquiring takes |
-| Code 39 decode A–Z, forward + backward | ✅ | ✅ S3-U07–U13 | 🟡 only A and Z tested | ⬜ | ⬜ | Commit `208188b` (no test log); all A–Z both ways required (prof, 13 Nov) | Test all four command barcodes at real driving speed; log the decode rate per letter |
-| Junction detection + barcode → command at next junction | ✅ | ✅ S3-U25–U26 | ⬜ | ⬜ | ⬜ | `testing/subsystem3/logs/2026-10-26_junction_host.txt` | Track test at each junction type |
-| Run-time letter mapping (S3-U27) | ✅ | ⬜ PENDING | ⬜ | ⬜ | — | — | Run on target together with S1 |
+| Line position from 3 IR sensors, noise rejection | ✅ | ✅ S3-U02–U03 (host + Pico) | ⬜ | ⬜ | ⬜ | `testing/subsystem3/logs/2026-11-19_host_s3_int.txt`, `2026-11-19_target_test.txt` | Run S3-U28: each sensor's comparator reads black/white on the real track (#22) |
+| Line service API: calibration, pause/resume, sampling heartbeat | ✅ | ✅ S3-U14–U17 (host + Pico) | ⬜ | ⬜ | — | same logs | Bench check comes with S3-U28 (#22) |
+| Line loss → search → reacquire / fault | ✅ | ✅ S3-U04–U06 (host + Pico) | ⬜ | ⬜ | ⬜ | same logs | S3-U31 on the track: lift the robot off the line, time reacquiring (#23) |
+| Service faults latch until reset (event-queue overflow, sampling gap > 20 ms) | ✅ | ✅ S3-U11, U43–U44 (U43–U44 host only) | ⬜ | ⬜ | — | `testing/subsystem3/logs/2026-11-19_host_s3_int.txt` | Controller stops on a latched fault: integration part of S3-M06 |
+| Code 39 decode A–Z, forward + backward | ✅ | ✅ S3-U07–U13, U36–U42 (host + Pico) | 🟡 only A and Z tested (commit `208188b`, no log) | ⬜ | 🟡 A only: large and medium print, both directions, in `all_test` (not integrated) | `testing/subsystem3/TEST_LOG.md` 19 Nov hardware rows, `logs/2026-11-19_barcode_hw.txt` | S3-U35: all A–Z both ways (prof, 13 Nov), then the four command letters at driving speed (#23) |
+| Junction detection + barcode → command at next junction | ✅ | ✅ S3-U25–U26 (host + Pico), U45–U46 (host) | ⬜ | ⬜ | 🟡 A → LEFT 29/29 in `all_test` (not integrated) | same | Track test at each junction type in integrated firmware; INT-08 (#33) |
+| Run-time letter mapping (S3-U27) | ✅ | ✅ S3-U23–U24, U27 (host + Pico) | ⬜ | ⬜ | — | `testing/subsystem3/logs/2026-11-19_target_test.txt` | Apply the MQTT map in the integrated firmware (#38), then S1-U15 |
 
 ## Subsystem 4: IMU, humps, tilt, lift-stop (Buddy 4)
 
