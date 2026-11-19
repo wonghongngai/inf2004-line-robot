@@ -121,7 +121,7 @@ INT-08–INT-10 in integrated mode.
 | `s3/pptx_samples`: slide barcode fixtures | L1 | same | PASS |
 | `s3/line_service`: S3-U14–U17, U23–U24, U27 on the PC, plus U43–U46 (queue/timing fault latching, barcode → COMMAND through the service) | L1 | same | PASS |
 | `int/line_service`: 1 ms sampling, pins, 30 ms freshness | L1 | `sh testing/run_host_tests.sh int/line_service` | PASS |
-| S3-U14–U17, U23–U24, U27 | L2 | `make TEST=1` | PENDING since 25–27 Oct |
+| S3-U14–U17, U23–U24, U27 (plus every `line_barcode_test.c` check) | L2 | `sh build.sh integrated TEST=1` | PASS on target 19 Nov (`d9c4830`) |
 
 Retired 19 Nov (see `subsystem3/TEST_LOG.md`): S3-U01 (template consumer, #74),
 S3-U22 (TRACK layout, unused) and the `s3/count_a` host test with the

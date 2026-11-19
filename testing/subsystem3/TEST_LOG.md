@@ -57,6 +57,7 @@ Add a new row for every run. Never edit or delete old rows.
 | --- | --- | --- | --- | --- | --- | --- |
 | 2026-11-19 | S3-U02–U13, U14–U22, U25–U26, U36–U38 | `875fa82` | Claude, host | PASS (26 checks) | [`logs/2026-11-19_host.txt`](logs/2026-11-19_host.txt) | `sh testing/run_host_tests.sh -v s3/`: s3/line_barcode, s3/pptx_samples, s3/count_a all PASS. Host only; no sanitizers. U14–U17 here are the `line_barcode_test.c` checks of those IDs, not the `subsystem3_test.c` target-only ones |
 | 2026-11-19 | all_test_offline and all_test firmware builds | `875fa82` | Claude, compiler | PASS, 0 warnings | [`logs/2026-11-19_build.txt`](logs/2026-11-19_build.txt) | Builds only; no hardware execution |
+| 2026-11-19 | S3-U02–U21, U23–U27, U36–U42 **on target** | `d9c4830` | robot operator; log analysis Claude | PASS (32 checks, 0 failed) | [`logs/2026-11-19_target_test.txt`](logs/2026-11-19_target_test.txt) | `robot-integrated-test.uf2` (`sh build.sh integrated TEST=1`), boot 22:29. First on-target run of S3-U14–U17, U23, U24, U27 (pending since 25–27 Oct). S3 summaries: sample contract 6/6, line/barcode 19/19, subsystem3 8/8 (includes INT-01). The tests ran while the integrated firmware was armed. Not S3: S1-U01 and S4-U05 failed in the same run (see the log) |
 
 ### Hardware barcode trials, 19 Nov (S3-M03)
 
