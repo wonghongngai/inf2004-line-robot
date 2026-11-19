@@ -186,15 +186,26 @@ acceptance. Each accepted edge uses the sampled elapsed time; intervals
 between accepted edges measure bar/space duration without wheel input. Elapsed intervals over 20 ms invalidate capture and latch a
 timing fault. Measure scheduling jitter with all buddy tasks running.
 
-Widths must be 40–1000 ms, with three clearly wide elements in each character.
-Classification compares the five black bars separately from the four white
-spaces in each nine-element character. The strongest adjacent duration ratio
-splits narrow/wide groups, with at least 1.5x separation and exactly three
-wide elements overall. A colour without a distinct split remains narrow.
-This permits different black/white timing scales and gradual speed changes. Arbitrary acceleration within a character is
-not supported. Both inter-character gaps are checked; each frame needs leading
-and trailing quiet zones at least ten narrow widths. The supplied PDF crops very
-close to its bars, so retain/add surrounding white paper when printing it.
+Widths must be 10–1000 ms (`LINE_BARCODE_MIN_RUN_MS`, `LINE_BARCODE_RUN_MAX_MS`).
+Classification is **rank-based**: every letter A–Z and the `*` marker has
+exactly two wide bars (of five) and one wide space (of four), so in each
+nine-element character the two longest bars and the longest space are wide.
+Bars and spaces are ranked separately, which permits different black/white
+timing scales. No narrow/wide ratio threshold is searched for, so narrow
+widths may drift when scan speed changes within a character. Each colour must
+still show the shortest wide element at least 1.15× the longest narrow one;
+this rejects uniform stripes. The weakest separation seen in a correct hardware
+read (19 Nov) was 1.20×. Validation then relies on the start/stop `*`, the
+A–Z table, the gap check and the quiet zones. Each inter-character gap must be
+at most 2× the largest narrow space of the two characters beside it. Each frame
+needs leading and trailing quiet zones at least ten narrow widths. The supplied
+PDF crops very close to its bars, so retain/add surrounding white paper when
+printing it.
+
+The tolerance costs some noise rejection: in a host check, about 1 in 22,000
+frames of random widths (40–600 ms) decoded as a letter, against none for the
+previous strongest-gap rule. A real false read would also need exactly 29
+runs between valid quiet zones. Keep scan speed as steady as practical.
 
 At 3:1 wide:narrow, a 29-run frame occupies 47 narrow units. If its actual printed
 bar span is 141 mm, the inferred narrow width is about 3 mm. Starting at 50 mm/s

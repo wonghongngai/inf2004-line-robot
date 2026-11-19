@@ -457,6 +457,37 @@ void line_barcode_test(void)
         measured_ok = measured_ok && commands == 1u && last_command == 0u;
     }
     TEST_CHECK("S3-U15", measured_ok, "recorded 29-run scan decodes A forward/reverse, raw and sampled");
+    /* Hardware scans of A on 19 Nov after rebalancing the GP28 comparator
+     * (testing/subsystem5/logs/2026-11-19_183720_console.txt). Scan speed
+     * changed within characters; the old strongest-gap split rejected
+     * frames 1 and 2. Frame 2 character 2 has only 1.20x bar separation. */
+    static uint16_t const scans_19nov[3][LINE_BARCODE_FRAME_RUNS] = {
+        {22u,436u,89u,169u,286u,186u,303u,204u,29u,283u,432u,237u,118u,192u,191u,
+         445u,273u,100u,623u,74u,263u,462u,247u,71u,598u,87u,575u,127u,193u},
+        {179u,416u,242u,42u,395u,240u,367u,296u,71u,324u,400u,274u,146u,247u,126u,
+         527u,334u,54u,709u,52u,273u,402u,254u,114u,594u,69u,631u,113u,209u},
+        {66u,481u,38u,240u,274u,239u,354u,250u,44u,249u,350u,237u,80u,230u,85u,
+         512u,89u,217u,375u,206u,69u,468u,70u,210u,370u,203u,387u,198u,97u}
+    };
+    bool scans_ok = true;
+    for (unsigned scan = 0u; scan < 3u; ++scan) {
+        for (unsigned direction = 0u; direction < 2u; ++direction) {
+            for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+                runs[i] = scans_19nov[scan][direction ? LINE_BARCODE_FRAME_RUNS - 1u - i : i];
+            uint8_t letter = 0xffu;
+            scans_ok = scans_ok && line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter)
+                       && letter == 0u;
+        }
+    }
+    TEST_CHECK("S3-U18", scans_ok,
+               "19 Nov hardware scans with uneven speed decode A forward/reverse");
+    /* Rank-based rule still needs separation: 1.10x between the shortest
+     * wide bar and longest narrow bar of the start marker must fail. */
+    build_frame(runs, 0u, false);
+    runs[0] = (uint16_t)((runs[4] * 10u) / 11u);   /* narrow bar near wide */
+    TEST_CHECK("S3-U19", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS,
+                                              &last_command),
+               "wide/narrow separation below 1.15x rejected");
     for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i) runs[i] = measured_a[i];
     runs[3] = LINE_BARCODE_MIN_RUN_MS - 1u;
     TEST_CHECK("S3-U16", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
