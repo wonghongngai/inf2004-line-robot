@@ -114,9 +114,9 @@ make -C build_make PICO_SDK_PATH=/path/to/pico-sdk NET=lwip MQTT=1 TEST=1
 
 | Topic | Payload | QoS / retained |
 | --- | --- | --- |
-| `MQTT_TOPIC` from secrets | One byte online every 5 seconds; offline Last Will | 1 / yes |
+| `MQTT_TOPIC` from secrets | One byte online every 2 seconds; offline Last Will | 1 / yes |
 | `<MQTT_CLIENT_ID>/telemetry` | Exactly 15 binary bytes | 1 / no |
-| `<MQTT_CLIENT_ID>/command` | Exactly 1 byte, code 0–4 | subscription QoS 0 |
+| `<MQTT_CLIENT_ID>/command` | Exactly 1 byte, code 0–4 | subscription QoS 1 |
 
 Override command/telemetry topics in secrets if needed. Reconnect installs the
 subscription again. RX validates exact topic, declared length, fragment count

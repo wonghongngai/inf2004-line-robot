@@ -5,11 +5,12 @@ import errno
 import json
 import shutil
 import subprocess
+import sys
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Lock, Thread
-from time import monotonic, time
+from time import monotonic, sleep, time
 from urllib.parse import parse_qs, urlsplit
 
 from mqtt_binary import COMMANDS, decode_telemetry, encode_mapping, encode_telemetry
@@ -138,9 +139,32 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             self.send_error(404)
 
 
-def read_messages(process, feed):
-    for line in process.stdout:
-        feed.receive(line)
+def subscribe(feed):
+    args = feed.args
+    command = [
+        "mosquitto_sub", "-h", args.broker, "-p", str(args.mqtt_port),
+        "-q", "1", "-t", args.telemetry_topic, "-t", args.status_topic,
+        "-F", "%t\t%x",
+    ]
+    while True:
+        try:
+            with subprocess.Popen(command, stdout=subprocess.PIPE, text=True) as process:
+                try:
+                    for line in process.stdout:
+                        feed.receive(line)
+                finally:
+                    if process.poll() is None:
+                        process.terminate()
+                        try:
+                            process.wait(timeout=3)
+                        except subprocess.TimeoutExpired:
+                            process.kill()
+            print(f"MQTT subscriber exited ({process.returncode}). Retrying in 2 seconds.",
+                  file=sys.stderr, flush=True)
+        except OSError as error:
+            print(f"MQTT subscriber error: {error}. Retrying in 2 seconds.",
+                  file=sys.stderr, flush=True)
+        sleep(2)
 
 
 def main():
@@ -177,28 +201,18 @@ def main():
         print(f"Dashboard port {port} is in use. Choosing a free port.", flush=True)
         server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
     with server:
-        process = None
+        print(f"Dashboard at http://127.0.0.1:{server.server_port}", flush=True)
         try:
-            if not args.demo:
-                process = subprocess.Popen(
-                    ["mosquitto_sub", "-h", args.broker, "-p", str(args.mqtt_port),
-                     "-q", "1", "-t", args.telemetry_topic, "-t", args.status_topic,
-                     "-F", "%t\t%x"],
-                    stdout=subprocess.PIPE, text=True,
-                )
-                Thread(target=read_messages, args=(process, feed), daemon=True).start()
-            print(f"Dashboard at http://127.0.0.1:{server.server_port}", flush=True)
-            server.serve_forever()
+            if args.demo:
+                server.serve_forever()
+            else:
+                Thread(target=server.serve_forever, daemon=True).start()
+                try:
+                    subscribe(feed)
+                finally:
+                    server.shutdown()
         except KeyboardInterrupt:
             pass
-        finally:
-            if process is not None:
-                process.terminate()
-                try:
-                    process.wait(timeout=3)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                    process.wait()
 
 
 if __name__ == "__main__":

@@ -108,21 +108,53 @@ barcodeForm.addEventListener("keydown", (event) => {
   if (event.key === "Enter") publishBarcodeActions(event);
 });
 
+async function sendCommand(command) {
+  const response = await fetch("api/command/" + command, {
+    method: "POST",
+    headers: { "X-Dashboard-Command": "1" },
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!response.ok) throw new Error("Command request failed");
+}
+
+async function waitForStopped(sentAt) {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    const response = await fetch("api/telemetry", { signal: AbortSignal.timeout(1000) });
+    if (!response.ok) throw new Error("Telemetry request failed");
+    const packet = await response.json();
+    const data = packet.telemetry;
+    if (!packet.stale && packet.telemetry_at >= sentAt &&
+        data && [0, 6, 7].includes(data.state) && (!data.speed_valid || data.speed_cms === 0)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 for (const button of controls) {
   button.addEventListener("click", async () => {
+    const command = button.dataset.command;
     sendingCommand = true;
     updateControls();
     put("command-status", "Sending…");
     try {
-      const response = await fetch("api/command/" + button.dataset.command, {
-        method: "POST",
-        headers: { "X-Dashboard-Command": "1" },
-        signal: AbortSignal.timeout(5000),
-      });
-      if (!response.ok) throw new Error("Command request failed");
-      put("command-status", button.textContent + " sent to broker");
+      if (command === "pause") {
+        let stopped = false;
+        for (let attempt = 0; attempt < 2 && !stopped; attempt++) {
+          const sentAt = Date.now() / 1000;
+          await sendCommand(command);
+          put("command-status", "Waiting for the robot to report stopped…");
+          stopped = await waitForStopped(sentAt);
+        }
+        put("command-status", stopped ? "Robot reports stopped." : "Stop unconfirmed. Check the robot.");
+      } else {
+        await sendCommand(command);
+        put("command-status", button.textContent + " sent to broker");
+      }
     } catch {
-      put("command-status", "Could not confirm publish. Check the broker connection.");
+      put("command-status", command === "pause" ? "Stop unconfirmed. Check the robot." :
+          "Could not confirm publish. Check the broker connection.");
     } finally {
       sendingCommand = false;
       updateControls();

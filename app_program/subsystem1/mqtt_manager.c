@@ -24,7 +24,7 @@
 #include "communication_internal.h"
 #include <tm/tmonitor.h>
 
-#define MQTT_UTK_HEARTBEAT_MS   5000
+#define MQTT_UTK_HEARTBEAT_MS   2000
 #define MQTT_UTK_KEEPALIVE_S    60
 #define MQTT_UTK_RETRY_MS       3000
 
@@ -167,7 +167,7 @@ static void connection_cb(mqtt_client_t *c, void *arg, mqtt_connection_status_t 
         mqtt_set_inpub_callback(client, incoming_publish_cb,
                     incoming_data_cb, NULL);
 
-        err = mqtt_subscribe(client, MQTT_COMMAND_TOPIC, 0 /* qos */,
+        err = mqtt_subscribe(client, MQTT_COMMAND_TOPIC, 1 /* qos */,
                      subscribe_done_cb, (void *)MQTT_COMMAND_TOPIC);
         if(err != ERR_OK) {
             tm_printf((UB*)"mqtt: mqtt_subscribe() failed, err=%d\n",
