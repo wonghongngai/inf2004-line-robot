@@ -61,7 +61,7 @@ typedef struct {
     WHEEL_ODOMETRY odometry;
     const char *stop_reason;
     ER telemetry_error;
-    bool started_once, force_status, imu_fault, line_candidate_valid;
+    bool start_requested, started_once, force_status, imu_fault, line_candidate_valid;
     bool pwm_clock_started, telemetry_encoder_error;
     uint32_t pwm_updated;
     float pwm_ramp_per_second;
@@ -849,7 +849,9 @@ static void commands(ALL_TEST *t, uint32_t now)
             t->force_status = true;
             break;
         case S1_COMMAND_PAUSE:
-            if (t->phase != STOPPED) {
+            if (t->phase == WAITING) {
+                t->start_requested = false;
+            } else if (t->phase != STOPPED) {
                 drv_motor_stop();
                 t->left = t->right = 0.0f;
                 t->corner_active = t->centre_pending = false;
@@ -869,7 +871,11 @@ static void commands(ALL_TEST *t, uint32_t now)
             t->force_status = true;
             break;
         case S1_COMMAND_RESUME:
-            if (t->phase == PAUSED && (ALL_TEST_CONTINUE_ON_SENSOR || imu_ready(t, now)) &&
+            if (t->phase == WAITING) {
+                t->start_requested = true;
+                tm_printf((UB *)"[ALL TEST] MQTT start requested\n");
+            } else if (t->phase == PAUSED && (ALL_TEST_CONTINUE_ON_SENSOR ||
+                       (imu_ready(t, now) && !s5_exec_startup_hold())) &&
                 (uint32_t)(now - t->boot) >= ALL_START_MS) {
                 if (line_service_enable(true) < E_OK && !ALL_TEST_CONTINUE_ON_SENSOR) {
                     stop_test(t, "resume failed", S1_STATE_FAULT);
@@ -958,7 +964,8 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
         t->imu_fault = reason != NULL || t->imu.read_errors != t->imu_errors;
         if (reason != NULL) t->stop_reason = reason;
         t->imu_errors = t->imu.read_errors;
-        if (t->phase == WAITING && (uint32_t)(now - t->boot) >= ALL_START_MS) {
+        if (t->phase == WAITING && t->start_requested &&
+            (uint32_t)(now - t->boot) >= ALL_START_MS) {
             (void)line_service_enable(true);
             t->phase = RUNNING;
         }
@@ -1033,10 +1040,11 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
         }
     }
     if (t->phase == WAITING) {
-        if ((uint32_t)(now - t->boot) >= ALL_READY_MS) {
+        if ((uint32_t)(now - t->boot) >= ALL_READY_MS && !imu_ready(t, now)) {
             t->imu_fault = true;
             stop_test(t, "IMU readiness timeout", S1_STATE_FAULT);
-        } else if ((uint32_t)(now - t->boot) >= ALL_START_MS && imu_ready(t, now) &&
+        } else if (t->start_requested && (uint32_t)(now - t->boot) >= ALL_START_MS &&
+                   imu_ready(t, now) &&
                    !s5_exec_startup_hold()) {
             t->imu_errors = t->imu.read_errors;
             if (line_service_enable(true) < E_OK) {
@@ -1304,6 +1312,9 @@ static void all_task(INT stacd, void *exinf)
         return;
     }
     test.boot = now.lo;
+#if !TM_MQTT
+    test.start_requested = true;
+#endif
     test.last_telemetry = now.lo;
     last_control = now.lo - LINE_BARCODE_PERIOD_MS;
     test.duration_ms = ALL_TEST_DURATION_MS;

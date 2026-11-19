@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Serve a local, read-only dashboard for robot MQTT telemetry."""
+"""Serve a local dashboard for robot MQTT telemetry and controls."""
 import argparse
 import errno
 import json
@@ -10,9 +10,9 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Lock, Thread
 from time import monotonic, time
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
-from mqtt_binary import decode_telemetry, encode_telemetry
+from mqtt_binary import COMMANDS, decode_telemetry, encode_mapping, encode_telemetry
 
 ASSETS = Path(__file__).with_suffix("")
 EXAMPLE = dict(state=1, speed_cms=28, speed_valid=1, distance_cm=140,
@@ -80,6 +80,48 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         self.feed = feed
         super().__init__(*args, directory=str(ASSETS), **kwargs)
 
+    def do_POST(self):
+        prefix = "/api/command/"
+        request = urlsplit(self.path)
+        path = request.path
+        command = path[len(prefix):]
+        args = self.feed.args
+        mapping = path == "/api/mapping"
+        if not mapping and not (path.startswith(prefix) and command in ("pause", "resume")):
+            self.send_error(404)
+            return
+        if self.headers.get("X-Dashboard-Command") != "1":
+            self.send_error(403)
+            return
+        if args.demo:
+            self.send_error(409, "Controls require live MQTT mode")
+            return
+        if mapping:
+            actions = ("left", "right", "straight", "uturn")
+            try:
+                fields = parse_qs(request.query, strict_parsing=True, max_num_fields=4)
+                if set(fields) != set(actions):
+                    raise ValueError
+                payload = encode_mapping([fields[action][0] for action in actions])
+            except ValueError:
+                self.send_error(400, "Use four distinct letters A-Z")
+                return
+            topic = args.mapping_topic
+        else:
+            payload = bytes([COMMANDS[command]])
+            topic = args.command_topic
+        try:
+            subprocess.run(
+                ["mosquitto_pub", "-h", args.broker, "-p", str(args.mqtt_port),
+                 "-q", "1", "-t", topic, "-s"],
+                input=payload, check=True, timeout=3,
+            )
+        except (OSError, subprocess.SubprocessError):
+            self.send_error(502, "MQTT publish failed")
+            return
+        self.send_response(204)
+        self.end_headers()
+
     def do_GET(self):
         path = urlsplit(self.path).path
         if path == "/api/telemetry":
@@ -108,11 +150,15 @@ def main():
     parser.add_argument("--client-id", default="group17-robot", help="robot topic prefix")
     parser.add_argument("--telemetry-topic", help="override <client-id>/telemetry")
     parser.add_argument("--status-topic", help="override <client-id>/status")
+    parser.add_argument("--mapping-topic", help="override <client-id>/mapping")
+    parser.add_argument("--command-topic", help="override <client-id>/command")
     parser.add_argument("--port", type=int, help="local HTTP port (default: 8000, or a free port if busy)")
     parser.add_argument("--demo", action="store_true", help="preview with simulated data")
     args = parser.parse_args()
     args.telemetry_topic = args.telemetry_topic or f"{args.client_id}/telemetry"
     args.status_topic = args.status_topic or f"{args.client_id}/status"
+    args.mapping_topic = args.mapping_topic or f"{args.client_id}/mapping"
+    args.command_topic = args.command_topic or f"{args.client_id}/command"
     if args.telemetry_topic == args.status_topic:
         parser.error("telemetry and status topics must differ")
     if not args.demo and shutil.which("mosquitto_sub") is None:

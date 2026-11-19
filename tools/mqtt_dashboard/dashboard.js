@@ -58,14 +58,90 @@ function render(snapshot) {
   put("width", optionalMeasure(data?.obstacle_width_cm, "cm"));
 }
 
+const controls = document.querySelectorAll("[data-command]");
+const barcodeForm = document.getElementById("barcode-actions");
+const barcodeFields = document.getElementById("barcode-fields");
+let liveControls = false;
+let sendingCommand = false;
+let sendingBarcode = false;
+
+function updateControls() {
+  for (const button of controls) button.disabled = !liveControls || sendingCommand;
+  barcodeFields.disabled = !liveControls || sendingBarcode;
+}
+
+async function publishBarcodeActions(event) {
+  event.preventDefault();
+  if (!liveControls || sendingBarcode || !barcodeForm.reportValidity()) return;
+  const params = new URLSearchParams();
+  for (const [action, letter] of new FormData(barcodeForm)) {
+    params.set(action, letter.toUpperCase());
+  }
+  if (new Set(params.values()).size !== 4) {
+    put("barcode-action-status", "Use a different letter for each action.");
+    return;
+  }
+  const query = params.toString();
+  sendingBarcode = true;
+  updateControls();
+  put("barcode-action-status", "Sending barcode actions…");
+  try {
+    const response = await fetch("api/mapping?" + query, {
+      method: "POST",
+      headers: { "X-Dashboard-Command": "1" },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) throw new Error("Barcode publish failed");
+    put("barcode-action-status", "Barcode actions sent to the broker.");
+  } catch {
+    put("barcode-action-status", "Publish unconfirmed. Check the broker and press Enter to retry.");
+  } finally {
+    sendingBarcode = false;
+    updateControls();
+  }
+}
+
+barcodeForm.addEventListener("change", publishBarcodeActions);
+barcodeForm.addEventListener("submit", publishBarcodeActions);
+barcodeForm.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") publishBarcodeActions(event);
+});
+
+for (const button of controls) {
+  button.addEventListener("click", async () => {
+    sendingCommand = true;
+    updateControls();
+    put("command-status", "Sending…");
+    try {
+      const response = await fetch("api/command/" + button.dataset.command, {
+        method: "POST",
+        headers: { "X-Dashboard-Command": "1" },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!response.ok) throw new Error("Command request failed");
+      put("command-status", button.textContent + " sent to broker");
+    } catch {
+      put("command-status", "Could not confirm publish. Check the broker connection.");
+    } finally {
+      sendingCommand = false;
+      updateControls();
+    }
+  });
+}
+
 async function refresh() {
   try {
     const response = await fetch("api/telemetry", { signal: AbortSignal.timeout(4000) });
     if (!response.ok) throw new Error("Telemetry request failed");
-    render(await response.json());
+    const packet = await response.json();
+    render(packet);
+    liveControls = !packet.demo;
+    if (packet.demo) put("command-status", "Controls require live MQTT mode");
   } catch {
+    liveControls = false;
     connection("Dashboard server unavailable", "warn");
   } finally {
+    updateControls();
     setTimeout(refresh, 1000);
   }
 }
