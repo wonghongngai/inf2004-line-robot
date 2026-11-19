@@ -179,7 +179,7 @@ run_c  s2/motor_pwm           $STRICT -Iinclude $INT/motor_pwm_host_test.c
 # ---- Subsystem 3: line following + barcode ---------------------------------
 run_c  s3/line_barcode        $STRICT -pedantic -DAPP_TEST=1 -DLINE_BARCODE_HOST_TEST $S3/line_barcode.c $S3/line_barcode_test.c
 run_c  s3/pptx_samples        -std=c11 -DAPP_ALL_TEST=1 -I$S3 testing/subsystem3/pptx_samples_test.c $S3/line_barcode.c
-run_c  s3/count_a             -std=c11 -DAPP_ALL_TEST=1 -DLINE_BARCODE_COUNT_A=1 -I$S3 testing/subsystem3/count_a_test.c $S3/line_barcode.c
+run_c  s3/line_service        $STRICT -pthread -I$INT testing/subsystem3/line_service_test.c $S3/line_barcode.c
 
 # ---- Subsystem 4: IMU / humps ----------------------------------------------
 run_c  s4/hump_height         $STRICT $INT/hump_height_host_test.c

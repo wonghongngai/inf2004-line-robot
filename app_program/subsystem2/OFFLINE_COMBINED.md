@@ -4,8 +4,9 @@
 > firmware (issue #4); this describes the `all_test` harness as of early
 > November. PWM values below may have been retuned since: the current
 > constants are at the top of `app_program/subsystem2/all_buddies_test.c`.
-> The barcode map is currently hard-coded in all_test (`A,F,Z,W`) and MQTT
-> maps are ignored (issue #38). Build commands: README section 1.
+> The offline `all_test` build uses the default barcode map (`A,F,Z,W`).
+> MQTT-enabled `all_test` can replace this map at runtime. Build commands are
+> in the root README.
 
 Build (no Wi-Fi):
 

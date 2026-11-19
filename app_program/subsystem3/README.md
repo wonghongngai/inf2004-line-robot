@@ -186,15 +186,26 @@ acceptance. Each accepted edge uses the sampled elapsed time; intervals
 between accepted edges measure bar/space duration without wheel input. Elapsed intervals over 20 ms invalidate capture and latch a
 timing fault. Measure scheduling jitter with all buddy tasks running.
 
-Widths must be 40–1000 ms, with three clearly wide elements in each character.
-Classification compares the five black bars separately from the four white
-spaces in each nine-element character. The strongest adjacent duration ratio
-splits narrow/wide groups, with at least 1.5x separation and exactly three
-wide elements overall. A colour without a distinct split remains narrow.
-This permits different black/white timing scales and gradual speed changes. Arbitrary acceleration within a character is
-not supported. Both inter-character gaps are checked; each frame needs leading
-and trailing quiet zones at least ten narrow widths. The supplied PDF crops very
-close to its bars, so retain/add surrounding white paper when printing it.
+Widths must be 10–1000 ms (`LINE_BARCODE_MIN_RUN_MS`, `LINE_BARCODE_RUN_MAX_MS`).
+Classification is **rank-based**: every letter A–Z and the `*` marker has
+exactly two wide bars (of five) and one wide space (of four), so in each
+nine-element character the two longest bars and the longest space are wide.
+Bars and spaces are ranked separately, which permits different black/white
+timing scales. No narrow/wide ratio threshold is searched for, so narrow
+widths may drift when scan speed changes within a character. Each colour must
+still show the shortest wide element at least 1.15× the longest narrow one;
+this rejects uniform stripes. The weakest separation seen in a correct hardware
+read (19 Nov) was 1.20×. Validation then relies on the start/stop `*`, the
+A–Z table, the gap check and the quiet zones. Each inter-character gap must be
+at most 2× the largest narrow space of the two characters beside it. Each frame
+needs leading and trailing quiet zones at least ten narrow widths. The supplied
+PDF crops very close to its bars, so retain/add surrounding white paper when
+printing it.
+
+The tolerance costs some noise rejection: in a host check, about 1 in 22,000
+frames of random widths (40–600 ms) decoded as a letter, against none for the
+previous strongest-gap rule. A real false read would also need exactly 29
+runs between valid quiet zones. Keep scan speed as steady as practical.
 
 At 3:1 wide:narrow, a 29-run frame occupies 47 narrow units. If its actual printed
 bar span is 141 mm, the inferred narrow width is about 3 mm. Starting at 50 mm/s
@@ -274,10 +285,10 @@ has 29 alternating segments: 15 black bars and 14 internal white gaps. Letter
 identity comes from widths, not segment count. Both scan directions work.
 GP28 is the offset barcode sensor; centre/right continue steering.
 
-The combined controller uses A=LEFT, F=RIGHT, Z=STRAIGHT and W=U-TURN
-at the next C/R-both-black junction. All other A-Z letters are decoded and
-logged without a barcode movement assignment. This fixed map is installed
-in MQTT and offline builds; incoming MQTT mapping updates are ignored.
+The combined controller starts with A=LEFT, F=RIGHT, Z=STRAIGHT and W=U-TURN.
+In MQTT-enabled `all_test`, a valid mapping message replaces those assignments.
+The controller looks up each detected letter at the next C/R-both-black junction.
+Letters outside the current map have no barcode movement assignment.
 An unmapped letter replaces any previously pending letter. The existing
 C/R-both-black stop rule still applies without a mapped movement.
 The existing movement advance/pivot calibration and timeout still apply.
@@ -285,13 +296,12 @@ The existing movement advance/pivot calibration and timeout still apply.
 Leave white margins before and after the barcode. The leading margin must
 last at least 100 ms and at least ten narrow-bar durations; the trailing
 margin must also last ten narrow-bar durations. Narrow segments must last
-at least 40 ms for this decoder. Keep scan speed steady. Internal wide white
-gaps may exceed 100 ms in this pattern-based mode. Do not scan through the
-licence text overprinted on some slide examples.
+at least 10 ms (`LINE_BARCODE_MIN_RUN_MS`) for this decoder. Keep scan speed
+steady. Internal wide white gaps may exceed 100 ms in this pattern-based mode.
+Do not scan through the licence text overprinted on some slide examples.
 
-Optional legacy count-only behaviour is available with
-`LINE_BARCODE_COUNT_A=1`; it accepts any 29-segment pattern as A and uses
-100 ms white gaps to delimit frames. It is disabled by default.
+The legacy count-only mode (`LINE_BARCODE_COUNT_A`, any 29-segment pattern
+read as A) was removed on 19 Nov; no build used it.
 
 Host checks from the repository root:
 
@@ -299,8 +309,8 @@ Host checks from the repository root:
 sh testing/run_host_tests.sh s3/
 ```
 
-This runs `s3/line_barcode`, `s3/pptx_samples` and `s3/count_a`. Build flags
-live in `testing/run_host_tests.sh`.
+This runs `s3/line_barcode` and `s3/pptx_samples`. Build flags live in
+`testing/run_host_tests.sh`.
 
 The slide fixtures measure the EMF bar geometry for A/F/Z/W/X and a PNG row
 above the licence overlay for Y; tests check direct decoding and sampled

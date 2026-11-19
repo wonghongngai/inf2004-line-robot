@@ -13,11 +13,15 @@
 #define OBSTACLE_BITS 9U
 #define SCAN_BITS 8U
 #define WIDTH_BITS 9U
+#define BARCODE_LETTER_BITS 5U
+#define SPEED_VALID_BITS 1U
+#define BARCODE_COUNT_BITS 16U
 _Static_assert(STATE_BITS + FAULT_BITS + BATTERY_BITS + SPEED_BITS +
                DISTANCE_BITS + LINE_BITS + BARCODE_BITS + HUMP_BITS +
-               OBSTACLE_BITS + SCAN_BITS + WIDTH_BITS == S1_TELEMETRY_BYTES * 8U,
+               OBSTACLE_BITS + SCAN_BITS + WIDTH_BITS + BARCODE_LETTER_BITS +
+               SPEED_VALID_BITS + 2U + 2U * BARCODE_COUNT_BITS == S1_TELEMETRY_BYTES * 8U,
                "Update packet size and protocol layout together");
-_Static_assert(sizeof(S1_TELEMETRY) == 10, "Telemetry must have no padding");
+_Static_assert(sizeof(S1_TELEMETRY) == S1_TELEMETRY_BYTES, "Telemetry must have no padding");
 _Static_assert(sizeof(S1_COMMAND) == 1, "Command must have no padding");
 #define MAP_LETTER_BITS 5U
 _Static_assert(S1_MAP_SLOTS * MAP_LETTER_BITS <= S1_MAPPING_BYTES * 8U &&
@@ -37,6 +41,8 @@ CHECK_BITS("speed bits", S1_SPEED_MIN, S1_SPEED_MAX, SPEED_BITS);
 CHECK_BITS("distance bits", S1_DISTANCE_MIN, S1_DISTANCE_MAX, DISTANCE_BITS);
 CHECK_BITS("line bits", S1_LINE_MIN, S1_LINE_MAX, LINE_BITS);
 CHECK_BITS("barcode bits", S1_BARCODE_MIN, S1_BARCODE_MAX, BARCODE_BITS);
+CHECK_BITS("barcode letter bits", 0, S1_BARCODE_LETTER_MAX, BARCODE_LETTER_BITS);
+CHECK_BITS("barcode count bits", 0, S1_BARCODE_COUNT_MAX, BARCODE_COUNT_BITS);
 CHECK_BITS("hump bits", S1_HUMP_MIN, S1_HUMP_MAX, HUMP_BITS);
 CHECK_BITS("obstacle bits", S1_OBSTACLE_MIN, S1_OBSTACLE_MAX, OBSTACLE_BITS);
 CHECK_BITS("angle bits", S1_SCAN_MIN, S1_SCAN_MAX, SCAN_BITS);
@@ -62,7 +68,11 @@ static const FIELD_LAYOUT fields[S1_FIELD_COUNT] = {
     {46, HUMP_BITS, S1_HUMP_MIN, S1_HUMP_MAX},
     {54, OBSTACLE_BITS, S1_OBSTACLE_MIN, S1_OBSTACLE_MAX},
     {63, SCAN_BITS, S1_SCAN_MIN, S1_SCAN_MAX},
-    {71, WIDTH_BITS, S1_WIDTH_MIN, S1_WIDTH_MAX}
+    {71, WIDTH_BITS, S1_WIDTH_MIN, S1_WIDTH_MAX},
+    {80, BARCODE_LETTER_BITS, 0, S1_BARCODE_LETTER_MAX},
+    {85, SPEED_VALID_BITS, 0, 1},
+    {88, BARCODE_COUNT_BITS, 0, S1_BARCODE_COUNT_MAX},
+    {104, BARCODE_COUNT_BITS, 0, S1_BARCODE_COUNT_MAX}
 };
 
 int s1_telemetry_set(S1_TELEMETRY *packet, S1_FIELD field, int value)
@@ -123,6 +133,7 @@ int s1_telemetry_valid(const S1_TELEMETRY *packet)
 {
     unsigned int i;
     int value;
+    if (packet == 0 || (packet->bytes[10] & 0xc0U) != 0U) return 0;
     for (i = 0; i < S1_FIELD_COUNT; ++i) {
         if (!s1_telemetry_get(packet, (S1_FIELD)i, &value)) {
             return 0;
@@ -133,7 +144,7 @@ int s1_telemetry_valid(const S1_TELEMETRY *packet)
 
 int s1_command_set(S1_COMMAND *packet, unsigned int code)
 {
-    if (packet == 0 || code > S1_COMMAND_MASK) {
+    if (packet == 0 || code > S1_COMMAND_REVERSE) {
         return 0;
     }
     packet->bytes[0] = (unsigned char)code;
@@ -142,7 +153,7 @@ int s1_command_set(S1_COMMAND *packet, unsigned int code)
 
 int s1_command_valid(const S1_COMMAND *packet)
 {
-    return packet != 0 && (packet->bytes[0] & ~S1_COMMAND_MASK) == 0U;
+    return packet != 0 && packet->bytes[0] <= S1_COMMAND_REVERSE;
 }
 
 int s1_mapping_get(const S1_MAPPING *packet, unsigned char letters[S1_MAP_SLOTS])

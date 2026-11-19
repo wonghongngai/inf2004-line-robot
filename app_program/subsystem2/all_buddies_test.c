@@ -31,6 +31,11 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
  * and existing turn profiles. Hardware trial: 12.5/15 instead of 10/11. */
 #define ALL_CRUISE_LEFT_PWM         12.5f
 #define ALL_CRUISE_RIGHT_PWM        15.0f
+/* Scan slow-down. 0.5 stalled at the first bar; 0.75 (18 Nov) scanned so
+ * slowly that a wide space took ~750 ms and a lost narrow bar pushed the
+ * merged white past LINE_BARCODE_RUN_MAX_MS (1000 ms), aborting the frame
+ * (19 Nov). 0.9 scans about 20% faster. */
+#define ALL_BARCODE_SCAN_PWM_SCALE   0.9f
 #define ALL_STRAIGHT_KP              2.0f
 #define ALL_STRAIGHT_MAX_TRIM        2.5f
 #define ALL_STRAIGHT_TRIM_RATE       5.0f
@@ -41,6 +46,12 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
  * wheel (pivot). 5/19 held for 2.5 s still ran wide on 2026-11-11. */
 #define ALL_LINE_HARD_MS          150u
 #define ALL_LINE_HARD_INNER_PWM     0.0f
+/* Inner (left) wheel during a LEFT correction while a barcode is being
+ * scanned: no pivot. GP28 sits on the left, so stopping the left wheel
+ * nearly stopped the scanner and stretched one element mid-character
+ * (19 Nov: a 165 ms narrow space read 391 ms during six LEFT corrections,
+ * frame rejected). 6.25 stalled from rest; scaled by the scan factor. */
+#define ALL_LINE_SCAN_INNER_PWM     8.0f
 #define ALL_LINE_PWM_RATE          80.0f /* PWM points/second, speed-ups only */
 #define ALL_LINE_CONFIRM_MS         5u   /* only when reversing direction */
 /* Scanner edges older than this (GP28 white since) are not a barcode in
@@ -49,18 +60,19 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_WHITE_CLEAR_MS  30u  /* hold a correction this long after white */
 
 typedef struct {
-    unsigned phase, terminal_state, barcode;
+    unsigned phase, terminal_state;
+    unsigned barcode_letter : 5;
     uint32_t boot, started, settled, last_report, last_telemetry;
     uint32_t imu_count, imu_updated, imu_errors;
-    uint32_t duration_ms, distance_mm;
+    uint32_t duration_ms, distance_mm, telemetry_travel_mm;
     uint32_t line_valid_since;
     uint8_t line_candidate;
     int32_t left_ticks, right_ticks;
     WHEEL_ODOMETRY odometry;
     const char *stop_reason;
     ER telemetry_error;
-    bool started_once, force_status, imu_fault, line_candidate_valid;
-    bool pwm_clock_started;
+    bool start_requested, started_once, force_status, imu_fault, line_candidate_valid;
+    bool pwm_clock_started, telemetry_encoder_error;
     uint32_t pwm_updated;
     float pwm_ramp_per_second;
     IMU_DATA imu;
@@ -176,8 +188,20 @@ static void apply_follow_pwm(ALL_TEST *t, float left, float right, uint32_t now)
 /* Normal line following only: speed-ups are ramped for smooth starts, but a
  * wheel being slowed takes its target at once so corrections bite in time.
  * Safety stops and S5 retain their own paths. */
+/* GP28 (offset scanner) is on a bar or a barcode capture is in progress. */
+static bool barcode_scanning(const ALL_TEST *t)
+{
+    return ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_SIDE &&
+           ((t->line.data[0] & LINE_BARCODE_LEFT) != 0u ||
+            (t->line.data[1] & LINE_BARCODE_CAPTURE_ACTIVE) != 0u);
+}
+
 static void apply_line_pwm(ALL_TEST *t, float left, float right, uint32_t now)
 {
+    if (barcode_scanning(t)) {
+        left *= ALL_BARCODE_SCAN_PWM_SCALE;
+        right *= ALL_BARCODE_SCAN_PWM_SCALE;
+    }
     uint32_t elapsed = t->pwm_clock_started ? now - t->pwm_updated : LINE_BARCODE_PERIOD_MS;
     if (elapsed > 20u) elapsed = 20u;
     float step = ALL_LINE_PWM_RATE * (float)elapsed / 1000.0f;
@@ -390,8 +414,8 @@ static void finish_turn(ALL_TEST *t, uint32_t now)
     tm_printf((UB *)"[MOTION] turn complete; forward line following resumed\n");
 }
 
-/* Sensors are ignored until the movement ends; IMU, queue and pause checks
- * still run in all_test_step. */
+/* All pivots use encoder targets. The U-turn also waits for the centre
+ * sensor to reacquire the line. */
 static void turn_step(ALL_TEST *t, uint32_t now)
 {
     if ((uint32_t)(now - t->turn_started) >= ALL_TEST_TURN_TIMEOUT_MS) {
@@ -411,11 +435,23 @@ static void turn_step(ALL_TEST *t, uint32_t now)
         }
         begin_turn_stage(t, TURN_PIVOT);
     }
-    /* Right pivot moves the left wheel; left pivot and U-turn the right. */
+    if (t->turn_command == LINE_BARCODE_CMD_UTURN) {
+        /* With both wheels counter-rotating, the right wheel travels
+         * roughly half the arc of a pivot around a stopped left wheel. */
+        float target = 180.0f * S2_RIGHT_TURN_TICKS_PER_DEGREE * 0.5f;
+        uint32_t moved = tick_delta(t->right_ticks, t->turn_right0);
+        bool centre_black = (t->line.data[0] & LINE_BARCODE_CENTRE) != 0u;
+        if ((float)moved >= target && centre_black) {
+            finish_turn(t, now);
+            return;
+        }
+        apply_follow_pwm(t, -ALL_BASE_PWM, ALL_BASE_PWM, now);
+        return;
+    }
+    /* Right pivot moves the left wheel; left pivot moves the right. */
     bool right_turn = t->turn_command == LINE_BARCODE_CMD_RIGHT;
-    float degrees = t->turn_command == LINE_BARCODE_CMD_UTURN ? 180.0f : 90.0f;
-    float target = degrees * (right_turn ? S2_LEFT_TURN_TICKS_PER_DEGREE :
-                                           S2_RIGHT_TURN_TICKS_PER_DEGREE);
+    float target = 90.0f * (right_turn ? S2_LEFT_TURN_TICKS_PER_DEGREE :
+                                         S2_RIGHT_TURN_TICKS_PER_DEGREE);
     uint32_t moved = right_turn ? tick_delta(t->left_ticks, t->turn_left0) :
                                   tick_delta(t->right_ticks, t->turn_right0);
     if ((float)moved >= target) {
@@ -546,7 +582,9 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
                        inner_pwm, now);
     } else if (action == 2u) {
         t->stop_reason = "centre black: left correction";
-        apply_line_pwm(t, inner_pwm,
+        /* Keep the scanner side moving over the bars: no left-wheel pivot. */
+        float left_inner = barcode_scanning(t) ? ALL_LINE_SCAN_INNER_PWM : inner_pwm;
+        apply_line_pwm(t, left_inner,
                        ALL_CRUISE_RIGHT_PWM + ALL_LINE_STEER_BOOST, now);
     } else {
         t->stop_reason = NULL;
@@ -756,7 +794,8 @@ static bool imu_ready(const ALL_TEST *t, uint32_t now)
 
 static void report_telemetry(ALL_TEST *t, uint32_t now)
 {
-    if (!t->force_status && (uint32_t)(now - t->last_telemetry) < 1000u) return;
+    uint32_t elapsed_ms = now - t->last_telemetry;
+    if (!t->force_status && elapsed_ms < 1000u) return;
     S1_TELEMETRY packet;
     unsigned state = t->phase == STOPPED ? t->terminal_state :
                      t->phase == LINE_WAIT ? S1_STATE_RECOVERING :
@@ -771,14 +810,30 @@ static void report_telemetry(ALL_TEST *t, uint32_t now)
     (void)s1_telemetry_set(&packet, S1_FIELD_FAULTS,
                          !t->imu_fault && imu_ready(t, now) ? 0 : S1_FAULT_IMU);
     (void)s1_telemetry_set(&packet, S1_FIELD_LINE_SENSORS, wire_sensors);
-    (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE, t->barcode);
+    unsigned direction = t->barcode_letter == 0u ? S1_BARCODE_NONE :
+                         barcode_action(t->barcode_letter - 1u);
+    (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE, direction);
+    (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_LETTER, t->barcode_letter);
+    unsigned black_bars = 0u, white_gaps = 0u;
+    uint8_t decoded_letter;
+    line_service_barcode_debug(&black_bars, &white_gaps, &decoded_letter);
+    (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_BLACK,
+                          black_bars > S1_BARCODE_COUNT_MAX ? S1_BARCODE_COUNT_MAX : black_bars);
+    (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_WHITE,
+                          white_gaps > S1_BARCODE_COUNT_MAX ? S1_BARCODE_COUNT_MAX : white_gaps);
     unsigned height = t->imu.ramp_height_mm;
     if (height > S1_HUMP_MAX) height = S1_HUMP_MAX;
     (void)s1_telemetry_set(&packet, S1_FIELD_HIGHEST_HUMP_MM, height);
     (void)s1_telemetry_set(&packet, S1_FIELD_DISTANCE_CM, t->distance_mm / 10u);
-    /* Protocol v1 has no unavailable sentinel. Battery, speed, obstacle
-     * and scan fields stay zero. Distance needs valid encoder scales;
-     * height availability is printed separately on the serial console. */
+    if (elapsed_ms != 0u && t->odometry.available && !t->telemetry_encoder_error) {
+        /* Average translational speed over this telemetry interval. */
+        uint64_t speed = ((uint64_t)t->telemetry_travel_mm * 100u + elapsed_ms / 2u)
+                         / elapsed_ms;
+        (void)s1_telemetry_set(&packet, S1_FIELD_SPEED_CMS,
+                               speed > S1_SPEED_MAX ? S1_SPEED_MAX : (int)speed);
+        (void)s1_telemetry_set(&packet, S1_FIELD_SPEED_VALID, 1);
+    }
+    /* Battery, obstacle and scan fields remain unpopulated. */
     ER er = subsystem1_publish_telemetry(&packet);
     if (er != t->telemetry_error) {
         if (er == E_TMOUT)
@@ -790,6 +845,8 @@ static void report_telemetry(ALL_TEST *t, uint32_t now)
         t->telemetry_error = er;
     }
     t->last_telemetry = now;
+    t->telemetry_travel_mm = 0u;
+    t->telemetry_encoder_error = false;
     t->force_status = false;
 }
 
@@ -810,7 +867,9 @@ static void commands(ALL_TEST *t, uint32_t now)
             t->force_status = true;
             break;
         case S1_COMMAND_PAUSE:
-            if (t->phase != STOPPED) {
+            if (t->phase == WAITING) {
+                t->start_requested = false;
+            } else if (t->phase != STOPPED) {
                 drv_motor_stop();
                 t->left = t->right = 0.0f;
                 t->corner_active = t->centre_pending = false;
@@ -830,7 +889,11 @@ static void commands(ALL_TEST *t, uint32_t now)
             t->force_status = true;
             break;
         case S1_COMMAND_RESUME:
-            if (t->phase == PAUSED && (ALL_TEST_CONTINUE_ON_SENSOR || imu_ready(t, now)) &&
+            if (t->phase == WAITING) {
+                t->start_requested = true;
+                tm_printf((UB *)"[ALL TEST] MQTT start requested\n");
+            } else if (t->phase == PAUSED && (ALL_TEST_CONTINUE_ON_SENSOR ||
+                       (imu_ready(t, now) && !s5_exec_startup_hold())) &&
                 (uint32_t)(now - t->boot) >= ALL_START_MS) {
                 if (line_service_enable(true) < E_OK && !ALL_TEST_CONTINUE_ON_SENSOR) {
                     stop_test(t, "resume failed", S1_STATE_FAULT);
@@ -853,14 +916,29 @@ static void commands(ALL_TEST *t, uint32_t now)
             break;
         }
     }
-    /* This hardware profile uses the user's fixed A/F/Z/W route map.
-     * Drain remote mapping messages without changing those assignments. */
+    /* The junction handler looks up the pending letter in the latest map. */
     for (unsigned i = 0u; i < S1_QUEUE_DEPTH; ++i) {
         S1_MAPPING mapping;
         INT len = subsystem1_receive_mapping(&mapping, TMO_POL);
         if (len == E_TMOUT) break;
         if (len < E_OK) break;
-        tm_printf((UB *)"[ALL TEST] MQTT map ignored: fixed A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN\n");
+        unsigned char letters[S1_MAP_SLOTS];
+        if (len != S1_MAPPING_BYTES || !s1_mapping_get(&mapping, letters)) {
+            tm_printf((UB *)"[ALL TEST] invalid MQTT barcode map\n");
+            continue;
+        }
+        ER er = line_service_set_mapping('A' + letters[S1_MAP_LEFT],
+                                         'A' + letters[S1_MAP_RIGHT],
+                                         'A' + letters[S1_MAP_STRAIGHT],
+                                         'A' + letters[S1_MAP_UTURN]);
+        if (er < E_OK) {
+            tm_printf((UB *)"[ALL TEST] MQTT barcode map failed: %d\n", er);
+            continue;
+        }
+        t->force_status = true;
+        tm_printf((UB *)"[ALL TEST] MQTT map applied: %c=LEFT %c=RIGHT %c=STRAIGHT %c=U-TURN\n",
+                  'A' + letters[S1_MAP_LEFT], 'A' + letters[S1_MAP_RIGHT],
+                  'A' + letters[S1_MAP_STRAIGHT], 'A' + letters[S1_MAP_UTURN]);
     }
 }
 
@@ -877,11 +955,13 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
                             !t->corner_active &&
                             t->turn_stage != TURN_PIVOT,
                             &travelled_mm)) {
+        t->telemetry_encoder_error = true;
         stop_test(t, "encoder distance out of range; check calibration", S1_STATE_FAULT);
     } else if (travelled_mm != 0u) {
         ER er = subsystem4_add_distance_mm(travelled_mm);
         if (er < E_OK) stop_test(t, "IMU distance input failed", S1_STATE_FAULT);
         /* Telemetry's centimetre field saturates instead of wrapping. */
+        t->telemetry_travel_mm += travelled_mm;
         t->distance_mm += travelled_mm;
         if (t->distance_mm > S1_DISTANCE_MAX * 10u)
             t->distance_mm = S1_DISTANCE_MAX * 10u;
@@ -902,7 +982,8 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
         t->imu_fault = reason != NULL || t->imu.read_errors != t->imu_errors;
         if (reason != NULL) t->stop_reason = reason;
         t->imu_errors = t->imu.read_errors;
-        if (t->phase == WAITING && (uint32_t)(now - t->boot) >= ALL_START_MS) {
+        if (t->phase == WAITING && t->start_requested &&
+            (uint32_t)(now - t->boot) >= ALL_START_MS) {
             (void)line_service_enable(true);
             t->phase = RUNNING;
         }
@@ -923,7 +1004,7 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
                 }
                 if (code == LINE_BARCODE_EVT_BARCODE) {
                     unsigned letter = event.data[2] & LINE_BARCODE_LETTER_MASK;
-                    t->barcode = barcode_action(letter);
+                    t->barcode_letter = letter + 1u;
                     tm_printf((UB *)"[ALL TEST] barcode '%c' detected; continuing\n", 'A' + letter);
                 } else if (code != 0u) {
                     tm_printf((UB *)"[ALL TEST] line event=%u; continuing\n", code);
@@ -977,10 +1058,11 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
         }
     }
     if (t->phase == WAITING) {
-        if ((uint32_t)(now - t->boot) >= ALL_READY_MS) {
+        if ((uint32_t)(now - t->boot) >= ALL_READY_MS && !imu_ready(t, now)) {
             t->imu_fault = true;
             stop_test(t, "IMU readiness timeout", S1_STATE_FAULT);
-        } else if ((uint32_t)(now - t->boot) >= ALL_START_MS && imu_ready(t, now) &&
+        } else if (t->start_requested && (uint32_t)(now - t->boot) >= ALL_START_MS &&
+                   imu_ready(t, now) &&
                    !s5_exec_startup_hold()) {
             t->imu_errors = t->imu.read_errors;
             if (line_service_enable(true) < E_OK) {
@@ -1045,8 +1127,8 @@ static void all_test_step(ALL_TEST *t, uint32_t now)
                 }
                 if (code == LINE_BARCODE_EVT_BARCODE) {
                     unsigned letter = event.data[2] & LINE_BARCODE_LETTER_MASK;
+                    t->barcode_letter = letter + 1u;
                     unsigned action = barcode_action(letter);
-                    t->barcode = action;
                     /* A newer barcode replaces any letter still waiting. */
                     t->pending_letter = (uint8_t)(0x80u | letter);
                     tm_printf((UB *)"[BARCODE -> MOTION] decoded=%c queued=%s; execute at next C/R junction\n",
@@ -1231,7 +1313,7 @@ static void all_task(INT stacd, void *exinf)
               "[ALL TEST] keep stationary for IMU calibration; starts after 5s\n"
               "[LINE CRUISE] straight=12.5/15; gradual boost only, max +2.5 PWM points\n"
               "[ALL TEST] straight PWM left=12.5%% right=15%%; inner=5%%; GP28=left GP27=centre GP0=right; 1=black\n"
-              "[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders\n");
+              "[ALL TEST] telemetry: unmeasured battery/obstacle/scan fields=0 placeholders\n");
     if (ALL_TEST_WHITE_FOLLOW)
         tm_printf((UB *)"[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering\n"
                   "[ALL TEST] C/R=0/0 straight, 0/1 gradual right, 1/0 gradual left, 1/1 junction (forward if no barcode); 1=black\n");
@@ -1241,22 +1323,28 @@ static void all_task(INT stacd, void *exinf)
     tm_printf((UB *)"[ALL TEST] layout=%s\n",
               ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_TRACK ?
               "TRACK (three line sensors; barcode decoding disabled)" : "SIDE (offset scanner)");
-    tm_printf((UB *)"[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only\n");
+    tm_printf((UB *)"[ALL TEST] default barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN\n");
     if (tk_get_tim(&now) < E_OK) {
         drv_motor_stop();
         tk_slp_tsk(TMO_FEVR);
         return;
     }
     test.boot = now.lo;
+#if !TM_MQTT
+    test.start_requested = true;
+#endif
+    test.last_telemetry = now.lo;
     last_control = now.lo - LINE_BARCODE_PERIOD_MS;
     test.duration_ms = ALL_TEST_DURATION_MS;
     test.pwm_ramp_per_second = ALL_TEST_PWM_RAMP_PER_SECOND;
     tm_printf((UB *)"[ALL TEST] smooth motor start: 100 PWM percentage points/second\n");
     drv_encoder_get_counts(&test.left_ticks, &test.right_ticks);
-    wheel_odometry_init(&test.odometry, S2_LEFT_TICKS_PER_CM,
-                        S2_RIGHT_TICKS_PER_CM, test.left_ticks, test.right_ticks);
+    /* Height and telemetry use the same interrupt encoder calibration as
+     * straight driving and obstacle avoidance in this test harness. */
+    wheel_odometry_init(&test.odometry, S5_LEFT_TICKS_PER_CM,
+                        S5_RIGHT_TICKS_PER_CM, test.left_ticks, test.right_ticks);
     if (!test.odometry.available)
-        tm_printf((UB *)"[ALL TEST] height/distance unavailable: set measured S2_LEFT/RIGHT_TICKS_PER_CM; raw ticks are logged\n");
+        tm_printf((UB *)"[ALL TEST] height/distance unavailable: check S5_LEFT/RIGHT_TICKS_PER_CM; raw ticks are logged\n");
     tm_printf((UB *)"[ALL TEST] run limit=%lu ms (0=continuous)\n",
               (unsigned long)test.duration_ms);
     test.force_status = true;

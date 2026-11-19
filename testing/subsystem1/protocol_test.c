@@ -3,8 +3,8 @@
 #include <string.h>
 #include "communication_protocol.h"
 
-static const int minima[] = {0,0,0,-200,0,0,0,0,0,0,0};
-static const int maxima[] = {7,31,100,200,65535,7,4,255,400,180,400};
+static const int minima[] = {0,0,0,-200,0,0,0,0,0,0,0,0,0,0,0};
+static const int maxima[] = {7,31,100,200,65535,7,4,255,400,180,400,26,1,65535,65535};
 
 int main(void)
 {
@@ -36,8 +36,8 @@ int main(void)
         assert(memcmp(&packet, &before, sizeof packet) == 0);
     }
     {
-        static const int values[] = {7,31,100,-123,65535,7,4,255,400,180,400};
-        static const unsigned char expected[] = {0xff,0xe4,0x26,0xff,0xff,0xe7,0x3f,0x64,0x5a,0xc8};
+        static const int values[] = {7,31,100,-123,65535,7,4,255,400,180,400,6,1,15,14};
+        static const unsigned char expected[] = {0xff,0xe4,0x26,0xff,0xff,0xe7,0x3f,0x64,0x5a,0xc8,0x26,0x0f,0x00,0x0e,0x00};
         s1_telemetry_init(&packet);
         for (field = 0; field < S1_FIELD_COUNT; ++field) {
             assert(s1_telemetry_set(&packet, (S1_FIELD)field, values[field]));
@@ -46,8 +46,8 @@ int main(void)
     }
     for (code = 0; code < 256; ++code) {
         command.bytes[0] = (unsigned char)code;
-        assert(s1_command_valid(&command) == (code < 4));
-        assert(s1_command_set(&command, code) == (code < 4));
+        assert(s1_command_valid(&command) == (code <= 4));
+        assert(s1_command_set(&command, code) == (code <= 4));
     }
     assert(!s1_telemetry_set(&packet, (S1_FIELD)-1, 0));
     assert(!s1_telemetry_set(0, S1_FIELD_STATE, 0));

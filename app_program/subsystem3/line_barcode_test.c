@@ -318,25 +318,16 @@ static bool test_loss_during_scan(void)
     uint8_t letter = 0u;
     line_barcode_reset(&context);
     (void)feed(&context, 3u, TEST_QUIET_MS, &count, &letter);
-    for (uint8_t idx = 0u; idx < 10u; idx++)
+    (void)feed(&context, 7u, g_sample_a[0], &count, &letter);
+    bool b_scanning = (LINE_BARCODE_SCANNING == context.state);
+    for (uint8_t idx = 1u; idx < 10u; idx++)
     {
         uint8_t sensors = (0u == (idx & 1u)) ? 7u : 3u;
         (void)feed(&context, sensors, g_sample_a[idx], &count, &letter);
     }
-    bool b_scanning = (LINE_BARCODE_SCANNING == context.state);
+    b_scanning = b_scanning && (LINE_BARCODE_SCANNING == context.state);
     (void)feed(&context, 0u, 150u, &count, &letter);
     return (b_scanning && (LINE_BARCODE_SEARCH == context.state));
-}
-
-static bool test_track_layout(void)
-{
-    line_barcode_ctx_t context;
-    uint8_t count = 0u;
-    uint8_t letter = 0u;
-    bool b_valid = line_barcode_set_layout(&context, LINE_BARCODE_LAYOUT_TRACK);
-    line_barcode_msg_t msg = feed(&context, 7u, 50u, &count, &letter);
-    return (b_valid && (LINE_BARCODE_JUNCTION == (msg.data[1] & 7u))
-            && !line_barcode_set_layout(&context, 2u));
 }
 
 static void test_sample_contract(void)
@@ -351,7 +342,8 @@ static void test_sample_contract(void)
                "scanner edges never change steering");
     TEST_CHECK("S3-U21", test_loss_during_scan(),
                "line loss during barcode capture");
-    TEST_CHECK("S3-U22", test_track_layout(), "three-sensor junction profile");
+    /* S3-U22 (TRACK layout junction) retired 19 Nov: both builds use SIDE.
+     * Invalid-layout rejection is still checked on target by S3-U24. */
     TEST_CHECK("S3-U25", test_side_junction(),
                "SIDE cross-junction reported once, wide bars ignored");
     TEST_CHECK("S3-U26", test_barcode_then_junction(),
@@ -431,7 +423,7 @@ void line_barcode_test(void)
     bool retained = context.run_count == LINE_BARCODE_FRAME_RUNS && commands == 0u;
     for (uint8_t i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
         retained = retained && line_barcode_run_width(&context, i) == runs[i];
-    TEST_CHECK("S3-U14", retained, "malformed start retains all 29 raw widths without emitting letter");
+    TEST_CHECK("S3-U39", retained, "malformed start retains all 29 raw widths without emitting letter");
     /* Hardware scan supplied on 4 Nov: all edges present, squeezed whites. */
     static uint16_t const measured_a[LINE_BARCODE_FRAME_RUNS] = {
         101u,202u,140u,13u,318u,26u,309u,25u,141u,27u,
@@ -454,14 +446,73 @@ void line_barcode_test(void)
         (void)feed(&context, 3u, 420u, &commands, &last_command);
         measured_ok = measured_ok && commands == 1u && last_command == 0u;
     }
-    TEST_CHECK("S3-U15", measured_ok, "recorded 29-run scan decodes A forward/reverse, raw and sampled");
+    TEST_CHECK("S3-U40", measured_ok, "recorded 29-run scan decodes A forward/reverse, raw and sampled");
+    /* Hardware scans of A on 19 Nov after rebalancing the GP28 comparator
+     * (testing/subsystem5/logs/2026-11-19_183720_console.txt). Scan speed
+     * changed within characters; the old strongest-gap split rejected
+     * frames 1 and 2. Frame 2 character 2 has only 1.20x bar separation. */
+    static uint16_t const scans_19nov[3][LINE_BARCODE_FRAME_RUNS] = {
+        {22u,436u,89u,169u,286u,186u,303u,204u,29u,283u,432u,237u,118u,192u,191u,
+         445u,273u,100u,623u,74u,263u,462u,247u,71u,598u,87u,575u,127u,193u},
+        {179u,416u,242u,42u,395u,240u,367u,296u,71u,324u,400u,274u,146u,247u,126u,
+         527u,334u,54u,709u,52u,273u,402u,254u,114u,594u,69u,631u,113u,209u},
+        {66u,481u,38u,240u,274u,239u,354u,250u,44u,249u,350u,237u,80u,230u,85u,
+         512u,89u,217u,375u,206u,69u,468u,70u,210u,370u,203u,387u,198u,97u}
+    };
+    bool scans_ok = true;
+    for (unsigned scan = 0u; scan < 3u; ++scan) {
+        for (unsigned direction = 0u; direction < 2u; ++direction) {
+            for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+                runs[i] = scans_19nov[scan][direction ? LINE_BARCODE_FRAME_RUNS - 1u - i : i];
+            uint8_t letter = 0xffu;
+            scans_ok = scans_ok && line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter)
+                       && letter == 0u;
+        }
+    }
+    TEST_CHECK("S3-U36", scans_ok,
+               "19 Nov hardware scans with uneven speed decode A forward/reverse");
+    /* Rank-based rule still needs separation: 1.10x between the shortest
+     * wide bar and longest narrow bar of the start marker must fail. */
+    build_frame(runs, 0u, false);
+    runs[0] = (uint16_t)((runs[4] * 10u) / 11u);   /* narrow bar near wide */
+    TEST_CHECK("S3-U37", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS,
+                                              &last_command),
+               "wide/narrow separation below 1.15x rejected");
+    /* Medium-size A (about 0.73x the large print) on 19 Nov, after the GP28
+     * comparator was retuned to a ~37 ms bar/space bias. Scanned in reverse;
+     * narrow bars read 28-50 ms. Before retuning they read 5 ms or vanished. */
+    static uint16_t const medium_19nov[3][LINE_BARCODE_FRAME_RUNS] = {
+        {28u,96u,164u,84u,166u,106u,31u,245u,34u,114u,184u,110u,34u,266u,33u,
+         123u,33u,116u,192u,115u,28u,112u,190u,111u,184u,109u,36u,260u,34u},
+        {28u,99u,170u,88u,173u,109u,33u,268u,32u,110u,178u,110u,32u,263u,30u,
+         115u,33u,114u,187u,110u,29u,112u,183u,105u,175u,104u,37u,251u,34u},
+        {50u,80u,177u,82u,164u,112u,30u,257u,31u,103u,178u,106u,31u,247u,31u,
+         108u,30u,107u,173u,106u,29u,109u,182u,106u,190u,102u,46u,250u,44u}
+    };
+    bool medium_ok = true;
+    for (unsigned scan = 0u; scan < 3u; ++scan) {
+        for (unsigned direction = 0u; direction < 2u; ++direction) {
+            for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+                runs[i] = medium_19nov[scan][direction ? LINE_BARCODE_FRAME_RUNS - 1u - i : i];
+            uint8_t letter = 0xffu;
+            medium_ok = medium_ok && line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter)
+                        && letter == 0u;
+        }
+    }
+    /* Direct decode only. A sampled feed in this build does not match the
+     * robot: with bars as sensors 7 the SIDE in-frame junction rule
+     * (4.5x the frame's first narrow bar, 28 ms here) fires on a 164 ms
+     * wide bar; with C/R white, as all_test reads over a barcode, the
+     * 2 s line-search deadline (disabled in APP_ALL_TEST) faults first. */
+    TEST_CHECK("S3-U38", medium_ok,
+               "19 Nov medium-size scans decode A forward/reverse");
     for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i) runs[i] = measured_a[i];
     runs[3] = LINE_BARCODE_MIN_RUN_MS - 1u;
-    TEST_CHECK("S3-U16", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
+    TEST_CHECK("S3-U41", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
                "sub-minimum white run remains invalid");
     runs[3] = measured_a[3];
     runs[9] = 1000u;
-    TEST_CHECK("S3-U17", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
+    TEST_CHECK("S3-U42", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
                "recorded scan with oversized character gap remains invalid");
     build_frame(runs, 0u, false);
     runs[0] = 0u;

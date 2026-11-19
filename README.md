@@ -199,9 +199,35 @@ Topics are prefixed with `MQTT_CLIENT_ID` from `config/wifi_secrets.h`:
 
 | Topic | Direction | Payload |
 | --- | --- | --- |
-| `<id>/telemetry` | car → PC | 10-byte binary packet once a second (layout in `app_program/subsystem1/README.md`) |
-| `<id>/command` | PC → car | 1 raw byte: STATUS, PAUSE, RESUME (RESET_STATS is rejected) |
+| `<id>/telemetry` | car → PC | 15-byte binary packet once a second (layout in `app_program/subsystem1/README.md`) |
+| `<id>/command` | PC → car | 1 raw byte: STATUS, PAUSE, RESUME. RESET_STATS and REVERSE are defined by the protocol and currently unsupported in `all_test`. |
 | `<id>/mapping` | PC → car | 3-byte letter-to-movement map (left, right, straight, U-turn) |
+
+#### MQTT dashboard
+
+Preview all five subsystem panels with simulated data:
+
+```sh
+python3 tools/mqtt_dashboard.py --demo
+```
+
+For live data, start the MQTT-enabled `all_test` firmware and run the
+dashboard on a computer with Python 3 and `mosquitto_sub` installed. Use the
+broker address, port and robot client ID from `config/wifi_secrets.h`:
+
+```sh
+python3 tools/mqtt_dashboard.py --broker BROKER --mqtt-port 1883 --client-id CLIENT_ID
+```
+
+Open the URL printed in the terminal. The dashboard uses port 8000 by default
+and picks a free port if 8000 is busy. Use `--status-topic` if `MQTT_TOPIC` differs
+from `<id>/status`, and `--telemetry-topic` if the firmware overrides
+`<id>/telemetry`. The dashboard subscribes to telemetry and heartbeat.
+Live speed is the average translational speed between telemetry updates,
+calculated from calibrated wheel encoders. Older firmware leaves it
+**Not published**. Obstacle distance, scan angle, and obstacle width are still
+unpopulated. Distance and hump height depend on encoder setup and IMU readiness. The barcode counts match the scanner’s session totals, including
+only internal white gaps shorter than one second.
 
 With Mosquitto clients installed, replace `BROKER` and `CLIENT_ID`:
 
@@ -214,9 +240,22 @@ python3 tools/mqtt_binary.py command resume | mosquitto_pub -h BROKER -t 'CLIENT
 Commands are raw bytes, never text or retained messages. A local broker
 config is in `tools/mosquitto-local.conf`.
 
-**Barcode map:** the instructor sends the four letters just before the demo,
-so the map must come over MQTT. Today both builds still use a hard-coded map
-and `tools/mqtt_binary.py` cannot send a map yet; both are tracked in issue #38.
+#### Set barcode actions in `all_test`
+
+Send four distinct uppercase letters in a single compact MQTT message. This
+example assigns F to left, A to right, Z to straight, and W to U-turn:
+
+```sh
+python3 tools/mqtt_binary.py mapping --left F --right A --straight Z --uturn W |
+  mosquitto_pub -h BROKER -p 1883 -t 'group17-pico/mapping' -q 1 -s
+```
+
+Use the robot's client ID in the topic. Send the map after the robot subscribes
+to the topic and check the Pico's serial console for `[ALL TEST] MQTT map applied`.
+The controller looks up the detected letter at the next junction where the
+centre and right sensors both see black. The map replaces all four assignments.
+The local map resets to A/F/Z/W on reboot. This MQTT update is supported by
+`all_test`; the `integrated` controller still uses its startup map.
 Until a map arrives, the robot goes straight at junctions.
 
 **Telemetry fields not filled yet:** battery, and obstacle distance, scan

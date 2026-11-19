@@ -35,11 +35,8 @@ EXPORT void subsystem3_test(void)
 	TEST_CHECK("INT-01", after.received >= before.received + 5,
 		   "samples flow from subsystem 2 to subsystem 3");
 
-	/* S3-U01: the statistics are self-consistent */
-	TEST_CHECK("S3-U01",
-		   after.received > 0 && after.min <= after.max &&
-		   after.min >= 0 && after.max <= 100,
-		   "min <= max, both within 0..100");
+	/* S3-U01 (template consumer statistics) retired 19 Nov: it tested the
+	   course template's example task, which #74 removes. */
 
     TEST_CHECK("S3-U14", E_PAR == line_service_calibrate(0u, 0u),
                "calibration rejects indistinguishable surfaces");

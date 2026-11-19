@@ -15,7 +15,7 @@ No standalone SDK main, duplicate driver, or second network task is needed.
 
 ## Representation table
 
-Telemetry is exactly 80 bits / 10 bytes, with no struct padding on the wire.
+Telemetry uses 118 information bits in 15 bytes. Bits 86–87 are reserved and must be zero. Older 10-byte packets end at bit 79 and omit the decoded letter and speed validity. Older 11-byte packets omit the barcode counts.
 Bit 0 is the least significant bit of byte 0. Each field's least significant
 bit is stored at the listed offset. Multi-byte fields follow the same little
 endian bit ordering. No native C bitfield ABI or struct cast is used.
@@ -33,6 +33,10 @@ endian bit ordering. No native C bitfield ABI or struct cast is used.
 | Obstacle distance | 0–400 cm | 9 | 54 |
 | Scan angle | 0–180 degrees | 8 | 63 |
 | Obstacle width | 0–400 cm | 9 | 71 |
+| Last decoded barcode letter | 0 none, 1–26 A–Z | 5 | 80 |
+| Encoder speed valid | 0 unavailable, 1 valid | 1 | 85 |
+| Barcode black bars | 0–65535, saturating session count | 16 | 88 |
+| Barcode internal white gaps | 0–65535, saturating session count | 16 | 104 |
 
 States: idle, following, turning, scanning, avoiding, recovering, finished,
 fault (0–7 in that order). Fault bits 0–4: motor stall, encoder fault, IMU
@@ -46,9 +50,13 @@ U-TURN; bits 20–23 MUST be zero and the four letters must differ. Example
 A/B/C/Z = `20 88 0c`. Invalid maps are rejected and the old map stays. The
 controller applies a valid map with S3's `line_service_set_mapping()`.
 
-Command codes: 0 request status, 1 pause, 2 resume, 3 reset statistics.
-Each occupies bits 0–1 of one byte; upper six bits MUST be zero. A heartbeat
-uses bit 0 of one byte (0 offline / 1 online), with seven reserved zero bits.
+Command codes: 0 request status, 1 pause, 2 resume, 3 reset statistics,
+4 reverse. Codes use bits 0–2 of one byte. Codes 5–7 are reserved and the
+upper five bits must be zero. The MQTT layer accepts and queues reverse.
+Reverse movement is pending in the controller.
+
+A heartbeat uses bit 0 of one byte (0 offline / 1 online), with seven reserved
+zero bits.
 Byte padding is unavoidable for these single-message MQTT payloads.
 No command is executed by Buddy 1: the controller must enforce mission rules,
 including rejecting reset statistics during a run and deciding when pause/resume
@@ -106,9 +114,9 @@ make -C build_make PICO_SDK_PATH=/path/to/pico-sdk NET=lwip MQTT=1 TEST=1
 
 | Topic | Payload | QoS / retained |
 | --- | --- | --- |
-| `MQTT_TOPIC` from secrets | One byte online every 5 seconds; offline Last Will | 1 / yes |
-| `<MQTT_CLIENT_ID>/telemetry` | Exactly 10 binary bytes | 1 / no |
-| `<MQTT_CLIENT_ID>/command` | Exactly 1 byte, code 0–3 | subscription QoS 0 |
+| `MQTT_TOPIC` from secrets | One byte online every 2 seconds; offline Last Will | 1 / yes |
+| `<MQTT_CLIENT_ID>/telemetry` | Exactly 15 binary bytes | 1 / no |
+| `<MQTT_CLIENT_ID>/command` | Exactly 1 byte, code 0–4 | subscription QoS 1 |
 
 Override command/telemetry topics in secrets if needed. Reconnect installs the
 subscription again. RX validates exact topic, declared length, fragment count

@@ -1,0 +1,17 @@
+# 2026-11-19 firmware builds at 875fa82 (PICO SDK 2.3.1, arm-none-eabi-gcc 15.2 Rel1)
+
+## sh build.sh all_test_offline
+   text	   data	    bss	    dec	    hex	filename
+ 111364	     56	  23716	 135136	  20fe0	robot-all_test-offline.elf
+tools/elf2uf2 robot-all_test-offline.elf robot-all_test-offline.uf2
+uf2: robot-all_test-offline.uf2, 223232 bytes
+compiler warnings: 0
+result: built
+
+## sh build.sh all_test
+   text	   data	    bss	    dec	    hex	filename
+ 380168	    116	  83512	 463796	  713b4	robot-all_test.elf
+tools/elf2uf2 robot-all_test.elf robot-all_test.uf2
+uf2: robot-all_test.uf2, 760832 bytes
+compiler warnings: 0
+result: built

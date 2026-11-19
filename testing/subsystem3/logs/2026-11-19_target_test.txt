@@ -1,0 +1,194 @@
+# On-target test run: build_make/robot-integrated-test.uf2 (sh build.sh integrated TEST=1) built from d9c4830.
+# Boot at 22:29:02 (PC time) to '[TEST] === test run end ==='; copied unchanged from
+# testing/subsystem5/logs/2026-11-19_222748_console.txt (gitignored). All subsystems' results kept.
+=== COM5 connected 22:29:02.029 ===
+
+
+microT-Kernel Version 3.00
+
+
+=== micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003) ===
+dual-core (SMP) build, usermain on core 0
+[MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=10 ms
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[TEST] Connect serial monitor now; tests start in 10 seconds
+Buddy4: LSM303DLHC initialized
+wifi: joining "Dec's iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: calibration complete base=(-43,62,939) mg
+wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+S5: MONITORING
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=200 acc=(-39,68,943)mg delta=(x:4,y:6)mg mag=(225,-463,92) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=300 acc=(-43,62,939)mg delta=(x:0,y:0)mg mag=(224,-459,95) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=400 acc=(-47,63,937)mg delta=(x:-4,y:1)mg mag=(224,-459,93) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+wifi: reconnecting (link down or join failed)
+wifi: joining "Dec's iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=500 acc=(-46,61,937)mg delta=(x:-3,y:-1)mg mag=(225,-464,92) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=600 acc=(-42,64,937)mg delta=(x:1,y:2)mg mag=(223,-460,91) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=700 acc=(-43,65,939)mg delta=(x:0,y:3)mg mag=(225,-463,91) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[TEST] === test run start ===
+[TEST] S1-U01 FAIL  binary packet sizes   (../app_program/subsystem1/subsystem1_test.c:14)
+[TEST] S1-U02 PASS  initial logical speed is zero
+[TEST] S1-U03 PASS  out-of-range speed rejected
+[TEST] S1-U04 PASS  null telemetry rejected
+[TEST] S1-U05 PASS  empty queue does not block
+Buddy 1: command queued=0
+[TEST] S1-U06 PASS  binary zero command survives queue
+Buddy 1: command queued=4
+[TEST] S1-U11 PASS  reverse command survives queue
+[TEST] S1-U07 PASS  reserved bits and wrong length rejected
+[TEST] S1-U08 PASS  3-byte barcode map round trip
+[TEST] S1-U09 PASS  duplicate map letters rejected
+Buddy 1: invalid barcode map rejected
+[TEST] S1-U10 PASS  valid map queued; reserved bits rejected
+[TEST] subsystem1 SUMMARY 10 passed, 1 failed
+[TEST] S2-U01 PASS  motion command message buffer has expected message size
+[TEST] S2-U02 PASS  forward target completes and motor outputs become zero
+[TEST] S2-U03 PASS  STOP immediately zeros both motor commands
+[TEST] S2-U04 PASS  encoder stall enters FAULT and stops both motors
+[TEST] subsystem2 SUMMARY 4 passed, 0 failed
+[TEST] S3-U18 PASS  supplied PDF A/Z width fixtures
+[TEST] S3-U19 PASS  mapped and unmapped letters; packed map
+[TEST] S3-U20 PASS  scanner edges never change steering
+[TEST] S3-U21 PASS  line loss during barcode capture
+[TEST] S3-U25 PASS  SIDE cross-junction reported once, wide bars ignored
+[TEST] S3-U26 PASS  stored letter becomes a command at the next junction
+[TEST] subsystem3 sample contract SUMMARY 6 passed, 0 failed
+[TEST] S3-U02 PASS  all eight sensor positions
+[TEST] S3-U03 PASS  single-sample noise rejected
+[TEST] S3-U04 PASS  persistent loss enters bounded search
+[TEST] S3-U05 PASS  line reacquired after search
+[TEST] S3-U06 PASS  search timeout requests stop
+Buddy4: n=800 acc=(-41,60,942)mg delta=(x:2,y:-2)mg mag=(224,-460,94) pitch=0 height=0mm height_valid=0 state=0
+[TEST] S3-U13 PASS  relative widths at multiple scan speeds
+[TEST] S3-U07 PASS  A-Z decode in both directions
+[TEST] S3-U08 PASS  sampled frames emit exactly one letter
+[TEST] S3-U39 PASS  malformed start retains all 29 raw widths without emitting letter
+[TEST] S3-U40 PASS  recorded 29-run scan decodes A forward/reverse, raw and sampled
+[TEST] S3-U36 PASS  19 Nov hardware scans with uneven speed decode A forward/reverse
+[TEST] S3-U37 PASS  wide/narrow separation below 1.15x rejected
+[TEST] S3-U38 PASS  19 Nov medium-size scans decode A forward/reverse
+[TEST] S3-U41 PASS  sub-minimum white run remains invalid
+[TEST] S3-U42 PASS  recorded scan with oversized character gap remains invalid
+[TEST] S3-U09 PASS  zero-width malformed frame rejected
+[TEST] S3-U10 PASS  invalid inter-character gap rejected
+[TEST] S3-U11 PASS  missed sampling interval invalidates capture
+[TEST] S3-U12 PASS  three-byte wire layout; three faults set at once
+[TEST] subsystem3 line/barcode SUMMARY 19 passed, 0 failed
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+wifi: reconnecting (link down or join failed)
+wifi: joining "Dec's iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+Buddy4: n=900 acc=(-39,67,938)mg delta=(x:4,y:5)mg mag=(225,-461,93) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1000 acc=(-41,64,938)mg delta=(x:2,y:2)mg mag=(223,-458,94) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[TEST] INT-01 PASS  samples flow from subsystem 2 to subsystem 3
+[TEST] S3-U14 PASS  calibration rejects indistinguishable surfaces
+[TEST] S3-U15 PASS  snapshot rejects null output
+[TEST] S3-U16 PASS  controller can pause navigation
+[TEST] S3-U17 PASS  paused service keeps a fresh sampling heartbeat
+[TEST] S3-U23 PASS  paused controller can set and clear a letter mapping
+[TEST] S3-U24 PASS  invalid mapping and layout rejected
+[TEST] S3-U27 PASS  four-letter mapping set; duplicates/lowercase rejected
+[TEST] subsystem3 SUMMARY 8 passed, 0 failed
+[TEST] S4-U01 PASS  latest IMU snapshot can be read safely
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1100 acc=(-42,62,938)mg delta=(x:1,y:0)mg mag=(225,-459,93) pitch=0 height=0mm height_valid=0 state=0
+[TEST] S4-U02 PASS  LSM303DLHC responds through Buddy 4 task
+[TEST] S4-U03 PASS  stationary IMU calibration completes
+[TEST] S4-U04 PASS  IMU task continues producing samples
+[TEST] S4-U05 FAIL  latest IMU sensing/processing cycle fits within the sample period   (../app_program/subsystem4/subsystem4_test.c:42)
+[TEST] S4-U06 PASS  compact Buddy 4 output is exactly 4 bytes
+[TEST] S4-U07 PASS  8-bit ramp-height field remains within its valid range
+[TEST] subsystem4 SUMMARY 6 passed, 1 failed
+[TEST] S5-U21 PASS  120 deg glide takes 1525 ms (ramp 100 + cruise 1325 + ramp 100)
+[TEST] S5-U21 PASS  starts at 0, 7 deg after the ramp, half way at mid-time, then stays at the end
+[TEST] S5-U21 PASS  120 deg: every 20 ms pulse moves 0.9-1.7 deg, never back, lands exactly
+[TEST] S5-U21 PASS  60 deg glide is smooth too
+[TEST] S5-U21 PASS  short 10 deg move runs at the start speed throughout
+[TEST] S5-U21 PASS  zero-length move takes no time
+[TEST] S5-U22 PASS  90.0 deg = 1530 us (forward)
+[TEST] S5-U22 PASS  50.0 / 130.0 deg = 1077 / 1983 us (the holder's limits)
+[TEST] S5-U22 PASS  90.5 deg = 1536 us: sub-degree steps change the pulse
+[TEST] S5-U22 PASS  below 50 / above 130 deg is clamped (holder would hit the body)
+[TEST] S5-U22 PASS  whole-degree requests are clamped to 50..130 too
+[TEST] S5-U22 PASS  whole-degree and ddeg conversions agree
+[TEST] S5-U28 PASS  coarse scan is 50 / 70 / 90 / 110 / 130
+[TEST] S5-U28 PASS  hits at 90 and 110: fine 70..130 (one step past each)
+[TEST] S5-U28 PASS  2026-11-05 bench: hits 50..110, none at 130 -> fine 50..130
+[TEST] S5-U28 PASS  hits at 70 and 110 (90 clear): fine 50..130
+[TEST] S5-U28 PASS  hit at 90 only: fine 70..110 (to both neighbours)
+[TEST] S5-U28 PASS  hit at 50 only: fine 50..70 (limited at 50)
+[TEST] S5-U28 PASS  hit at 130 only: fine 110..130 (limited at 130)
+[TEST] S5-U28 PASS  no hits (all NO_ECHO): no fine scan
+[TEST] S5-U28 PASS  OK at 700 mm is beyond D_PROFILE_MM: not a hit
+[TEST] S5-U28 PASS  NULL pointer gives FALSE
+[TEST] S5-U09 PASS  MOVE turn-right 1023, seq 9, stop-on-line round trip
+[TEST] S5-U09 PASS  HOLD round trip
+[TEST] S5-U09 PASS  SAFE_STOP, seq 15 round trip
+[TEST] S5-U09 PASS  reserved kind 5 rejected
+[TEST] S5-U09 PASS  reserved kind 7 rejected
+[TEST] S5-U09 PASS  reserved move 3 rejected
+[TEST] S5-U09 PASS  unused bits 20-27 set: rejected
+[TEST] S5-U09 PASS  FWD 50 cm, stop when BOTH sensors crossed (bit 28) round trip
+[TEST] S5-U09 PASS  unused bits 29-31 set: rejected
+[TEST] S5-U09 PASS  rejected word reads back as NONE
+[TEST] S5-U09 PASS  value over 1023 clamped
+[TEST] S5-U09 PASS  pack(NULL) gives a SAFE_STOP word
+[TEST] S5-U09 PASS  get_request(NULL) is E_PAR
+[TEST] S5-U35 PASS  left pass, shift 170: L90, F17, R90, F up to 80 watched, R90, F50 to line, F4, L up to 120
+[TEST] S5-U35 PASS  right pass: the mirror (R90, F17, L90, F up to 80, L90, F50, F4, R up to 120)
+[TEST] S5-U35 PASS  only F3 (step 6) and T4 (step 8) stop on the line
+[TEST] S5-U35 PASS  only F3 waits for BOTH sensors to cross the line
+[TEST] S5-U35 PASS  F2 (step 4) is the watched pass; T3 (step 5) looks ahead after
+[TEST] S5-U35 PASS  index past the end, not a pass, or NULL: FALSE
+[TEST] S5-U35 PASS  F1 = shift rounded up to cm, 10..40 cm (170 -> 17, 171 -> 18, 98 -> 10, 600 -> 40)
+[TEST] S5-U31 PASS  closest 190 mm at 80 deg
+[TEST] S5-U31 PASS  box is 50..115 deg: 501 mm echo not part of it (run reaches 50 deg: only the left edge pulled in, 185 mm wide, centre -68)
+[TEST] S5-U31 PASS  lone 501 mm echo does not narrow the left; right never seen (box runs to 50 deg)
+[TEST] S5-U31 PASS  decision PASS LEFT (seen clear), shift 149 mm
+[TEST] S5-U31 PASS  confirmed object 501/505 mm on the left blocks it: PASS RIGHT, flagged not seen
+[TEST] S5-U32 PASS  closest 294 mm at 75 deg
+[TEST] S5-U32 PASS  run reaches 50 deg: right edge kept at -208, left 207 - 107 = 100 mm
+[TEST] S5-U32 PASS  PASS LEFT, shift 100 + 125 = 225 mm
+[TEST] S5-U33 PASS  right edge kept at -194 (not seen), left 95 - 107 = -12: 182 mm (was 75)
+[TEST] S5-U33 PASS  PASS LEFT, shift -12 + 125 = 113 mm
+[TEST] S5-U34 PASS  width 205 mm (box 210), centre -127 mm, closest x 275 mm
+[TEST] S5-U36 PASS  near 300, then passed only after SIDE_CLEAR_COUNT (10) clear readings
+[TEST] S5-U36 PASS  clear readings without seeing the box first: not passed
+[TEST] S5-U36 PASS  near again just before passing resets the clear count
+[TEST] S5-U36 PASS  TOO_NEAR and BUSY change nothing (NFR5-5)
+[TEST] S5-U36 PASS  NULL state is FALSE
+[TEST] S5-U37 PASS  side gap, left pass: F1 140 + pivots 100 - left edge 14 = 226 mm
+[TEST] S5-U37 PASS  side gap at least 50 mm; not a pass or NULL: 0
+[TEST] S5-U37 PASS  beside under 226 / sin 20 + 50 = 710 mm, at most 1000
+[TEST] S5-U37 PASS  never seen: front 185 - 100 + 60 deep + 150 tail + 50 = 345 -> 35 cm
+[TEST] S5-U37 PASS  plan at most PASS_MAX_CM; NULL: 10 cm
+[TEST] S5-U37 PASS  after passing: 226 x cot 60 + 150 + 50 + 100 sweep = 430 -> 43 cm on
+[TEST] S5-U37 PASS  after T3, box still ahead if under 226 + 200 = 426 mm
+[TEST] S5-U37 PASS  left pass watches 50 (box on the right), right pass 130
+[TEST] S5-U38 PASS  box runs to both 50 and 130 deg: both sides not seen
+[TEST] S5-U38 PASS  no side seen clear: still passes (equal shifts -> left), flagged not seen
+[TEST] subsystem5 SUMMARY 68 passed, 0 failed
+[TEST] === test run end ===

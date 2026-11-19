@@ -13,7 +13,11 @@
 #define BARCODE_ELEMENTS         9u
 #define BARCODE_CHAR_STRIDE      10u
 #define BARCODE_CHAR_COUNT       3u
-#define BARCODE_WIDE_COUNT       3u
+#define BARCODE_WIDE_BARS        2u   /* of 5 bars, every A-Z and '*' */
+#define BARCODE_WIDE_SPACES      1u   /* of 4 spaces */
+/* Shortest wide must be >= 1.15x the longest narrow, per colour. */
+#define BARCODE_SEPARATION_NUM   23u
+#define BARCODE_SEPARATION_DEN   20u
 #define BARCODE_STAR             0x094u
 #define BARCODE_MIN_RUN_MS       LINE_BARCODE_MIN_RUN_MS
 #define BARCODE_MIN_QUIET_UNITS   10u
@@ -198,56 +202,71 @@ static uint8_t track_position(line_barcode_ctx_t const *p_ctx)
     return (position);
 }
 
-/* Classify bars and spaces separately within each nine-element character.
- * Split at the strongest relative gap, requiring at least 1.5x separation.
- * A colour with no distinct width groups contains only narrow elements. */
+/* Rank-based narrow/wide classification of one nine-element character.
+ * Every Code 39 letter A-Z and the '*' marker has exactly two wide bars
+ * (of five) and one wide space (of four). So the two longest bars and the
+ * longest space are wide; everything else is narrow. No ratio threshold is
+ * searched for, which tolerates scan-speed changes within a character that
+ * make narrow widths drift (seen on hardware, 19 Nov: narrow bars 71-242 ms
+ * in one character). Bars and spaces are ranked separately because the
+ * comparator stretches one colour relative to the other.
+ *
+ * Each colour must still show a minimum wide/narrow separation, so uniform
+ * stripes or a corrupted element cannot produce a pattern. The weakest
+ * separation in a correctly read hardware frame was 1.20x.
+ * Returns the 9-bit pattern (1 = wide, first element in bit 8), or 0. */
 static uint16_t decode_character(uint16_t const *p_runs, bool b_reverse)
 {
-    uint16_t threshold[2] = {UINT16_MAX, UINT16_MAX};
+    static uint8_t const wide_wanted[2] = {BARCODE_WIDE_BARS,
+                                           BARCODE_WIDE_SPACES};
+    uint16_t is_wide = 0u;      /* bit i set: element i is wide */
     for (unsigned colour = 0u; colour < 2u; ++colour) {
-        uint16_t sorted[5];
+        uint8_t order[5];       /* element indices, longest first */
         unsigned count = 0u;
         for (unsigned i = colour; i < BARCODE_ELEMENTS; i += 2u) {
             uint16_t width = p_runs[i];
             if (width < BARCODE_MIN_RUN_MS || width > LINE_BARCODE_RUN_MAX_MS)
                 return 0u;
             unsigned j = count++;
-            while (j > 0u && sorted[j - 1u] > width) {
-                sorted[j] = sorted[j - 1u];
+            while (j > 0u && p_runs[order[j - 1u]] < width) {
+                order[j] = order[j - 1u];
                 --j;
             }
-            sorted[j] = width;
+            order[j] = (uint8_t)i;
         }
-        unsigned split = 0u;
-        for (unsigned i = 1u; i < count; ++i) {
-            if ((uint32_t)sorted[i] * 2u < (uint32_t)sorted[i - 1u] * 3u)
-                continue;
-            if (split == 0u || (uint32_t)sorted[i] * sorted[split - 1u]
-                                > (uint32_t)sorted[split] * sorted[i - 1u])
-                split = i;
-        }
-        if (split != 0u) {
-            /* Reject a third width cluster or extreme variation within one. */
-            /* White spaces are compressed unevenly by the comparator.
-             * Keep bars strict, but allow up to 4x within narrow whites.
-             * The strongest split and exactly-three-wide rule still apply. */
-            unsigned narrow_spread = colour == 1u ? 4u : 2u;
-            if ((uint32_t)sorted[split - 1u] > narrow_spread * sorted[0]
-                || (uint32_t)sorted[count - 1u] > 2u * sorted[split])
-                return 0u;
-            threshold[colour] = sorted[split - 1u]
-                               + (sorted[split] - sorted[split - 1u]) / 2u;
-        }
+        unsigned wide = wide_wanted[colour];
+        uint32_t shortest_wide = p_runs[order[wide - 1u]];
+        uint32_t longest_narrow = p_runs[order[wide]];
+        if (shortest_wide * BARCODE_SEPARATION_DEN
+            < longest_narrow * BARCODE_SEPARATION_NUM)
+            return 0u;
+        for (unsigned k = 0u; k < wide; ++k)
+            is_wide |= (uint16_t)(1u << order[k]);
     }
     uint16_t pattern = 0u;
-    unsigned wide_count = 0u;
     for (unsigned i = 0u; i < BARCODE_ELEMENTS; ++i) {
         unsigned source = b_reverse ? BARCODE_ELEMENTS - 1u - i : i;
-        bool wide = p_runs[source] > threshold[source & 1u];
-        pattern = (uint16_t)((pattern << 1u) | (wide ? 1u : 0u));
-        wide_count += wide ? 1u : 0u;
+        pattern = (uint16_t)((pattern << 1u) | ((is_wide >> source) & 1u));
     }
-    return wide_count == BARCODE_WIDE_COUNT ? pattern : 0u;
+    return pattern;
+}
+
+/* Second-longest of a character's four spaces: the longest is its single
+ * wide space, so this is its largest narrow space. */
+static uint16_t largest_narrow_space(uint16_t const *p_runs)
+{
+    uint16_t longest = 0u;
+    uint16_t second = 0u;
+    for (unsigned i = 1u; i < BARCODE_ELEMENTS; i += 2u) {
+        uint16_t width = p_runs[i];
+        if (width > longest) {
+            second = longest;
+            longest = width;
+        } else if (width > second) {
+            second = width;
+        }
+    }
+    return second;
 }
 
 bool line_barcode_decode(uint16_t const *p_runs, uint8_t count,
@@ -265,24 +284,20 @@ bool line_barcode_decode(uint16_t const *p_runs, uint8_t count,
         uint16_t first = decode_character(p_runs, b_reverse);
         uint16_t last = decode_character(&p_runs[20], b_reverse);
         uint16_t symbol = decode_character(&p_runs[10], b_reverse);
-        /* '*' has three narrow spaces and one wide space. Use the largest
-         * narrow space of the start marker, not the shortest measured run:
-         * the latter rejected a 27 ms gap when a squeezed space was 13 ms. */
-        uint16_t spaces[4];
-        for (unsigned i = 0u; i < 4u; ++i) {
-            uint16_t width = p_runs[2u * i + 1u];
-            unsigned j = i;
-            while (j > 0u && spaces[j - 1u] > width) {
-                spaces[j] = spaces[j - 1u];
-                --j;
-            }
-            spaces[j] = width;
-        }
-        uint16_t gap_min = spaces[2];
+        /* An inter-character gap is a narrow space. Compare each gap with
+         * the largest narrow space of the two characters beside it, not
+         * with the shortest run (a 27 ms gap was rejected when a squeezed
+         * space was 13 ms) and not with the far end of the frame (scan
+         * speed can change across the barcode, 19 Nov). */
+        uint16_t narrow_0 = largest_narrow_space(&p_runs[0]);
+        uint16_t narrow_1 = largest_narrow_space(&p_runs[10]);
+        uint16_t narrow_2 = largest_narrow_space(&p_runs[20]);
+        uint32_t gap_0_max = 2u * (uint32_t)((narrow_0 > narrow_1) ? narrow_0 : narrow_1);
+        uint32_t gap_1_max = 2u * (uint32_t)((narrow_1 > narrow_2) ? narrow_1 : narrow_2);
         bool b_gaps = (p_runs[9] >= BARCODE_MIN_RUN_MS)
                        && (p_runs[19] >= BARCODE_MIN_RUN_MS)
-                       && (p_runs[9] <= (2u * gap_min))
-                       && (p_runs[19] <= (2u * gap_min));
+                       && (p_runs[9] <= gap_0_max)
+                       && (p_runs[19] <= gap_1_max);
         if ((BARCODE_STAR == first) && (BARCODE_STAR == last) && b_gaps)
         {
             static uint16_t const alphabet[LINE_BARCODE_ALPHABET_SIZE] =
@@ -414,32 +429,7 @@ static uint8_t barcode_update(line_barcode_ctx_t *p_ctx, uint16_t elapsed_ms,
         p_ctx->run_ms = 0u;
         p_ctx->flags = (uint8_t)((p_ctx->flags & ~BARCODE_FLAG_BLACK)
                                 | (b_black ? BARCODE_FLAG_BLACK : 0u));
-        if (!LINE_BARCODE_COUNT_A) verify_start(p_ctx);
-    }
-    if (LINE_BARCODE_COUNT_A)
-    {
-        /* run_count counts completed segments, starting at the first black
-         * bar. The surrounding white quiet zones are not segments. Wait for
-         * the trailing quiet zone so a longer pattern cannot match at 29. */
-        if (0u != (p_ctx->flags & BARCODE_FLAG_CAPTURE))
-        {
-            if (!b_black && p_ctx->run_ms >= LINE_BARCODE_QUIET_MS)
-            {
-                event = p_ctx->run_count == LINE_BARCODE_FRAME_RUNS
-                        ? LINE_BARCODE_EVT_BARCODE : LINE_BARCODE_EVT_INVALID;
-                *p_letter = 0u;
-                p_ctx->flags &= (uint8_t)~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
-                p_ctx->run_count = 0u;
-            }
-            else if ((b_black && p_ctx->run_count == LINE_BARCODE_FRAME_RUNS)
-                     || p_ctx->run_ms > LINE_BARCODE_RUN_MAX_MS)
-            {
-                event = LINE_BARCODE_EVT_INVALID;
-                p_ctx->flags &= (uint8_t)~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
-                p_ctx->run_count = 0u;
-            }
-        }
-        return event;
+        verify_start(p_ctx);
     }
     uint16_t quiet_required = BARCODE_MIN_QUIET_UNITS * first_narrow(p_ctx);
     if (!b_black && (LINE_BARCODE_FRAME_RUNS == p_ctx->run_count)
@@ -596,8 +586,9 @@ line_barcode_msg_t line_barcode_step(line_barcode_ctx_t *p_ctx,
         barcode_event = barcode_update(p_ctx, elapsed_ms, &letter);
         junction_event = side_junction_update(p_ctx);
     }
+    /* Slowdown needs to start at capture, before the start symbol is verified. */
     if ((LINE_BARCODE_FOLLOW == p_ctx->state)
-        && (0u != (p_ctx->flags & BARCODE_FLAG_CONFIRMED)))
+        && (0u != (p_ctx->flags & BARCODE_FLAG_CAPTURE)))
     {
         p_ctx->state = LINE_BARCODE_SCANNING;
     }
@@ -624,6 +615,10 @@ line_barcode_msg_t line_barcode_step(line_barcode_ctx_t *p_ctx,
     }
     line_barcode_msg_t msg = line_barcode_pack(p_ctx->stable, position, 0u,
                                                p_ctx->state, event, fault);
+    if ((p_ctx->flags & BARCODE_FLAG_CAPTURE) != 0u)
+    {
+        msg.data[1] |= LINE_BARCODE_CAPTURE_ACTIVE;
+    }
     if (LINE_BARCODE_EVT_BARCODE == event)
     {
         msg.data[2] = (uint8_t)((msg.data[2] & ~LINE_BARCODE_LETTER_MASK)

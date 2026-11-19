@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Line Robot | MQTT Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css?v=barcode-actions">
+  <script src="dashboard.js?v=barcode-actions" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <p class="eyebrow">INF2004 / MQTT TELEMETRY</p>
+      <h1>Line robot dashboard</h1>
+      <p id="robot">Connecting to local dashboard…</p>
+    </div>
+    <span id="connection" class="badge" role="status">Waiting for data</span>
+  </header>
+  <section class="controls" aria-labelledby="controls-title">
+    <h2 id="controls-title">Robot controls</h2>
+    <span id="command-status" role="status"></span>
+    <div class="control-buttons">
+      <button type="button" data-command="pause" disabled>Pause</button>
+      <button type="button" data-command="resume" disabled>Start</button>
+    </div>
+  </section>
+  <section class="card barcode-actions" aria-labelledby="barcode-actions-title">
+    <h2 id="barcode-actions-title">Barcode actions</h2>
+    <p>Enter a different letter for each action. Valid changes are sent when you leave a field or press Enter.</p>
+    <form id="barcode-actions">
+      <fieldset id="barcode-fields" disabled>
+        <label>Turn left<input name="left" value="A" maxlength="1" pattern="[A-Za-z]" required></label>
+        <label>Turn right<input name="right" value="F" maxlength="1" pattern="[A-Za-z]" required></label>
+        <label>Go straight<input name="straight" value="Z" maxlength="1" pattern="[A-Za-z]" required></label>
+        <label>U-turn<input name="uturn" value="W" maxlength="1" pattern="[A-Za-z]" required></label>
+      </fieldset>
+    </form>
+    <p id="barcode-action-status" role="status">Showing firmware defaults.</p>
+  </section>
+  <section class="summary" aria-label="Robot overview">
+    <div><span>Robot state</span><strong id="state">—</strong></div>
+    <div><span>Reported faults</span><strong id="faults">—</strong></div>
+    <div><span>Last telemetry</span><strong id="received">—</strong></div>
+  </section>
+  <div class="grid">
+    <section class="card">
+      <h2>MQTT communication</h2>
+      <dl>
+        <div><dt>Heartbeat</dt><dd id="heartbeat">—</dd></div>
+        <div><dt>Status topic</dt><dd id="status-topic">—</dd></div>
+        <div><dt>Telemetry topic</dt><dd id="telemetry-topic">—</dd></div>
+        <div><dt>Rejected packets</dt><dd id="rejected">0</dd></div>
+      </dl>
+    </section>
+    <section class="card">
+      <h2>Motors &amp; encoders</h2>
+      <dl>
+        <div><dt>Distance travelled</dt><dd id="distance">—</dd></div>
+        <div><dt>Speed</dt><dd id="speed">—</dd></div>
+      </dl>
+    </section>
+    <section class="card">
+      <h2>Line following &amp; barcode</h2>
+      <div class="sensors" aria-label="Line sensor bits">
+        <div>Left<strong id="left">—</strong></div>
+        <div>Centre<strong id="centre">—</strong></div>
+        <div>Right<strong id="right">—</strong></div>
+      </div>
+      <dl>
+        <div><dt>Black bars detected</dt><dd id="barcode-black">—</dd></div>
+        <div><dt>White gaps detected</dt><dd id="barcode-white">—</dd></div>
+        <div><dt>Last decoded barcode</dt><dd id="barcode-letter">—</dd></div>
+        <div><dt>Mapped direction</dt><dd id="barcode">—</dd></div>
+      </dl>
+    </section>
+    <section class="card">
+      <h2>IMU &amp; hump detection</h2>
+      <dl><div><dt>Highest hump</dt><dd id="hump">—</dd></div></dl>
+    </section>
+    <section class="card">
+      <h2>Obstacle detection</h2>
+      <dl>
+        <div><dt>Obstacle distance</dt><dd id="obstacle">—</dd></div>
+        <div><dt>Scan angle</dt><dd id="angle">—</dd></div>
+        <div><dt>Obstacle width</dt><dd id="width">—</dd></div>
+      </dl>
+    </section>
+  </div>
+</main>
+</body>
+</html>

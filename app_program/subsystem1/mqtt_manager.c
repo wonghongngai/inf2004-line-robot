@@ -24,7 +24,7 @@
 #include "communication_internal.h"
 #include <tm/tmonitor.h>
 
-#define MQTT_UTK_HEARTBEAT_MS   5000
+#define MQTT_UTK_HEARTBEAT_MS   2000
 #define MQTT_UTK_KEEPALIVE_S    60
 #define MQTT_UTK_RETRY_MS       3000
 
@@ -91,8 +91,9 @@ static void incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
         }
     }
     if ((flags & MQTT_DATA_FLAG_LAST) != 0U) {
+        S1_COMMAND command = {{rx_payload[0]}};
         if (rx_kind == RX_COMMAND && rx_length == S1_COMMAND_BYTES &&
-            (rx_payload[0] & ~S1_COMMAND_MASK) == 0U) {
+            s1_command_valid(&command)) {
             tm_printf((UB *)"mqtt: RX command=%u\n", (unsigned int)rx_payload[0]);
             s1_deliver_command(rx_payload, S1_COMMAND_BYTES);
         } else if (rx_kind == RX_MAPPING && rx_length == S1_MAPPING_BYTES) {
@@ -166,7 +167,7 @@ static void connection_cb(mqtt_client_t *c, void *arg, mqtt_connection_status_t 
         mqtt_set_inpub_callback(client, incoming_publish_cb,
                     incoming_data_cb, NULL);
 
-        err = mqtt_subscribe(client, MQTT_COMMAND_TOPIC, 0 /* qos */,
+        err = mqtt_subscribe(client, MQTT_COMMAND_TOPIC, 1 /* qos */,
                      subscribe_done_cb, (void *)MQTT_COMMAND_TOPIC);
         if(err != ERR_OK) {
             tm_printf((UB*)"mqtt: mqtt_subscribe() failed, err=%d\n",
