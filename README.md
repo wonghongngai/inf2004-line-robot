@@ -203,6 +203,50 @@ Topics are prefixed with `MQTT_CLIENT_ID` from `config/wifi_secrets.h`:
 | `<id>/command` | PC → car | 1 raw byte: STATUS, PAUSE, RESUME. RESET_STATS and REVERSE are defined by the protocol and currently unsupported in `all_test`. |
 | `<id>/mapping` | PC → car | 3-byte letter-to-movement map (left, right, straight, U-turn) |
 
+#### Set up MQTT (broker, robot, dashboard)
+
+The robot connects to an MQTT broker on your computer over Wi-Fi. Do these
+steps once per computer, then repeat step 3 onwards each session.
+
+1. **Install Mosquitto** (the broker and the `mosquitto_sub`/`mosquitto_pub`
+   clients). Windows: `winget install EclipseFoundation.Mosquitto`, then add
+   `C:\Program Files\mosquitto` to your `PATH`. macOS: `brew install mosquitto`.
+   Ubuntu/WSL: `sudo apt install mosquitto mosquitto-clients`.
+2. **Windows only: stop the Mosquitto service.** The installer starts a
+   background service that listens on localhost only. The robot can't reach
+   it, and it takes over `127.0.0.1:1883`, so tools pointed at `127.0.0.1`
+   silently talk to the wrong broker. In an admin PowerShell:
+   `Stop-Service mosquitto; Set-Service mosquitto -StartupType Manual`.
+3. **Start the broker** from the repo root, which accepts LAN clients on
+   port 1883 without a login. Keep this window open:
+   ```sh
+   mosquitto -c tools/mosquitto-local.conf -v
+   ```
+   The path is relative, so run it from the repo root (or give the full
+   path). On Windows, allow port 1883 through the firewall if the robot
+   never connects.
+4. **Point the firmware at your computer.** Put your computer's IPv4 address
+   on the robot's Wi-Fi in `MQTT_BROKER_IP` in `config/wifi_secrets.h`
+   (`ipconfig` on Windows, `ipconfig getifaddr en0` on macOS). The Pico W
+   joins 2.4 GHz networks only. The settings are compiled in, so **rebuild
+   and reflash** after any change: `sh build.sh all_test`.
+5. **Check the connection** on the serial console (section 1.2). Expect
+   `wifi: link up, ip=...`, `mqtt: connected to ...`, then
+   `mqtt: subscribed to <id>/command`. The broker window shows
+   `New client connected ... as <id>` followed by `Received PUBLISH` lines.
+6. **Start the dashboard** (below) with `--broker` set to the **same LAN
+   address** as `MQTT_BROKER_IP`, not `127.0.0.1`.
+7. **Press Start.** With MQTT enabled, `all_test` waits for a Start (RESUME)
+   command instead of driving after 5 s. The console prints
+   `[ALL TEST] MQTT start requested`. An S5 "no path" safe stop needs a reset
+   of the Pico. Pause and Start do not re-arm it.
+
+Troubleshooting: if the dashboard says **Waiting for telemetry**, check that
+the dashboard and robot use the same broker (step 2 and step 6). **Telemetry
+stale** means no packet for more than 5 s. A brief stale warning right after
+Start has been seen and clears by itself. If it stays stale, check the serial
+console for `mqtt:` errors or a disconnect.
+
 #### MQTT dashboard
 
 Preview all five subsystem panels with simulated data:
