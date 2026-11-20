@@ -50,7 +50,6 @@ Work that crosses subsystems has a lead owner:
 | Reverse motion (`moveBackward`), used by S5 and barcode re-scan | S2 | S3, S5 | #39 |
 | Obstacle scan results in telemetry | S5 | S1 | #40 |
 | Encoder counts and motor speed in telemetry | S1 | S2 | #41 |
-| Remove the template's producer/consumer compatibility code (`task_producer.c`, `task_consumer.c`, `legacy_example.h`) | S2 | S3 | — |
 
 Shared files (`app_program/app_main.c`, `app_program/app.h`, this file)
 are changed only by agreement of the team. The exception is claiming an empty
@@ -283,7 +282,7 @@ Each interface is tested by at least one integration test
 
 Limits are set in `config/config.h`. If the team needs more, raise the
 limit there. The counts are for the final firmware: the objects the code
-creates today, without the template's producer/consumer code, plus the
+creates today (the template's producer/consumer code was removed in #74), plus the
 **planned** objects marked (+).
 
 | Object | Limit | Kernel | S1 | S2 | S3 | S4 | S5 | Total |

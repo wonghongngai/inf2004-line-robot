@@ -1,6 +1,6 @@
 # Subsystem 3 — test log
 
-**Subsystem:** Line following and barcode; retained consumer adapter  ·  **Student ID:** 2502871  ·  **Code:** `app_program/subsystem3/`
+**Subsystem:** Line following and barcode  ·  **Student ID:** 2502871  ·  **Code:** `app_program/subsystem3/`
 
 See `testing/README.md` for how to run tests and record results.
 
@@ -60,6 +60,7 @@ Add a new row for every run. Never edit or delete old rows.
 | 2026-11-19 | S3-U02–U21, U23–U27, U36–U42 **on target** | `d9c4830` | robot operator; log analysis Claude | PASS (32 checks, 0 failed) | [`logs/2026-11-19_target_test.txt`](logs/2026-11-19_target_test.txt) | `robot-integrated-test.uf2` (`sh build.sh integrated TEST=1`), boot 22:29. First on-target run of S3-U14–U17, U23, U24, U27 (pending since 25–27 Oct). S3 summaries: sample contract 6/6, line/barcode 19/19, subsystem3 8/8 (includes INT-01). The tests ran while the integrated firmware was armed. Not S3: S1-U01 and S4-U05 failed in the same run (see the log) |
 | 2026-11-19 | S3-U02–U13, U18–U21, U25–U26, U36–U42 (`s3/line_barcode`); slide fixtures (`s3/pptx_samples`); S3-U14–U17, U23–U24, U27, U43–U46 (`s3/line_service`) | `cc239d5` | Claude, host | PASS (36 checks + slide fixtures, 0 failed) | [`logs/2026-11-19_host_s3_int.txt`](logs/2026-11-19_host_s3_int.txt) | `sh testing/run_host_tests.sh -v s3/`. Host only; no sanitizers on this toolchain |
 | 2026-11-19 | `int/line_service` (1 ms sampling on the motor core, physical pins, 30 ms freshness, enable reset) | `cc239d5` | Claude, host | PASS | [`logs/2026-11-19_host_s3_int.txt`](logs/2026-11-19_host_s3_int.txt) | `sh testing/run_host_tests.sh -v int/line_service`. Recorded here for #21; it tests the S3 service |
+| 2026-11-20 | S3-U02–U21, U23–U27, U36–U42 **on target** | `c27ab81` + uncommitted #74 changes (`s2/remove-template-tasks`) | Claude (flash + capture); robot on a stand, set up by the user | PASS (32 checks, 0 failed) | [`../integration/logs/2026-11-20_target_test_74.txt`](../integration/logs/2026-11-20_target_test_74.txt) | `sh build.sh integrated TEST=1`, flashed 19:28. First run without the template `consumer_task`, `mbx_samples` and `mtx_stats` (#74). S3 summaries: sample contract 6/6, line/barcode 19/19, subsystem3 7/7 (INT-01 removed) |
 
 ### Hardware barcode trials, 19 Nov (S3-M03)
 

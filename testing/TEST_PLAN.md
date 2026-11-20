@@ -42,8 +42,8 @@ something that hasn't passed on the bench (L3).
    | S4 | S4-U01–U07: snapshot, sensor, calibration, sample rate, 20 ms cycle, 4-byte packing, ramp range | S4-U01–U02 = template tests |
 
    Rewrite those rows to describe what the code checks. The template tests
-   were never run, so nothing is lost. Do the same for INT-01/INT-02, which
-   are template examples: mark them *Retired*.
+   were never run, so nothing is lost. INT-01/INT-02 were template examples
+   and are *Retired* (#74, 20 Nov).
 2. **Run what already exists** (the "Have" tables below) and record the
    results. Most of these tests have never had a Results row.
 
@@ -124,7 +124,7 @@ INT-08–INT-10 in integrated mode.
 | `int/line_service`: 1 ms sampling, pins, 30 ms freshness | L1 | `sh testing/run_host_tests.sh int/line_service` | PASS |
 | S3-U14–U17, U23–U24, U27 (plus every `line_barcode_test.c` check) | L2 | `sh build.sh integrated TEST=1` | PASS on target 19 Nov (`d9c4830`) |
 
-Retired 19 Nov (see `subsystem3/TEST_LOG.md`): S3-U01 (template consumer, #74),
+Retired 19 Nov (see `subsystem3/TEST_LOG.md`): S3-U01 (template consumer; the task itself was removed in #74),
 S3-U22 (TRACK layout, unused) and the `s3/count_a` host test with the
 count-only decoder mode it tested. The old S3-M01–M05 physical cases are
 superseded by the IDs below.

@@ -102,7 +102,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 
 | Test | Status | Evidence | Next action |
 |---|---|---|---|
-| INT-01 S2 → S3 samples, INT-02 S3 → S4 summaries | ⬜ | — (these are still the template's example tests) | Replace them with the real interfaces from `TEAM.md` §5 |
+| INT-01 S2 → S3 samples, INT-02 S3 → S4 summaries | Retired (#74) | — (template example tests; the example tasks are removed) | Write INT tests for the real interfaces in `TEAM.md` §5 |
 | INT-03 robot adapter / VC (host, simulated) | ✅ | `logs/2026-11-13_host_tests.txt` (`af2da1c`) | Add a host test of the S5 avoidance hand-over (currently stubbed as idle) |
 | INT-04/06 all firmware profiles build | ✅ (28 Oct) | `logs/2026-10-28_robot_builds.txt` | Rerun on the current commit: the `integrated` UF2 is from 8 Nov, older than the latest fixes |
 | **Integrated firmware drives the full course on the robot** | ⬜ | — | Main goal: see *Top priorities* below |

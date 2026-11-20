@@ -11,7 +11,6 @@
 #include "../app.h"
 #include "motion_control.h"
 #include "subsystem2_hw_test.h"
-#include "legacy_example.h"
 
 /* TEAM.md allocates subsystem 2 priority band 14-15. */
 #define S2_PRI_MOTION          14

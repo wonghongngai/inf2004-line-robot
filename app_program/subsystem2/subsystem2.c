@@ -82,23 +82,12 @@ EXPORT ER subsystem2_init(void)
     latest_status.left_pwm_percent = 0.0f;
     latest_status.right_pwm_percent = 0.0f;
 
-#if APP_ROBOT_INTEGRATED
-    return s2_legacy_example_init();
-#else
     return E_OK;
-#endif
 }
 
 EXPORT ER subsystem2_start(void)
 {
     ID tid;
-
-#if APP_ROBOT_INTEGRATED
-    /* Start compatibility tasks first; motion starts only if all succeeded. */
-    tid = app_start_task(producer_task, S2_PRI_PRODUCER, TP_PRC2,
-                         "producer_task");
-    if (tid < E_OK) return tid;
-#endif
 
     tid = app_start_task(
 #if S2_MOTOR_HW_TEST
