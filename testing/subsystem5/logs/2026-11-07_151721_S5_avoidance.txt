@@ -1,0 +1,1335 @@
+# Trimmed copy of testing/subsystem5/logs/2026-11-07_151721_console.txt (gitignored raw capture).
+# Kept: serial session headers and every 'S5:', '[ALL TEST]' and '[ROBOT]' line
+# except the periodic '[ALL TEST] phase=...' status lines, in order;
+# identical consecutive lines collapsed to one with [xN]. Nothing else changed.
+=== COM5 connected 15:19:28.273 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 299 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  305  ok
+S5: coarse  70 deg  299  ok
+S5: coarse  90 deg  302  ok
+S5: coarse 110 deg  320  ok
+S5: coarse 130 deg 2165  ok
+S5: fine 50..130 deg, 17 points, scan 5644 ms
+S5:  50 deg  raw  307  med  307  ok
+S5:  55 deg  raw  307  med  307  ok
+S5:  60 deg  raw  297  med  305  ok
+S5:  65 deg  raw  305  med  299  ok
+S5:  70 deg  raw  299  med  299  ok
+S5:  75 deg  raw  294  med  294  ok
+S5:  80 deg  raw  294  med  294  ok
+S5:  85 deg  raw  302  med  302  ok
+S5:  90 deg  raw  302  med  302  ok
+S5:  95 deg  raw  302  med  302  ok
+S5: 100 deg  raw  302  med  302  ok
+S5: 105 deg  raw  307  med  307  ok
+S5: 110 deg  raw  325  med  325  ok
+S5: 115 deg  raw  373  med  373  ok
+S5: 120 deg  raw 2170  med 2169  ok
+S5: 125 deg  raw 2169  med 2170  ok
+S5: 130 deg  raw 2170  med 2170  ok
+S5: closest 294 mm at 75 deg (x 284)
+S5: centre y -73 mm, width 247 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 175 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 20 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 50 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 90 deg
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 15:21:34.984 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 299 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  302  ok
+S5: coarse  70 deg  297  ok
+S5: coarse  90 deg  294  ok
+S5: coarse 110 deg  312  ok
+S5: coarse 130 deg 2171  ok
+S5: fine 50..130 deg, 17 points, scan 5644 ms
+S5:  50 deg  raw  318  med  318  ok
+S5:  55 deg  raw  318  med  318  ok
+S5:  60 deg  raw  307  med  307  ok
+S5:  65 deg  raw  297  med  297  ok
+S5:  70 deg  raw  297  med  297  ok
+S5:  75 deg  raw  299  med  299  ok
+S5:  80 deg  raw  299  med  299  ok
+S5:  85 deg  raw  294  med  294  ok
+S5:  90 deg  raw  294  med  294  ok
+S5:  95 deg  raw  294  med  294  ok
+S5: 100 deg  raw  294  med  294  ok
+S5: 105 deg  raw  307  med  307  ok
+S5: 110 deg  raw  312  med  312  ok
+S5: 115 deg  raw  331  med  331  ok
+S5: 120 deg  raw  362  med  362  ok
+S5: 125 deg  raw 2168  med  853  ok
+S5: 130 deg  raw  853  med  853  ok
+S5: closest 294 mm at 85 deg (x 292)
+S5: centre y -65 mm, width 278 mm
+S5: clear L 308 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 199 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 20 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 50 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 90 deg
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 15:22:32.649 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 292 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  292  ok
+S5: coarse  70 deg  299  ok
+S5: coarse  90 deg  297  ok
+S5: coarse 110 deg  302  ok
+S5: coarse 130 deg 2166  ok
+S5: fine 50..130 deg, 17 points, scan 5656 ms
+S5:  50 deg  raw  307  med  307  ok
+S5:  55 deg  raw  307  med  307  ok
+S5:  60 deg  raw  297  med  299  ok
+S5:  65 deg  raw  299  med  297  ok
+S5:  70 deg  raw  294  med  294  ok
+S5:  75 deg  raw  294  med  294  ok
+S5:  80 deg  raw  289  med  294  ok
+S5:  85 deg  raw  297  med  297  ok
+S5:  90 deg  raw  297  med  297  ok
+S5:  95 deg  raw  297  med  297  ok
+S5: 100 deg  raw  302  med  302  ok
+S5: 105 deg  raw  302  med  302  ok
+S5: 110 deg  raw  320  med  320  ok
+S5: 115 deg  raw  364  med  364  ok
+S5: 120 deg  raw 2174  med  865  ok
+S5: 125 deg  raw  865  med  865  ok
+S5: 130 deg  raw  847  med  847  ok
+S5: closest 294 mm at 70 deg (x 276)
+S5: centre y -75 mm, width 243 mm
+S5: clear L 279 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 171 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 20 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 50 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 90 deg
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 15:24:58.355 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 297 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  305  ok
+S5: coarse  70 deg  299  ok
+S5: coarse  90 deg  297  ok
+S5: coarse 110 deg  307  ok
+S5: coarse 130 deg 2202  ok
+S5: fine 50..130 deg, 17 points, scan 5643 ms
+S5:  50 deg  raw  307  med  307  ok
+S5:  55 deg  raw  307  med  307  ok
+S5:  60 deg  raw  297  med  299  ok
+S5:  65 deg  raw  299  med  299  ok
+S5:  70 deg  raw  299  med  299  ok
+S5:  75 deg  raw  294  med  299  ok
+S5:  80 deg  raw  302  med  302  ok
+S5:  85 deg  raw  302  med  302  ok
+S5:  90 deg  raw  302  med  302  ok
+S5:  95 deg  raw  302  med  302  ok
+S5: 100 deg  raw  302  med  302  ok
+S5: 105 deg  raw  307  med  307  ok
+S5: 110 deg  raw  312  med  312  ok
+S5: 115 deg  raw  364  med  364  ok
+S5: 120 deg  raw 2207  med 2207  ok
+S5: 125 deg  raw 2211  med 2211  ok
+S5: 130 deg  raw 2211  med 2211  ok
+S5: closest 299 mm at 60 deg (x 258)
+S5: centre y -76 mm, width 242 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 170 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 20 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 50 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+=== COM5 connected 15:25:49.611 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+=== COM5 connected 15:25:50.775 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 294 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  305  ok
+S5: coarse  70 deg  299  ok
+S5: coarse  90 deg  297  ok
+S5: coarse 110 deg  302  ok
+S5: coarse 130 deg 2206  ok
+S5: fine 50..130 deg, 17 points, scan 5668 ms
+S5:  50 deg  raw  307  med  307  ok
+S5:  55 deg  raw  307  med  307  ok
+S5:  60 deg  raw  297  med  299  ok
+S5:  65 deg  raw  299  med  299  ok
+S5:  70 deg  raw  299  med  299  ok
+S5:  75 deg  raw  294  med  299  ok
+S5:  80 deg  raw  302  med  302  ok
+S5:  85 deg  raw  302  med  302  ok
+S5:  90 deg  raw  297  med  297  ok
+S5:  95 deg  raw  297  med  297  ok
+S5: 100 deg  raw  302  med  302  ok
+S5: 105 deg  raw  307  med  307  ok
+S5: 110 deg  raw  320  med  320  ok
+S5: 115 deg  raw  364  med  364  ok
+S5: 120 deg  raw 2210  med 2210  ok
+S5: 125 deg  raw 2211  med 2211  ok
+S5: 130 deg  raw 2219  med 2219  ok
+S5: closest 297 mm at 90 deg (x 297)
+S5: centre y -76 mm, width 242 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 170 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 20 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 50 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 90 deg
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 15:27:15.930 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 292 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  297  ok
+S5: coarse  70 deg  297  ok
+S5: coarse  90 deg  302  ok
+S5: coarse 110 deg  307  ok
+S5: coarse 130 deg 2155  ok
+S5: fine 50..130 deg, 17 points, scan 5650 ms
+S5:  50 deg  raw  307  med  307  ok
+S5:  55 deg  raw  307  med  307  ok
+S5:  60 deg  raw  297  med  297  ok
+S5:  65 deg  raw  292  med  297  ok
+S5:  70 deg  raw  299  med  294  ok
+S5:  75 deg  raw  294  med  294  ok
+S5:  80 deg  raw  289  med  289  ok
+S5:  85 deg  raw  289  med  289  ok
+S5:  90 deg  raw  297  med  297  ok
+S5:  95 deg  raw  297  med  297  ok
+S5: 100 deg  raw  302  med  302  ok
+S5: 105 deg  raw  302  med  302  ok
+S5: 110 deg  raw  307  med  307  ok
+S5: 115 deg  raw  359  med  359  ok
+S5: 120 deg  raw 2202  med 2202  ok
+S5: 125 deg  raw 2202  med 2202  ok
+S5: 130 deg  raw 2211  med 2211  ok
+S5: closest 289 mm at 80 deg (x 284)
+S5: centre y -75 mm, width 243 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 171 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 20 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 50 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 90 deg
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 15:33:15.542 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+=== COM5 lost 15:33:19.961 (reset?) ===
+=== COM5 connected 15:33:20.607 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 299 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  294  ok
+S5: coarse  70 deg  294  ok
+S5: coarse  90 deg  292  ok
+S5: coarse 110 deg  310  ok
+S5: coarse 130 deg 2205  ok
+S5: fine 50..130 deg, 17 points, scan 5650 ms
+S5:  50 deg  raw  302  med  302  ok
+S5:  55 deg  raw  302  med  302  ok
+S5:  60 deg  raw  304  med  302  ok
+S5:  65 deg  raw  294  med  294  ok
+S5:  70 deg  raw  294  med  294  ok
+S5:  75 deg  raw  297  med  297  ok
+S5:  80 deg  raw  297  med  297  ok
+S5:  85 deg  raw  297  med  297  ok
+S5:  90 deg  raw  297  med  297  ok
+S5:  95 deg  raw  297  med  297  ok
+S5: 100 deg  raw  297  med  297  ok
+S5: 105 deg  raw  302  med  302  ok
+S5: 110 deg  raw  341  med  341  ok
+S5: 115 deg  raw  613  med  613  ok
+S5: 120 deg  raw 2153  med 2153  ok
+S5: 125 deg  raw 2209  med 2209  ok
+S5: 130 deg  raw 2214  med 2214  ok
+S5: closest 294 mm at 65 deg (x 266)
+S5: centre y -92 mm, width 203 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 134 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 20 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 50 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 120 deg (until the line)
+S5: line found
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 15:34:51.497 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 297 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  294  ok
+S5: coarse  70 deg  302  ok
+S5: coarse  90 deg  294  ok
+S5: coarse 110 deg  294  ok
+S5: coarse 130 deg    0  no-echo
+S5: fine 50..130 deg, 17 points, scan 5656 ms
+S5:  50 deg  raw  305  med  305  ok
+S5:  55 deg  raw  305  med  305  ok
+S5:  60 deg  raw  294  med  297  ok
+S5:  65 deg  raw  297  med  294  ok
+S5:  70 deg  raw  292  med  297  ok
+S5:  75 deg  raw  299  med  292  ok
+S5:  80 deg  raw  286  med  294  ok
+S5:  85 deg  raw  294  med  294  ok
+S5:  90 deg  raw  294  med  294  ok
+S5:  95 deg  raw  294  med  294  ok
+S5: 100 deg  raw  294  med  294  ok
+S5: 105 deg  raw  307  med  307  ok
+S5: 110 deg  raw    0  med    0  no-echo
+S5: 115 deg  raw 1811  med 1811  ok
+S5: 120 deg  raw    0  med    0  no-echo
+S5: 125 deg  raw    0  med    0  no-echo
+S5: 130 deg  raw    0  med    0  no-echo
+S5: closest 292 mm at 75 deg (x 282)
+S5: centre y -111 mm, width 169 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 98 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 20 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 50 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 120 deg (until the line)
+S5: line found
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+S5: OBSTACLE at 294 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg    0  no-echo
+S5: coarse  70 deg    0  no-echo
+S5: coarse  90 deg  315  ok
+S5: coarse 110 deg  263  ok
+S5: coarse 130 deg  294  ok
+S5: fine 70..130 deg, 13 points, scan 5159 ms
+S5:  70 deg  raw    0  med    0  no-echo
+S5:  75 deg  raw    0  med    0  no-echo
+S5:  80 deg  raw 1679  med 1679  ok
+S5:  85 deg  raw 1471  med 1471  ok
+S5:  90 deg  raw 1143  med 1143  ok
+S5:  95 deg  raw 1134  med 1143  ok
+S5: 100 deg  raw 1146  med 1146  ok
+S5: 105 deg  raw 1500  med 1146  ok
+S5: 110 deg  raw  292  med  292  ok
+S5: 115 deg  raw  292  med  292  ok
+S5: 120 deg  raw  305  med  297  ok
+S5: 125 deg  raw  297  med  297  ok
+S5: 130 deg  raw  251  med  251  ok
+S5: closest 251 mm at 130 deg (x 192)
+S5: centre y 180 mm, width 0 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN CONTINUE, shift 0 mm
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 15:47:50.828 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 299 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  299  ok
+S5: coarse  70 deg  299  ok
+S5: coarse  90 deg  297  ok
+S5: coarse 110 deg  302  ok
+S5: coarse 130 deg  318  ok
+S5: fine 50..130 deg, 17 points, scan 5650 ms
+S5:  50 deg  raw  320  med  320  ok
+S5:  55 deg  raw  320  med  320  ok
+S5:  60 deg  raw  310  med  310  ok
+S5:  65 deg  raw  299  med  299  ok
+S5:  70 deg  raw  299  med  299  ok
+S5:  75 deg  raw  302  med  299  ok
+S5:  80 deg  raw  297  med  297  ok
+S5:  85 deg  raw  297  med  297  ok
+S5:  90 deg  raw  297  med  297  ok
+S5:  95 deg  raw  297  med  297  ok
+S5: 100 deg  raw  297  med  297  ok
+S5: 105 deg  raw  302  med  297  ok
+S5: 110 deg  raw  294  med  299  ok
+S5: 115 deg  raw  299  med  299  ok
+S5: 120 deg  raw  305  med  305  ok
+S5: 125 deg  raw  349  med  349  ok
+S5: 130 deg  raw 2187  med 2187  ok
+S5: closest 297 mm at 80 deg (x 292)
+S5: centre y -56 mm, width 297 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 217 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 20 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 50 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 120 deg (until the line)
+S5: LINE LOST after 120 deg (NFR5-4)
+S5: SAFE STOP (reboot to re-arm)
+[ALL TEST] STOPPED: obstacle: no path, line lost or bad S5 request; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 15:52:03.247 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 15:52:33.322 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 196 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  297  ok
+S5: coarse  70 deg  228  ok
+S5: coarse  90 deg  190  ok
+S5: coarse 110 deg  190  ok
+S5: coarse 130 deg 2159  ok
+S5: fine 50..130 deg, 17 points, scan 5650 ms
+S5:  50 deg  raw    0  med    0  no-echo
+S5:  55 deg  raw    0  med    0  no-echo
+S5:  60 deg  raw  297  med  297  ok
+S5:  65 deg  raw  206  med  206  ok
+S5:  70 deg  raw  196  med  200  ok
+S5:  75 deg  raw  200  med  196  ok
+S5:  80 deg  raw  190  med  190  ok
+S5:  85 deg  raw  190  med  190  ok
+S5:  90 deg  raw  190  med  190  ok
+S5:  95 deg  raw  190  med  190  ok
+S5: 100 deg  raw  190  med  190  ok
+S5: 105 deg  raw  190  med  190  ok
+S5: 110 deg  raw  199  med  199  ok
+S5: 115 deg  raw  302  med  302  ok
+S5: 120 deg  raw 2154  med 2154  ok
+S5: 125 deg  raw 2154  med 2154  ok
+S5: 130 deg  raw 2158  med 2158  ok
+S5: closest 190 mm at 80 deg (x 187)
+S5: centre y -10 mm, width 137 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 183 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 20 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 50 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 120 deg (until the line)
+S5: line found
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: IMU collision detected; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+[ALL TEST] IMU stop data: api=0 age=0 ms samples=2576 ok=1 calibrated=1 motion=3 event=3 errors=0 baseline_errors=0
+[ALL TEST] IMU stop acceleration=(-101,-1235,912)mg baseline=(-54,64,1008)mg
+=== COM5 connected 16:02:31.584 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 16:02:50.088 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 196 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  323  ok
+S5: coarse  70 deg    0  no-echo
+S5: coarse  90 deg  199  ok
+S5: coarse 110 deg  203  ok
+S5: coarse 130 deg  222  ok
+S5: fine 50..130 deg, 17 points, scan 5650 ms
+S5:  50 deg  raw 1522  med 1522  ok
+S5:  55 deg  raw 1536  med 1536  ok
+S5:  60 deg  raw    0  med    0  no-echo
+S5:  65 deg  raw  368  med  368  ok
+S5:  70 deg  raw  228  med  228  ok
+S5:  75 deg  raw  196  med  199  ok
+S5:  80 deg  raw  199  med  199  ok
+S5:  85 deg  raw  199  med  199  ok
+S5:  90 deg  raw  190  med  190  ok
+S5:  95 deg  raw  190  med  190  ok
+S5: 100 deg  raw  203  med  190  ok
+S5: 105 deg  raw  190  med  190  ok
+S5: 110 deg  raw  190  med  190  ok
+S5: 115 deg  raw  199  med  199  ok
+S5: 120 deg  raw  302  med  294  ok
+S5: 125 deg  raw  294  med  302  ok
+S5: 130 deg  raw 2159  med 2159  ok
+S5: closest 190 mm at 90 deg (x 190)
+S5: centre y 48 mm, width 112 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS RIGHT, shift 133 mm
+S5: BYPASS PASS RIGHT
+S5: step 1/8: turn R 90 deg
+S5: step 2/8: forward 14 cm
+S5: step 3/8: turn L 90 deg
+S5: step 4/8: forward 50 cm
+[ALL TEST] STOPPED: IMU collision detected; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+[ALL TEST] IMU stop data: api=0 age=0 ms samples=1035 ok=1 calibrated=1 motion=3 event=3 errors=0 baseline_errors=0
+[ALL TEST] IMU stop acceleration=(988,-108,1704)mg baseline=(-56,59,1012)mg
+=== COM5 connected 16:03:40.669 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 190 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  222  ok
+S5: coarse  70 deg  222  ok
+S5: coarse  90 deg  184  ok
+S5: coarse 110 deg  196  ok
+S5: coarse 130 deg 2147  ok
+S5: fine 50..130 deg, 17 points, scan 5643 ms
+S5:  50 deg  raw 1551  med 1551  ok
+S5:  55 deg  raw    0  med    0  no-echo
+S5:  60 deg  raw    0  med    0  no-echo
+S5:  65 deg  raw  199  med  199  ok
+S5:  70 deg  raw  190  med  193  ok
+S5:  75 deg  raw  193  med  193  ok
+S5:  80 deg  raw  206  med  193  ok
+S5:  85 deg  raw  184  med  196  ok
+S5:  90 deg  raw  196  med  196  ok
+S5:  95 deg  raw  196  med  196  ok
+S5: 100 deg  raw  251  med  251  ok
+S5: 105 deg  raw  260  med  251  ok
+S5: 110 deg  raw  196  med  206  ok
+S5: 115 deg  raw  206  med  206  ok
+S5: 120 deg  raw  291  med  291  ok
+S5: 125 deg  raw 2148  med 2147  ok
+S5: 130 deg  raw 2147  med 2147  ok
+S5: closest 193 mm at 70 deg (x 181)
+S5: centre y 30 mm, width 89 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS RIGHT, shift 139 mm
+S5: BYPASS PASS RIGHT
+S5: step 1/8: turn R 90 deg
+S5: step 2/8: forward 14 cm
+S5: step 3/8: turn L 90 deg
+S5: step 4/8: forward 50 cm
+[ALL TEST] STOPPED: IMU collision detected; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+[ALL TEST] IMU stop data: api=0 age=0 ms samples=1148 ok=1 calibrated=1 motion=3 event=3 errors=0 baseline_errors=0
+[ALL TEST] IMU stop acceleration=(-6,-458,1085)mg baseline=(-51,65,997)mg
+S5: leg timed out
+S5: step 4 failed
+S5: SAFE STOP (reboot to re-arm)
+=== COM5 connected 16:04:39.389 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 190 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  260  ok
+S5: coarse  70 deg  196  ok
+S5: coarse  90 deg  193  ok
+S5: coarse 110 deg  239  ok
+S5: coarse 130 deg 2144  ok
+S5: fine 50..130 deg, 17 points, scan 5645 ms
+S5:  50 deg  raw 1591  med 1591  ok
+S5:  55 deg  raw 1605  med 1591  ok
+S5:  60 deg  raw  193  med  196  ok
+S5:  65 deg  raw  196  med  193  ok
+S5:  70 deg  raw  187  med  190  ok
+S5:  75 deg  raw  190  med  187  ok
+S5:  80 deg  raw  180  med  180  ok
+S5:  85 deg  raw  180  med  180  ok
+S5:  90 deg  raw  206  med  184  ok
+S5:  95 deg  raw  184  med  206  ok
+S5: 100 deg  raw  239  med  239  ok
+S5: 105 deg  raw  299  med  299  ok
+S5: 110 deg  raw 2147  med 2146  ok
+S5: 115 deg  raw 2146  med 2146  ok
+S5: 120 deg  raw 2146  med 2146  ok
+S5: 125 deg  raw 2145  med 2145  ok
+S5: 130 deg  raw 2145  med 2145  ok
+S5: closest 180 mm at 80 deg (x 177)
+S5: centre y -10 mm, width 45 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 137 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 14 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 50 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 120 deg (until the line)
+S5: line found
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 16:06:31.405 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 190 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  180  ok
+S5: coarse  70 deg  190  ok
+S5: coarse  90 deg  187  ok
+S5: coarse 110 deg    0  no-echo
+S5: coarse 130 deg    0  no-echo
+S5: fine 50..110 deg, 13 points, scan 5146 ms
+S5:  50 deg  raw  299  med  299  ok
+S5:  55 deg  raw  371  med  299  ok
+S5:  60 deg  raw  199  med  203  ok
+S5:  65 deg  raw  203  med  199  ok
+S5:  70 deg  raw  180  med  184  ok
+S5:  75 deg  raw  184  med  184  ok
+S5:  80 deg  raw  251  med  187  ok
+S5:  85 deg  raw  187  med  187  ok
+S5:  90 deg  raw  187  med  187  ok
+S5:  95 deg  raw  187  med  187  ok
+S5: 100 deg  raw  302  med  302  ok
+S5: 105 deg  raw    0  med    0  no-echo
+S5: 110 deg  raw    0  med    0  no-echo
+S5: closest 184 mm at 70 deg (x 172)
+S5: centre y -103 mm, width 178 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 111 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 12 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 50 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 120 deg (until the line)
+S5: LINE LOST after 120 deg (NFR5-4)
+S5: SAFE STOP (reboot to re-arm)
+[ALL TEST] STOPPED: obstacle: no path, line lost or bad S5 request; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 16:09:41.322 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 190 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  199  ok
+S5: coarse  70 deg  199  ok
+S5: coarse  90 deg  196  ok
+S5: coarse 110 deg  302  ok
+S5: coarse 130 deg    0  no-echo
+S5: fine 50..130 deg, 17 points, scan 5644 ms
+S5:  50 deg  raw 1846  med 1846  ok
+S5:  55 deg  raw 1846  med 1846  ok
+S5:  60 deg  raw 1841  med 1841  ok
+S5:  65 deg  raw  242  med  297  ok
+S5:  70 deg  raw  297  med  242  ok
+S5:  75 deg  raw  180  med  193  ok
+S5:  80 deg  raw  193  med  184  ok
+S5:  85 deg  raw  184  med  193  ok
+S5:  90 deg  raw  260  med  187  ok
+S5:  95 deg  raw  187  med  260  ok
+S5: 100 deg  raw  302  med  302  ok
+S5: 105 deg  raw  302  med  302  ok
+S5: 110 deg  raw    0  med    0  no-echo
+S5: 115 deg  raw    0  med    0  no-echo
+S5: 120 deg  raw    0  med    0  no-echo
+S5: 125 deg  raw    0  med    0  no-echo
+S5: 130 deg  raw    0  med    0  no-echo
+S5: closest 184 mm at 80 deg (x 181)
+S5: centre y -23 mm, width 71 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 137 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 14 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 30 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 120 deg (until the line)
+S5: line found
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 16:11:07.558 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 164 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  164  ok
+S5: coarse  70 deg  164  ok
+S5: coarse  90 deg  161  ok
+S5: coarse 110 deg    0  no-echo
+S5: coarse 130 deg    0  no-echo
+S5: fine 50..110 deg, 13 points, scan 5146 ms
+S5:  50 deg  raw 1839  med 1839  ok
+S5:  55 deg  raw 1834  med 1834  ok
+S5:  60 deg  raw  362  med  362  ok
+S5:  65 deg  raw  164  med  164  ok
+S5:  70 deg  raw  155  med  158  ok
+S5:  75 deg  raw  158  med  158  ok
+S5:  80 deg  raw  171  med  161  ok
+S5:  85 deg  raw  161  med  171  ok
+S5:  90 deg  raw  174  med  174  ok
+S5:  95 deg  raw  297  med  297  ok
+S5: 100 deg  raw  317  med  317  ok
+S5: 105 deg  raw  362  med  362  ok
+S5: 110 deg  raw    0  med    0  no-echo
+S5: closest 158 mm at 70 deg (x 148)
+S5: centre y -22 mm, width 0 mm
+S5: clear L 30 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS RIGHT, shift 147 mm
+S5: BYPASS PASS RIGHT
+S5: box 148 mm ahead: too close to turn
+S5: SAFE STOP (reboot to re-arm)
+[ALL TEST] STOPPED: obstacle: no path, line lost or bad S5 request; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 16:11:42.483 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+=== COM5 connected 16:11:52.196 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+=== COM5 connected 16:12:00.122 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+=== COM5 connected 16:12:13.911 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 164 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  161  ok
+S5: coarse  70 deg  174  ok
+S5: coarse  90 deg  323  ok
+S5: coarse 110 deg  378  ok
+S5: coarse 130 deg    0  no-echo
+S5: fine 50..130 deg, 17 points, scan 5662 ms
+S5:  50 deg  raw 1828  med 1828  ok
+S5:  55 deg  raw 1828  med 1828  ok
+S5:  60 deg  raw 1828  med 1828  ok
+S5:  65 deg  raw  161  med  164  ok
+S5:  70 deg  raw  164  med  161  ok
+S5:  75 deg  raw  155  med  158  ok
+S5:  80 deg  raw  158  med  158  ok
+S5:  85 deg  raw  158  med  158  ok
+S5:  90 deg  raw  310  med  161  ok
+S5:  95 deg  raw  161  med  161  ok
+S5: 100 deg  raw    0  med    0  no-echo
+S5: 105 deg  raw    0  med    0  no-echo
+S5: 110 deg  raw    0  med    0  no-echo
+S5: 115 deg  raw    0  med    0  no-echo
+S5: 120 deg  raw    0  med    0  no-echo
+S5: 125 deg  raw    0  med    0  no-echo
+S5: 130 deg  raw    0  med    0  no-echo
+S5: closest 158 mm at 75 deg (x 152)
+S5: centre y -27 mm, width 0 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 98 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 10 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 30 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 120 deg (until the line)
+S5: line found
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 16:13:04.584 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 171 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  364  ok
+S5: coarse  70 deg  164  ok
+S5: coarse  90 deg  161  ok
+S5: coarse 110 deg    0  no-echo
+S5: coarse 130 deg    0  no-echo
+S5: fine 50..110 deg, 13 points, scan 5146 ms
+S5:  50 deg  raw 1845  med 1845  ok
+S5:  55 deg  raw 1844  med 1844  ok
+S5:  60 deg  raw  302  med  302  ok
+S5:  65 deg  raw  164  med  164  ok
+S5:  70 deg  raw  155  med  158  ok
+S5:  75 deg  raw  158  med  158  ok
+S5:  80 deg  raw  302  med  161  ok
+S5:  85 deg  raw  161  med  297  ok
+S5:  90 deg  raw  297  med  297  ok
+S5:  95 deg  raw  297  med  297  ok
+S5: 100 deg  raw  297  med  297  ok
+S5: 105 deg  raw    0  med    0  no-echo
+S5: 110 deg  raw    0  med    0  no-echo
+S5: closest 158 mm at 70 deg (x 148)
+S5: centre y -50 mm, width 88 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 119 mm
+S5: BYPASS PASS LEFT
+S5: box 148 mm ahead: too close to turn
+S5: SAFE STOP (reboot to re-arm)
+[ALL TEST] STOPPED: obstacle: no path, line lost or bad S5 request; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 16:16:28.744 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+=== COM5 connected 16:17:18.457 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 190 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  190  ok
+S5: coarse  70 deg  225  ok
+S5: coarse  90 deg  200  ok
+S5: coarse 110 deg    0  no-echo
+S5: coarse 130 deg  564  ok
+S5: fine 50..130 deg, 17 points, scan 5644 ms
+S5:  50 deg  raw 2382  med 2382  ok
+S5:  55 deg  raw  307  med  307  ok
+S5:  60 deg  raw  225  med  225  ok
+S5:  65 deg  raw  180  med  193  ok
+S5:  70 deg  raw  193  med  184  ok
+S5:  75 deg  raw  184  med  187  ok
+S5:  80 deg  raw  187  med  187  ok
+S5:  85 deg  raw  187  med  187  ok
+S5:  90 deg  raw  187  med  187  ok
+S5:  95 deg  raw  199  med  199  ok
+S5: 100 deg  raw  242  med  242  ok
+S5: 105 deg  raw  302  med  302  ok
+S5: 110 deg  raw    0  med    0  no-echo
+S5: 115 deg  raw    0  med    0  no-echo
+S5: 120 deg  raw    0  med    0  no-echo
+S5: 125 deg  raw  572  med  572  ok
+S5: 130 deg  raw  572  med  572  ok
+S5: closest 184 mm at 70 deg (x 172)
+S5: centre y -49 mm, width 122 mm
+S5: clear L 250 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 137 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 14 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 30 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 120 deg (until the line)
+S5: line found
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 16:18:21.675 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 193 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  193  ok
+S5: coarse  70 deg  228  ok
+S5: coarse  90 deg  228  ok
+S5: coarse 110 deg    0  no-echo
+S5: coarse 130 deg    0  no-echo
+S5: fine 50..110 deg, 13 points, scan 5154 ms
+S5:  50 deg  raw 2343  med 2343  ok
+S5:  55 deg  raw 2245  med 2245  ok
+S5:  60 deg  raw  228  med  228  ok
+S5:  65 deg  raw  184  med  196  ok
+S5:  70 deg  raw  196  med  196  ok
+S5:  75 deg  raw  200  med  196  ok
+S5:  80 deg  raw  190  med  190  ok
+S5:  85 deg  raw  190  med  190  ok
+S5:  90 deg  raw  190  med  190  ok
+S5:  95 deg  raw  203  med  203  ok
+S5: 100 deg  raw  317  med  297  ok
+S5: 105 deg  raw  297  med  297  ok
+S5: 110 deg  raw    0  med    0  no-echo
+S5: closest 190 mm at 80 deg (x 187)
+S5: centre y -19 mm, width 52 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 132 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 14 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 30 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 120 deg (until the line)
+S5: line found
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 16:19:12.321 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 184 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  184  ok
+S5: coarse  70 deg  184  ok
+S5: coarse  90 deg  180  ok
+S5: coarse 110 deg  228  ok
+S5: coarse 130 deg    0  no-echo
+S5: fine 50..130 deg, 17 points, scan 5649 ms
+S5:  50 deg  raw 2397  med 2397  ok
+S5:  55 deg  raw 2431  med 2397  ok
+S5:  60 deg  raw  228  med  228  ok
+S5:  65 deg  raw  184  med  196  ok
+S5:  70 deg  raw  196  med  184  ok
+S5:  75 deg  raw  177  med  190  ok
+S5:  80 deg  raw  190  med  190  ok
+S5:  85 deg  raw  190  med  190  ok
+S5:  90 deg  raw  180  med  180  ok
+S5:  95 deg  raw  180  med  180  ok
+S5: 100 deg  raw  193  med  193  ok
+S5: 105 deg  raw  292  med  292  ok
+S5: 110 deg  raw  572  med  572  ok
+S5: 115 deg  raw    0  med    0  no-echo
+S5: 120 deg  raw  583  med  583  ok
+S5: 125 deg  raw    0  med    0  no-echo
+S5: 130 deg  raw    0  med    0  no-echo
+S5: closest 180 mm at 90 deg (x 180)
+S5: centre y -19 mm, width 59 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 135 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 14 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 30 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 120 deg (until the line)
+S5: line found
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 16:39:43.324 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+=== COM5 connected 16:40:59.287 ===
+[ALL TEST] S1 MQTT + S2 motors + S3 line/barcode + S4 IMU + S5 obstacle scan
+[ALL TEST] keep stationary for IMU calibration; starts after 5s
+[ALL TEST] straight PWM left=12.5% right=15%; inner=6.25%; GP28=left GP27=centre GP0=right; 1=black
+[ALL TEST] telemetry: unmeasured battery/speed/obstacle/scan fields=0 placeholders
+[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 ignored for steering
+[ALL TEST] C/R=0/0 straight, 0/1 right (left motor 20%), 1/0 left, 1/1 STOP; 1=black
+[ALL TEST] layout=SIDE (offset scanner)
+[ALL TEST] barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN; other letters recognised only
+[ALL TEST] smooth motor start: 100 PWM percentage points/second
+[ALL TEST] run limit=0 ms (0=continuous)
+[ALL TEST] telemetry queue=-9
+S5: MONITORING
+S5: OBSTACLE at 187 mm -> HOLD
+[ALL TEST] obstacle: S5 has control
+S5: coarse  50 deg  239  ok
+S5: coarse  70 deg  231  ok
+S5: coarse  90 deg  168  ok
+S5: coarse 110 deg    0  no-echo
+S5: coarse 130 deg 2044  ok
+S5: fine 50..110 deg, 13 points, scan 5146 ms
+S5:  50 deg  raw 2316  med 2316  ok
+S5:  55 deg  raw 2299  med 2299  ok
+S5:  60 deg  raw  292  med  292  ok
+S5:  65 deg  raw  184  med  184  ok
+S5:  70 deg  raw  184  med  184  ok
+S5:  75 deg  raw  187  med  184  ok
+S5:  80 deg  raw  177  med  177  ok
+S5:  85 deg  raw  168  med  168  ok
+S5:  90 deg  raw  168  med  168  ok
+S5:  95 deg  raw  180  med  180  ok
+S5: 100 deg  raw  193  med  193  ok
+S5: 105 deg  raw    0  med    0  no-echo
+S5: 110 deg  raw    0  med    0  no-echo
+S5: closest 168 mm at 85 deg (x 167)
+S5: centre y -56 mm, width 57 mm
+S5: clear L 9999 mm, R 9999 mm (9999 = open)
+S5: PLAN PASS LEFT, shift 97 mm
+S5: BYPASS PASS LEFT
+S5: step 1/8: turn L 90 deg
+S5: step 2/8: forward 10 cm
+S5: step 3/8: turn R 90 deg
+S5: step 4/8: forward 30 cm
+S5: step 5/8: turn R 90 deg
+S5: step 6/8: forward 50 cm (until the line)
+S5: line found
+S5: step 7/8: forward 4 cm
+S5: step 8/8: turn L 120 deg (until the line)
+S5: line found
+S5: RESUME line following
+[ALL TEST] obstacle handled; line following resumed
+S5: MONITORING
+[ALL TEST] STOPPED: centre and right both black; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry

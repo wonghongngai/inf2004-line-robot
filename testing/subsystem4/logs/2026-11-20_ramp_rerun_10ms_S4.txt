@@ -1,0 +1,806 @@
+# Ramp rerun, 10 ms IMU period: robot-all_test-offline.uf2 (sh build.sh all_test_offline), built 20 Nov 17:42
+# from 65ba452 plus the uncommitted chore/m0-housekeeping changes, with the S4 period and sample counts put back to their committed 10 ms values for this build only.
+# Track: a 5 mm ramp under the right wheels; left IR sensor (GP28) repositioned by the operator before this run.
+# Operator: 5 ramp passes then 2 flat runs, one reset per pass. The log has 8 boots ('=== COM5 connected'); the
+# first boot after flashing is most likely an extra run. Every boot was reset while still line-following (no junction).
+# Trimmed copy of the gitignored raw capture 2026-11-20_182115_console.txt: kept boot headers, every 'Buddy4' line except the
+# periodic 'Buddy4: n=' status, every 'HUMP' line, '[ALL TEST] STOPPED', 'S5: OBSTACLE', and the last
+# '[ALL TEST] phase=' status line of each boot. Nothing else changed.
+=== COM5 connected 18:21:16.057 ===
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=10 ms
+Buddy4: LSM303DLHC initialized
+Buddy4: calibration complete base=(-54,37,965) mg
+HUMP DEBUG: raw=-293 filtered=-75 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=114 filtered=61 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=52 filtered=75 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=37 filtered=63 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=42 filtered=64 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=102 filtered=62 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=59 filtered=65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=67 filtered=71 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=43 filtered=61 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=98 filtered=61 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=82 filtered=69 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=70 filtered=79 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=37 filtered=70 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=93 filtered=76 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=64 filtered=69 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=112 filtered=62 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=85 filtered=71 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=98 filtered=69 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=53 filtered=60 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=122 filtered=81 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=18 filtered=74 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=147 filtered=69 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=148 filtered=73 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=3 filtered=68 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=110 filtered=87 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=84 filtered=88 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=48 filtered=78 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=44 filtered=64 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=29 filtered=75 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-32 filtered=68 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=139 filtered=92 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-18 filtered=78 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=77 filtered=61 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=36 filtered=72 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=34 filtered=68 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=124 filtered=61 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=72 filtered=77 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=74 filtered=73 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=125 filtered=73 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=73 filtered=73 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-58 filtered=67 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=255 filtered=85 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=120 filtered=86 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=79 filtered=95 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=78 filtered=72 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=254 filtered=79 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=160 filtered=104 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=6 filtered=90 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=-74 filtered=82 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=103 filtered=89 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=212 filtered=81 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=133 filtered=76 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=88 filtered=92 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=4 filtered=108 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=-34 filtered=80 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=251 filtered=79 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=118 filtered=85 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=19 filtered=88 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=-43 filtered=86 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=34 filtered=75 moving=1 dist=0 entry=3
+HUMP DEBUG: raw=137 filtered=70 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=28 filtered=69 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=76 filtered=84 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=62 filtered=87 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=104 filtered=81 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=88 filtered=71 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-8 filtered=64 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=99 filtered=69 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=185 filtered=93 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=2 filtered=73 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=123 filtered=80 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=79 filtered=97 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=72 filtered=92 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=146 filtered=84 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=-28 filtered=78 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=173 filtered=88 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=101 filtered=92 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=31 filtered=84 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=200 filtered=104 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=125 filtered=94 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=-8 filtered=72 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=137 filtered=94 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=155 filtered=121 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=8 filtered=83 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=91 filtered=76 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=83 filtered=94 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=44 filtered=76 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=82 filtered=61 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=169 filtered=93 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=60 filtered=87 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=154 filtered=101 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=206 filtered=134 moving=1 dist=0 entry=3
+HUMP DEBUG: raw=54 filtered=128 moving=1 dist=0 entry=4
+Buddy4: hump entry confirmed sign=1 peak=134mg
+HUMP ACTIVE: forward=108 abs=108 dist=0 height=0
+HUMP ACTIVE: forward=108 abs=108 dist=0 height=0
+HUMP ACTIVE: forward=88 abs=88 dist=0 height=0
+HUMP ACTIVE: forward=31 abs=31 dist=0 height=0
+HUMP ACTIVE: forward=79 abs=79 dist=0 height=0
+HUMP ACTIVE: forward=87 abs=87 dist=1 height=0
+HUMP ACTIVE: forward=122 abs=122 dist=0 height=0
+HUMP ACTIVE: forward=155 abs=155 dist=0 height=0
+HUMP ACTIVE: forward=113 abs=113 dist=0 height=0
+HUMP ACTIVE: forward=99 abs=99 dist=0 height=0
+HUMP ACTIVE: forward=78 abs=78 dist=0 height=0
+HUMP ACTIVE: forward=43 abs=43 dist=0 height=0
+HUMP ACTIVE: forward=42 abs=42 dist=0 height=0
+HUMP ACTIVE: forward=49 abs=49 dist=0 height=0
+HUMP ACTIVE: forward=58 abs=58 dist=0 height=0
+HUMP ACTIVE: forward=59 abs=59 dist=0 height=0
+HUMP ACTIVE: forward=62 abs=62 dist=1 height=0
+HUMP ACTIVE: forward=77 abs=77 dist=0 height=0
+HUMP ACTIVE: forward=73 abs=73 dist=0 height=0
+HUMP ACTIVE: forward=73 abs=73 dist=0 height=0
+HUMP ACTIVE: forward=101 abs=101 dist=0 height=0
+HUMP ACTIVE: forward=95 abs=95 dist=0 height=0
+HUMP ACTIVE: forward=56 abs=56 dist=0 height=0
+HUMP ACTIVE: forward=56 abs=56 dist=0 height=0
+HUMP ACTIVE: forward=59 abs=59 dist=0 height=0
+HUMP ACTIVE: forward=48 abs=48 dist=1 height=0
+HUMP ACTIVE: forward=80 abs=80 dist=0 height=0
+HUMP ACTIVE: forward=89 abs=89 dist=0 height=0
+HUMP ACTIVE: forward=63 abs=63 dist=0 height=0
+HUMP ACTIVE: forward=37 abs=37 dist=0 height=0
+HUMP ACTIVE: forward=96 abs=96 dist=0 height=0
+HUMP ACTIVE: forward=106 abs=106 dist=0 height=0
+HUMP ACTIVE: forward=69 abs=69 dist=1 height=0
+HUMP ACTIVE: forward=22 abs=22 dist=0 height=0
+HUMP ACTIVE: forward=91 abs=91 dist=0 height=0
+HUMP ACTIVE: forward=50 abs=50 dist=1 height=0
+HUMP ACTIVE: forward=69 abs=69 dist=0 height=1
+HUMP ACTIVE: forward=78 abs=78 dist=0 height=1
+HUMP ACTIVE: forward=70 abs=70 dist=1 height=1
+HUMP ACTIVE: forward=64 abs=64 dist=0 height=1
+HUMP ACTIVE: forward=85 abs=85 dist=1 height=1
+HUMP ACTIVE: forward=63 abs=63 dist=0 height=1
+HUMP ACTIVE: forward=57 abs=57 dist=1 height=1
+HUMP ACTIVE: forward=59 abs=59 dist=0 height=1
+HUMP ACTIVE: forward=80 abs=80 dist=0 height=1
+HUMP ACTIVE: forward=69 abs=69 dist=1 height=1
+HUMP ACTIVE: forward=64 abs=64 dist=1 height=1
+HUMP ACTIVE: forward=55 abs=55 dist=0 height=1
+HUMP ACTIVE: forward=71 abs=71 dist=1 height=1
+HUMP ACTIVE: forward=60 abs=60 dist=0 height=1
+HUMP ACTIVE: forward=73 abs=73 dist=1 height=1
+HUMP ACTIVE: forward=70 abs=70 dist=0 height=2
+HUMP ACTIVE: forward=62 abs=62 dist=1 height=2
+HUMP ACTIVE: forward=50 abs=50 dist=1 height=2
+HUMP ACTIVE: forward=41 abs=41 dist=0 height=2
+HUMP ACTIVE: forward=48 abs=48 dist=1 height=2
+HUMP ACTIVE: forward=69 abs=69 dist=1 height=2
+HUMP ACTIVE: forward=82 abs=82 dist=0 height=2
+HUMP ACTIVE: forward=86 abs=86 dist=1 height=2
+HUMP ACTIVE: forward=71 abs=71 dist=1 height=2
+HUMP ACTIVE: forward=67 abs=67 dist=0 height=3
+HUMP ACTIVE: forward=66 abs=66 dist=1 height=3
+HUMP ACTIVE: forward=55 abs=55 dist=1 height=3
+HUMP ACTIVE: forward=45 abs=45 dist=1 height=3
+HUMP ACTIVE: forward=56 abs=56 dist=0 height=3
+HUMP ACTIVE: forward=44 abs=44 dist=1 height=3
+HUMP ACTIVE: forward=49 abs=49 dist=0 height=3
+HUMP ACTIVE: forward=61 abs=61 dist=1 height=3
+HUMP ACTIVE: forward=97 abs=97 dist=1 height=3
+HUMP ACTIVE: forward=87 abs=87 dist=1 height=3
+HUMP ACTIVE: forward=65 abs=65 dist=0 height=4
+HUMP ACTIVE: forward=41 abs=41 dist=1 height=4
+HUMP ACTIVE: forward=17 abs=17 dist=0 height=4
+Buddy4 EVENT: HUMP height=4 mm highest=4 mm peak=155 mg
+Buddy4: hump detector re-armed
+[ALL TEST] phase=2 L=1 C=0 R=0 line_er=0 IMU ok=1 calibrated=1 state=0 samples=1302 PWM=11.2/13.5 ticks=4473/5601 height=4mm valid=1 status=none
+=== COM5 connected 18:21:51.847 ===
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=10 ms
+Buddy4: LSM303DLHC initialized
+Buddy4: calibration complete base=(-54,32,969) mg
+HUMP DEBUG: raw=53 filtered=60 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=102 filtered=64 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=42 filtered=62 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=138 filtered=60 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=67 filtered=65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=85 filtered=69 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=14 filtered=60 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=67 filtered=61 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=87 filtered=60 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=91 filtered=66 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=77 filtered=68 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=27 filtered=71 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=158 filtered=73 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=113 filtered=80 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=74 filtered=89 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=178 filtered=126 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=37 filtered=112 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=127 filtered=105 moving=1 dist=0 entry=3
+HUMP DEBUG: raw=64 filtered=96 moving=1 dist=1 entry=4
+Buddy4: hump entry confirmed sign=1 peak=126mg
+HUMP ACTIVE: forward=89 abs=89 dist=0 height=0
+HUMP ACTIVE: forward=67 abs=67 dist=1 height=0
+HUMP ACTIVE: forward=79 abs=79 dist=1 height=0
+HUMP ACTIVE: forward=51 abs=51 dist=0 height=1
+HUMP ACTIVE: forward=34 abs=34 dist=1 height=1
+HUMP ACTIVE: forward=63 abs=63 dist=1 height=1
+HUMP ACTIVE: forward=66 abs=66 dist=0 height=1
+HUMP ACTIVE: forward=72 abs=72 dist=1 height=1
+HUMP ACTIVE: forward=75 abs=75 dist=0 height=1
+HUMP ACTIVE: forward=54 abs=54 dist=1 height=1
+HUMP ACTIVE: forward=43 abs=43 dist=1 height=1
+HUMP ACTIVE: forward=72 abs=72 dist=0 height=1
+HUMP ACTIVE: forward=79 abs=79 dist=1 height=1
+HUMP ACTIVE: forward=70 abs=70 dist=1 height=1
+HUMP ACTIVE: forward=74 abs=74 dist=0 height=2
+HUMP ACTIVE: forward=73 abs=73 dist=1 height=2
+HUMP ACTIVE: forward=55 abs=55 dist=1 height=2
+HUMP ACTIVE: forward=55 abs=55 dist=0 height=2
+HUMP ACTIVE: forward=63 abs=63 dist=1 height=2
+HUMP ACTIVE: forward=72 abs=72 dist=0 height=2
+HUMP ACTIVE: forward=70 abs=70 dist=1 height=2
+HUMP ACTIVE: forward=71 abs=71 dist=1 height=2
+HUMP ACTIVE: forward=93 abs=93 dist=0 height=2
+HUMP ACTIVE: forward=98 abs=98 dist=1 height=2
+HUMP ACTIVE: forward=96 abs=96 dist=0 height=3
+HUMP ACTIVE: forward=105 abs=105 dist=1 height=3
+HUMP ACTIVE: forward=108 abs=108 dist=0 height=3
+HUMP ACTIVE: forward=78 abs=78 dist=1 height=3
+HUMP ACTIVE: forward=85 abs=85 dist=0 height=3
+HUMP ACTIVE: forward=80 abs=80 dist=1 height=3
+HUMP ACTIVE: forward=45 abs=45 dist=1 height=3
+HUMP ACTIVE: forward=34 abs=34 dist=0 height=3
+HUMP ACTIVE: forward=53 abs=53 dist=1 height=3
+HUMP ACTIVE: forward=59 abs=59 dist=0 height=3
+HUMP ACTIVE: forward=90 abs=90 dist=1 height=3
+HUMP ACTIVE: forward=108 abs=108 dist=1 height=4
+HUMP ACTIVE: forward=79 abs=79 dist=1 height=4
+HUMP ACTIVE: forward=74 abs=74 dist=0 height=4
+HUMP ACTIVE: forward=75 abs=75 dist=1 height=4
+HUMP ACTIVE: forward=99 abs=99 dist=1 height=4
+HUMP ACTIVE: forward=110 abs=110 dist=1 height=5
+HUMP ACTIVE: forward=125 abs=125 dist=1 height=5
+HUMP ACTIVE: forward=102 abs=102 dist=0 height=5
+HUMP ACTIVE: forward=101 abs=101 dist=1 height=5
+HUMP ACTIVE: forward=73 abs=73 dist=1 height=5
+HUMP ACTIVE: forward=69 abs=69 dist=1 height=5
+HUMP ACTIVE: forward=90 abs=90 dist=1 height=6
+HUMP ACTIVE: forward=98 abs=98 dist=0 height=6
+HUMP ACTIVE: forward=83 abs=83 dist=1 height=6
+HUMP ACTIVE: forward=71 abs=71 dist=1 height=6
+HUMP ACTIVE: forward=58 abs=58 dist=1 height=6
+HUMP ACTIVE: forward=61 abs=61 dist=1 height=6
+HUMP ACTIVE: forward=77 abs=77 dist=1 height=6
+HUMP ACTIVE: forward=72 abs=72 dist=1 height=7
+HUMP ACTIVE: forward=86 abs=86 dist=0 height=7
+HUMP ACTIVE: forward=97 abs=97 dist=1 height=7
+HUMP ACTIVE: forward=131 abs=131 dist=1 height=7
+HUMP ACTIVE: forward=125 abs=125 dist=1 height=7
+HUMP ACTIVE: forward=117 abs=117 dist=0 height=8
+HUMP ACTIVE: forward=103 abs=103 dist=1 height=8
+HUMP ACTIVE: forward=75 abs=75 dist=1 height=8
+HUMP ACTIVE: forward=32 abs=32 dist=0 height=8
+HUMP ACTIVE: forward=32 abs=32 dist=0 height=8
+HUMP ACTIVE: forward=-4 abs=4 dist=1 height=8
+HUMP ACTIVE: forward=83 abs=83 dist=1 height=8
+HUMP ACTIVE: forward=105 abs=105 dist=1 height=9
+HUMP ACTIVE: forward=78 abs=78 dist=1 height=9
+HUMP ACTIVE: forward=42 abs=42 dist=1 height=9
+HUMP ACTIVE: forward=22 abs=22 dist=0 height=9
+HUMP ACTIVE: forward=65 abs=65 dist=1 height=9
+HUMP ACTIVE: forward=58 abs=58 dist=1 height=10
+HUMP ACTIVE: forward=42 abs=42 dist=0 height=10
+HUMP ACTIVE: forward=42 abs=42 dist=1 height=10
+HUMP ACTIVE: forward=31 abs=31 dist=1 height=10
+HUMP ACTIVE: forward=76 abs=76 dist=1 height=10
+HUMP ACTIVE: forward=78 abs=78 dist=1 height=10
+HUMP ACTIVE: forward=74 abs=74 dist=1 height=10
+HUMP ACTIVE: forward=73 abs=73 dist=0 height=10
+HUMP ACTIVE: forward=58 abs=58 dist=1 height=10
+HUMP ACTIVE: forward=22 abs=22 dist=1 height=11
+Buddy4 EVENT: HUMP height=11 mm highest=11 mm peak=131 mg
+Buddy4: hump detector re-armed
+[ALL TEST] phase=2 L=1 C=0 R=0 line_er=0 IMU ok=1 calibrated=1 state=0 samples=1306 PWM=11.2/13.5 ticks=5318/6485 height=11mm valid=1 status=none
+=== COM5 connected 18:22:14.764 ===
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=10 ms
+Buddy4: LSM303DLHC initialized
+Buddy4: calibration complete base=(-56,41,966) mg
+HUMP DEBUG: raw=-101 filtered=-67 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-70 filtered=-65 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-16 filtered=-60 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=131 filtered=62 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=95 filtered=74 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=110 filtered=71 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=46 filtered=71 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=53 filtered=64 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=84 filtered=60 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=139 filtered=62 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=70 filtered=80 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=31 filtered=82 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-5 filtered=73 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=106 filtered=61 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=17 filtered=61 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=66 filtered=67 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=100 filtered=62 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=108 filtered=67 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=73 filtered=72 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=40 filtered=77 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=15 filtered=67 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=111 filtered=60 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=103 filtered=72 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=9 filtered=71 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=11 filtered=70 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=118 filtered=70 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=210 filtered=83 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=64 filtered=88 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=86 filtered=90 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=49 filtered=95 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=70 filtered=95 moving=1 dist=0 entry=3
+HUMP DEBUG: raw=38 filtered=61 moving=1 dist=1 entry=4
+HUMP DEBUG: raw=87 filtered=66 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=81 filtered=65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=156 filtered=66 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=49 filtered=76 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=87 filtered=85 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-34 filtered=68 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=113 filtered=77 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=31 filtered=80 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=34 filtered=60 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=101 filtered=73 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=119 filtered=79 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=126 filtered=82 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=63 filtered=88 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=38 filtered=89 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=89 filtered=87 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=128 filtered=88 moving=1 dist=1 entry=3
+HUMP DEBUG: raw=121 filtered=87 moving=1 dist=0 entry=4
+Buddy4: hump entry confirmed sign=1 peak=89mg
+HUMP ACTIVE: forward=66 abs=66 dist=1 height=0
+HUMP ACTIVE: forward=82 abs=82 dist=1 height=0
+HUMP ACTIVE: forward=73 abs=73 dist=1 height=0
+HUMP ACTIVE: forward=85 abs=85 dist=1 height=1
+HUMP ACTIVE: forward=70 abs=70 dist=0 height=1
+HUMP ACTIVE: forward=75 abs=75 dist=1 height=1
+HUMP ACTIVE: forward=56 abs=56 dist=1 height=1
+HUMP ACTIVE: forward=51 abs=51 dist=1 height=1
+HUMP ACTIVE: forward=27 abs=27 dist=1 height=1
+HUMP ACTIVE: forward=77 abs=77 dist=1 height=1
+HUMP ACTIVE: forward=93 abs=93 dist=1 height=2
+HUMP ACTIVE: forward=116 abs=116 dist=1 height=2
+HUMP ACTIVE: forward=140 abs=140 dist=0 height=2
+HUMP ACTIVE: forward=123 abs=123 dist=1 height=2
+HUMP ACTIVE: forward=93 abs=93 dist=1 height=2
+HUMP ACTIVE: forward=68 abs=68 dist=0 height=3
+HUMP ACTIVE: forward=25 abs=25 dist=1 height=3
+HUMP ACTIVE: forward=28 abs=28 dist=1 height=3
+HUMP ACTIVE: forward=53 abs=53 dist=1 height=3
+HUMP ACTIVE: forward=50 abs=50 dist=0 height=3
+HUMP ACTIVE: forward=31 abs=31 dist=1 height=3
+HUMP ACTIVE: forward=42 abs=42 dist=1 height=3
+HUMP ACTIVE: forward=46 abs=46 dist=1 height=4
+HUMP ACTIVE: forward=37 abs=37 dist=1 height=4
+HUMP ACTIVE: forward=49 abs=49 dist=1 height=4
+HUMP ACTIVE: forward=61 abs=61 dist=1 height=4
+HUMP ACTIVE: forward=55 abs=55 dist=1 height=4
+HUMP ACTIVE: forward=43 abs=43 dist=0 height=4
+HUMP ACTIVE: forward=44 abs=44 dist=1 height=4
+HUMP ACTIVE: forward=76 abs=76 dist=1 height=4
+HUMP ACTIVE: forward=54 abs=54 dist=1 height=4
+HUMP ACTIVE: forward=45 abs=45 dist=1 height=4
+HUMP ACTIVE: forward=67 abs=67 dist=0 height=5
+HUMP ACTIVE: forward=2 abs=2 dist=1 height=5
+HUMP ACTIVE: forward=-59 abs=59 dist=0 height=5
+HUMP ACTIVE: forward=-23 abs=23 dist=1 height=5
+HUMP ACTIVE: forward=57 abs=57 dist=1 height=5
+HUMP ACTIVE: forward=15 abs=15 dist=0 height=5
+HUMP ACTIVE: forward=38 abs=38 dist=0 height=5
+Buddy4 EVENT: HUMP height=6 mm highest=6 mm peak=140 mg
+Buddy4: hump detector re-armed
+[ALL TEST] phase=2 L=1 C=0 R=0 line_er=0 IMU ok=1 calibrated=1 state=0 samples=1354 PWM=11.2/13.9 ticks=5791/6865 height=6mm valid=1 status=none
+=== COM5 connected 18:22:37.470 ===
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=10 ms
+Buddy4: LSM303DLHC initialized
+Buddy4: calibration complete base=(-55,31,966) mg
+HUMP DEBUG: raw=71 filtered=73 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=104 filtered=72 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-45 filtered=65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=129 filtered=65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=91 filtered=62 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=33 filtered=78 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=3 filtered=60 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=66 filtered=70 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=15 filtered=74 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=110 filtered=70 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=17 filtered=68 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=87 filtered=73 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=54 filtered=72 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=89 filtered=71 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=102 filtered=69 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=49 filtered=76 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=47 filtered=68 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=115 filtered=70 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=110 filtered=83 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=24 filtered=94 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=25 filtered=80 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=103 filtered=75 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=124 filtered=62 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=15 filtered=60 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-16 filtered=84 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=12 filtered=95 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=0 filtered=75 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=218 filtered=80 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=16 filtered=80 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=85 filtered=97 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=20 filtered=98 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=119 filtered=70 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=124 filtered=93 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=65 filtered=108 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=8 filtered=91 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=75 filtered=78 moving=1 dist=0 entry=3
+HUMP DEBUG: raw=51 filtered=64 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=120 filtered=67 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=173 filtered=100 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=132 filtered=112 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=8 filtered=103 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=124 filtered=111 moving=1 dist=1 entry=3
+HUMP DEBUG: raw=-55 filtered=76 moving=1 dist=0 entry=4
+HUMP DEBUG: raw=114 filtered=64 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=177 filtered=73 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=53 filtered=82 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-14 filtered=64 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=72 filtered=68 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=33 filtered=77 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=103 filtered=86 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=79 filtered=79 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=81 filtered=73 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=60 filtered=71 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=122 filtered=89 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-35 filtered=61 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=189 filtered=75 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=60 filtered=75 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=141 filtered=93 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=11 filtered=87 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=172 filtered=84 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=74 filtered=86 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=118 filtered=103 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=114 filtered=97 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=135 filtered=122 moving=1 dist=1 entry=3
+HUMP DEBUG: raw=119 filtered=112 moving=1 dist=0 entry=4
+Buddy4: hump entry confirmed sign=1 peak=122mg
+HUMP ACTIVE: forward=132 abs=132 dist=1 height=0
+HUMP ACTIVE: forward=134 abs=134 dist=1 height=1
+HUMP ACTIVE: forward=128 abs=128 dist=0 height=1
+HUMP ACTIVE: forward=106 abs=106 dist=1 height=1
+HUMP ACTIVE: forward=82 abs=82 dist=1 height=1
+HUMP ACTIVE: forward=52 abs=52 dist=1 height=1
+HUMP ACTIVE: forward=31 abs=31 dist=0 height=1
+HUMP ACTIVE: forward=59 abs=59 dist=1 height=1
+HUMP ACTIVE: forward=52 abs=52 dist=1 height=2
+HUMP ACTIVE: forward=70 abs=70 dist=0 height=2
+HUMP ACTIVE: forward=56 abs=56 dist=1 height=2
+HUMP ACTIVE: forward=33 abs=33 dist=1 height=2
+HUMP ACTIVE: forward=69 abs=69 dist=1 height=2
+HUMP ACTIVE: forward=84 abs=84 dist=1 height=2
+HUMP ACTIVE: forward=120 abs=120 dist=1 height=2
+HUMP ACTIVE: forward=134 abs=134 dist=0 height=3
+HUMP ACTIVE: forward=115 abs=115 dist=1 height=3
+HUMP ACTIVE: forward=122 abs=122 dist=1 height=3
+HUMP ACTIVE: forward=100 abs=100 dist=0 height=3
+HUMP ACTIVE: forward=89 abs=89 dist=1 height=3
+HUMP ACTIVE: forward=79 abs=79 dist=0 height=3
+HUMP ACTIVE: forward=57 abs=57 dist=1 height=3
+HUMP ACTIVE: forward=59 abs=59 dist=1 height=3
+HUMP ACTIVE: forward=30 abs=30 dist=1 height=4
+Buddy4 EVENT: HUMP height=4 mm highest=4 mm peak=134 mg
+[ALL TEST] phase=2 L=1 C=0 R=0 line_er=0 IMU ok=1 calibrated=1 state=0 samples=1309 PWM=11.2/13.5 ticks=5668/6861 height=4mm valid=1 status=none
+=== COM5 connected 18:23:00.093 ===
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=10 ms
+Buddy4: LSM303DLHC initialized
+Buddy4: calibration complete base=(-52,32,964) mg
+HUMP DEBUG: raw=140 filtered=75 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=120 filtered=92 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=116 filtered=110 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=93 filtered=110 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=-23 filtered=89 moving=1 dist=0 entry=3
+HUMP DEBUG: raw=43 filtered=69 moving=1 dist=1 entry=4
+HUMP DEBUG: raw=131 filtered=60 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=121 filtered=75 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=119 filtered=92 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=126 filtered=91 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=125 filtered=116 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=38 filtered=105 moving=1 dist=0 entry=3
+HUMP DEBUG: raw=6 filtered=82 moving=1 dist=0 entry=4
+HUMP DEBUG: raw=83 filtered=75 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=157 filtered=81 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=79 filtered=66 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=47 filtered=74 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=189 filtered=77 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=96 filtered=95 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=55 filtered=94 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=73 filtered=105 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=73 filtered=97 moving=1 dist=0 entry=3
+HUMP DEBUG: raw=108 filtered=81 moving=1 dist=1 entry=4
+HUMP DEBUG: raw=108 filtered=83 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=50 filtered=82 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=96 filtered=87 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=160 filtered=104 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=4 filtered=83 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=86 filtered=79 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=122 filtered=93 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-39 filtered=66 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=74 filtered=61 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=123 filtered=68 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=95 filtered=63 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=136 filtered=98 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=37 filtered=93 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=-33 filtered=71 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=151 filtered=66 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=156 filtered=104 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=111 filtered=124 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=114 filtered=127 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=13 filtered=109 moving=1 dist=0 entry=3
+HUMP DEBUG: raw=47 filtered=88 moving=1 dist=1 entry=4
+Buddy4: hump entry confirmed sign=1 peak=127mg
+HUMP ACTIVE: forward=61 abs=61 dist=0 height=0
+HUMP ACTIVE: forward=69 abs=69 dist=1 height=0
+HUMP ACTIVE: forward=64 abs=64 dist=0 height=0
+HUMP ACTIVE: forward=63 abs=63 dist=1 height=0
+HUMP ACTIVE: forward=79 abs=79 dist=0 height=0
+HUMP ACTIVE: forward=75 abs=75 dist=1 height=0
+HUMP ACTIVE: forward=69 abs=69 dist=0 height=0
+HUMP ACTIVE: forward=63 abs=63 dist=1 height=0
+HUMP ACTIVE: forward=78 abs=78 dist=1 height=1
+HUMP ACTIVE: forward=79 abs=79 dist=0 height=1
+HUMP ACTIVE: forward=100 abs=100 dist=1 height=1
+HUMP ACTIVE: forward=95 abs=95 dist=0 height=1
+HUMP ACTIVE: forward=94 abs=94 dist=1 height=1
+HUMP ACTIVE: forward=115 abs=115 dist=0 height=1
+HUMP ACTIVE: forward=120 abs=120 dist=1 height=1
+HUMP ACTIVE: forward=112 abs=112 dist=0 height=1
+HUMP ACTIVE: forward=108 abs=108 dist=1 height=1
+HUMP ACTIVE: forward=120 abs=120 dist=0 height=2
+HUMP ACTIVE: forward=96 abs=96 dist=1 height=2
+HUMP ACTIVE: forward=100 abs=100 dist=1 height=2
+HUMP ACTIVE: forward=97 abs=97 dist=0 height=2
+HUMP ACTIVE: forward=84 abs=84 dist=1 height=2
+HUMP ACTIVE: forward=54 abs=54 dist=1 height=2
+HUMP ACTIVE: forward=38 abs=38 dist=0 height=2
+HUMP ACTIVE: forward=109 abs=109 dist=1 height=3
+HUMP ACTIVE: forward=130 abs=130 dist=0 height=3
+HUMP ACTIVE: forward=126 abs=126 dist=1 height=3
+HUMP ACTIVE: forward=92 abs=92 dist=1 height=3
+HUMP ACTIVE: forward=73 abs=73 dist=0 height=3
+HUMP ACTIVE: forward=67 abs=67 dist=1 height=3
+HUMP ACTIVE: forward=61 abs=61 dist=1 height=4
+HUMP ACTIVE: forward=71 abs=71 dist=1 height=4
+HUMP ACTIVE: forward=74 abs=74 dist=1 height=4
+HUMP ACTIVE: forward=65 abs=65 dist=0 height=4
+HUMP ACTIVE: forward=69 abs=69 dist=1 height=4
+HUMP ACTIVE: forward=63 abs=63 dist=1 height=4
+HUMP ACTIVE: forward=85 abs=85 dist=1 height=4
+HUMP ACTIVE: forward=75 abs=75 dist=0 height=5
+HUMP ACTIVE: forward=82 abs=82 dist=1 height=5
+HUMP ACTIVE: forward=71 abs=71 dist=1 height=5
+HUMP ACTIVE: forward=80 abs=80 dist=1 height=5
+HUMP ACTIVE: forward=68 abs=68 dist=1 height=5
+HUMP ACTIVE: forward=117 abs=117 dist=0 height=5
+HUMP ACTIVE: forward=112 abs=112 dist=1 height=5
+HUMP ACTIVE: forward=106 abs=106 dist=1 height=5
+HUMP ACTIVE: forward=98 abs=98 dist=0 height=6
+HUMP ACTIVE: forward=78 abs=78 dist=1 height=6
+HUMP ACTIVE: forward=35 abs=35 dist=1 height=6
+HUMP ACTIVE: forward=52 abs=52 dist=1 height=6
+HUMP ACTIVE: forward=60 abs=60 dist=0 height=6
+HUMP ACTIVE: forward=62 abs=62 dist=1 height=6
+HUMP ACTIVE: forward=39 abs=39 dist=1 height=6
+HUMP ACTIVE: forward=47 abs=47 dist=1 height=6
+HUMP ACTIVE: forward=41 abs=41 dist=1 height=7
+HUMP ACTIVE: forward=56 abs=56 dist=0 height=7
+HUMP ACTIVE: forward=50 abs=50 dist=1 height=7
+HUMP ACTIVE: forward=54 abs=54 dist=1 height=7
+HUMP ACTIVE: forward=48 abs=48 dist=1 height=7
+HUMP ACTIVE: forward=41 abs=41 dist=0 height=7
+HUMP ACTIVE: forward=43 abs=43 dist=1 height=7
+HUMP ACTIVE: forward=56 abs=56 dist=1 height=7
+HUMP ACTIVE: forward=66 abs=66 dist=1 height=7
+HUMP ACTIVE: forward=55 abs=55 dist=0 height=7
+HUMP ACTIVE: forward=63 abs=63 dist=1 height=7
+HUMP ACTIVE: forward=63 abs=63 dist=1 height=8
+HUMP ACTIVE: forward=63 abs=63 dist=1 height=8
+HUMP ACTIVE: forward=54 abs=54 dist=0 height=8
+HUMP ACTIVE: forward=53 abs=53 dist=1 height=8
+HUMP ACTIVE: forward=76 abs=76 dist=1 height=8
+HUMP ACTIVE: forward=81 abs=81 dist=1 height=8
+HUMP ACTIVE: forward=56 abs=56 dist=0 height=8
+HUMP ACTIVE: forward=26 abs=26 dist=1 height=8
+HUMP ACTIVE: forward=-21 abs=21 dist=1 height=8
+HUMP ACTIVE: forward=77 abs=77 dist=0 height=9
+HUMP ACTIVE: forward=75 abs=75 dist=1 height=9
+HUMP ACTIVE: forward=42 abs=42 dist=1 height=9
+HUMP ACTIVE: forward=34 abs=34 dist=1 height=9
+HUMP ACTIVE: forward=46 abs=46 dist=1 height=9
+HUMP ACTIVE: forward=26 abs=26 dist=1 height=9
+HUMP ACTIVE: forward=25 abs=25 dist=1 height=9
+HUMP ACTIVE: forward=37 abs=37 dist=1 height=10
+HUMP ACTIVE: forward=-17 abs=17 dist=1 height=10
+Buddy4 EVENT: HUMP height=10 mm highest=10 mm peak=130 mg
+Buddy4: hump detector re-armed
+[ALL TEST] phase=2 L=1 C=0 R=0 line_er=0 IMU ok=1 calibrated=1 state=0 samples=1352 PWM=11.2/13.5 ticks=5810/7011 height=10mm valid=1 status=none
+=== COM5 connected 18:23:29.959 ===
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=10 ms
+Buddy4: LSM303DLHC initialized
+Buddy4: calibration complete base=(-52,36,964) mg
+HUMP DEBUG: raw=-111 filtered=-61 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=61 filtered=61 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=153 filtered=86 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=123 filtered=68 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=61 filtered=84 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-54 filtered=74 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=83 filtered=65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=83 filtered=64 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=63 filtered=63 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=158 filtered=68 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=74 filtered=66 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=96 filtered=72 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=118 filtered=100 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-35 filtered=82 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=88 filtered=68 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=40 filtered=61 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=149 filtered=72 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=141 filtered=76 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=32 filtered=90 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=105 filtered=85 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=32 filtered=94 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=9 filtered=64 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=83 filtered=70 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=20 filtered=70 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=96 filtered=68 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=66 filtered=81 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=19 filtered=65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=65 filtered=66 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=102 filtered=69 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=114 filtered=73 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=122 filtered=84 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=47 filtered=90 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=60 filtered=89 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=53 filtered=79 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=100 filtered=76 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=87 filtered=69 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=67 filtered=73 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=96 filtered=80 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=72 filtered=84 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=56 filtered=75 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=58 filtered=69 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=95 filtered=75 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=47 filtered=65 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=77 filtered=66 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=72 filtered=69 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=49 filtered=68 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=65 filtered=62 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=117 filtered=76 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=50 filtered=70 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=121 filtered=80 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=73 filtered=85 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=30 filtered=78 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=68 filtered=68 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=161 filtered=90 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=76 filtered=81 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=48 filtered=76 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=67 filtered=84 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=83 filtered=87 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=59 filtered=66 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=85 filtered=68 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=120 filtered=82 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=30 filtered=75 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=91 filtered=77 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=87 filtered=82 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=21 filtered=69 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=94 filtered=65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=112 filtered=69 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=63 filtered=65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=56 filtered=72 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=77 filtered=80 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=20 filtered=65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=98 filtered=60 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=81 filtered=71 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=20 filtered=65 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=112 filtered=73 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=21 filtered=67 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=217 filtered=97 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=119 filtered=131 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=29 filtered=123 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=-7 filtered=107 moving=1 dist=0 entry=3
+HUMP DEBUG: raw=-24 filtered=-71 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-53 filtered=-95 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-283 filtered=-90 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-110 filtered=-104 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=96 filtered=-73 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=-10 filtered=-68 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-87 filtered=-63 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-40 filtered=-65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-126 filtered=-70 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-160 filtered=-109 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-355 filtered=-170 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=-162 filtered=-206 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=150 filtered=-130 moving=1 dist=1 entry=3
+HUMP DEBUG: raw=130 filtered=-79 moving=1 dist=0 entry=4
+HUMP DEBUG: raw=-309 filtered=-106 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-98 filtered=-120 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=19 filtered=-111 moving=1 dist=1 entry=2
+HUMP DEBUG: raw=65 filtered=-99 moving=1 dist=0 entry=3
+HUMP DEBUG: raw=9 filtered=-62 moving=1 dist=1 entry=4
+HUMP DEBUG: raw=-263 filtered=-74 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-178 filtered=-103 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-46 filtered=-108 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-82 filtered=-121 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-27 filtered=-119 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=1 filtered=-66 moving=0 dist=0 entry=0
+[ALL TEST] phase=2 L=1 C=0 R=0 line_er=0 IMU ok=1 calibrated=1 state=0 samples=1263 PWM=11.2/13.5 ticks=5000/6146 height=0mm valid=0 status=none
+=== COM5 connected 18:23:53.682 ===
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=10 ms
+Buddy4: LSM303DLHC initialized
+Buddy4: calibration complete base=(-52,31,963) mg
+HUMP DEBUG: raw=-69 filtered=-61 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-60 filtered=-64 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-74 filtered=-64 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-43 filtered=-67 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-193 filtered=-82 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=80 filtered=-67 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=10 filtered=-65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-275 filtered=-68 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-71 filtered=-82 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-79 filtered=-90 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=93 filtered=-71 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=3 filtered=-65 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-188 filtered=-85 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=38 filtered=-80 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=22 filtered=-79 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=63 filtered=-63 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=77 filtered=90 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-68 filtered=-69 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=10 filtered=-83 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-283 filtered=-62 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-101 filtered=-76 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-15 filtered=-66 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=159 filtered=-66 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-286 filtered=-83 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-39 filtered=-99 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=88 filtered=-84 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=107 filtered=-66 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-31 filtered=-73 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=253 filtered=67 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=7 filtered=72 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-80 filtered=103 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=83 filtered=95 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=117 filtered=63 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=157 filtered=104 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=279 filtered=156 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=144 filtered=176 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=39 filtered=147 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-27 filtered=118 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=26 filtered=92 moving=0 dist=0 entry=0
+[ALL TEST] phase=2 L=1 C=0 R=0 line_er=0 IMU ok=1 calibrated=1 state=0 samples=1262 PWM=11.2/13.5 ticks=5595/6718 height=0mm valid=0 status=none
+=== COM5 connected 18:24:15.387 ===
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=10 ms
+Buddy4: LSM303DLHC initialized
+Buddy4: calibration complete base=(-50,29,961) mg
+HUMP DEBUG: raw=-73 filtered=-60 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-61 filtered=-67 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=110 filtered=65 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=159 filtered=61 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-176 filtered=-60 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-70 filtered=-91 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-12 filtered=-102 moving=1 dist=0 entry=1
+HUMP DEBUG: raw=-432 filtered=-90 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-33 filtered=-90 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=-40 filtered=-91 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=157 filtered=-94 moving=1 dist=1 entry=3
+HUMP DEBUG: raw=-105 filtered=-74 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-14 filtered=-72 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-17 filtered=-65 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-91 filtered=-77 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-205 filtered=-72 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=7 filtered=-79 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=38 filtered=-80 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=65 filtered=-63 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-34 filtered=-64 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-144 filtered=-65 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-102 filtered=-62 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-81 filtered=-78 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-34 filtered=-85 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-24 filtered=-80 moving=0 dist=0 entry=0
+[ALL TEST] phase=2 L=1 C=0 R=0 line_er=0 IMU ok=1 calibrated=1 state=0 samples=1266 PWM=11.2/13.5 ticks=5417/6622 height=0mm valid=0 status=none

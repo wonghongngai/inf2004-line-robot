@@ -42,6 +42,16 @@ EXPORT void subsystem4_test(void)
     TEST_CHECK("S4-U05",
                after.last_cycle_ms <= S4_SAMPLE_PERIOD_MS,
                "latest IMU sensing/processing cycle fits within the sample period");
+    /* Diagnostic only (not a check): how far over, and how often. */
+    tm_printf((UB *)"Buddy4: S4-U05 timing: period=%d ms last=%u ms max=%u ms "
+              "overruns=%u (+%u in the last %u samples) samples=%u\n",
+              S4_SAMPLE_PERIOD_MS,
+              (unsigned int)after.last_cycle_ms,
+              (unsigned int)after.max_cycle_ms,
+              (unsigned int)after.timing_overruns,
+              (unsigned int)(after.timing_overruns - before.timing_overruns),
+              (unsigned int)(after.sample_count - before.sample_count),
+              (unsigned int)after.sample_count);
 
     er = subsystem4_get_packed(&packed);
     TEST_CHECK("S4-U06",

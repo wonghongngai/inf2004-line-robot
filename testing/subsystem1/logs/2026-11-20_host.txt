@@ -1,0 +1,69 @@
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: 65ba452
+
+s1/protocol                  PASS
+s1/barcode_queue             FAIL (compile)
+In file included from testing/subsystem1/barcode_queue_test.c:2:
+testing/subsystem1/barcode_queue_test.c: In function 'main':
+testing/subsystem1/barcode_queue_test.c:38:12: error: 'barcode_queue' undeclared (first use in this function)
+   38 |     assert(barcode_queue != telemetry_queue);
+      |            ^~~~~~~~~~~~~
+testing/subsystem1/barcode_queue_test.c:38:12: note: each undeclared identifier is reported only once for each function it appears in
+testing/subsystem1/barcode_queue_test.c:39:5: error: unknown type name 'S1_BARCODE_RESULT'; did you mean 'S1_BARCODE_RIGHT'?
+   39 |     S1_BARCODE_RESULT result = {1u, 29u, 'Z'};
+      |     ^~~~~~~~~~~~~~~~~
+      |     S1_BARCODE_RIGHT
+testing/subsystem1/barcode_queue_test.c:39:37: error: excess elements in scalar initializer [-Werror]
+   39 |     S1_BARCODE_RESULT result = {1u, 29u, 'Z'};
+      |                                     ^~~
+testing/subsystem1/barcode_queue_test.c:39:37: note: (near initialization for 'result')
+testing/subsystem1/barcode_queue_test.c:39:42: error: excess elements in scalar initializer [-Werror]
+   39 |     S1_BARCODE_RESULT result = {1u, 29u, 'Z'};
+      |                                          ^~~
+testing/subsystem1/barcode_queue_test.c:39:42: note: (near initialization for 'result')
+testing/subsystem1/barcode_queue_test.c:40:12: error: implicit declaration of function 'subsystem1_publish_barcode'; did you mean 'subsystem1_publish_telemetry'? [-Wimplicit-function-declaration]
+   40 |     assert(subsystem1_publish_barcode(&result) == E_OK);
+      |            ^~~~~~~~~~~~~~~~~~~~~~~~~~
+testing/subsystem1/barcode_queue_test.c:42:5: error: unknown type name 'S1_BARCODE_RESULT'; did you mean 'S1_BARCODE_RIGHT'?
+   42 |     S1_BARCODE_RESULT copy;
+      |     ^~~~~~~~~~~~~~~~~
+      |     S1_BARCODE_RIGHT
+testing/subsystem1/barcode_queue_test.c:44:16: error: request for member 'id' in something not a structure or union
+   44 |     assert(copy.id == 1u && copy.letter == 'Z' && copy.runs == 29u);
+      |                ^
+testing/subsystem1/barcode_queue_test.c:44:33: error: request for member 'letter' in something not a structure or union
+   44 |     assert(copy.id == 1u && copy.letter == 'Z' && copy.runs == 29u);
+      |                                 ^
+testing/subsystem1/barcode_queue_test.c:44:55: error: request for member 'runs' in something not a structure or union
+   44 |     assert(copy.id == 1u && copy.letter == 'Z' && copy.runs == 29u);
+      |                                                       ^
+testing/subsystem1/barcode_queue_test.c:45:11: error: request for member 'letter' in something not a structure or union
+   45 |     result.letter = 0; result.runs = 23;
+      |           ^
+testing/subsystem1/barcode_queue_test.c:45:30: error: request for member 'runs' in something not a structure or union
+   45 |     result.letter = 0; result.runs = 23;
+      |                              ^
+testing/subsystem1/barcode_queue_test.c:50:11: error: request for member 'runs' in something not a structure or union
+   50 |     result.runs = 30;
+      |           ^
+testing/subsystem1/barcode_queue_test.c:52:11: error: request for member 'runs' in something not a structure or union
+   52 |     result.runs = 29; result.letter = '?';
+      |           ^
+testing/subsystem1/barcode_queue_test.c:52:29: error: request for member 'letter' in something not a structure or union
+   52 |     result.runs = 29; result.letter = '?';
+      |                             ^
+cc1.exe: all warnings being treated as errors
+
+s1/binary_cli                PASS
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.236s
+
+OK
+
+================ summary ================
+PASS   s1/protocol                  
+KNOWN  s1/barcode_queue             compile error (#3: S1 barcode-queue code not pushed yet)
+PASS   s1/binary_cli                
+-----------------------------------------
+2 passed, 0 failed, 1 known failures, 0 skipped

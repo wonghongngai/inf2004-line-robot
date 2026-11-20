@@ -11,8 +11,8 @@ EXPORT void subsystem1_test(void)
     int value = -1;
     TEST_INIT();
     s1_telemetry_init(&packet);
-    TEST_CHECK("S1-U01", sizeof(packet) == 10 && sizeof(command) == 1,
-               "binary packet sizes");
+    TEST_CHECK("S1-U01", sizeof(packet) == 15 && sizeof(command) == 1,
+               "binary packet sizes (15-byte telemetry, 1-byte command)");
     TEST_CHECK("S1-U02", s1_telemetry_get(&packet, S1_FIELD_SPEED_CMS, &value)
                && value == 0, "initial logical speed is zero");
     TEST_CHECK("S1-U03", !s1_telemetry_set(&packet, S1_FIELD_SPEED_CMS, 201),
@@ -28,7 +28,7 @@ EXPORT void subsystem1_test(void)
                "binary zero command survives queue");
     malformed[0] = S1_COMMAND_REVERSE;
     s1_deliver_command(malformed, 1);
-    TEST_CHECK("S1-U11", subsystem1_receive_command(&command, TMO_POL) == 1
+    TEST_CHECK("S1-U18", subsystem1_receive_command(&command, TMO_POL) == 1
                && command.bytes[0] == S1_COMMAND_REVERSE,
                "reverse command survives queue");
     malformed[0] = 5;

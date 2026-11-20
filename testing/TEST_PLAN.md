@@ -56,7 +56,7 @@ something that hasn't passed on the bench (L3).
 |---|---|---|---|
 | `s1/protocol`: 80-bit telemetry codec | L1 | `sh testing/run_host_tests.sh s1/protocol` | PASS |
 | `s1/binary_cli`: `tools/mqtt_binary.py` encoder/decoder | L1 | `sh testing/run_host_tests.sh s1/binary_cli` | PASS |
-| S1-U01–U10: packet sizes, range rejection, queues, barcode map | L2 | `make TEST=1` | never run on the Pico |
+| S1-U01–U10, U18: packet sizes, range rejection, queues, barcode map, reverse command | L2 | `make TEST=1` | PASS on target 20 Nov (11 checks; U01 fixed) |
 | `s1/barcode_queue` | L1 | — | **blocked**: the code it tests isn't committed (zhi xian) |
 
 **New:**
@@ -84,7 +84,7 @@ something that hasn't passed on the bench (L3).
 | `s2/motion_protocol`: compact command/status bytes | L1 | `sh testing/run_host_tests.sh s2/` | PASS |
 | `s2/motor_pwm`: PWM driver on modelled registers | L1 | same | PASS |
 | `int/robot_control`: VC line/barcode/IMU logic, line-stop re-arm | L1 | `sh testing/run_host_tests.sh int/robot_control` | PASS (209 checks) |
-| S2-U01–U04: message size, forward target, STOP, stall → FAULT | L2 | `make TEST=1` | never logged |
+| S2-U01–U04: message size, forward target, STOP, stall → FAULT | L2 | `make TEST=1` | PASS on target 19 Nov (`d9c4830`) |
 
 **Decided 13 Nov (#4):** `integrated` is the final firmware. Port the
 all_test tuning into it (#8). The `all_buddies` host tests were retired (#9);
@@ -157,7 +157,7 @@ superseded by the IDs below.
 
 | Test | Level | How | Status |
 |---|---|---|---|
-| S4-U01–U07: snapshot, sensor, calibration, sample rate, 20 ms cycle, packing, range | L2 | `make TEST=1` | never logged |
+| S4-U01–U07: snapshot, sensor, calibration, sample rate, cycle within the sample period (20 ms again from 20 Nov), packing, range | L2 | `make TEST=1` | PASS on target 20 Nov at 20 ms (7 checks); U05 had failed at 10 ms |
 | `s4/hump_height` | L1 | `sh testing/run_host_tests.sh s4/` | **FAIL**: the test expects the height to fall back to 0; since `7f823b8` the code keeps the climb height. Decide which is right |
 
 **New:** the thresholds in `subsystem4.h` are placeholders, so the first step
@@ -183,7 +183,7 @@ is to measure real data.
 
 | Test | Level | How | Status |
 |---|---|---|---|
-| S5-U09, U21–U22, U28, U31–U38: packing, servo maths, fine-scan window, profile, plan, bypass table | L2 | `make TEST=1` | in the code; no Results rows |
+| S5-U09, U21–U22, U28, U31–U38: packing, servo maths, fine-scan window, profile, plan, bypass table | L2 | `make TEST=1` | PASS on target 19 Nov (`d9c4830`, 68 checks) |
 | S5-U01, U04, U05, U16 | L3 | manual | PASS (logs not saved) |
 | S5-U02: accuracy ±2 cm over 5–100 cm | L3 | manual | **FAIL before the hardware-timer fix: re-run** |
 | S5-U06: detection → action ≤ 2 s | L3 | manual | **FAIL (2299 ms) before the `FINE_BUDGET_POINTS` fix: re-run** |

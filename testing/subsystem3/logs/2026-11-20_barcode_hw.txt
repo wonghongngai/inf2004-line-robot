@@ -1,0 +1,241 @@
+# Barcode re-check after the left IR sensor (GP28) was moved for ramp clearance, 20 Nov 18:38-18:41.
+# Image: robot-all_test-offline.uf2 (sh build.sh all_test_offline), built 17:41 from the code in 8ddacf7 (20 ms IMU period),
+# default map A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN. Operator: barcode A, forward, 3 passes, one reset per pass.
+# 4 boots ('=== COM5 connected'): boot 1 was the boot after flashing (accelerometer failing, no run); boots 2-4 are the passes.
+# Trimmed copy of the gitignored raw capture 2026-11-20_183843_console.txt: kept boot headers, every 'Buddy4' line except the periodic
+# 'Buddy4: n=' status, every '[BARCODE ...]' line except the periodic COUNT/STATUS/LEVEL/RAW/INFO snapshots, '[MOTION]
+# junction' and '[ALL TEST] STOPPED' lines. Identical consecutive lines are collapsed to one with [xN]. Nothing else changed.
+=== COM5 connected 18:38:51.249 ===
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=20 ms
+[BARCODE BUILD] GP28 digital; cumulative counts; raw edges enabled
+[BARCODE DEBUG] duration logging enabled; minimum element=40ms; target=A
+Buddy4: LSM303DLHC initialized
+Buddy4: accelerometer not responding, er=-25   [x7398]
+=== COM5 connected 18:39:28.894 ===
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=20 ms
+[BARCODE BUILD] GP28 digital; cumulative counts; raw edges enabled
+[BARCODE DEBUG] duration logging enabled; minimum element=40ms; target=A
+Buddy4: LSM303DLHC initialized
+Buddy4: calibration complete base=(-69,38,958) mg
+[BARCODE RUN] WHITE duration=1281ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=66ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=90ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=244ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=96ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=265ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=94ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=82ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=282ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=91ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=84ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=271ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=82ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=88ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=262ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=78ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=88ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=84ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=88ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=295ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=94ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=85ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=131ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=257ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=124ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=265ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=124ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=81ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=316ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=71ms too_short=0 dropped=0 (white may be margin)
+[BARCODE -> MOTION] decoded=A queued=LEFT; execute at next C/R junction
+[BARCODE FRAME] id=1 runs=29/29 black=15 white=14 result=A skipped=0
+[BARCODE WIDTH] frame=1 run=1 BLACK width_ms=66
+[BARCODE WIDTH] frame=1 run=2 WHITE width_ms=90
+[BARCODE WIDTH] frame=1 run=3 BLACK width_ms=244
+[BARCODE WIDTH] frame=1 run=4 WHITE width_ms=96
+[BARCODE WIDTH] frame=1 run=5 BLACK width_ms=265
+[BARCODE WIDTH] frame=1 run=6 WHITE width_ms=94
+[BARCODE WIDTH] frame=1 run=7 BLACK width_ms=82
+[BARCODE WIDTH] frame=1 run=8 WHITE width_ms=282
+[BARCODE WIDTH] frame=1 run=9 BLACK width_ms=91
+[BARCODE WIDTH] frame=1 run=10 WHITE width_ms=84
+[BARCODE WIDTH] frame=1 run=11 BLACK width_ms=271
+[BARCODE WIDTH] frame=1 run=12 WHITE width_ms=82
+[BARCODE WIDTH] frame=1 run=13 BLACK width_ms=88
+[BARCODE WIDTH] frame=1 run=14 WHITE width_ms=262
+[BARCODE WIDTH] frame=1 run=15 BLACK width_ms=78
+[BARCODE WIDTH] frame=1 run=16 WHITE width_ms=88
+[BARCODE WIDTH] frame=1 run=17 BLACK width_ms=84
+[BARCODE WIDTH] frame=1 run=18 WHITE width_ms=88
+[BARCODE WIDTH] frame=1 run=19 BLACK width_ms=295
+[BARCODE WIDTH] frame=1 run=20 WHITE width_ms=94
+[BARCODE WIDTH] frame=1 run=21 BLACK width_ms=85
+[BARCODE WIDTH] frame=1 run=22 WHITE width_ms=131
+[BARCODE WIDTH] frame=1 run=23 BLACK width_ms=257
+[BARCODE WIDTH] frame=1 run=24 WHITE width_ms=124
+[BARCODE WIDTH] frame=1 run=25 BLACK width_ms=265
+[BARCODE WIDTH] frame=1 run=26 WHITE width_ms=124
+[BARCODE WIDTH] frame=1 run=27 BLACK width_ms=81
+[BARCODE WIDTH] frame=1 run=28 WHITE width_ms=316
+[BARCODE WIDTH] frame=1 run=29 BLACK width_ms=71
+[MOTION] junction reached: letter 'A' -> LEFT
+[BARCODE RUN] WHITE duration=7011ms too_short=0 dropped=0 (white may be margin)
+[BARCODE REJECT] invalid frame: check start/stop, narrow/wide widths and white margins
+Buddy4: hump entry confirmed sign=1 peak=214mg
+[ALL TEST] STOPPED: junction: incomplete or unmapped barcode; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+[BARCODE FRAME] id=2 runs=0/29 black=0 white=0 result=? skipped=0
+Buddy4: hump timed out; waiting for level ground
+Buddy4 EVENT: TILT roll=-10 deg lateral=-192 mg
+Buddy4: hump detector re-armed
+=== COM5 connected 18:39:55.759 ===
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=20 ms
+[BARCODE BUILD] GP28 digital; cumulative counts; raw edges enabled
+[BARCODE DEBUG] duration logging enabled; minimum element=40ms; target=A
+Buddy4: LSM303DLHC initialized
+Buddy4: calibration complete base=(-68,31,962) mg
+[BARCODE RUN] WHITE duration=2152ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=82ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=86ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=265ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=88ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=269ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=98ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=83ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=304ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=91ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=88ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=290ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=96ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=101ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=292ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=81ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=92ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=96ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=104ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=287ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=88ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=115ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=101ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=254ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=124ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=252ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=125ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=73ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=282ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=69ms too_short=0 dropped=0 (white may be margin)
+[BARCODE -> MOTION] decoded=A queued=LEFT; execute at next C/R junction
+[BARCODE FRAME] id=1 runs=29/29 black=15 white=14 result=A skipped=0
+[BARCODE WIDTH] frame=1 run=1 BLACK width_ms=82
+[BARCODE WIDTH] frame=1 run=2 WHITE width_ms=86
+[BARCODE WIDTH] frame=1 run=3 BLACK width_ms=265
+[BARCODE WIDTH] frame=1 run=4 WHITE width_ms=88
+[BARCODE WIDTH] frame=1 run=5 BLACK width_ms=269
+[BARCODE WIDTH] frame=1 run=6 WHITE width_ms=98
+[BARCODE WIDTH] frame=1 run=7 BLACK width_ms=83
+[BARCODE WIDTH] frame=1 run=8 WHITE width_ms=304
+[BARCODE WIDTH] frame=1 run=9 BLACK width_ms=91
+[BARCODE WIDTH] frame=1 run=10 WHITE width_ms=88
+[BARCODE WIDTH] frame=1 run=11 BLACK width_ms=290
+[BARCODE WIDTH] frame=1 run=12 WHITE width_ms=96
+[BARCODE WIDTH] frame=1 run=13 BLACK width_ms=101
+[BARCODE WIDTH] frame=1 run=14 WHITE width_ms=292
+[BARCODE WIDTH] frame=1 run=15 BLACK width_ms=81
+[BARCODE WIDTH] frame=1 run=16 WHITE width_ms=92
+[BARCODE WIDTH] frame=1 run=17 BLACK width_ms=96
+[BARCODE WIDTH] frame=1 run=18 WHITE width_ms=104
+[BARCODE WIDTH] frame=1 run=19 BLACK width_ms=287
+[BARCODE WIDTH] frame=1 run=20 WHITE width_ms=88
+[BARCODE WIDTH] frame=1 run=21 BLACK width_ms=115
+[BARCODE WIDTH] frame=1 run=22 WHITE width_ms=101
+[BARCODE WIDTH] frame=1 run=23 BLACK width_ms=254
+[BARCODE WIDTH] frame=1 run=24 WHITE width_ms=124
+[BARCODE WIDTH] frame=1 run=25 BLACK width_ms=252
+[BARCODE WIDTH] frame=1 run=26 WHITE width_ms=125
+[BARCODE WIDTH] frame=1 run=27 BLACK width_ms=73
+[BARCODE WIDTH] frame=1 run=28 WHITE width_ms=282
+[BARCODE WIDTH] frame=1 run=29 BLACK width_ms=69
+[MOTION] junction reached: letter 'A' -> LEFT
+[ALL TEST] STOPPED: junction: incomplete or unmapped barcode; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+Buddy4: hump entry confirmed sign=1 peak=122mg
+Buddy4 EVENT: HUMP height=0 mm highest=0 mm peak=425 mg
+Buddy4: hump detector re-armed
+=== COM5 connected 18:40:18.396 ===
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=20 ms
+[BARCODE BUILD] GP28 digital; cumulative counts; raw edges enabled
+[BARCODE DEBUG] duration logging enabled; minimum element=40ms; target=A
+Buddy4: LSM303DLHC initialized
+Buddy4: calibration complete base=(-66,29,961) mg
+[BARCODE RUN] WHITE duration=2296ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=76ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=68ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=256ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=104ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=248ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=90ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=77ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=294ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=82ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=112ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=273ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=108ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=86ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=288ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=77ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=115ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=84ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=112ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=298ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=93ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=112ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=96ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=286ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=103ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=311ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=105ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=76ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] WHITE duration=283ms too_short=0 dropped=0 (white may be margin)
+[BARCODE RUN] BLACK duration=73ms too_short=0 dropped=0 (white may be margin)
+[BARCODE -> MOTION] decoded=A queued=LEFT; execute at next C/R junction
+[BARCODE FRAME] id=1 runs=29/29 black=15 white=14 result=A skipped=0
+[BARCODE WIDTH] frame=1 run=1 BLACK width_ms=76
+[BARCODE WIDTH] frame=1 run=2 WHITE width_ms=68
+[BARCODE WIDTH] frame=1 run=3 BLACK width_ms=256
+[BARCODE WIDTH] frame=1 run=4 WHITE width_ms=104
+[BARCODE WIDTH] frame=1 run=5 BLACK width_ms=248
+[BARCODE WIDTH] frame=1 run=6 WHITE width_ms=90
+[BARCODE WIDTH] frame=1 run=7 BLACK width_ms=77
+[BARCODE WIDTH] frame=1 run=8 WHITE width_ms=294
+[BARCODE WIDTH] frame=1 run=9 BLACK width_ms=82
+[BARCODE WIDTH] frame=1 run=10 WHITE width_ms=112
+[BARCODE WIDTH] frame=1 run=11 BLACK width_ms=273
+[BARCODE WIDTH] frame=1 run=12 WHITE width_ms=108
+[BARCODE WIDTH] frame=1 run=13 BLACK width_ms=86
+[BARCODE WIDTH] frame=1 run=14 WHITE width_ms=288
+[BARCODE WIDTH] frame=1 run=15 BLACK width_ms=77
+[BARCODE WIDTH] frame=1 run=16 WHITE width_ms=115
+[BARCODE WIDTH] frame=1 run=17 BLACK width_ms=84
+[BARCODE WIDTH] frame=1 run=18 WHITE width_ms=112
+[BARCODE WIDTH] frame=1 run=19 BLACK width_ms=298
+[BARCODE WIDTH] frame=1 run=20 WHITE width_ms=93
+[BARCODE WIDTH] frame=1 run=21 BLACK width_ms=112
+[BARCODE WIDTH] frame=1 run=22 WHITE width_ms=96
+[BARCODE WIDTH] frame=1 run=23 BLACK width_ms=286
+[BARCODE WIDTH] frame=1 run=24 WHITE width_ms=103
+[BARCODE WIDTH] frame=1 run=25 BLACK width_ms=311
+[BARCODE WIDTH] frame=1 run=26 WHITE width_ms=105
+[BARCODE WIDTH] frame=1 run=27 BLACK width_ms=76
+[BARCODE WIDTH] frame=1 run=28 WHITE width_ms=283
+[BARCODE WIDTH] frame=1 run=29 BLACK width_ms=73
+[MOTION] junction reached: letter 'A' -> LEFT
+[BARCODE RUN] WHITE duration=6471ms too_short=0 dropped=0 (white may be margin)
+[BARCODE REJECT] invalid frame: check start/stop, narrow/wide widths and white margins
+Buddy4: hump entry confirmed sign=1 peak=230mg
+[ALL TEST] STOPPED: junction: incomplete or unmapped barcode; sample_dt=0ms line_fault=0 (1=line/GPIO 2=queue 4=timing); reboot to retry
+[BARCODE FRAME] id=2 runs=0/29 black=0 white=0 result=? skipped=0
+Buddy4 EVENT: HUMP height=3 mm highest=3 mm peak=368 mg
+Buddy4 EVENT: TILT roll=5 deg lateral=112 mg
+Buddy4: hump detector re-armed
