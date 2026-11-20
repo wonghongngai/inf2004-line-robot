@@ -74,7 +74,7 @@ The communication stack is built as designed, but none of FR1 or NFR1 has been t
 | B1-5 | FR1-5 periodic status (W6) | 1-byte heartbeat every 5 s (`MQTT_UTK_HEARTBEAT_MS`) | Unverified | #15 |
 | B1-6 | NFR1-3 telemetry must not disturb control; W6 gave comms **medium** priority | Wi-Fi service task priority 4, above motion (14) and line (16) | Changed, decided 20 Nov: keep | #66 (`DECISIONS.md`); measure control-loop lateness with Wi-Fi on (S1-U17, S2-U12) |
 | B1-7 | PT gap: define handling of commands during a connection loss | Not defined | Missing | #49 |
-| B1-8 | Barcode result events on `<id>/barcode` (`BARCODE_MQTT.md`) | Doc and host test committed in `673736f`, implementation on no branch | Missing | #3, #16 |
+| B1-8 | Barcode result events on `<id>/barcode` (`BARCODE_MQTT.md`) | The original code was lost; reimplemented 20 Nov on branch `s1/barcode-queue` (S1 queue, S3 hook, dashboard panel). Payload changed from JSON to a 4-byte binary packet so every topic follows protocol v1. Host tests pass; not yet run on the robot | Changed | #3 (closed), #16 |
 | B1-9 | WU deliverables: communication API, telemetry framework, MQTT documentation, telemetry demo | S1 README documents the packet layout and map topic; no demo evidence | Partial | #55 |
 
 ## Buddy 2: Motion control
@@ -163,7 +163,7 @@ The evidence rules from the template are mostly not followed yet, and two assess
 | ID | Plan (source) | Current state | Type | Follow-up |
 | --- | --- | --- | --- | --- |
 | P1 | Template `testing/README.md`: every test has a TEST_LOG row with a commit and a saved log | S1, S2, S4 and system logs have no results; their test-case tables still describe template LED tests while the code checks S1-U01 to U10, S2-U01 to U04, S4-U01 to U07; many S5 rows say "console, not saved" | Partial | #14, #17, #21, #24, #28 |
-| P2 | PT: test packed interfaces before integration | Host suite (`testing/run_host_tests.sh`) passes 9 of 12 (6 all_test-only tests retired, #9); 2 tests check code that was never pushed | Partial | #3, #5, #9 |
+| P2 | PT: test packed interfaces before integration | Host suite (`testing/run_host_tests.sh`) passes 12 of 12 on branch `s1/barcode-queue` (6 all_test-only tests retired, #9). The 2 tests for lost code were resolved (#3): `s1/barcode_queue` now tests the reimplemented queue; `int/steering_ramp` dropped its terrain-boost and barcode slow-down checks (not requirements) and tests the current PWM ramp | Partial | #5, #9 |
 | P3 | WU p1: conform to the Barr C coding standard | No review recorded | Missing | #60 |
 | P4 | WU p1, p11: resource efficiency is assessed; PT: measure timing before and after packing | No flash, RAM, stack or task-timing figures recorded | Missing | #61 |
 | P5 | WU p1: the car operates without remote control | MQTT PAUSE and RESUME exist as manual overrides; the instructor's MQTT map is required. The demo must not rely on manual commands | Check | Confirm with the instructor if unsure |

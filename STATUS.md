@@ -135,7 +135,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 - [x] Stop committing build output: test `.exe` files and build `.log` files are untracked and gitignored (2026-11-13).
 - [x] One host-test runner: `sh testing/run_host_tests.sh` (2026-11-13).
 - [ ] Host tests: 10 of 12 pass (20 Nov). The 6 `int/all_buddies*` tests were retired (#9) now that `integrated` is final. The rest need their owners:
-  - **zhi xian:** push the missing local code. `s1/barcode_queue` (barcode-over-MQTT queue) and `int/steering_ramp` (`update_terrain_boost`, `barcode_slow`) test code that isn't on any branch. Both tests came in with `673736f`.
-- [ ] S1 barcode-over-MQTT code (`S1_BARCODE_RESULT`, barcode queue) isn't on any branch. Only its test and doc were committed (`673736f`). Ask zhi xian to push it.
+  - ~~**zhi xian:** push the missing local code~~. Resolved 20 Nov (#3 closed): the code was lost. `s1/barcode_queue` passes against a reimplementation on branch `s1/barcode-queue`; `int/steering_ramp` no longer checks terrain boost or barcode slow-down (not requirements) and passes.
+- [x] S1 barcode-over-MQTT code: reimplemented 20 Nov on branch `s1/barcode-queue`, with a binary payload (#3).
 - [ ] Choose one integration branch (`alicia` or `double11`), merge into it, and delete the dead branches (`zhixin`, `integration`, `master`, …).
 - [x] Commit the untracked S5 console logs and link them from the test-log result rows (2026-11-20: trimmed copies `testing/subsystem5/logs/*_S5_avoidance.txt`; the raw `*_console.txt` stay gitignored; #28).

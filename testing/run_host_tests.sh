@@ -72,7 +72,8 @@ RESULTS=
 # line here as soon as its test passes (the summary will say so).
 known_failure() {   # known_failure <name>: prints the issue, or nothing
     case "$1" in
-        int/steering_ramp) echo "#3: terrain-boost code not pushed yet" ;;
+        # <name>) echo "#<issue>: <reason>" ;;
+        *) ;;
     esac
 }
 
