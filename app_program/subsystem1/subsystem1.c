@@ -5,6 +5,8 @@
 LOCAL ID telemetry_queue;
 LOCAL ID command_queue;
 LOCAL ID mapping_queue;
+/* Barcode results get their own queue so they never compete with telemetry. */
+LOCAL ID barcode_queue;
 
 LOCAL ID create_queue(INT message_size)
 {
@@ -19,7 +21,8 @@ LOCAL ID create_queue(INT message_size)
 
 EXPORT ER subsystem1_init(void)
 {
-    if (telemetry_queue > 0 && command_queue > 0 && mapping_queue > 0) {
+    if (telemetry_queue > 0 && command_queue > 0 && mapping_queue > 0 &&
+        barcode_queue > 0) {
         return E_OK;
     }
     telemetry_queue = create_queue(S1_TELEMETRY_BYTES);
@@ -39,14 +42,22 @@ EXPORT ER subsystem1_init(void)
         command_queue = telemetry_queue = 0;
         return mapping_queue;
     }
+    barcode_queue = create_queue((INT)sizeof(S1_BARCODE_RESULT));
+    if (barcode_queue < E_OK) {
+        tk_del_mbf(mapping_queue);
+        tk_del_mbf(command_queue);
+        tk_del_mbf(telemetry_queue);
+        mapping_queue = command_queue = telemetry_queue = 0;
+        return barcode_queue;
+    }
     return E_OK;
 }
 
 EXPORT ER subsystem1_start(void)
 {
     /* No second network task: cyw43_utk_task services all queues. */
-    return (telemetry_queue > 0 && command_queue > 0 && mapping_queue > 0) ?
-           E_OK : E_OBJ;
+    return (telemetry_queue > 0 && command_queue > 0 && mapping_queue > 0 &&
+            barcode_queue > 0) ? E_OK : E_OBJ;
 }
 
 EXPORT ER subsystem1_publish_telemetry(const S1_TELEMETRY *packet)
@@ -62,6 +73,23 @@ EXPORT ER subsystem1_publish_telemetry(const S1_TELEMETRY *packet)
     }
     return tk_snd_mbf(telemetry_queue, (void *)packet->bytes,
                       S1_TELEMETRY_BYTES, TMO_POL);
+#endif
+}
+
+EXPORT ER subsystem1_publish_barcode(const S1_BARCODE_RESULT *result)
+{
+    if (!s1_barcode_result_valid(result)) {
+        return E_PAR;
+    }
+#if !TM_MQTT
+    return E_NOSPT;
+#else
+    if (barcode_queue <= 0) {
+        return E_OBJ;
+    }
+    /* Nonblocking: a full queue returns E_TMOUT and the event is dropped. */
+    return tk_snd_mbf(barcode_queue, (void *)result,
+                      (INT)sizeof(*result), TMO_POL);
 #endif
 }
 
@@ -93,6 +121,17 @@ int s1_take_telemetry(unsigned char *payload)
         return E_OBJ;
     }
     return tk_rcv_mbf(telemetry_queue, payload, TMO_POL);
+}
+
+int s1_take_barcode(S1_BARCODE_RESULT *result)
+{
+    if (result == NULL) {
+        return E_PAR;
+    }
+    if (barcode_queue <= 0) {
+        return E_OBJ;
+    }
+    return tk_rcv_mbf(barcode_queue, result, TMO_POL);
 }
 
 void s1_deliver_command(const unsigned char *payload, unsigned int length)

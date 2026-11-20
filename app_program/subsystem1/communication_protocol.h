@@ -86,6 +86,20 @@ typedef struct { unsigned char bytes[S1_TELEMETRY_BYTES]; } S1_TELEMETRY;
 typedef struct { unsigned char bytes[S1_COMMAND_BYTES]; } S1_COMMAND;
 typedef struct { unsigned char bytes[S1_MAPPING_BYTES]; } S1_MAPPING;
 
+/* Barcode result event: one per completed or rejected capture. The struct
+ * only crosses an RTOS queue on the Pico. On <id>/barcode it is packed into
+ * S1_BARCODE_BYTES: frame bits 0-15 (low 16 bits, wraps), letter bits 16-20
+ * (0 invalid, 1..26 = A..Z), runs bits 21-25 (0..29); bits 26-31 MUST be zero. */
+#define S1_BARCODE_BYTES 4U
+#define S1_BARCODE_RUNS_MAX 29U
+#define S1_BARCODE_FRAME_MASK 0xFFFFU
+typedef struct {
+    unsigned int id;      /* per-boot capture frame number */
+    unsigned char runs;   /* bars + gaps captured, 0..S1_BARCODE_RUNS_MAX */
+    unsigned char letter; /* 'A'..'Z' when decoded, 0 for an invalid capture */
+} S1_BARCODE_RESULT;
+typedef struct { unsigned char bytes[S1_BARCODE_BYTES]; } S1_BARCODE_PACKET;
+
 /* Return 1 on success, 0 on invalid input. Failed setters leave packet intact.
  * Values are logical units, including signed speed. Pack before enqueueing;
  * don't modify a packet concurrently from multiple tasks/ISRs. */
@@ -99,4 +113,10 @@ int s1_command_valid(const S1_COMMAND *packet);
  * intact; get rejects reserved bits, range and duplicates. */
 int s1_mapping_set(S1_MAPPING *packet, const unsigned char letters[S1_MAP_SLOTS]);
 int s1_mapping_get(const S1_MAPPING *packet, unsigned char letters[S1_MAP_SLOTS]);
+/* 1 when non-null, runs <= S1_BARCODE_RUNS_MAX and letter is 0 or 'A'..'Z'. */
+int s1_barcode_result_valid(const S1_BARCODE_RESULT *result);
+/* Pack keeps only the low 16 bits of id; rejects an invalid result and
+ * leaves packet intact. Unpack rejects reserved bits and out-of-range fields. */
+int s1_barcode_pack(const S1_BARCODE_RESULT *result, S1_BARCODE_PACKET *packet);
+int s1_barcode_unpack(const S1_BARCODE_PACKET *packet, S1_BARCODE_RESULT *result);
 #endif

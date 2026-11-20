@@ -145,6 +145,17 @@ static ER tk_sta_tsk(ID id, INT code)
 
 #include "../../app_program/subsystem3/line_service.c"
 
+/* S1 stub: records barcode results the sampling task hands over. */
+static unsigned g_s1_results;
+static S1_BARCODE_RESULT g_s1_last;
+ER subsystem1_publish_barcode(const S1_BARCODE_RESULT *result)
+{
+    if (!s1_barcode_result_valid(result)) return E_PAR;
+    g_s1_last = *result;
+    ++g_s1_results;
+    return E_OK;
+}
+
 /* ---- Test helpers -------------------------------------------------------- */
 static unsigned g_failures;
 #define CHECK(id, cond, what) do { \
@@ -385,6 +396,22 @@ int main(void)
     bool damaged_ok = invalid == 1u && letters == 0u && damaged_cmds == 0u;
     CHECK("S3-U46", unmapped_ok && damaged_ok,
           "unmapped Y gives a plain JUNCTION; damaged barcode gives INVALID and no COMMAND");
+
+    /* S3-U47: every finished capture is handed to S1 for <id>/barcode. */
+    restart();
+    unsigned before = g_s1_results;
+    scan_letter(25u, false);                               /* Z */
+    (void)take_events(LINE_BARCODE_EVT_BARCODE, NULL, NULL);
+    S1_BARCODE_RESULT valid = g_s1_last;
+    bool one_valid = g_s1_results == before + 1u && valid.letter == 'Z' &&
+                     valid.runs == S1_BARCODE_RUNS_MAX;
+    restart();
+    scan_letter(0u, true);                                 /* damaged A */
+    while (line_service_receive(&m, TMO_POL) == E_OK) {}
+    bool one_invalid = g_s1_results == before + 2u && g_s1_last.letter == 0u &&
+                       g_s1_last.id == valid.id + 1u;
+    CHECK("S3-U47", one_valid && one_invalid,
+          "decoded Z and a damaged capture each give one S1 barcode result; frame id increments");
 
     printf("%s: %u failure(s)\n", g_failures ? "FAIL" : "PASS", g_failures);
     return g_failures ? 1 : 0;

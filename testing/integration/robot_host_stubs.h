@@ -16,6 +16,7 @@ typedef struct { void *next; } T_MSG;
 #define TRUE 1
 #define FALSE 0
 #define E_OK 0
+#define E_NOSPT (-9)
 #define E_PAR (-17)
 #define E_OBJ (-41)
 #define E_NOEXS (-42)

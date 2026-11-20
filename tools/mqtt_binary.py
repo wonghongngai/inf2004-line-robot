@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Protocol v1 helper for binary telemetry, commands and barcode maps."""
+"""Protocol v1 helper for binary telemetry, commands, barcode maps and results."""
 import argparse
 import json
 import sys
@@ -46,6 +46,44 @@ def decode_telemetry(payload):
     return result
 
 
+BARCODE_BYTES = 4
+BARCODE_RUNS_MAX = 29
+
+
+def decode_barcode(payload):
+    """4-byte <id>/barcode result: frame 0-15, letter 16-20, runs 21-25."""
+    if len(payload) != BARCODE_BYTES:
+        raise ValueError("barcode result must be 4 bytes")
+    packed = int.from_bytes(payload, "little")
+    letter = (packed >> 16) & 0x1F
+    runs = (packed >> 21) & 0x1F
+    if packed >> 26:
+        raise ValueError("reserved barcode bits must be zero")
+    if letter > 26 or runs > BARCODE_RUNS_MAX:
+        raise ValueError("invalid barcode wire value")
+    return {
+        "frame": packed & 0xFFFF,
+        "status": "valid" if letter else "invalid",
+        "letter": chr(ord("A") + letter - 1) if letter else None,
+        "runs": runs,
+    }
+
+
+def encode_barcode(frame, letter, runs):
+    """Test/simulation helper; letter is "A".."Z" or None for invalid."""
+    if type(frame) is not int or frame < 0:
+        raise ValueError("frame must be a non-negative integer")
+    if type(runs) is not int or not 0 <= runs <= BARCODE_RUNS_MAX:
+        raise ValueError(f"runs must be an integer in 0..{BARCODE_RUNS_MAX}")
+    if letter is None:
+        code = 0
+    elif isinstance(letter, str) and len(letter) == 1 and "A" <= letter <= "Z":
+        code = ord(letter) - ord("A") + 1
+    else:
+        raise ValueError("letter must be one uppercase A-Z or None")
+    return ((frame & 0xFFFF) | code << 16 | runs << 21).to_bytes(BARCODE_BYTES, "little")
+
+
 def encode_telemetry(values):
     unknown = set(values) - {field[0] for field in FIELDS}
     if unknown:
@@ -70,6 +108,10 @@ def main():
     mapping = modes.add_parser("mapping", help="write a raw three-byte barcode map")
     for action in ("left", "right", "straight", "uturn"):
         mapping.add_argument(f"--{action}", required=True, metavar="LETTER")
+    barcode = modes.add_parser("barcode", help="decode one barcode result hex string")
+    barcode.add_argument("hex")
+    modes.add_parser("barcode-stream",
+                     help="decode barcode result hex, one line per packet on stdin")
     encode = modes.add_parser("encode", help="write raw telemetry from a JSON object")
     encode.add_argument("json")
     args = parser.parse_args()
@@ -80,6 +122,14 @@ def main():
             for line in sys.stdin:
                 try:
                     print(json.dumps(decode_telemetry(bytes.fromhex(line.strip()))), flush=True)
+                except ValueError as error:
+                    print(f"Rejected packet: {error}", file=sys.stderr)
+        elif args.mode == "barcode":
+            print(json.dumps(decode_barcode(bytes.fromhex(args.hex))))
+        elif args.mode == "barcode-stream":
+            for line in sys.stdin:
+                try:
+                    print(json.dumps(decode_barcode(bytes.fromhex(line.strip()))), flush=True)
                 except ValueError as error:
                     print(f"Rejected packet: {error}", file=sys.stderr)
         elif args.mode == "command":
