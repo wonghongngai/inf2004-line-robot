@@ -163,6 +163,11 @@ LOCAL W calibrated_height_mm(int64_t raw_milli_mm)
         (raw_milli_mm * S4_HEIGHT_CAL_NUM) /
         S4_HEIGHT_CAL_DEN;
 
+    /* Cap after calibration: telemetry carries 0-255 mm (8 bits). */
+    if (calibrated_milli_mm > (int64_t)S4_MAX_RAMP_HEIGHT_MM * 1000) {
+        calibrated_milli_mm = (int64_t)S4_MAX_RAMP_HEIGHT_MM * 1000;
+    }
+
     return (W)(calibrated_milli_mm / 1000);
 }
 
