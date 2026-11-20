@@ -87,6 +87,14 @@ Robot running `all_test` offline (default map A=LEFT, F=RIGHT, Z=STRAIGHT, W=U-T
 
 Other events in the same session, not counted above: a start-up line-sensor timing fault (`sample_dt=23ms line_fault=4`) before any barcode, 4 times in about 40 boots; "IMU collision detected" stops after some runs; one boot (20:54) with Buddy 4 "accelerometer not responding" errors. In every successful run above, the robot then turned LEFT at the next junction as mapped. That is not INT-08 evidence, which needs the integrated firmware and 4 commands × 5.
 
+### Hardware barcode check after the GP28 move, 20 Nov (S3-M03)
+
+The left IR sensor (GP28, the barcode scanner) was repositioned on 20 Nov so it no longer scrapes the floor on the right-side ramp (S4-U09). This checks it still reads barcodes. Robot running `all_test` offline with the default map, scanner GP28 in SIDE layout. Log: [`logs/2026-11-20_barcode_hw.txt`](logs/2026-11-20_barcode_hw.txt), a trimmed copy of a gitignored raw capture.
+
+| Date | Test ID | Commit | Tester | Result | Log / evidence | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2026-11-20 | S3-M03 A, forward (print size not recorded) | `8ddacf7` (image built 17:41 from the then-uncommitted code this commit records) | robot operator; log analysis Claude | PASS (3/3) | [`logs/2026-11-20_barcode_hw.txt`](logs/2026-11-20_barcode_hw.txt), 18:39–18:41 | Every pass decoded A (29/29 runs) and turned LEFT at the next junction. Narrow 66–131 ms, wide 244–316 ms; weakest wide/narrow separation 1.86x (2.02x, 2.16x on the other passes). Each run then stopped at the following junction (`incomplete or unmapped barcode`), as `all_test` does; two of those stops logged a `[BARCODE REJECT]` for marks scanned after the turn. The boot before the passes (18:38, straight after flashing) had Buddy 4 `accelerometer not responding` errors throughout and did not run |
+
 ## Physical and integration cases (not yet run)
 
 | ID | Steps | Acceptance / evidence | Status |
