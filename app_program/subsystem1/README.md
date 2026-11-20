@@ -11,6 +11,7 @@ No standalone SDK main, duplicate driver, or second network task is needed.
 | `subsystem1.h` / `subsystem1.c` | Task-safe queue API and object creation |
 | `communication_internal.h` | Private bridge to the Wi-Fi service |
 | `mqtt_manager.c` | MQTT connection/recovery, binary RX/TX and heartbeat |
+| `drv_buzzer.c` | GP22 piezo: a short 2 kHz beep each time Wi-Fi gets an IP (`WIFI_CONNECT_BEEP`, default 1); non-blocking, stopped by a one-shot alarm |
 | `subsystem1_test.c` | On-target queue tests, enabled by `TEST=1` |
 
 ## Representation table

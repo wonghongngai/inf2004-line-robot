@@ -85,7 +85,7 @@ One owner per pin.
 | GP19 | | |
 | GP20 | | |
 | GP21 | | |
-| GP22 | | |
+| GP22 | S1 | Robo Pico piezo buzzer, PWM slice 3A (Wi-Fi connect beep, `drv_buzzer.c`) |
 | GP26 | S2 | left encoder A; ADC pin initialization disabled |
 | GP27 | S3 | centre IR, digital input (steering); ADC pin initialization disabled |
 | GP28 | S3 | offset barcode scanner IR, digital input; ADC pin initialization disabled |
