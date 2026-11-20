@@ -201,6 +201,11 @@ static int scan_result(void *env, const cyw43_ev_scan_result_t *result)
 }
 #endif
 
+/* Default link-up hook: nothing. An application definition overrides it. */
+__attribute__((weak)) void wifi_utk_link_up(void)
+{
+}
+
 void cyw43_utk_task(int32_t stacd, void *exinf)
 {
 #if !TM_NET_LWIP
@@ -296,6 +301,7 @@ void cyw43_utk_task(int32_t stacd, void *exinf)
                 tm_printf((UB*)"wifi: link up, ip=%d.%d.%d.%d\n",
                           (int)(ip & 0xff), (int)((ip >> 8) & 0xff),
                           (int)((ip >> 16) & 0xff), (int)((ip >> 24) & 0xff));
+                wifi_utk_link_up();
             } else {
                 tm_printf((UB*)"wifi: link status -> %s (%d)\n",
                           link_status_str(radio_status.link_status),

@@ -24,5 +24,10 @@ typedef struct {
 int32_t cyw43_utk_start(void);
 void cyw43_utk_get_status(T_CYW43_UTK_STATUS *status);
 void cyw43_utk_task(int32_t stacd, void *exinf);
+/* Called by cyw43_utk_task() each time the link comes up with an IP (NET=lwip
+ * builds only). The default does nothing; an application may define its own,
+ * e.g. the S1 connect beep in app_program/subsystem1/drv_buzzer.c. It runs on
+ * the Wi-Fi task, so it must return quickly and never block. */
+void wifi_utk_link_up(void);
 
 #endif
