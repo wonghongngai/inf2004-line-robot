@@ -10,8 +10,9 @@ Written 2026-11-13 from the code and test logs on `chore/fix-host-tests`.
   a *Results* row.
 - **Proposed IDs** carry on from the highest ID already used, so they never
   clash. Rename them if you need to; just don't reuse an old ID.
-- **`[set]`** marks a pass threshold the team still has to agree on. Agree it
-  *before* running the test, and write the number into the test case.
+- **Pass thresholds** were agreed on 20 Nov 2026 (#6). The reasons are in
+  [`DECISIONS.md`](../DECISIONS.md). A new test that needs a number gets one
+  agreed *before* it runs. Write the number into the test case.
 
 ## Test levels
 
@@ -63,10 +64,10 @@ something that hasn't passed on the bench (L3).
 
 | ID | What | Level | How | Pass when |
 |---|---|---|---|---|
-| S1-U11 | Wi-Fi joins after boot | L3 | Power on 5×, read the connect time from the serial log | connects 5/5 within `[set]` s |
-| S1-U12 | Telemetry publish rate and validity | L3 | Broker from `tools/mosquitto-local.conf`; subscribe and decode with `tools/mqtt_binary.py` for 5 min | ~1 packet/s, every packet is 10 bytes and decodes valid, no gaps over `[set]` s |
-| S1-U13 | Reconnect after broker restart and after AP off/on | L3 | Stop the broker for 30 s, then restart it; repeat with the hotspot | publishing resumes within `[set]` s; motors unaffected (Wi-Fi loss must not stop driving) |
-| S1-U14 | PAUSE / RESUME / STATUS from the laptop | L3→L4 | Send each command 10×, film the wheels with the console visible | 10/10 obey; PAUSE stops within `[set]` ms |
+| S1-U11 | Wi-Fi joins after boot | L3 | Power on 5×, read the connect time from the serial log | connects 5/5 within 15 s |
+| S1-U12 | Telemetry publish rate and validity | L3 | Broker from `tools/mosquitto-local.conf`; subscribe and decode with `tools/mqtt_binary.py` for 5 min | ~1 packet/s, every packet is 15 bytes and decodes valid, no gaps over 3 s |
+| S1-U13 | Reconnect after broker restart and after AP off/on | L3 | Stop the broker for 30 s, then restart it; repeat with the hotspot | publishing resumes within 10 s; motors unaffected (Wi-Fi loss must not stop driving) |
+| S1-U14 | PAUSE / RESUME / STATUS from the laptop | L3→L4 | Send each command 10×, film the wheels with the console visible | 10/10 obey; PAUSE stops within 500 ms |
 | S1-U15 | Letter-to-movement map sent from the PC over MQTT: valid, duplicate letters, reserved bits set | L3 | Publish 3 maps to `<id>/mapping` from the PC, then drive over a mapped barcode and junction | valid map **applied** (robot does the mapped move), both invalid rejected, old map kept (#38; pairs with S3-U27) |
 | S1-U16 | Barcode result events (`<id>/barcode`) | L4 | After the code is pushed: 20 barcodes on the track | 20/20 events arrive, frame IDs in order |
 | S1-U17 | Command flood does not starve control | L2/L3 | Send 100 commands in 1 s | control loop shows no late cycles; extra commands rejected and counted, never blocking |
@@ -97,13 +98,13 @@ their line-stop re-arm checks now live in `int/robot_control`. Every L4 test run
 |---|---|---|---|---|
 | S2-U05 | Motor direction and sides | L3 | `motor_test`, wheels raised, follow `HARDWARE_TEST.md` | M1 = left, M2 = right, both forward |
 | S2-U06 | Encoder ticks per cm, each wheel | L3 | Push or drive 100 cm × 3, read the counts | spread between runs ≤ 2 %; value written into `CALIBRATION.md` |
-| S2-U07 | Ticks per degree (pivot) | L3 | 4 × 90° and 1 × 360° pivots, check against floor marks | within `[set]` ° per 360° |
-| S2-U08 | Drives straight | L4 | 2 m with no line; measure the sideways drift | ≤ `[set]` cm |
-| S2-U09 | Barcode turn angles | L4 | 10 × each of left 90°, right 90°, U-turn 180° | within ±`[set]` °, and the line is reacquired after each |
-| S2-U10 | Speed PID step response (gains are currently 0) | L3 | Step the target speed, log the encoder speed | settles within `[set]` ms, overshoot ≤ `[set]` % |
-| S2-U11 | STOP latency | L3 | STOP command → wheels stopped, timed with a GPIO toggle + scope or slow-motion video | ≤ `[set]` ms |
+| S2-U07 | Ticks per degree (pivot) | L3 | 4 × 90° and 1 × 360° pivots, check against floor marks | within ±10° per 360° |
+| S2-U08 | Drives straight | L4 | 2 m with no line; measure the sideways drift | ≤ 10 cm |
+| S2-U09 | Barcode turn angles | L4 | 10 × each of left 90°, right 90°, U-turn 180° | within ±15°, and the line is reacquired after each |
+| S2-U10 | Speed PID step response (gains are currently 0) | L3 | Step the target speed, log the encoder speed | settles within 300 ms, overshoot ≤ 20 % |
+| S2-U11 | STOP latency | L3 | STOP command → wheels stopped, timed with a GPIO toggle + scope or slow-motion video | ≤ 100 ms |
 | S2-U12 | Control loop timing | L4 | 5 min integrated run; read the late-control count that `motion_task` prints | 0 late cycles; max work time recorded |
-| S2-U13 | Reverse by distance (`moveBackward`, #39) | L3 | Reverse 10 / 20 / 30 cm, 3× each, measure on the floor | within `[set]` cm; stops cleanly; works for both encoder polarities |
+| S2-U13 | Reverse by distance (`moveBackward`, #39) | L3 | Reverse 10 / 20 / 30 cm, 3× each, measure on the floor | within ±2 cm; stops cleanly; works for both encoder polarities |
 | INT-13 | Host test of the S5 avoidance hand-over | L1 | New `int/robot_avoidance`: `robot_control.c` + the real `s5_executor.c`, kernel flags stubbed | VC hands control to S5, takes it back, and safe-stops on failure |
 
 **Done when:** U05–U12 pass with calibration recorded, and the VC passes
@@ -141,8 +142,8 @@ superseded by the IDs below.
 | S3-U28 | IR calibration on the real track | L3 | The sensors use their digital D0 outputs, so there is no raw analog value. With the robot still, under the room lights, check each sensor's comparator reads black on black tape and white on white floor. Then scan the large barcode and log the narrow-bar and narrow-space widths for GP28 | every sensor reads black and white correctly; GP28 narrow bar and narrow space within 30 ms of each other (19 Nov final setting: ~13 ms bias); setting recorded in `README.md` |
 | S3-U29 | Follows a straight 18 mm line | L4 | 3 m straight, 5 runs, cruise speed | 5/5 stay on the line |
 | S3-U30 | Follows the course's curves and corners | L4 | Each curve or corner type × 5 | 5/5 without losing the line |
-| S3-U31 | Line lost → search → reacquire on hardware | L4 | Lift the robot off the line and put it back; time it | reacquires within `[set]` ms; reports FAULT after `LINE_BARCODE_SEARCH_MS` if the line isn't found. `all_test` sets `LINE_BARCODE_SEARCH_MS` to 0 (no deadline), so the FAULT step only applies in the integrated firmware; which one is final is #4 |
-| S3-U32 | The 4 letters received over MQTT (#38), at driving speed | L4 | Send a map from the PC; 10 passes × 4 barcodes, both directions, each followed by a cross-junction | ≥ `[set]` / 10 correct letters each, and the mapped move done at the next junction; log the decode rate per letter |
+| S3-U31 | Line lost → search → reacquire on hardware | L4 | Lift the robot off the line and put it back; time it | S3 reports FOUND within 200 ms of the line being back and the VC re-arms within 1.5 s; reports FAULT after `LINE_BARCODE_SEARCH_MS` if the line isn't found. `all_test` sets `LINE_BARCODE_SEARCH_MS` to 0 (no deadline), so the FAULT step only applies in the integrated firmware; which one is final is #4 |
+| S3-U32 | The 4 letters received over MQTT (#38), at driving speed | L4 | Send a map from the PC; 10 passes × 4 barcodes, both directions, each followed by a cross-junction | ≥ 9/10 correct letters each, and the mapped move done at the next junction; log the decode rate per letter |
 | S3-U35 | All A–Z decode in both directions | L3 | Print A–Z from the tec-it Code 39 generator; pass each barcode both ways at cruise speed | 26/26 letters correct in both directions (prof requirement, 13 Nov) |
 | S3-U33 | Bad barcodes cause no action | L4 | An unmapped letter and a damaged barcode, 5 passes each | 0 wrong commands. The S3 logic is already covered on the PC by S3-U46; this is the on-robot check |
 | S3-U34 | Speed limit for decoding | L3/L4 | Increase the speed until decoding fails | highest reliable speed recorded; cruise speed set below it |
@@ -167,8 +168,8 @@ is to measure real data.
 |---|---|---|---|---|
 | S4-U08 | Noise at rest and while driving on flat floor | L3 | Log the IMU for 60 s still and 60 s driving (save the CSV in `logs/`) | noise recorded; thresholds set clearly above it |
 | S4-U09 | Hump detected | L4 | 10 passes over each real hump, 10 runs on flat floor | 10/10 detected, 0 false detections |
-| S4-U10 | Highest hump height accuracy | L4 | Measure each hump with a ruler; 5 passes each | within ±`[set]` mm; with several humps, the highest is reported |
-| S4-U11 | Tilt detection | L3 | Tilt the robot by hand past the limit, 10× | 10/10 flagged within `[set]` ms |
+| S4-U10 | Highest hump height accuracy | L4 | Measure each hump with a ruler; 5 passes each | within ±3 mm; with several humps, the highest is reported |
+| S4-U11 | Tilt detection | L3 | Tilt the robot by hand past the limit, 10× | 10/10 flagged within 200 ms |
 | S4-U12 | Lift stops the motors (replaces collision detection, removed 13 Nov; #53) | L4 | Lift the robot off the floor while driving, 10×; drive over each hump 10× | 10/10 stop and stay stopped; 0 false stops over humps |
 | S4-U13 | Replay recorded IMU logs on the PC | L1 | New `s4/imu_replay` host test: feed the U08–U12 logs into `task_imu.c` | same results as on the robot; tuning changes can then be checked offline |
 | S4-U14 | CR1 minimum-bit change | L2 | `arm-none-eabi-size` and `.map` before and after | numbers recorded (the README says this is still the PRE version) |
@@ -226,7 +227,7 @@ is to measure real data.
 | SYS-02 | Every barcode on the course is obeyed | all correct in SYS-01 runs |
 | SYS-03 | Highest hump reported over MQTT matches the measured height | within S4-U10's tolerance |
 | SYS-04 | Obstacle avoided and line reacquired during a full run | passes in the SYS-01 runs |
-| SYS-05 | Telemetry continuous for a whole run | no gap over `[set]` s; final state = finished |
+| SYS-05 | Telemetry continuous for a whole run | no gap over 3 s; final state = finished |
 | SYS-06 | Demo video | one uncut run with the console/MQTT view, linked in `videos/README.md` |
 
 ---

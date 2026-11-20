@@ -3,7 +3,8 @@
 **This is the one page that shows what is done and what is left.**
 What to test next, and how, is in [testing/TEST_PLAN.md](testing/TEST_PLAN.md).
 Where the code differs from the Week 6 / PreTri plan, and why, is in [DEVIATIONS.md](DEVIATIONS.md).
-Last updated: 2026-11-20, subsystems 1, 2, 4 and 5 test results (`chore/m0-housekeeping` from `65ba452`; #14, #17, #24, #28) · subsystem 3 rows 2026-11-19 (`cc239d5`) · other sections as of 2026-11-13 (`double11` @ `1d78677`)
+Team decisions and their reasons are in [DECISIONS.md](DECISIONS.md) (latest: the M1 decisions, 20 Nov: #5, #6, #48, #54, #64–#68).
+Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump test fixed) · subsystems 1, 2, 4 and 5 test results (`chore/m0-housekeeping` from `65ba452`; #14, #17, #24, #28) · subsystem 3 rows 2026-11-19 (`cc239d5`) · other sections as of 2026-11-13 (`double11` @ `1d78677`)
 
 ## Rules
 
@@ -74,8 +75,8 @@ Last updated: 2026-11-20, subsystems 1, 2, 4 and 5 test results (`chore/m0-house
 |---|---|---|---|---|---|---|---|
 | LSM303DLHC driver on I2C0 (GP4/GP5) | ✅ | ✅ S4-U01–U02, U04 (Pico) | ⬜ | ⬜ | — | `testing/subsystem3/logs/2026-11-19_target_test.txt` | Claim GP4/GP5 in `TEAM.md` |
 | Baseline calibration at start-up | ✅ | ✅ S4-U03 (Pico) | ⬜ | ⬜ | — | `testing/subsystem3/logs/2026-11-19_target_test.txt` | Bench test: keep the robot still for 1 s and log the baseline values |
-| Highest hump measurement | 🟡 | ⬜ | ⬜ | ⬜ | 🟡 20 ms, `all_test` only: 5 mm ramp detected 4/5, 0 false on 2 flat runs (same as the 10 ms build); heights 2–7 mm, mean 4.3 (10 ms build: 4–11, mean 7.8) | `testing/subsystem4/logs/2026-11-20_ramp_rerun_20ms_S4.txt`, `…_rerun_10ms_S4.txt`, `app_program/subsystem4/README.md` (thresholds are placeholders) | Buddy 4: 10 + 10 passes (S4-U09), refit `S4_HEIGHT_CAL_NUM/DEN` at 20 ms if the low bias holds (S4-U10), then repeat in `integrated` (#27). Barcode reading after the GP28 move: A forward 3/3 on 20 Nov (`testing/subsystem3/logs/2026-11-20_barcode_hw.txt`) |
-| Tilt flag (used by S5 to ignore readings on ramps) | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | — | Check it latches **before** the ultrasonic sees the ramp (open risk) |
+| Highest hump measurement | 🟡 | ✅ `s4/hump_height` (host, 20 Nov; #5 decided, 255 mm cap now after calibration) | ⬜ | ⬜ | 🟡 20 ms, `all_test` only: 5 mm ramp detected 4/5, 0 false on 2 flat runs (same as the 10 ms build); heights 2–7 mm, mean 4.3 (10 ms build: 4–11, mean 7.8) | `testing/subsystem4/logs/2026-11-20_ramp_rerun_20ms_S4.txt`, `…_rerun_10ms_S4.txt`, `app_program/subsystem4/README.md` (thresholds are placeholders) | Buddy 4: 10 + 10 passes (S4-U09), refit `S4_HEIGHT_CAL_NUM/DEN` at 20 ms if the low bias holds (S4-U10), then repeat in `integrated` (#27). Barcode reading after the GP28 move: A forward 3/3 on 20 Nov (`testing/subsystem3/logs/2026-11-20_barcode_hw.txt`) |
+| Tilt flag (used by S5 to ignore readings on ramps); report-only, never stops the robot (#67, 20 Nov) | 🟡 | ✅ INT-03 (host): tilt leaves the robot following | ⬜ | ⬜ | ⬜ | `testing/integration/logs/2026-11-20_host_tests_decisions.txt` | Check it latches **before** the ultrasonic sees the ramp (open risk); INT-11 over real humps (#36) |
 | Lift → motors stop (replaces collision detection, removed 13 Nov) | ⬜ | ⬜ | ⬜ | ⬜ | — | — | #53: remove collision, add the lift check, then S4-U12 |
 | Motion classes (stationary, accelerating, turning, climbing, descending) | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | — | #42 |
 | Turn rate (magnetometer) | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | — | #43 |
@@ -133,9 +134,8 @@ Last updated: 2026-11-20, subsystems 1, 2, 4 and 5 test results (`chore/m0-house
 - [x] Delete the duplicate copies with " 2" in the name (done 2026-11-13: 8 files removed, all identical to or older than the originals).
 - [x] Stop committing build output: test `.exe` files and build `.log` files are untracked and gitignored (2026-11-13).
 - [x] One host-test runner: `sh testing/run_host_tests.sh` (2026-11-13).
-- [ ] Host tests: 9 of 12 pass. The 6 `int/all_buddies*` tests were retired (#9) now that `integrated` is final. The rest need their owners:
+- [ ] Host tests: 10 of 12 pass (20 Nov). The 6 `int/all_buddies*` tests were retired (#9) now that `integrated` is final. The rest need their owners:
   - **zhi xian:** push the missing local code. `s1/barcode_queue` (barcode-over-MQTT queue) and `int/steering_ramp` (`update_terrain_boost`, `barcode_slow`) test code that isn't on any branch. Both tests came in with `673736f`.
-  - **Buddy 4:** `s4/hump_height` expects the height to fall back to 0 after the descent. Since `7f823b8` the estimator deliberately keeps the climb height. Decide which is right and update the test or the code.
 - [ ] S1 barcode-over-MQTT code (`S1_BARCODE_RESULT`, barcode queue) isn't on any branch. Only its test and doc were committed (`673736f`). Ask zhi xian to push it.
 - [ ] Choose one integration branch (`alicia` or `double11`), merge into it, and delete the dead branches (`zhixin`, `integration`, `master`, …).
 - [x] Commit the untracked S5 console logs and link them from the test-log result rows (2026-11-20: trimmed copies `testing/subsystem5/logs/*_S5_avoidance.txt`; the raw `*_console.txt` stay gitignored; #28).
