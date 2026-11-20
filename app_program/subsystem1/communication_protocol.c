@@ -28,6 +28,17 @@ _Static_assert(S1_MAP_SLOTS * MAP_LETTER_BITS <= S1_MAPPING_BYTES * 8U &&
                S1_MAP_SLOTS * MAP_LETTER_BITS > (S1_MAPPING_BYTES - 1U) * 8U,
                "Update mapping size and layout together");
 _Static_assert(sizeof(S1_MAPPING) == 3, "Mapping must have no padding");
+#define BARCODE_FRAME_BITS 16U
+#define BARCODE_RUNS_BITS 5U
+#define BARCODE_LETTER_OFFSET 16U
+#define BARCODE_RUNS_OFFSET 21U
+#define BARCODE_USED_BITS (BARCODE_RUNS_OFFSET + BARCODE_RUNS_BITS)
+_Static_assert(BARCODE_FRAME_BITS + BARCODE_LETTER_BITS + BARCODE_RUNS_BITS ==
+               BARCODE_USED_BITS && BARCODE_USED_BITS <= S1_BARCODE_BYTES * 8U &&
+               BARCODE_USED_BITS > (S1_BARCODE_BYTES - 1U) * 8U,
+               "Update barcode packet size and layout together");
+_Static_assert(sizeof(S1_BARCODE_PACKET) == S1_BARCODE_BYTES,
+               "Barcode packet must have no padding");
 
 /* Fail compilation if a later range edit no longer fits its allocation,
  * or would leave unnecessary bits. Revisit layout and decoder in that case. */
@@ -48,6 +59,8 @@ CHECK_BITS("obstacle bits", S1_OBSTACLE_MIN, S1_OBSTACLE_MAX, OBSTACLE_BITS);
 CHECK_BITS("angle bits", S1_SCAN_MIN, S1_SCAN_MAX, SCAN_BITS);
 CHECK_BITS("width bits", S1_WIDTH_MIN, S1_WIDTH_MAX, WIDTH_BITS);
 CHECK_BITS("map letter bits", 0, S1_MAP_LETTER_MAX, MAP_LETTER_BITS);
+CHECK_BITS("barcode runs bits", 0, S1_BARCODE_RUNS_MAX, BARCODE_RUNS_BITS);
+CHECK_BITS("barcode frame bits", 0, S1_BARCODE_FRAME_MASK, BARCODE_FRAME_BITS);
 #undef CHECK_BITS
 
 /* Descriptors are immutable protocol metadata, not application measurements. */
@@ -213,5 +226,55 @@ int s1_mapping_set(S1_MAPPING *packet, const unsigned char letters[S1_MAP_SLOTS]
         return 0; /* duplicate letters */
     }
     *packet = encoded;
+    return 1;
+}
+
+int s1_barcode_result_valid(const S1_BARCODE_RESULT *result)
+{
+    if (result == 0 || result->runs > S1_BARCODE_RUNS_MAX) {
+        return 0;
+    }
+    return result->letter == 0U ||
+           (result->letter >= 'A' && result->letter <= 'Z');
+}
+
+/* All 32 bits as one little-endian value: bit 0 is the LSB of byte 0. */
+int s1_barcode_pack(const S1_BARCODE_RESULT *result, S1_BARCODE_PACKET *packet)
+{
+    unsigned long word;
+    unsigned int i;
+    if (packet == 0 || !s1_barcode_result_valid(result)) {
+        return 0;
+    }
+    word = (unsigned long)(result->id & S1_BARCODE_FRAME_MASK);
+    if (result->letter != 0U) {
+        word |= (unsigned long)(result->letter - 'A' + 1U) << BARCODE_LETTER_OFFSET;
+    }
+    word |= (unsigned long)result->runs << BARCODE_RUNS_OFFSET;
+    for (i = 0; i < S1_BARCODE_BYTES; ++i) {
+        packet->bytes[i] = (unsigned char)((word >> (8U * i)) & 0xFFU);
+    }
+    return 1;
+}
+
+int s1_barcode_unpack(const S1_BARCODE_PACKET *packet, S1_BARCODE_RESULT *result)
+{
+    unsigned long word = 0;
+    unsigned int i, letter, runs;
+    if (packet == 0 || result == 0) {
+        return 0;
+    }
+    for (i = 0; i < S1_BARCODE_BYTES; ++i) {
+        word |= (unsigned long)packet->bytes[i] << (8U * i);
+    }
+    letter = (unsigned int)((word >> BARCODE_LETTER_OFFSET) & ((1U << BARCODE_LETTER_BITS) - 1U));
+    runs = (unsigned int)((word >> BARCODE_RUNS_OFFSET) & ((1U << BARCODE_RUNS_BITS) - 1U));
+    if ((word >> BARCODE_USED_BITS) != 0UL || letter > S1_BARCODE_LETTER_MAX ||
+        runs > S1_BARCODE_RUNS_MAX) {
+        return 0;
+    }
+    result->id = (unsigned int)(word & S1_BARCODE_FRAME_MASK);
+    result->letter = letter == 0U ? 0U : (unsigned char)('A' + letter - 1U);
+    result->runs = (unsigned char)runs;
     return 1;
 }

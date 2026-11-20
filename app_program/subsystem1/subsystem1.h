@@ -5,6 +5,9 @@
 #include "communication_protocol.h"
 /* Pack a task-local snapshot, then queue it. E_OK means queued, not delivered. */
 IMPORT ER subsystem1_publish_telemetry(const S1_TELEMETRY *packet);
+/* Queue one barcode result for <id>/barcode without blocking. E_OK means
+ * queued, not delivered; E_TMOUT full, E_PAR invalid, E_NOSPT no MQTT. */
+IMPORT ER subsystem1_publish_barcode(const S1_BARCODE_RESULT *result);
 /* Returns 1 on success, negative kernel error otherwise. No command execution. */
 IMPORT INT subsystem1_receive_command(S1_COMMAND *command, TMO timeout);
 /* Validated barcode map from MQTT; returns S1_MAPPING_BYTES on success.

@@ -26,6 +26,8 @@ function render(snapshot) {
   put("heartbeat", snapshot.heartbeat === null ? "Waiting / expired" : snapshot.heartbeat ? "Online" : "Offline");
   put("telemetry-topic", snapshot.telemetry_topic);
   put("status-topic", snapshot.status_topic);
+  put("barcode-topic", snapshot.barcode_topic ?? empty);
+  renderScans(snapshot.barcodes ?? [], snapshot.barcode_total ?? 0);
   put("rejected", snapshot.rejected);
   if (simulated) connection("Demo feed", "good");
   else if (snapshot.heartbeat === false) connection("Robot offline", "warn");
@@ -57,6 +59,35 @@ function render(snapshot) {
   put("obstacle", optionalMeasure(data?.obstacle_cm, "cm"));
   put("angle", optionalMeasure(data?.scan_deg, "°"));
   put("width", optionalMeasure(data?.obstacle_width_cm, "cm"));
+}
+
+function renderScans(scans, total) {
+  const latest = scans[0];
+  const latestText = !latest ? empty : latest.letter ? `${latest.letter} (frame ${latest.frame})` :
+      `Rejected (frame ${latest.frame})`;
+  put("scan-latest", latestText).dataset.status = latest?.status ?? "";
+  put("scan-total", total === 0 ? "No scans yet" :
+      `${total} scan${total === 1 ? "" : "s"} this session${total > scans.length ? `, last ${scans.length} shown` : ""}`);
+  const key = scans.map(s => `${s.frame}:${s.letter}:${s.runs}:${s.received_at}`).join("|");
+  const body = document.getElementById("scan-rows");
+  if (body.dataset.key === key) return;
+  body.dataset.key = key;
+  if (scans.length === 0) {
+    body.innerHTML = '<tr><td colspan="5" class="scan-empty">Waiting for the first scan</td></tr>';
+    return;
+  }
+  body.replaceChildren(...scans.map(scan => {
+    const row = document.createElement("tr");
+    row.dataset.status = scan.status;
+    for (const value of [new Date(scan.received_at * 1000).toLocaleTimeString(), scan.frame,
+                         scan.status === "valid" ? "Decoded" : "Rejected",
+                         scan.letter ?? empty, `${scan.runs} / 29`]) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.append(cell);
+    }
+    return row;
+  }));
 }
 
 const controls = document.querySelectorAll("[data-command]");

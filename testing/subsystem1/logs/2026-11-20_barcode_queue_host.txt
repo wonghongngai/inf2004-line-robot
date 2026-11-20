@@ -1,0 +1,98 @@
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: c7eee18 + uncommitted changes
+
+s1/protocol                  PASS
+s1/barcode_queue             PASS
+PASS: valid/invalid barcode events, dedicated queue, full queue and invalid arguments
+s1/binary_cli                PASS
+........
+----------------------------------------------------------------------
+Ran 8 tests in 0.440s
+
+OK
+s2/motion_protocol           PASS
+S2 protocol: byte layout, reserved values, numeric boundaries and precision PASS
+s2/motor_pwm                 PASS
+motor PWM register regression: PASS (reset, counters, outputs, faults)
+s3/line_barcode              PASS
+[TEST] S3-U18 PASS: supplied PDF A/Z width fixtures
+[TEST] S3-U19 PASS: mapped and unmapped letters; packed map
+[TEST] S3-U20 PASS: scanner edges never change steering
+[TEST] S3-U21 PASS: line loss during barcode capture
+[TEST] S3-U25 PASS: SIDE cross-junction reported once, wide bars ignored
+[TEST] S3-U26 PASS: stored letter becomes a command at the next junction
+[TEST] S3-U02 PASS: all eight sensor positions
+[TEST] S3-U03 PASS: single-sample noise rejected
+[TEST] S3-U04 PASS: persistent loss enters bounded search
+[TEST] S3-U05 PASS: line reacquired after search
+[TEST] S3-U06 PASS: search timeout requests stop
+[TEST] S3-U13 PASS: relative widths at multiple scan speeds
+[TEST] S3-U07 PASS: A-Z decode in both directions
+[TEST] S3-U08 PASS: sampled frames emit exactly one letter
+[TEST] S3-U39 PASS: malformed start retains all 29 raw widths without emitting letter
+[TEST] S3-U40 PASS: recorded 29-run scan decodes A forward/reverse, raw and sampled
+[TEST] S3-U36 PASS: 19 Nov hardware scans with uneven speed decode A forward/reverse
+[TEST] S3-U37 PASS: wide/narrow separation below 1.15x rejected
+[TEST] S3-U38 PASS: 19 Nov medium-size scans decode A forward/reverse
+[TEST] S3-U41 PASS: sub-minimum white run remains invalid
+[TEST] S3-U42 PASS: recorded scan with oversized character gap remains invalid
+[TEST] S3-U09 PASS: zero-width malformed frame rejected
+[TEST] S3-U10 PASS: invalid inter-character gap rejected
+[TEST] S3-U11 PASS: missed sampling interval invalidates capture
+[TEST] S3-U12 PASS: three-byte wire layout; three faults set at once
+context=52 bytes, navigation message=3 bytes
+s3/pptx_samples              PASS
+PASS: 3ms stable acceptance; short flicker rejected
+PASS: A/F/Z/W junction actions; other 22 letters have no action
+PASS: slide A forward/reverse decode and sampled scan
+PASS: slide F forward/reverse decode and sampled scan
+PASS: slide Z forward/reverse decode and sampled scan
+PASS: slide W forward/reverse decode and sampled scan
+PASS: slide X forward/reverse decode and sampled scan
+PASS: slide Y forward/reverse decode and sampled scan
+PASS: separate bar/space classification with sensor timing bias
+PASS: 29 uniform segments rejected
+s3/line_service              PASS
+[TEST] S3-U14 PASS: calibration rejects indistinguishable or out-of-range levels
+[TEST] S3-U15 PASS: snapshot and receive reject a null output
+[TEST] S3-U16 PASS: resume refused before calibration; pause and resume succeed
+[TEST] S3-U17 PASS: paused service keeps a fresh heartbeat; a 31 ms gap reports E_TMOUT
+[TEST] S3-U23 PASS: paused controller can set, read back and clear a mapping
+[TEST] S3-U24 PASS: invalid mapping/layout/lookup rejected; layout locked while enabled
+[TEST] S3-U27 PASS: four-letter map set; duplicate/lowercase/non-letter rejected and old map kept
+[TEST] S3-U43 PASS: event-queue overflow latches QUEUE fault; pause/resume drains and clears it
+[TEST] S3-U44 PASS: 25 ms sampling gap latches TIMING fault with interval recorded; reset clears it
+[TEST] S3-U45 PASS: A read through the service, then one LEFT COMMAND at the next junction
+[TEST] S3-U46 PASS: unmapped Y gives a plain JUNCTION; damaged barcode gives INVALID and no COMMAND
+[TEST] S3-U47 PASS: decoded Z and a damaged capture each give one S1 barcode result; frame id increments
+PASS: 0 failure(s)
+s4/hump_height               PASS
+Hump height/odometry: fractional rise, descent, sign, bounds, missing calibration and validity PASS
+IMU collision: positive/negative single-sample impact threshold and measured delta PASS
+int/robot_control            PASS
+robot host tests: 216 checks passed
+int/line_service             PASS
+Line service: motor-core sampling, physical pins, strict 30ms freshness and enable reset PASS
+int/steering_ramp            FAIL (exit 1)
+Traceback (most recent call last):
+  File "C:\Users\Hong Ngai\Desktop\Y2S1\INF2004 Embedded Systems Programming\Project\inf2004-line-robot\testing\integration\test_steering_ramp.py", line 11, in <module>
+    functions = source[source.index('static void update_terrain_boost'):source.index('static void stop_test')]
+                       ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: substring not found
+
+
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/line_service              
+PASS   s4/hump_height               
+PASS   int/robot_control            
+PASS   int/line_service             
+KNOWN  int/steering_ramp            python test failed (#3: terrain-boost code not pushed yet)
+-----------------------------------------
+11 passed, 0 failed, 1 known failures, 0 skipped

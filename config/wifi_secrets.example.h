@@ -26,6 +26,7 @@
  * #define MQTT_TELEMETRY_TOPIC MQTT_CLIENT_ID "/telemetry"
  * #define MQTT_COMMAND_TOPIC   MQTT_CLIENT_ID "/command"
  * #define MQTT_MAPPING_TOPIC   MQTT_CLIENT_ID "/mapping"
+ * #define MQTT_BARCODE_TOPIC   MQTT_CLIENT_ID "/barcode"
  */
 
 #endif /* WIFI_SECRETS_H */

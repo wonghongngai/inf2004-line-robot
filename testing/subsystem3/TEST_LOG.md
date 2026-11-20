@@ -41,6 +41,7 @@ Define a test here before running it. Test IDs never change.
 | S3-U44 | A 25 ms sampling gap: snapshot latches FAULT with the TIMING bit and `line_service_fault_interval_ms()` = 25; stays latched; reset clears both | FR3 / S3-M06 | auto | `line_service_test.c` host | `[TEST] S3-U44 PASS` |
 | S3-U45 | Barcode A fed through the service's GPIO inputs gives one BARCODE event, then one COMMAND (LEFT, letter A) at the next junction | FR3-3 | auto | `line_service_test.c` host | `[TEST] S3-U45 PASS` |
 | S3-U46 | Unmapped letter Y gives a plain JUNCTION, no COMMAND; a barcode with a corrupted start marker gives INVALID, stores no letter, and no COMMAND at the junction | FR3-3 / S3-U33 (host part) | auto | `line_service_test.c` host | `[TEST] S3-U46 PASS` |
+| S3-U47 | A decoded Z and a capture with a corrupted start marker each hand exactly one result to S1 (`subsystem1_publish_barcode`, stubbed): letter `'Z'` with 29 runs, then letter 0, frame id one higher | FR3-3 / `<id>/barcode` (#3) | auto | `line_service_test.c` host | `[TEST] S3-U47 PASS` |
 
 `line_service_test.c` runs the real `line_service.c` on the PC: the sampling task runs on a thread in lockstep with the test, the event queue is a bounded FIFO (12 messages, as micro T-Kernel stores them in 96 bytes) and GPIO levels are scripted. Each check was confirmed to fail when the behaviour it covers was deliberately broken.
 

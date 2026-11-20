@@ -41,9 +41,9 @@ Host (PC) tests, run with `sh testing/run_host_tests.sh s1/`:
 
 | Name | What it checks |
 |---|---|
-| `s1/protocol` | telemetry codec in `communication_protocol.c`: field packing, ranges, failed setters leave the packet unchanged |
-| `s1/binary_cli` | `tools/mqtt_binary.py` encoder/decoder |
-| `s1/barcode_queue` | barcode-over-MQTT queue. Known failure: the code it tests is not committed (#3) |
+| `s1/protocol` | telemetry codec in `communication_protocol.c`: field packing, ranges, failed setters leave the packet unchanged; 4-byte barcode result packet: every letter × runs round trip, fixtures `01 00 ba 03` / `ff ff e0 02`, reserved bits and out-of-range fields rejected |
+| `s1/binary_cli` | `tools/mqtt_binary.py` encoder/decoder, including the barcode result decoder (same fixtures as `s1/protocol`) |
+| `s1/barcode_queue` | barcode result queue in `subsystem1.c`: valid and invalid events go to their own queue (not telemetry's), a full queue returns `E_TMOUT`, bad arguments return `E_PAR` |
 
 *Method:* **auto** = `TEST_CHECK` in code, result printed on the console;
 **manual** = a person observes the result (LED, scope, meter, phone app…).
@@ -63,3 +63,4 @@ Add a new row for every run. Never edit or delete old rows.
 | 2026-11-20 | S1-U01–U10, U18 **on target**, Wi-Fi off | `65ba452` + uncommitted `chore/m0-housekeeping` changes | Claude (flash + capture); robot on a stand, set up by the user | PASS (11 checks, 0 failed) | [`../subsystem4/logs/2026-11-20_target_test_offline.txt`](../subsystem4/logs/2026-11-20_target_test_offline.txt) | `sh build.sh integrated TEST=1 WIFI=none NET=none MQTT=0` |
 | 2026-11-20 | S1-U01–U10, U18 **on target**, 20 ms IMU build | `65ba452` + uncommitted `chore/m0-housekeeping` changes (20 ms period) | Claude (flash + capture); robot on a stand, set up by the user | PASS (11 checks, 0 failed) | [`../subsystem4/logs/2026-11-20_target_test_20ms.txt`](../subsystem4/logs/2026-11-20_target_test_20ms.txt) | Same run as the S4 20 ms re-test; Wi-Fi joined |
 | 2026-11-20 | S1-U01–U10, U18 **on target** | `c27ab81` + uncommitted #74 changes (`s2/remove-template-tasks`) | Claude (flash + capture); robot on a stand, set up by the user | PASS (11 checks, 0 failed) | [`../integration/logs/2026-11-20_target_test_74.txt`](../integration/logs/2026-11-20_target_test_74.txt) | `sh build.sh integrated TEST=1`, flashed 19:28. Re-run after #74 removed the template tasks; Wi-Fi joined, MQTT broker not reachable |
+| 2026-11-20 | `s1/barcode_queue`, `s1/protocol`, `s1/binary_cli`, S3-U47 (`s3/line_service`), all host tests | `c7eee18` + uncommitted `s1/barcode-queue` changes | Claude, host | PASS (11 passed, 1 known: `int/steering_ramp`, #3) | [`logs/2026-11-20_barcode_queue_host.txt`](logs/2026-11-20_barcode_queue_host.txt) | Barcode queue rewritten after the original code was lost (#3), with a 4-byte binary payload instead of the original JSON. `s1/barcode_queue` removed from `known_failure()`. C and Python codecs share fixtures. S3-U47 confirmed to FAIL when `publish_barcode_result()` returns early. **Not yet run on the Pico**: broker delivery and PUBACK retry need a hardware test |

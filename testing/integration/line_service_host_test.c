@@ -60,6 +60,12 @@ static unsigned gpio_get_val(unsigned pin) { return pin == 27u; }
 
 #include "../../app_program/subsystem3/line_service.c"
 
+/* S1 stub: this test does not decode barcodes. */
+ER subsystem1_publish_barcode(const S1_BARCODE_RESULT *result)
+{
+    return s1_barcode_result_valid(result) ? E_OK : E_PAR;
+}
+
 int main(void)
 {
     line_barcode_msg_t msg;

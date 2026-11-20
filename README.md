@@ -202,6 +202,7 @@ Topics are prefixed with `MQTT_CLIENT_ID` from `config/wifi_secrets.h`:
 | `<id>/telemetry` | car → PC | 15-byte binary packet once a second (layout in `app_program/subsystem1/README.md`) |
 | `<id>/command` | PC → car | 1 raw byte: STATUS, PAUSE, RESUME. RESET_STATS and REVERSE are defined by the protocol and currently unsupported in `all_test`. |
 | `<id>/mapping` | PC → car | 3-byte letter-to-movement map (left, right, straight, U-turn) |
+| `<id>/barcode` | car → PC | 4-byte result per finished scan: frame, letter (or rejected), runs ([BARCODE_MQTT.md](testing/subsystem1/BARCODE_MQTT.md)) |
 
 #### Set up MQTT (broker, robot, dashboard)
 
@@ -265,8 +266,12 @@ python3 tools/mqtt_dashboard.py --broker BROKER --mqtt-port 1883 --client-id CLI
 
 Open the URL printed in the terminal. The dashboard uses port 8000 by default
 and picks a free port if 8000 is busy. Use `--status-topic` if `MQTT_TOPIC` differs
-from `<id>/status`, and `--telemetry-topic` if the firmware overrides
-`<id>/telemetry`. The dashboard subscribes to telemetry and heartbeat.
+from `<id>/status`, and `--telemetry-topic` or `--barcode-topic` if the
+firmware overrides `<id>/telemetry` or `<id>/barcode`. The dashboard
+subscribes to telemetry, heartbeat and barcode results. The **Barcode scans**
+panel lists the last 20 finished scans, including rejected reads, with one
+entry per scan (QoS 1 redeliveries are shown once). It works with `integrated`
+as well as `all_test`, because the scanner publishes these results itself.
 Live speed is the average translational speed between telemetry updates,
 calculated from calibrated wheel encoders. Older firmware leaves it
 **Not published**. Obstacle distance, scan angle, and obstacle width are still

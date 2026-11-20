@@ -37,6 +37,17 @@
 #ifndef MQTT_TELEMETRY_TOPIC
 #define MQTT_TELEMETRY_TOPIC MQTT_CLIENT_ID "/telemetry"
 #endif
+#ifndef MQTT_BARCODE_TOPIC
+#define MQTT_BARCODE_TOPIC MQTT_CLIENT_ID "/barcode"
+#endif
+
+#define BARCODE_NONE 0U     /* nothing pending */
+#define BARCODE_WAITING 1U  /* pending, not yet accepted by lwIP */
+#define BARCODE_SENT 2U     /* published, waiting for the broker's PUBACK */
+/* One event taken from the queue, kept until the broker acknowledges it.
+ * Owned solely by the Wi-Fi task. */
+static S1_BARCODE_RESULT barcode_pending;
+static unsigned char barcode_state;
 
 static mqtt_client_t    *client;
 static ip_addr_t    broker_addr;
@@ -124,6 +135,50 @@ static void publish_done_cb(void *arg, err_t result)
     }
 }
 
+static void barcode_done_cb(void *arg, err_t result)
+{
+    unsigned int frame = (unsigned int)(mem_ptr_t)arg;
+    /* Ignore a late callback for an event that was already re-armed. */
+    if (barcode_state != BARCODE_SENT || frame != barcode_pending.id) {
+        return;
+    }
+    if (result == ERR_OK) {
+        tm_printf((UB *)"[BARCODE MQTT] acked frame=%u\n", frame);
+        barcode_state = BARCODE_NONE;
+    } else {
+        tm_printf((UB *)"[BARCODE MQTT] publish frame=%u failed, err=%d; retrying\n",
+                  frame, (int)result);
+        barcode_state = BARCODE_WAITING;
+    }
+}
+
+static void publish_queued_barcode(void)
+{
+    S1_BARCODE_PACKET packet;
+    err_t result;
+    if (barcode_state == BARCODE_NONE) {
+        if (s1_take_barcode(&barcode_pending) <= 0) {
+            return;
+        }
+        barcode_state = BARCODE_WAITING;
+    }
+    if (barcode_state != BARCODE_WAITING) {
+        return;
+    }
+    if (!s1_barcode_pack(&barcode_pending, &packet)) {
+        barcode_state = BARCODE_NONE; /* S1 validated it; never expected */
+        return;
+    }
+    /* mqtt_publish copies the payload, so the stack buffer is safe. */
+    result = mqtt_publish(client, MQTT_BARCODE_TOPIC, packet.bytes,
+                          (u16_t)S1_BARCODE_BYTES,
+                          1, 0, barcode_done_cb,
+                          (void *)(mem_ptr_t)barcode_pending.id);
+    if (result == ERR_OK) {
+        barcode_state = BARCODE_SENT;
+    }
+}
+
 static void heartbeat_timeout(void *arg)
 {
     const unsigned char payload = S1_HEARTBEAT_ONLINE;
@@ -162,6 +217,12 @@ static void connection_cb(mqtt_client_t *c, void *arg, mqtt_connection_status_t 
         sys_untimeout(retry_timeout, NULL);
 
         tm_printf((UB*)"mqtt: connected to " MQTT_BROKER_IP "\n");
+
+        /* lwIP drops unacknowledged requests on disconnect without calling
+         * their callbacks, so resend the pending barcode event. */
+        if (barcode_state == BARCODE_SENT) {
+            barcode_state = BARCODE_WAITING;
+        }
 
         /* Reinstall command and mapping subscriptions after every reconnect. */
         mqtt_set_inpub_callback(client, incoming_publish_cb,
@@ -237,6 +298,7 @@ void mqtt_utk_start(void)
 
     if (client != NULL && mqtt_client_is_connected(client)) {
         publish_queued_telemetry();
+        publish_queued_barcode();
         return;
     }
     if(connecting) {

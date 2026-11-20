@@ -55,6 +55,12 @@ Command codes: 0 request status, 1 pause, 2 resume, 3 reset statistics,
 upper five bits must be zero. The MQTT layer accepts and queues reverse.
 Reverse movement is pending in the controller.
 
+Barcode result (topic `<client-id>/barcode`, QoS 1): exactly 4 bytes, one per
+completed or rejected scan. Frame number bits 0–15 (low 16 bits, wraps),
+letter bits 16–20 (0 rejected, 1–26 = A–Z), runs captured bits 21–25 (0–29);
+bits 26–31 MUST be zero. Example frame 1 / Z / 29 runs = `01 00 ba 03`.
+Queue, retry and logging details are in `testing/subsystem1/BARCODE_MQTT.md`.
+
 A heartbeat uses bit 0 of one byte (0 offline / 1 online), with seven reserved
 zero bits.
 Byte padding is unavoidable for these single-message MQTT payloads.
@@ -97,7 +103,8 @@ complete packed packet with RTOS synchronization, so no caller-owned pointers
 are retained. Never use this task API from an ISR. Queue handles, lengths and
 RTOS descriptors retain the types required by the kernel ABI.
 
-Both queues hold four maximum-sized packets. Telemetry enqueue is nonblocking;
+Each queue (telemetry, command, mapping, barcode) holds four maximum-sized
+packets. Telemetry enqueue is nonblocking;
 E_OK means queued, not delivered. E_TMOUT indicates full, E_NOSPT networking
 not compiled in, E_PAR invalid packet. Incoming commands are dropped if their
 queue is full. One pending telemetry packet is retained across immediate lwIP
@@ -117,8 +124,9 @@ make -C build_make PICO_SDK_PATH=/path/to/pico-sdk NET=lwip MQTT=1 TEST=1
 | `MQTT_TOPIC` from secrets | One byte online every 2 seconds; offline Last Will | 1 / yes |
 | `<MQTT_CLIENT_ID>/telemetry` | Exactly 15 binary bytes | 1 / no |
 | `<MQTT_CLIENT_ID>/command` | Exactly 1 byte, code 0–4 | subscription QoS 1 |
+| `<MQTT_CLIENT_ID>/barcode` | Exactly 4 binary bytes, one per completed/rejected scan | 1 / no |
 
-Override command/telemetry topics in secrets if needed. Reconnect installs the
+Override command/telemetry/barcode topics in secrets if needed. Reconnect installs the
 subscription again. RX validates exact topic, declared length, fragment count
 and reserved bits; binary zeros are preserved. Offline Last Will explicitly
 sets length 1 so its zero byte is not mistaken for an empty string.

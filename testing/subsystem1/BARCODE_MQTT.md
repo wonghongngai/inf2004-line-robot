@@ -2,35 +2,62 @@ Barcode result events
 =====================
 
 Subscribe to `<MQTT_CLIENT_ID>/barcode` using the configured broker. The
-topic can be overridden with `MQTT_BARCODE_TOPIC`. Payloads are JSON:
+topic can be overridden with `MQTT_BARCODE_TOPIC`. Each payload is exactly
+4 binary bytes (protocol v1, like telemetry). Bit 0 is the least significant
+bit of byte 0, and multi-bit fields are little-endian:
 
-```json
-{"frame":1,"status":"valid","letter":"Z","runs":29}
-```
+| Field | Range | Bits | Bit offset |
+| --- | --- | ---: | ---: |
+| Frame number | 0–65535, low 16 bits of the per-boot count (wraps) | 16 | 0 |
+| Letter | 0 rejected capture, 1–26 = A–Z (same as telemetry bits 80–84) | 5 | 16 |
+| Runs captured | 0–29 bars and gaps (29 = a full Code 39 character) | 5 | 21 |
+| Reserved | MUST be zero | 6 | 26 |
 
-```json
-{"frame":2,"status":"invalid","letter":null,"runs":23}
-```
+Examples: frame 1, Z, 29 runs = `01 00 ba 03`; frame 65535, rejected,
+23 runs = `ff ff e0 02`. Receivers reject any other length, a reserved bit,
+letter 27–31 or runs 30–31. The frame number matches the low 16 bits of the
+`[BARCODE FRAME] id=` console line.
 
-The sensor task enqueues an event when capture emits BARCODE or INVALID,
-including timeout/rejected partial captures. Merely seeing black does not
-publish a result. No result is emitted for a capture discarded by pause,
-reset, timing fault, or junction classification before decode completes.
-
-The radio task publishes with QoS 1 and retain=false. It keeps the pending
-event until a successful acknowledgement; failed publish attempts retry.
-QoS 1 can duplicate messages; frame IDs are per boot, not globally unique.
-
-The dedicated queue holds four waiting events plus the radio's pending event.
-Events wait for connectivity; a full queue rejects new events and logs a
-negative `[BARCODE MQTT] enqueue` result. Queued events are lost on reboot.
-`enqueue=0` means queued, not delivered. The broker acknowledgement has its
-own log entry; it does not confirm that a subscriber processed the message.
-
-Host queue test (build flags live in `testing/run_host_tests.sh`):
+Decode them with `tools/mqtt_binary.py` (Mosquitto hex output, one packet per
+line):
 
 ```sh
-sh testing/run_host_tests.sh s1/barcode_queue
+mosquitto_sub -h BROKER -t 'CLIENT_ID/barcode' -F '%x' | python3 tools/mqtt_binary.py barcode-stream
+python3 tools/mqtt_binary.py barcode 0100ba03
+# {"frame": 1, "status": "valid", "letter": "Z", "runs": 29}
+```
+
+The C codec is `s1_barcode_pack()` / `s1_barcode_unpack()` in
+`communication_protocol.c`. If the layout changes, update it, the Python
+decoder, both host tests and this table together.
+
+The S3 sampling task (`line_service.c`) enqueues an event when capture emits
+BARCODE or INVALID, including timeout/rejected partial captures, by calling
+`subsystem1_publish_barcode()`. Merely seeing black does not publish a
+result. No result is emitted for a capture discarded by pause, reset, timing
+fault, or junction classification before decode completes.
+
+The radio task (`mqtt_manager.c`) publishes with QoS 1 and retain=false. It
+keeps the pending event until the broker's PUBACK; a failed or timed-out
+publish is retried, and an event in flight when the connection drops is sent
+again after reconnecting. QoS 1 can therefore duplicate messages; frame IDs
+are per boot, not globally unique.
+
+The dedicated queue holds four waiting events plus the radio's pending event.
+Events wait for connectivity. A full queue rejects new events and logs
+`[BARCODE MQTT] enqueue=<negative error> frame=<id>`; a successful enqueue
+is silent. Queued events are lost on reboot. Each broker acknowledgement
+logs `[BARCODE MQTT] acked frame=<id>`; it does not confirm that a
+subscriber processed the message. Builds without MQTT skip the queue
+silently. The dashboard does not subscribe to this topic yet.
+
+The original #3 design used JSON text. It was changed to this binary packet
+so that every topic follows protocol v1.
+
+Host tests (build flags live in `testing/run_host_tests.sh`):
+
+```sh
+sh testing/run_host_tests.sh s1/   # queue, C codec, Python decoder
 ```
 
 Broker delivery still requires a connected hardware test.

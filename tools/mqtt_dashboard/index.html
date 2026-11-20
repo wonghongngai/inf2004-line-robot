@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Line Robot | MQTT Dashboard</title>
-  <link rel="stylesheet" href="dashboard.css?v=barcode-actions">
-  <script src="dashboard.js?v=barcode-actions" defer></script>
+  <link rel="stylesheet" href="dashboard.css?v=barcode-scans">
+  <script src="dashboard.js?v=barcode-scans" defer></script>
 </head>
 <body>
 <main>
@@ -50,6 +50,7 @@
         <div><dt>Heartbeat</dt><dd id="heartbeat">—</dd></div>
         <div><dt>Status topic</dt><dd id="status-topic">—</dd></div>
         <div><dt>Telemetry topic</dt><dd id="telemetry-topic">—</dd></div>
+        <div><dt>Barcode topic</dt><dd id="barcode-topic">—</dd></div>
         <div><dt>Rejected packets</dt><dd id="rejected">0</dd></div>
       </dl>
     </section>
@@ -87,6 +88,25 @@
       </dl>
     </section>
   </div>
+  <section class="card scans" aria-labelledby="scans-title">
+    <div class="scans-head">
+      <div>
+        <h2 id="scans-title">Barcode scans</h2>
+        <p>One entry per finished scan, including rejected reads. Arrives on the barcode topic, separately from telemetry.</p>
+      </div>
+      <div class="scan-latest">
+        <span>Latest scan</span>
+        <strong id="scan-latest" data-status="">—</strong>
+        <span id="scan-total">No scans yet</span>
+      </div>
+    </div>
+    <div class="scan-table">
+      <table>
+        <thead><tr><th scope="col">Received</th><th scope="col">Frame</th><th scope="col">Result</th><th scope="col">Letter</th><th scope="col">Runs</th></tr></thead>
+        <tbody id="scan-rows"><tr><td colspan="5" class="scan-empty">Waiting for the first scan</td></tr></tbody>
+      </table>
+    </div>
+  </section>
 </main>
 </body>
 </html>

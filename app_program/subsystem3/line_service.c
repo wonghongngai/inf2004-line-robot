@@ -2,6 +2,7 @@
  * @brief IR GPIO ownership, periodic sampling and compact event transport.
  */
 #include "line_service.h"
+#include "../subsystem1/subsystem1.h"
 
 #if TM_CONSOLE_UART
 #error "IR_RIGHT uses GP0: select CONSOLE=usb_cdc CRASH_REPORT=0"
@@ -358,6 +359,23 @@ static void line_service_tick(void *p_extra)
     (void)tk_wup_tsk(g_h_line_task);
 }
 
+/* Hand one finished capture to S1 for <id>/barcode. Nonblocking; called by the
+ * sampling task with the line mutex held. Only a full queue is reported:
+ * E_NOSPT (no MQTT in this build) and E_OBJ (S1 not started) are expected. */
+static void publish_barcode_result(const line_service_barcode_frame_t *frame)
+{
+    S1_BARCODE_RESULT result;
+    result.id = (unsigned int)frame->sequence;
+    result.runs = frame->count > S1_BARCODE_RUNS_MAX ?
+                  (unsigned char)S1_BARCODE_RUNS_MAX : frame->count;
+    result.letter = frame->event == LINE_BARCODE_EVT_BARCODE && frame->letter < 26u ?
+                    (unsigned char)('A' + frame->letter) : 0u;
+    ER er = subsystem1_publish_barcode(&result);
+    if (er < E_OK && er != E_NOSPT && er != E_OBJ)
+        tm_printf((UB *)"[BARCODE MQTT] enqueue=%d frame=%u (queue full or invalid)\n",
+                  (int)er, result.id);
+}
+
 static void line_service_task(INT start_code, void *p_extra)
 {
     line_barcode_ctx_t context;
@@ -432,6 +450,7 @@ static void line_service_task(INT start_code, void *p_extra)
                         (msg.data[2] & LINE_BARCODE_LETTER_MASK) : 0xffu;
                     for (unsigned i = 0; i < g_debug_frame.count; ++i)
                         g_debug_frame.widths[i] = line_barcode_run_width(&context, (uint8_t)i);
+                    publish_barcode_result(&g_debug_frame);
                 }
                 if ((msg.data[1] & 7u) == LINE_BARCODE_FAULT
                     && (g_control_flags & SERVICE_FLAG_PROCESS_FAULT) == 0u)
