@@ -26,21 +26,28 @@ ER lsm303dlhc_init(void) { return E_OK; }
 ER lsm303dlhc_read(LSM303_SAMPLE *sample) { (void)sample; return E_PAR; }
 UW subsystem4_take_distance_mm(void) { return 0; }
 
+/* 20 mm of raw rise (100 x 1 mm at 200 mg), after the S4 height
+   calibration factor added in 7039135. */
+#define RISE_20_MM ((W)((20000LL * S4_HEIGHT_CAL_NUM / S4_HEIGHT_CAL_DEN) / 1000))
+
 int main(void)
 {
     reset_hump_detector(); reset_height_tracker();
     hump_state.first_sign = 1;
     for (unsigned i = 0; i < 100; ++i) update_height_estimate(1, 200);
-    assert(current_height_mm == 20 && peak_height_mm == 20 && height_distance_seen);
+    assert(current_height_mm == RISE_20_MM && peak_height_mm == (UW)RISE_20_MM && height_distance_seen);
+    /* #5 (decided 20 Nov 2026): S4 reports the highest rise, so the descent
+       must not reduce it. current_height_mm is internal and never published,
+       so its value after the descent is not checked. */
     for (unsigned i = 0; i < 100; ++i) update_height_estimate(1, -200);
-    assert(current_height_mm == 0 && peak_height_mm == 20);
+    assert(peak_height_mm == (UW)RISE_20_MM);
     reset_height_tracker(); hump_state.first_sign = -1;
     for (unsigned i = 0; i < 100; ++i) update_height_estimate(1, -200);
-    assert(current_height_mm == 20 && peak_height_mm == 20);
+    assert(current_height_mm == RISE_20_MM && peak_height_mm == (UW)RISE_20_MM);
     update_height_estimate(10000, -500);
     assert(current_height_mm == S4_MAX_RAMP_HEIGHT_MM);
     update_height_estimate(10000, 500);
-    assert(current_height_mm == 0 && peak_height_mm == S4_MAX_RAMP_HEIGHT_MM);
+    assert(peak_height_mm == S4_MAX_RAMP_HEIGHT_MM);
     reset_height_tracker(); update_height_estimate(0, 200);
     assert(!height_distance_seen && peak_height_mm == 0);
 

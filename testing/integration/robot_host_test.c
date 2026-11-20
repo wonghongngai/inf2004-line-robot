@@ -160,7 +160,13 @@ int main(void)
         EXPECT(!turning && enabled);
     }
     follow(&ctl); fake_imu.motion_state = IMU_MOTION_COLLISION; stopped(&ctl, 5041);
-    follow(&ctl); fake_imu.event = IMU_EVENT_TILT; stopped(&ctl, 5041);
+    /* Tilt is report-only (#67): the robot keeps following. */
+    follow(&ctl); fake_imu.motion_state = IMU_MOTION_TILT;
+    fake_imu.event = IMU_EVENT_TILT;
+    robot_control_step(&ctl, 5041, 1, 1);
+    EXPECT(!halted && enabled);
+    EXPECT(ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+    follow(&ctl); fake_imu.event = IMU_EVENT_FAULT; stopped(&ctl, 5041);
     follow(&ctl); fake_imu.sensor_ok = FALSE; stopped(&ctl, 5041);
     follow(&ctl); fake_imu.read_errors++; stopped(&ctl, 5041);
     follow(&ctl); stopped(&ctl, 5101); /* stale IMU heartbeat */
@@ -203,7 +209,7 @@ int main(void)
         EXPECT(!halted && enabled);
 
         /* An IMU (safety) stop never re-arms, even on stable black. */
-        follow(&ctl); fake_imu.event = IMU_EVENT_TILT;
+        follow(&ctl); fake_imu.event = IMU_EVENT_FAULT;
         robot_control_step(&ctl, t0, 1, 1);
         EXPECT(halted && !line_halt);
         fake_imu.event = IMU_EVENT_NONE;

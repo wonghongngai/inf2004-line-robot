@@ -272,13 +272,15 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
             tm_printf((UB *)"[ROBOT] armed: A=left B=right C=straight Z=U-turn\n");
         }
     }
+    /* Tilt is report-only (#67, decided 20 Nov 2026): S4 still logs it and
+       S5 ignores ultrasonic readings while tilted, but it never stops the
+       robot. A false tilt would otherwise latch a stop until reboot. */
     if (!imu.sensor_ok || !imu.calibrated ||
         imu.read_errors != imu_errors ||
         (uint32_t)(now - last_imu_sample) > S2_IMU_STALE_MS ||
-        imu.motion_state == IMU_MOTION_TILT ||
         imu.motion_state == IMU_MOTION_COLLISION ||
         imu.motion_state == IMU_MOTION_FAULT ||
-        imu.event == IMU_EVENT_TILT || imu.event == IMU_EVENT_COLLISION ||
+        imu.event == IMU_EVENT_COLLISION ||
         imu.event == IMU_EVENT_FAULT) {
         halt(ctl, now, l, r, "IMU unsafe or stale");
         return;

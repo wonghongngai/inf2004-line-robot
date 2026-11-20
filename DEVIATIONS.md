@@ -1,7 +1,7 @@
 # Deviations from the original plan
 
-As of 2026-11-13. A copy of the team doc "Group 17 Robot: Deviations from the
-Original Plan", updated with the #4 decision. Keep this file current in the
+As of 2026-11-13, with the 20 Nov decisions. A copy of the team doc "Group 17 Robot: Deviations from the
+Original Plan", updated with the #4 decision and the M1 decisions in [DECISIONS.md](DECISIONS.md). Keep this file current in the
 same PR as any change that adds, closes or justifies a deviation.
 
 ## Purpose and sources
@@ -25,12 +25,12 @@ The source documents are not in this repo. Each row gives the planned item, what
 | --- | --- | --- | --- |
 | 1 | Barcode letter-to-movement map is hard-coded in both builds; all_test ignores the MQTT map | Missing (breaks a prof requirement) | #38 |
 | 2 | IMU collision detection still in the code; prof replaced it with a lift-stop | Mandated | #53 |
-| 3 | Obstacle detection distance is 20 cm, NFR5-1 requires at least 30 cm | Changed (undocumented in a test log) | #64; S5-U40 in #31 |
+| 3 | Obstacle detection distance is 20 cm, NFR5-1 requires at least 30 cm | Changed, decided 20 Nov: keep 20 cm | #64 (`DECISIONS.md`); S5-U40 in #31 |
 | 4 | All recent tuning lives in `all_test`; the `integrated` firmware (the Week 6 architecture) is untested on the robot | Changed | Decided 13 Nov: integrated is final (#4); port the tuning (#8) |
-| 5 | Task priorities inverted: Week 6 made S5 the highest, the code makes it the lowest (20) | Changed | #66, Tribunal 2 pack (#63) |
+| 5 | Task priorities inverted: Week 6 made S5 the highest, the code makes it the lowest (20) | Changed, decided 20 Nov: keep | #66 (`DECISIONS.md`); timing still to measure (#15, #19) |
 | 6 | No reverse motion, though WU requires `moveBackward` and the S5 planner can choose REVERSE | Missing | #39 |
 | 7 | No IMU motion classes or turn rate (FR4-3, FR4-4; still assessed) | Missing | #42, #43 |
-| 8 | Coarse scan uses 50/70/90/110/130 deg, FR5-1 specifies 30/60/90/120/150 deg | Changed | #65 |
+| 8 | Coarse scan uses 50/70/90/110/130 deg, FR5-1 specifies 30/60/90/120/150 deg | Changed, decided 20 Nov: FR5-1 updated | #65 (`DECISIONS.md`) |
 | 9 | S5 never reads the IMU, so the A5-2 tilt suppression is not implemented | Missing | #44 |
 | 10 | Most requirements have no recorded test result; S5-U02 and S5-U06 last failed | Unverified | #14 to #37 |
 
@@ -42,7 +42,7 @@ Three requirement changes came from the instructor after Week 6; only the minimu
 | --- | --- | --- | --- | --- | --- |
 | M1 | WU p3: barcodes A to D map to fixed commands; W6 FR3-3 decodes "navigation barcodes" | Prof, 13 Nov: decode all A to Z in both directions; store the letter; act at the next cross-junction; the 4-letter map is sent PC to car over MQTT just before the demo and must not be hard-coded | Decoder handles A to Z both ways and "store, act at junction" (host tests S3-U07, S3-U26). Map hard-coded: integrated A,B,C,Z; all_test A,F,Z,W and logs "MQTT map ignored" | Partial | #38 |
 | M2 | WU p8, W6 FR4-3: detect collision with the IMU; W6 system statechart: collision triggers Emergency Stop | Prof, 13 Nov: IMU collision detection removed; lifting the robot must stop the motors; no detailed lift or overturn classification | Collision still detected (1200 mg) and stops the robot in both builds; no lift detection | Missing | #53 |
-| M3 | W6 data passed as plain structs and floats | PT curveball: minimum-bit data representation (CR1) | Done for S1 telemetry (80 bits), S3 messages (3 bytes), S2 motion protocol (5-byte command), S5 request word; S4 still the "PRE" version; S2 numeric widths provisional | Partial | #25 (S4-U14), #52, #54 |
+| M3 | W6 data passed as plain structs and floats | PT curveball: minimum-bit data representation (CR1) | Done for S1 telemetry (80 bits), S3 messages (3 bytes), S2 motion protocol (5-byte command), S5 request word; S4 still the "PRE" version; S2 numeric widths provisional | Partial | #25 (S4-U14), #52. S5 distance: 9-bit cm on the wire, mm inside S5 (#54, decided 20 Nov) |
 
 For M1, the team decided that before a map arrives the robot goes straight at junctions.
 
@@ -52,12 +52,12 @@ The task structure still matches Week 6 (one task per buddy), but priorities, th
 
 | ID | Week 6 / PT plan | Current code | Type | Justification or follow-up |
 | --- | --- | --- | --- | --- |
-| A1 | W6 §3 priorities: S5 obstacle highest, S4 IMU high/highest, S2 motion high, S3 line high, S1 comms medium | T-Kernel priorities (lower = runs first): Wi-Fi service 4, S2 motion 14, all_test loop 15, S3 line 16, S4 IMU 18, S5 obstacle 20, so S5 is now the **lowest** | Changed | Plausible (motor and safety loop first, S5 only requests moves) but contradicts the W6 justification. Record the reason and measured timing (#66, S2-U12 in #19) |
+| A1 | W6 §3 priorities: S5 obstacle highest, S4 IMU high/highest, S2 motion high, S3 line high, S1 comms medium | T-Kernel priorities (lower = runs first): Wi-Fi service 4, S2 motion 14, all_test loop 15, S3 line 16, S4 IMU 18, S5 obstacle 20, so S5 is now the **lowest** | Changed | Decided 20 Nov: keep. S2 and S3 run on core 1, Wi-Fi on core 0; S4 timing unchanged with Wi-Fi off; S5 only requests moves (`DECISIONS.md` #66). Still to measure: S1-U17 (#15), S2-U12 (#19) |
 | A2 | W6 diagram showed a Vehicle Controller and Safety Monitor as tasks; PT: keep the VC as a function in an existing task | VC runs inside `motion_task` (priority 14, core 1) in the integrated build | Changed (agreed at PT) | Closed; Safety Monitor never built as a separate entity |
 | A3 | W6 §4 objects: `line_nav_q`, `imu_data_q`, `obstacle_q`, `motion_cmd_q`, `motion_status_q`, `telemetry_q`, `cmd_q`, one `robot_events` event group | S3 message buffer + snapshot API; S4 snapshot under a mutex (`subsystem4_get_latest`), no queue; S5 packed 32-bit request word + `flg_s5_evt` (IF-10/IF-11), no `obstacle_q`; `mbf_motion_cmd` + STOP flag; motion status read through a getter; no shared event group | Changed | Interfaces are listed as IF-05 to IF-11 in `TEAM.md`, but sections 1 and 2 are still template rows (#10) |
 | A4 | W6: one integrated system coordinated by the VC | 7 firmware modes. All tuning since about 4 Nov (turns, straight driving, avoidance) is in `all_test`, which skips the subsystem start-up path and replaces the VC with its own control loop. `integrated` UF2 last built 8 Nov and never tested on the robot | Changed | Decided 13 Nov (#4, closed): integrated is final. Port the tuning (#8) |
-| A5 | W6 §5 system statechart: Initialising, Idle/Ready waits for a start command, Navigating, Emergency Stop resumes when safe or after a user reset | Starts by itself 5 s after boot (`S2_ROBOT_START_MS`); S1 commands are only STATUS, PAUSE, RESUME, RESET_STATS; line stops re-arm automatically; IMU faults need a reboot | Changed | #48 (start command / Idle-Ready) |
-| A6 | PT gap check (Fix): each event bit has one producer, a clear/latch rule and a priority | Not written down; no shared event group exists | Missing | #50 |
+| A5 | W6 §5 system statechart: Initialising, Idle/Ready waits for a start command, Navigating, Emergency Stop resumes when safe or after a user reset | Starts by itself 5 s after boot (`S2_ROBOT_START_MS`); S1 commands are only STATUS, PAUSE, RESUME, RESET_STATS; line stops re-arm automatically; IMU faults need a reboot | Changed | Decided 20 Nov: add a START command and a Ready state (#48, to build after #72) |
+| A6 | PT gap check (Fix): each event bit has one producer, a clear/latch rule and a priority | Event-bit table drafted in `TEAM.md` §5 (20 Nov); no shared event group exists | Partial | #50 |
 | A7 | PT gap check (Fix): invalid packed commands are rejected and the robot stays stopped, with an integration test | S2 queue stops and drains on malformed commands (`TRIBUNAL_STATUS.md`); host test only | Partial | #51 |
 | A8 | PT gap check (Fix): command ownership by mode, safety pre-empts avoidance, avoidance pre-empts line following | Implemented in `robot_control.c` (IMU checks, then S5 `avoid_step`, then line); host test stubs S5 as idle | Unverified | #20 (hand-over host test), #35 (INT-10) |
 
@@ -72,7 +72,7 @@ The communication stack is built as designed, but none of FR1 or NFR1 has been t
 | B1-3 | FR1-3 receive commands (W6) | STATUS, PAUSE, RESUME, RESET_STATS commands and the map topic are received by S1, but **only `all_test` reads them**; the integrated firmware never calls `subsystem1_receive_command` or `subsystem1_receive_mapping` | Missing in the final firmware | #72, #38 |
 | B1-4 | FR1-4 / NFR1-2 reconnect without restart (W6) | Recovery logic in `mqtt_manager.c`; never exercised | Unverified | #15 (S1-U13) |
 | B1-5 | FR1-5 periodic status (W6) | 1-byte heartbeat every 5 s (`MQTT_UTK_HEARTBEAT_MS`) | Unverified | #15 |
-| B1-6 | NFR1-3 telemetry must not disturb control; W6 gave comms **medium** priority | Wi-Fi service task priority 4, above motion (14) and line (16) | Changed | #66; measure control-loop lateness with Wi-Fi on (S1-U17, S2-U12) or lower the priority |
+| B1-6 | NFR1-3 telemetry must not disturb control; W6 gave comms **medium** priority | Wi-Fi service task priority 4, above motion (14) and line (16) | Changed, decided 20 Nov: keep | #66 (`DECISIONS.md`); measure control-loop lateness with Wi-Fi on (S1-U17, S2-U12) |
 | B1-7 | PT gap: define handling of commands during a connection loss | Not defined | Missing | #49 |
 | B1-8 | Barcode result events on `<id>/barcode` (`BARCODE_MQTT.md`) | Doc and host test committed in `673736f`, implementation on no branch | Missing | #3, #16 |
 | B1-9 | WU deliverables: communication API, telemetry framework, MQTT documentation, telemetry demo | S1 README documents the packet layout and map topic; no demo evidence | Partial | #55 |
@@ -88,7 +88,7 @@ Motor and encoder drivers follow the PT design, but PID control is not tuned, re
 | B2-3 | WU p6 PID speed control | PID present, gains still 0 pending physical tuning | Missing | #18 (S2-U10), #56 (tuning report) |
 | B2-4 | FR2-3 / NFR2-1 straight-line correction | Encoder trim in `all_buddies_test.c` only (`ab62be5`); not in the integrated controller | Partial | #8, #19 (S2-U08) |
 | B2-5 | FR2-4 forward, turn, stop; WU p6 required APIs include `moveBackward(distance)` | Commands: FORWARD_CM, TURN_LEFT_DEG, TURN_RIGHT_DEG, STOP, RESET_FAULT, FOLLOW_LINE. "There is intentionally no backwards command" (W6 §8.1 dropped it on AI advice) | Changed, now reversed by team decision | #39 |
-| B2-6 | NFR2-1 to NFR2-3 measurable tolerances (W6 gap marked "Fixed") | Still worded as "stable", "accurate", "repeatable"; no numbers | Missing | #6 |
+| B2-6 | NFR2-1 to NFR2-3 measurable tolerances (W6 gap marked "Fixed") | Thresholds agreed 20 Nov in `TEST_PLAN.md` (S2-U07 to U13); NFR2 wording itself not yet updated | Partial | #6 (`DECISIONS.md`) |
 | B2-7 | PT: encoder counter widths decided from measured range (CR1) | `motion_protocol.h` widths marked provisional; other subsystems not yet migrated to the packed status | Partial | #52 |
 | B2-8 | WU deliverables: motion library, PID tuning report, motion accuracy evaluation | Library exists; no report or evaluation | Missing | #56 |
 
@@ -99,7 +99,7 @@ The decoder is the best-tested part of the project on the PC, but the sensor lay
 | ID | Requirement (source) | Current code | Type | Follow-up |
 | --- | --- | --- | --- | --- |
 | B3-1 | FR3-1 three IR sensors (GP7 left, GP27 centre, GP0 right) all used for line following (W6 §2) | SIDE layout in both builds: GP28 is an offset barcode scanner, only GP27 and GP0 steer. Top-level README still describes the 3-sensor layout | Changed | #7 |
-| B3-2 | W6 statechart 3: on line loss, Search Line mode adjusts movement until the line is found | Robot stops and waits; it re-arms once the centre and right sensors see black for a set time. No active search motion. all_test has no search deadline (`LINE_BARCODE_SEARCH_MS` 0, integrated 2000 ms) | Changed | #68; S3-U31 in #23 |
+| B3-2 | W6 statechart 3: on line loss, Search Line mode adjusts movement until the line is found | Robot stops and waits; it re-arms once the centre and right sensors see black for a set time. No active search motion. all_test has no search deadline (`LINE_BARCODE_SEARCH_MS` 0, integrated 2000 ms) | Changed, decided 20 Nov: stop and wait; statechart 3 updated (course has no gaps) | #68 (`DECISIONS.md`); S3-U31 in #23 |
 | B3-3 | FR3-2 junction detection | Cross-junction from the scanner seeing black for 4.5 narrow-bar widths; host test S3-U25 passes; not tested on the track | Unverified | #23 |
 | B3-4 | FR3-3 decode navigation barcodes (W6); prof: all A to Z, both directions | Decoder handles A to Z both ways on the PC (S3-U07); on hardware only A and Z were tried (`208188b`) | Partial | #23 (S3-U32, S3-U35) |
 | B3-5 | W6 statechart 3: an invalid barcode is ignored and line tracking continues | Matches; now also planned: reverse and re-scan a failed barcode | Changed (addition) | #39 |
@@ -114,11 +114,11 @@ Calibration, tilt and hump detection exist, but motion classes and turn rate (st
 | ID | Requirement (source) | Current code | Type | Follow-up |
 | --- | --- | --- | --- | --- |
 | B4-1 | FR4-1 calibrate before monitoring (W6) | 1 s stationary baseline at start; on-target check S4-U03 passed 19 Nov (`d9c4830`); baseline values not yet logged on the bench | Partial | #24 |
-| B4-2 | FR4-2 tilt and hump events with peak estimate (W6); WU: measure the highest hump peak | Implemented. Since `7f823b8` the estimator keeps the climb height after the descent; the host test expects 0. Thresholds are placeholders (`subsystem4/README.md`) | Partial | #5, #25, #27 |
+| B4-2 | FR4-2 tilt and hump events with peak estimate (W6); WU: measure the highest hump peak | Implemented. The estimator keeps the climb height after the descent (decided 20 Nov, #5; `s4/hump_height` passes). Thresholds are placeholders (`subsystem4/README.md`) | Partial | #25, #27 |
 | B4-3 | FR4-3 motion classification (W6); WU p8 events: stationary, accelerating, turning, climbing, descending | Only NORMAL, HUMP, TILT, COLLISION, FAULT safety states | Missing | #42 |
 | B4-4 | FR4-3 collision detection (W6) | Still implemented (1200 mg, tripped on motor start-up before) | Mandated removal (M2) | #53 |
 | B4-5 | FR4-4 report turn rate (W6, WU) | No turn rate; the LSM303DLHC has no gyroscope; magnetometer is read but unused | Missing | #43 |
-| B4-6 | PT decision: a normal hump must not cause an emergency stop; tilt and hump are informational (`TRIBUNAL_STATUS.md`) | The integrated VC halts on `IMU_MOTION_TILT` and `IMU_EVENT_TILT` (`robot_control.c`), so a steep hump could stop the robot | Changed (code and docs disagree) | #67; test with INT-11 (#36) |
+| B4-6 | PT decision: a normal hump must not cause an emergency stop; tilt and hump are informational (`TRIBUNAL_STATUS.md`) | Decided 20 Nov: tilt is report-only. The VC no longer halts on tilt (`robot_control.c`); host test INT-03 passes | Matches (not yet tested on the robot) | INT-11 (#36) |
 | B4-7 | NFR4-1 sample every 20 ms; NFR4-3 cycle within 20 ms | `S4_SAMPLE_PERIOD_MS` back to 20 on 20 Nov, with every sample count halved to keep the same timings (it was 10 from `8dde092`, 18 Nov). At 10 ms, S4-U05 **failed** on target 19 and 20 Nov: cycles take about 12 ms (longest 17 ms with Wi-Fi off, 20 ms with it on). At 20 ms, S4-U05 **passed** on target 20 Nov (0 overruns, longest cycle 19 ms); hump detection not yet re-checked at 20 ms | Unverified | #24 |
 | B4-8 | NFR4-2 report a hump within 100 ms | Not measured; the collision part of NFR4-2 is void (M2) | Unverified | #27 |
 | B4-9 | CR1 minimum-bit representation | 4-byte `IMU_PACKED_MSG` exists (S4-U06), but `subsystem4/README.md` still calls this the "PRE" version; no before/after sizes | Partial | #25 (S4-U14) |
@@ -130,8 +130,8 @@ The full scan, profile, plan and bypass pipeline exists, but the detection dista
 
 | ID | Requirement (source) | Current code | Type | Follow-up |
 | --- | --- | --- | --- | --- |
-| B5-1 | FR5-1 coarse scan at 30, 60, 90, 120, 150 deg (W6, WU) | 50, 70, 90, 110, 130 deg; scan range narrowed to 50 to 130 deg on 5 Nov | Changed | #65 |
-| B5-2 | NFR5-1 detect at 30 cm or more, rest at least 10 cm away | `D_DETECT_MM` 200 mm since 7 Nov, for the turn-and-box bypass. The code comment calls it a deliberate deviation "to record in the test log"; not recorded | Changed | #64; S5-U40 (#31) |
+| B5-1 | FR5-1 coarse scan at 30, 60, 90, 120, 150 deg (W6, WU) | 50, 70, 90, 110, 130 deg; scan range narrowed to 50 to 130 deg on 5 Nov because the sensor holder cannot reach 30 or 150 deg. Decided 20 Nov: FR5-1 updated to match. The S5 test log says NFR5-2/NFR5-3 were dropped; they were not, and must be re-measured | Changed | #65 (`DECISIONS.md`); NFR5-2 re-test in #29 |
+| B5-2 | NFR5-1 detect at 30 cm or more, rest at least 10 cm away | `D_DETECT_MM` 200 mm since 7 Nov, for the turn-and-box bypass. Decided 20 Nov: keep 20 cm; NFR5-1 becomes detect at 20 cm or more, rest at least 10 cm away. Buddy 5 still has to record the original reason | Changed | #64 (`DECISIONS.md`); S5-U40 (#31) |
 | B5-3 | FR5-2 return to the region and scan in 5 deg steps | Smooth glide with a ping every 5 deg, window capped by `FINE_BUDGET_POINTS` | Matches | None |
 | B5-4 | NFR5-3 detection to action within 2 s | Last result FAIL, 2299 ms (1 Nov); cap added but not re-tested | Unverified | #29 (S5-U06) |
 | B5-5 | NFR5-6 closest point within 2 cm over 5 to 100 cm | Last result FAIL (27 Oct, software timing); hardware echo timing added, not re-tested | Unverified | #29 (S5-U02) |
@@ -141,7 +141,7 @@ The full scan, profile, plan and bypass pipeline exists, but the detection dista
 | B5-9 | W6 A5-1: only objects inside the robot's corridor count | Corridor filter exists; `ROBOT_WIDTH_MM` 150 and `PASS_MARGIN_MM` 50 marked [VERIFY] | Partial | #45 |
 | B5-10 | W6 A5-2 and PT next actions: ignore readings while tilted, hold after tilt clears, check distance rate of change | S5 never reads the IMU | Missing | #44 |
 | B5-11 | W6 statechart 5: CALIBRATE self-test; SAFE_STOP faults CAL_FAIL, NO_PATH, LINE_LOST sent to telemetry | Self-test not confirmed; telemetry fault bits have no S5 faults besides NO_ECHO | Missing | #46, #47 |
-| B5-12 | PT gap check: one distance representation (9-bit vs 16-bit in Version B) | Not reconciled in the docs | Partial | #54 |
+| B5-12 | PT gap check: one distance representation (9-bit vs 16-bit in Version B) | Decided 20 Nov: 9-bit cm on the wire (IF-05), mm inside S5; no 16-bit distance exists in the code | Matches | #54 (`DECISIONS.md`) |
 | B5-13 | WU p3: minimise deviation from the route | Detour length never measured | Unverified | #62 |
 
 ## Hardware and pins
@@ -171,17 +171,17 @@ The evidence rules from the template are mostly not followed yet, and two assess
 
 ## Open decisions
 
-Each "Changed" row needs either a recorded justification for Tribunal 2 or a return to the original plan. These ten need a team decision first:
+Each "Changed" row needs either a recorded justification for Tribunal 2 or a return to the original plan. These ten need a team decision first. The reasons for each decision are in [DECISIONS.md](DECISIONS.md):
 
 - [x] Final firmware: `integrated` (the Week 6 architecture) or `all_test` (A4, #4). Decided 13 Nov: integrated is final; all_test is a test harness only
-- [ ] Obstacle detection at 20 cm or back to the required 30 cm (B5-2, #64)
-- [ ] Update FR5-1 to the 50 to 130 deg scan, or restore 30 to 150 deg (B5-1, #65)
-- [ ] Record why S5 is now the lowest-priority task and the Wi-Fi service the highest (A1, B1-6, #66), with measured timing
-- [ ] Tilt: stop the robot, or report only as `TRIBUNAL_STATUS.md` says (B4-6, #67)
-- [ ] Line loss: stop and wait, or actively search as in statechart 3 (B3-2, #68)
-- [ ] Hump height after the descent: keep the climb height or return to 0 (#5)
-- [ ] Start command and Idle/Ready state, or update the system statechart (A5, #48)
-- [ ] Agree every numeric threshold, including NFR2 tolerances (B2-6, #6)
+- [x] Obstacle detection at 20 cm or back to the required 30 cm (B5-2, #64). Decided 20 Nov: keep 20 cm, if S5-U40 shows a rest ≥ 10 cm away
+- [x] Update FR5-1 to the 50 to 130 deg scan, or restore 30 to 150 deg (B5-1, #65). Decided 20 Nov: FR5-1 updated to 50 to 130 deg
+- [x] Record why S5 is now the lowest-priority task and the Wi-Fi service the highest (A1, B1-6, #66). Decided 20 Nov: keep; loop-lateness timing still to measure
+- [x] Tilt: stop the robot, or report only as `TRIBUNAL_STATUS.md` says (B4-6, #67). Decided 20 Nov: report only
+- [x] Line loss: stop and wait, or actively search as in statechart 3 (B3-2, #68). Decided 20 Nov: stop and wait
+- [x] Hump height after the descent: keep the climb height or return to 0 (#5). Decided 20 Nov: keep the climb height
+- [x] Start command and Idle/Ready state, or update the system statechart (A5, #48). Decided 20 Nov: add a START command (to build)
+- [x] Agree every numeric threshold, including NFR2 tolerances (B2-6, #6). Agreed 20 Nov (`TEST_PLAN.md`)
 - [ ] Confirm the ultrasonic part is the HC-SR04P (H1, #69)
 
 Decisions and their evidence feed the Tribunal 2 evidence pack (#63).

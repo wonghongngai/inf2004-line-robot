@@ -74,7 +74,6 @@ known_failure() {   # known_failure <name>: prints the issue, or nothing
     case "$1" in
         s1/barcode_queue) echo "#3: S1 barcode-queue code not pushed yet" ;;
         int/steering_ramp) echo "#3: terrain-boost code not pushed yet" ;;
-        s4/hump_height) echo "#5: hump-height behaviour not decided" ;;
     esac
 }
 

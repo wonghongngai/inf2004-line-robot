@@ -144,9 +144,9 @@ ticks-per-centimetre values; motor PWM cannot supply a real distance scale.
 S4 reports height unavailable when a hump has no wheel-distance input.
 
 Line loss/search, an unmapped junction, queue/timing faults, stale line data,
-IMU errors/staleness, collision, tilt, a turn timeout, or a motion fault stop
-motors and latch the integrated stop until reboot. Humps alone allow travel to
-continue; speed compensation requires real terrain measurements. IMU freshness
+IMU errors/staleness, collision, a turn timeout, or a motion fault stop
+motors and latch the integrated stop until reboot. Humps and tilt allow travel
+to continue (tilt is report-only, #67); speed compensation requires real terrain measurements. IMU freshness
 is inferred from sample-count changes with a 100 ms deadline. IMU events are
 snapshots; pulses shorter than the adapter's scheduling interval are not queued.
 

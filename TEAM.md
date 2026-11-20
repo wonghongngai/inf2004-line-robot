@@ -177,9 +177,11 @@ by team agreement. Write down every task you create.
 | 4 | 18–19 |
 | 5 | 20–21 |
 
-**TBD #66**: the Week 6 design made S5 the highest-priority subsystem; this
-order makes it the lowest, and puts the Wi-Fi service above the control
-tasks. Record the reason with measured timing, or change the bands.
+**Decided 20 Nov (#66): keep this order**, although Week 6 made S5 the
+highest. S2 and S3 run on core 1 and Wi-Fi on core 0, so Wi-Fi cannot
+preempt them. S5 only requests moves, and the VC applies them at S2's
+priority. Reasons in [DECISIONS.md](DECISIONS.md). Still to measure:
+control-loop lateness with Wi-Fi on (S1-U17, S2-U12).
 
 Tasks in the final firmware, highest priority first:
 
@@ -227,10 +229,52 @@ While S5 has a HOLD or MOVE request, the VC's `avoid_step()` in
 `robot_control.c` pauses line following and executes S5's moves through the
 shared executor `subsystem5/s5_executor.c` (the IF-10/IF-11 hand-shake).
 
-Still to define (TBD): the start command and Idle/Ready state (#48); one
-producer and a clear/latch rule for every event bit (#50); command handling
-when Wi-Fi drops (#49); whether tilt stops the robot (#67); line loss: stop
-and wait, or search (#68).
+### Event bits (#50)
+
+**Draft, 20 Nov 2026, not agreed yet.** Written from the code on `main`
+(`42be6ea`). Every bit or event code that one subsystem raises for another
+is listed here: who sets it, who clears it, whether it latches, and which one
+wins when several fire at once. The rule: **one producer sets a bit. Only the
+producer or the one named consumer clears it.**
+
+There is no shared robot-wide event group. Each signal belongs to its
+interface's owner.
+
+| Bit / code | Object | Producer (only writer) | Consumer | Set when | Cleared by, and when | Latch? | Priority when several fire |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| STOP, bit 0 (`1u`) | `flg_motion_stop` (S2) | any caller of `subsystem2_send_command(MOTION_CMD_STOP)` | `motion_task` (`task_motion.c`) | STOP requested | consumer, on read (`TWF_CLR`) | no: consumed once | beats every queued move: the queue is drained in the same cycle |
+| `S5_EVT_FOLLOWING` | `flg_s5_evt` (S5) | VC, through `s5_exec_set_following()` | S5 (`s5_detect_allowed()`, polled) | VC armed and line-following | VC (the producer), on any stop or when S5 takes control | level, not latched | — (S5 counts obstacles only while it is set) |
+| `S5_EVT_STOPPED` | `flg_s5_evt` | VC executor (`exec_finish()`) | S5 | HOLD done, robot at rest | S5 clears the bits it is waiting for *before* each new request | yes, until S5's next request | one reply per request (`b_replied`) |
+| `S5_EVT_MOTION_DONE` | `flg_s5_evt` | VC executor | S5 | MOVE finished | as above | yes, until S5's next request | one reply per request |
+| `S5_EVT_LINE_FOUND` | `flg_s5_evt` | VC executor | S5 | stop-on-line MOVE saw the line | as above | yes, until S5's next request | one reply per request |
+| `S5_EVT_MOVE_FAILED` | `flg_s5_evt` | VC executor | S5 | MOVE rejected or timed out (10 s) | as above | yes, until S5's next request | S5 treats FAILED as overriding any other bit it sees |
+| line event, byte 1 bits 5:3 (`LINE_BARCODE_EVT_*`) | `g_h_line_nav_q` (S3) | `line_service_task` | VC only | LOST, FOUND, JUNCTION, COMMAND, INVALID, BARCODE, FAULT, STATUS | message buffer: each event is read once | no: a queued event | VC drains up to 24 per cycle. LOST, FAULT or unmapped JUNCTION → line stop; COMMAND → turn; the rest are ignored |
+| line state, byte 1 bits 2:0 (`FOLLOW`…`FAULT`) | S3 snapshot | `line_service_task` | VC | every sample | overwritten every sample | level | FAULT stops at once; SEARCH, PAUSED or stale must last 200 ms (`S2_LINE_UNSAFE_MS`) first |
+| line faults, byte 2 bits 7:5 (`LINE_BARCODE_ERR_LINE`, `_QUEUE`, `_TIMING`) | S3 snapshot | `line_service_task` | VC (as state FAULT) | line lost longer than the search time; queue overflow; sampling gap | S3, only on calibration or mode reset | **yes** | any one sets state FAULT |
+| `IMU_DATA.motion_state` | S4 snapshot (`mtx_imu_data`) | `imu_task` | VC (stops on COLLISION and FAULT; TILT is report-only, #67), S5 (ignores readings on HUMP and TILT) | every sample (20 ms) | overwritten every sample | level | S4 picks one class per sample: COLLISION > hump just completed > TILT > hump in progress > NORMAL; FAULT on a read failure |
+| `IMU_DATA.event` | S4 snapshot | `imu_task` | VC | for one sample, when it happens. TILT once per tilt episode (`tilt_reported`) | next sample | no: one sample wide | as `motion_state`. The VC runs every 10 ms, so it sees every 20 ms sample |
+| telemetry faults, bits 0–4 (`S1_FAULT_*`) | IF-05 packet | **VC (planned, #72)**. Today only `all_test` sets one (`S1_FAULT_IMU`) | PC over MQTT | — | rebuilt from the VC's snapshot each packet (S1 README) | level: the VC's own stop latch holds the memory | independent flags |
+| VC stop latch (`halted`, `line_halt`) | `robot_control.c` (internal) | VC | VC | any `halt()` or `halt_line()` | line stops: back on the line with the wheels still for 1 s (`S2_LINE_REARM_MS`). Every other stop: reboot | **yes** | safety stop (IMU, motion fault, bad S5 word) > S5 avoidance > line following |
+
+What still has to be done before this table is final:
+
+- **S1 fault bits have no producer in `integrated`.** The VC must fill them
+  when IF-05 is connected (#72).
+- **IMU COLLISION still stops the robot in the VC.** Collision is being
+  removed (#53). TILT no longer stops it (#67, decided 20 Nov).
+- **`IMU_DATA.event` is one sample wide.** A consumer that polls slower than
+  20 ms can miss it. Such a consumer must read `motion_state` or the
+  highest-hump field instead.
+- The team agrees this table, then the **Draft** label is removed. Each row
+  is checked against an INT test (`testing/integration/TEST_LOG.md`).
+
+### Other open points
+
+Decided 20 Nov ([DECISIONS.md](DECISIONS.md)): add a START command and a
+Ready state (#48, to build after #72); tilt is report-only (#67); on line
+loss the robot stops and waits (#68).
+
+Still to define (TBD): command handling when Wi-Fi drops (#49).
 
 Each interface is tested by at least one integration test
 (`testing/integration/TEST_LOG.md`).
