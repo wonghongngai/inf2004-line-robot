@@ -11,10 +11,8 @@ steering position, detects line loss/recovery, and decodes one Code 39 letter
 between star markers. It never accesses motors, encoders, WiFi, or another
 buddy's peripherals. Motor/PID execution stays with Buddy 2.
 
-The existing consumer/statistics files remain as a compatibility adapter because
-the unchanged S2/S4 examples reference them. Their task runs at priority 17;
-the IR task runs at 16. Remove the adapter together with the S2/S4 examples when
-the team integrates its real subsystems.
+The IR task runs at priority 16. The course template's consumer/statistics
+task (`task_consumer.c`, `mbx_samples`, `mtx_stats`) was removed in #74.
 
 ## Confirmed barcode and track facts
 

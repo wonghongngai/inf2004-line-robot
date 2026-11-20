@@ -2,8 +2,7 @@
 
 Run commands from the repo root with `build.sh` (README section 1.1). Every
 mode includes the real motor and encoder drivers. Standalone images
-(`motor_test`, `motion`) do not compile, link, or start S3/S4/S5; they also
-skip the template producer task. The kernel's USB and I2C services remain;
+(`motor_test`, `motion`) do not compile, link, or start S3/S4/S5. The kernel's USB and I2C services remain;
 only `integrated` and `all_test` turn on Wi-Fi.
 
 | Build | Behaviour after boot | UF2 (in `build_make/`) |

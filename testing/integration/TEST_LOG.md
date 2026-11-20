@@ -10,8 +10,8 @@ Define a test here before running it. Test IDs never change.
 
 | ID | What is tested | Requirement / interface | Method | Steps / how | Expected result |
 |---|---|---|---|---|---|
-| INT-01 | samples flow from S2 to S3 (≥ 5 in 2 s) | IF-01, IF-02 | auto | `subsystem3_test.c` | `[TEST] INT-01 PASS` |
-| INT-02 | summary lines flow from S3 to S4 (≥ 2 in 3.5 s) | IF-03 | auto | `subsystem4_test.c` | `[TEST] INT-02 PASS` |
+| INT-01 | **Retired 20 Nov (#74).** samples flow from S2 to S3 (≥ 5 in 2 s) | template IF-01, IF-02 (removed) | — | removed from `subsystem3_test.c` | Not run any more: it tested the course template's producer/consumer tasks, which are no longer built. Its PASS lines in on-target logs up to 20 Nov tested only those tasks |
+| INT-02 | **Retired 20 Nov (#74).** summary lines flow from S3 to S4 (≥ 2 in 3.5 s) | template IF-03 (removed) | — | no longer in `subsystem4_test.c` | Not run: the template's S3 → S4 summary path no longer exists. Never run on this project |
 | INT-03 | Robot adapter readiness, steering, junction turns, faults and standalone motion | IF-06, IF-07 | host auto | `sh testing/run_host_tests.sh int/robot_control` (was `run_robot_host_tests.sh` until 2026-11-13) | 167 assertions pass |
 | INT-04 | Six hardware firmware profiles compile and produce UF2 files | IF-06, IF-07, IF-08 | build | `PICO_SDK_PATH=... sh testing/integration/build_robot_profiles.sh` | Six build PASS lines |
 | INT-05 | PWM works after boot with PWM initially held in reset | S2 hardware driver | host auto | `sh testing/run_host_tests.sh s2/motor_pwm` (was `run_robot_host_tests.sh` until 2026-11-13) | `motor PWM register regression: PASS` |

@@ -7,10 +7,10 @@
 # copies such as "communication_protocol 2.c" must not become two targets.
 TEMP_SRCS := $(shell find ../app_program -maxdepth 2 -type f -name '*.c' ! -name '* *' | LC_ALL=C sort)
 ifeq ($(filter integrated integrated_motor_test barcode_test line_follow_test all_test,$(ROBOT_MODE)),)
-# Standalone firmware has no link-time dependency on S3/S4/S5 or examples.
+# Standalone firmware has no link-time dependency on S3/S4/S5.
 # S1 stays in: app_main.c calls subsystem1_init()/subsystem1_start() in every
 # mode that reaches the normal startup path (motor_test, motion).
-TEMP_SRCS := $(filter-out ../app_program/subsystem3/% ../app_program/subsystem4/% ../app_program/subsystem5/% ../app_program/subsystem2/task_producer.c,$(TEMP_SRCS))
+TEMP_SRCS := $(filter-out ../app_program/subsystem3/% ../app_program/subsystem4/% ../app_program/subsystem5/%,$(TEMP_SRCS))
 endif
 TEMP_OBJS = $(TEMP_SRCS:.c=.o)
 TEMP_DEPS = $(TEMP_SRCS:.c=.d)
