@@ -16,12 +16,13 @@
 #include "subsystem4.h"
 #include "drv_lsm303dlhc.h"
 #include <stdint.h>
-#define S4_HUMP_REARM_FLAT_SAMPLES 50U
-#define S4_HUMP_ENTRY_CONFIRM_SAMPLES 5U
-#define S4_MOVEMENT_HOLD_SAMPLES 10U
-#define S4_HUMP_FILTER_SAMPLES 5U
+/* Sample counts at S4_SAMPLE_PERIOD_MS = 20 ms (halved 20 Nov from the 10 ms values). */
+#define S4_HUMP_REARM_FLAT_SAMPLES 25U     /* 500 ms */
+#define S4_HUMP_ENTRY_CONFIRM_SAMPLES 3U  /* 60 ms (5 at 10 ms) */
+#define S4_MOVEMENT_HOLD_SAMPLES 5U       /* 100 ms */
+#define S4_HUMP_FILTER_SAMPLES 3U         /* 60 ms moving average (5 at 10 ms) */
 #define S4_HUMP_EXIT_FLAT_MG 40
-#define S4_HUMP_EXIT_FLAT_SAMPLES 8U
+#define S4_HUMP_EXIT_FLAT_SAMPLES 4U      /* 80 ms */
 #define S4_HEIGHT_CAL_NUM 25
 #define S4_HEIGHT_CAL_DEN 11
 typedef enum {
@@ -261,6 +262,9 @@ LOCAL void publish_snapshot(const LSM303_SAMPLE *sample,
     s4_imu_data.calibrated = calibrated;
     s4_imu_data.sensor_ok = sensor_ok;
     s4_imu_data.last_cycle_ms = cycle_ms;
+    if (cycle_ms > s4_imu_data.max_cycle_ms) {
+        s4_imu_data.max_cycle_ms = cycle_ms;
+    }
 
     if (timing_overrun) {
         s4_imu_data.timing_overruns++;

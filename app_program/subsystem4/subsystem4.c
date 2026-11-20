@@ -64,6 +64,7 @@ EXPORT ER subsystem4_init(void)
     s4_imu_data.sample_count = 0U;
     s4_imu_data.read_errors = 0U;
     s4_imu_data.last_cycle_ms = 0U;
+    s4_imu_data.max_cycle_ms = 0U;
     s4_imu_data.timing_overruns = 0U;
 
     /* Do not stop the whole firmware if the IMU is absent at boot. */

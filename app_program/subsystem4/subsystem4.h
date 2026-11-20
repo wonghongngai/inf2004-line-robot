@@ -3,7 +3,7 @@
  * Buddy 4 -- IMU & Terrain Monitoring (final requirements).
  *
  * Implements:
- * - 10 ms IMU sampling
+ * - 20 ms IMU sampling
  * - stationary calibration
  * - hump/ramp detection
  * - ramp-height estimation
@@ -19,22 +19,22 @@
 
 /* RTOS configuration. */
 #define S4_PRI_IMU                  18
-#define S4_SAMPLE_PERIOD_MS         10
-#define S4_CALIBRATION_SAMPLES     100U
-#define S4_PRINT_PERIOD_SAMPLES    100U
+#define S4_SAMPLE_PERIOD_MS         20   /* NFR4-1; was 10 from 18 to 20 Nov: cycles take ~12 ms (S4-U05) */
+#define S4_CALIBRATION_SAMPLES      50U  /* 1 s */
+#define S4_PRINT_PERIOD_SAMPLES     50U  /* 1 s */
 
 /*
  * Initial detection thresholds.
  * These MUST be tuned from the real robot logs.
  */
 #define S4_TILT_DELTA_MG            180
-#define S4_TILT_CONFIRM_SAMPLES    10U
+#define S4_TILT_CONFIRM_SAMPLES     5U   /* 100 ms */
 #define S4_COLLISION_DELTA_MG       1200  /* 1200 tripped on motor start-up jolt */
 #define S4_HUMP_ENTRY_MG            85
 #define S4_HUMP_OPPOSITE_MG          60
 #define S4_HUMP_SETTLE_MG           40
-#define S4_HUMP_SETTLE_SAMPLES      5U
-#define S4_HUMP_TIMEOUT_SAMPLES    150U
+#define S4_HUMP_SETTLE_SAMPLES      3U   /* 60 ms (5 at 10 ms) */
+#define S4_HUMP_TIMEOUT_SAMPLES     75U  /* 1.5 s */
 
 /*
  * Ramp-height output range.
@@ -93,6 +93,7 @@ typedef struct {
     UW sample_count;
     UW read_errors;
     UW last_cycle_ms;
+    UW max_cycle_ms;        /* longest cycle since boot (calibration cycles report 0) */
     UW timing_overruns;
 } IMU_DATA;
 
