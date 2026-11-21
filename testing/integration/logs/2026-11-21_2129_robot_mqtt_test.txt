@@ -1,0 +1,40 @@
+21:29:15.829  robot_mqtt_test.py broker=172.20.10.2:1883 client=group17-robot
+21:29:15.868  repo commit f3d130d (record the firmware's commit in TEST_LOG)
+21:29:15.874  == S1-U14 PAUSE / RESUME / STATUS x10 ==
+21:30:39.940  OPERATOR: done: Wheels raised (or robot on the line), robot STARTed and following.
+21:30:40.134  [1] STATUS -> packet after 203 ms (state=IDLE speed=0 line=000 letter=1 map=0)
+21:30:40.378  [1] PAUSE  -> IDLE after 234 ms
+21:30:41.124  [1] RESUME -> FOLLOWING after 250 ms
+21:30:41.776  [2] STATUS -> packet after 156 ms (state=FOLLOWING speed=11 line=000 letter=1 map=0)
+21:30:42.127  [2] PAUSE  -> IDLE after 344 ms
+21:30:42.834  [2] RESUME -> FOLLOWING after 203 ms
+21:30:43.453  [3] STATUS -> packet after 125 ms (state=FOLLOWING speed=11 line=000 letter=1 map=0)
+21:30:43.618  [3] PAUSE  -> IDLE after 172 ms
+21:30:44.683  [3] RESUME -> FOLLOWING after 563 ms
+21:30:45.594  [4] STATUS -> packet after 406 ms (state=FOLLOWING speed=11 line=000 letter=1 map=0)
+21:30:45.768  [4] PAUSE  -> IDLE after 172 ms
+21:30:46.486  [4] RESUME -> FOLLOWING after 218 ms
+21:30:47.275  [5] STATUS -> packet after 297 ms (state=FOLLOWING speed=11 line=000 letter=1 map=0)
+21:30:47.457  [5] PAUSE  -> IDLE after 172 ms
+21:30:48.358  [5] RESUME -> FOLLOWING after 406 ms
+21:30:49.137  [6] STATUS -> packet after 282 ms (state=FOLLOWING speed=11 line=000 letter=1 map=0)
+21:30:49.215  [6] PAUSE  -> IDLE after 78 ms
+21:30:49.858  [6] RESUME -> FOLLOWING after 140 ms
+21:30:50.751  [7] STATUS -> packet after 391 ms (state=FOLLOWING speed=11 line=000 letter=1 map=0)
+21:30:50.935  [7] PAUSE  -> IDLE after 188 ms
+21:30:51.685  [7] RESUME -> FOLLOWING after 250 ms
+21:30:52.317  [8] STATUS -> packet after 125 ms (state=FOLLOWING speed=11 line=000 letter=1 map=0)
+21:30:52.466  [8] PAUSE  -> IDLE after 156 ms
+21:30:53.189  [8] RESUME -> FOLLOWING after 219 ms
+21:30:53.801  [9] STATUS -> packet after 109 ms (state=FOLLOWING speed=11 line=000 letter=1 map=0)
+21:30:54.007  [9] PAUSE  -> IDLE after 203 ms
+21:30:55.147  [9] RESUME -> FOLLOWING after 641 ms
+21:30:55.905  [10] STATUS -> packet after 265 ms (state=FOLLOWING speed=12 line=000 letter=1 map=0)
+21:30:56.267  [10] PAUSE  -> IDLE after 360 ms
+21:30:57.071  [10] RESUME -> FOLLOWING after 312 ms
+21:30:57.572  broker side: STATUS 10/10, PAUSE 10/10, RESUME 10/10
+21:31:14.324  OPERATOR: Did the wheels stop at every PAUSE (within ~0.5 s) and restart at every RESUME? -> yes
+21:31:14.324  S1-U14 PASS (expect 10/10 each; PAUSE stops within 500 ms)
+
+21:31:14.324  SUMMARY: S1-U14 PASS
+21:31:14.324  log saved to testing/integration/logs/2026-11-21_2129_robot_mqtt_test.txt
