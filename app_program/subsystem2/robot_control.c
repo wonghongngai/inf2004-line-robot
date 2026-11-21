@@ -14,33 +14,13 @@ static bool armed, halted, line_halt, turning, configured;
    A START that arrives while still initialising is kept until Ready. */
 static bool auto_start = S2_AUTO_START, start_requested, ready_reported;
 
-/* Drain up to one queue's worth of MQTT commands without blocking. Only
-   START is handled here; PAUSE/RESUME/STATUS wait for #72. */
-static void poll_commands(void)
-{
-    for (unsigned i = 0u; i < S1_QUEUE_DEPTH; ++i) {
-        S1_COMMAND command;
-        if (subsystem1_receive_command(&command, TMO_POL) < E_OK) return;
-        if (command.bytes[0] != S1_COMMAND_START) {
-            tm_printf((UB *)"[ROBOT] command %u ignored: not handled by the integrated VC yet (#72)\n",
-                      (unsigned)command.bytes[0]);
-        } else if (armed) {
-            tm_printf((UB *)"[ROBOT] START ignored: already started%s\n",
-                      halted && !line_halt ? " (safety stop: reboot to retry)" : "");
-        } else if (!start_requested) {
-            start_requested = true;
-            tm_printf((UB *)"[ROBOT] START received%s\n",
-                      ready_reported ? "" : "; starts once initialisation finishes");
-        }
-    }
-}
 static uint32_t last_imu_sample, imu_count, imu_errors, resumed_at, turn_started;
 static uint32_t rearm_since;
 static int32_t rearm_l, rearm_r;
 /* S5 obstacle-avoidance hook state (see avoid_step below). */
 static S5_EXEC vc_s5;
 
-/* Line stops (lost, unmapped junction, bad snapshot) may re-arm by
+/* Line stops (lost, line fault, bad snapshot) may re-arm by
    themselves; any other stop is a safety stop and latches until reboot. */
 static void stop_robot(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l,
                        int32_t r, const char *reason, bool recoverable)
@@ -235,16 +215,245 @@ static bool avoid_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t 
     return s5_exec_step(&vc_s5, &vc_s5_ops, &c, now);
 }
 
-void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+/* #72 MQTT link. PAUSE stops at once and blocks line re-arm until RESUME;
+   RESUME restarts only on a healthy line and IMU; safety stops still need a
+   reboot. The letter map arrives over MQTT; until then junctions go straight. */
+static bool paused, map_received, status_requested;
+static unsigned char map_letters[S1_MAP_SLOTS];   /* 0..25 = A..Z */
+static unsigned last_letter;                      /* 0 none, 1..26 = A..Z */
+static IMU_DATA last_imu;
+static bool have_imu, in_avoid;
+static uint32_t last_telemetry;
+static ER telemetry_error;
+static int32_t odo_l, odo_r;
+static bool odo_started;
+static float distance_cm;
+
+static void vc_stop_motors(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
+    (void)motion_control_command(ctl, &stop, now, l, r);
+}
+
+/* The same healthy-IMU test that keeps the robot running. */
+static bool imu_healthy(uint32_t now)
+{
+    return have_imu && last_imu.sensor_ok && last_imu.calibrated &&
+           (!armed || last_imu.read_errors == imu_errors) &&
+           (uint32_t)(now - last_imu_sample) <= S2_IMU_STALE_MS &&
+           last_imu.motion_state != IMU_MOTION_COLLISION &&
+           last_imu.motion_state != IMU_MOTION_FAULT;
+}
+
+static void pause_robot(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    if (!armed) {
+        start_requested = false; /* a PAUSE in Ready cancels a pending START */
+        tm_printf((UB *)"[ROBOT] PAUSE in Ready: pending START cancelled\n");
+        return;
+    }
+    if (halted && !line_halt) {
+        tm_printf((UB *)"[ROBOT] PAUSE ignored: already in a safety stop\n");
+        return;
+    }
+    vc_stop_motors(ctl, now, l, r);
+    if (!paused) {
+        s5_exec_set_following(&vc_s5, FALSE);
+        (void)line_service_enable(false);
+        turning = false;
+        paused = true;
+        tm_printf((UB *)"[ROBOT] paused (MQTT); RESUME to continue\n");
+    }
+}
+
+static void resume_robot(uint32_t now)
+{
+    line_barcode_msg_t msg = {{0u, 0u, 0u}};
+    if (!paused) {
+        tm_printf((UB *)"[ROBOT] RESUME ignored: not paused%s\n",
+                  armed ? "" : " (use START to leave Ready)");
+        return;
+    }
+    if (!imu_healthy(now)) {
+        tm_printf((UB *)"[ROBOT] RESUME refused: IMU not healthy; still paused\n");
+        return;
+    }
+    /* Same line test as the automatic re-arm: centre and right on black. */
+    if (line_service_snapshot(&msg) < E_OK || (msg.data[0] & 3u) != 3u) {
+        tm_printf((UB *)"[ROBOT] RESUME refused: put the robot on the line; still paused\n");
+        return;
+    }
+    paused = false;
+    if (halted) {
+        /* The recoverable line-stop path re-arms as usual, but the "held
+           still" wait starts now: time spent paused does not count. */
+        rearm_since = now;
+        tm_printf((UB *)"[ROBOT] resumed; re-arms when the line is held still\n");
+        return;
+    }
+    if (line_service_enable(true) < E_OK) {
+        paused = true;
+        tm_printf((UB *)"[ROBOT] RESUME failed: line service; still paused\n");
+        return;
+    }
+    resumed_at = now;
+    line_unsafe_active = false;
+    tm_printf((UB *)"[ROBOT] resumed (MQTT)\n");
+}
+
+/* Drain up to one queue's worth of MQTT commands without blocking. */
+static void poll_commands(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    for (unsigned i = 0u; i < S1_QUEUE_DEPTH; ++i) {
+        S1_COMMAND command;
+        if (subsystem1_receive_command(&command, TMO_POL) < E_OK) return;
+        switch (command.bytes[0]) {
+        case S1_COMMAND_STATUS:
+            status_requested = true;
+            break;
+        case S1_COMMAND_PAUSE:
+            pause_robot(ctl, now, l, r);
+            break;
+        case S1_COMMAND_RESUME:
+            resume_robot(now);
+            break;
+        case S1_COMMAND_START:
+            if (armed) {
+                tm_printf((UB *)"[ROBOT] START ignored: already started%s\n",
+                          halted && !line_halt ? " (safety stop: reboot to retry)" :
+                          paused ? " (paused: use RESUME)" : "");
+            } else if (!start_requested) {
+                start_requested = true;
+                tm_printf((UB *)"[ROBOT] START received%s\n",
+                          ready_reported ? "" : "; starts once initialisation finishes");
+            }
+            break;
+        default: /* RESET_STATS, REVERSE: defined, not supported here */
+            tm_printf((UB *)"[ROBOT] command %u not supported by the integrated VC\n",
+                      (unsigned)command.bytes[0]);
+            break;
+        }
+    }
+}
+
+/* Apply the newest valid letter map from MQTT (S1 already validated it). */
+static void poll_mapping(void)
+{
+    for (unsigned i = 0u; i < S1_QUEUE_DEPTH; ++i) {
+        S1_MAPPING mapping;
+        unsigned char letters[S1_MAP_SLOTS];
+        if (subsystem1_receive_mapping(&mapping, TMO_POL) < E_OK) return;
+        if (!s1_mapping_get(&mapping, letters)) continue;
+        if (line_service_set_mapping((char)('A' + letters[S1_MAP_LEFT]),
+                                     (char)('A' + letters[S1_MAP_RIGHT]),
+                                     (char)('A' + letters[S1_MAP_STRAIGHT]),
+                                     (char)('A' + letters[S1_MAP_UTURN])) < E_OK) {
+            tm_printf((UB *)"[ROBOT] MQTT map rejected by the line service\n");
+            continue;
+        }
+        for (unsigned s = 0u; s < S1_MAP_SLOTS; ++s) map_letters[s] = letters[s];
+        map_received = true;
+        tm_printf((UB *)"[ROBOT] MQTT map applied: %c=left %c=right %c=straight %c=U-turn\n",
+                  'A' + letters[0], 'A' + letters[1], 'A' + letters[2], 'A' + letters[3]);
+    }
+}
+
+/* Telemetry direction for the last letter under the current map. */
+static unsigned letter_direction(void)
+{
+    if (!map_received || last_letter == 0u) return S1_BARCODE_NONE;
+    for (unsigned s = 0u; s < S1_MAP_SLOTS; ++s) {
+        if (map_letters[s] == last_letter - 1u) return S1_BARCODE_LEFT + s;
+    }
+    return S1_BARCODE_NONE;
+}
+
+static void update_distance(const MOTION_CONTROLLER *ctl, int32_t l, int32_t r)
+{
+    if (odo_started && ctl->cfg.left_ticks_per_cm > 0.0f &&
+        ctl->cfg.right_ticks_per_cm > 0.0f) {
+        int32_t dl = l - odo_l, dr = r - odo_r;
+        if (dl < 0) dl = -dl;
+        if (dr < 0) dr = -dr;
+        distance_cm += 0.5f * ((float)dl / ctl->cfg.left_ticks_per_cm +
+                               (float)dr / ctl->cfg.right_ticks_per_cm);
+    }
+    odo_l = l;
+    odo_r = r;
+    odo_started = true;
+}
+
+static unsigned robot_state(void)
+{
+    if (halted) return line_halt ? S1_STATE_RECOVERING : S1_STATE_FAULT;
+    if (paused || !armed) return S1_STATE_IDLE;
+    if (in_avoid) return S1_STATE_AVOIDING;
+    return turning ? S1_STATE_TURNING : S1_STATE_FOLLOWING;
+}
+
+/* IF-05 telemetry, once a second (or at once after STATUS). Nonblocking. */
+static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now)
+{
+    S1_TELEMETRY packet;
+    line_barcode_msg_t msg = {{0u, 0u, 0u}};
+    unsigned faults = 0u, black = 0u, white = 0u, hump, sensors = 0u;
+    uint8_t debug_letter;
+    float speed;
+    ER er;
+
+    if (!status_requested && (uint32_t)(now - last_telemetry) < 1000u) return;
+    status_requested = false;
+    last_telemetry = now;
+    if (!imu_healthy(now)) faults |= S1_FAULT_IMU;
+    if (ctl->status.fault == MOTION_FAULT_LEFT_ENCODER_STALL ||
+        ctl->status.fault == MOTION_FAULT_RIGHT_ENCODER_STALL) faults |= S1_FAULT_MOTOR_STALL;
+    if (line_service_snapshot(&msg) >= E_OK) {
+        unsigned s3 = msg.data[0] & 7u; /* S3: L/C/R bits 2/1/0; wire: 0/1/2 */
+        sensors = ((s3 & 4u) >> 2u) | (s3 & 2u) | ((s3 & 1u) << 2u);
+    }
+    line_service_barcode_debug(&black, &white, &debug_letter);
+    hump = have_imu ? last_imu.ramp_height_mm : 0u;
+    speed = 0.5f * (ctl->status.left_speed_cm_s + ctl->status.right_speed_cm_s);
+    if (speed > (float)S1_SPEED_MAX) speed = (float)S1_SPEED_MAX;
+    if (speed < (float)S1_SPEED_MIN) speed = (float)S1_SPEED_MIN;
+
+    s1_telemetry_init(&packet);
+    (void)s1_telemetry_set(&packet, S1_FIELD_STATE, (int)robot_state());
+    (void)s1_telemetry_set(&packet, S1_FIELD_FAULTS, (int)faults);
+    (void)s1_telemetry_set(&packet, S1_FIELD_SPEED_CMS, (int)speed);
+    (void)s1_telemetry_set(&packet, S1_FIELD_SPEED_VALID, 1);
+    (void)s1_telemetry_set(&packet, S1_FIELD_DISTANCE_CM,
+                           distance_cm >= (float)S1_DISTANCE_MAX ? S1_DISTANCE_MAX : (int)distance_cm);
+    (void)s1_telemetry_set(&packet, S1_FIELD_LINE_SENSORS, (int)sensors);
+    (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE, (int)letter_direction());
+    (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_LETTER, (int)last_letter);
+    (void)s1_telemetry_set(&packet, S1_FIELD_MAP_RECEIVED, map_received ? 1 : 0);
+    (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_BLACK,
+                           black > S1_BARCODE_COUNT_MAX ? (int)S1_BARCODE_COUNT_MAX : (int)black);
+    (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_WHITE,
+                           white > S1_BARCODE_COUNT_MAX ? (int)S1_BARCODE_COUNT_MAX : (int)white);
+    (void)s1_telemetry_set(&packet, S1_FIELD_HIGHEST_HUMP_MM, hump > S1_HUMP_MAX ? S1_HUMP_MAX : (int)hump);
+    /* Battery and obstacle fields stay 0 placeholders (#40). */
+    er = subsystem1_publish_telemetry(&packet);
+    if (er != telemetry_error && er != E_NOSPT) {
+        tm_printf((UB *)"[ROBOT] telemetry queue %s (%d)\n",
+                  er >= E_OK ? "accepting packets again" :
+                  er == E_TMOUT ? "full; waiting for MQTT" : "error", (int)er);
+    }
+    telemetry_error = er;
+}
+
+static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
 {
     IMU_DATA imu;
     line_barcode_msg_t msg = {{0u, 0u, 0u}};
     MOTION_COMMAND cmd;
     ER er;
 
-    poll_commands();
+    in_avoid = false;
     if (halted) {
-        if (!line_halt || !line_rearm_ready(now, l, r)) {
+        /* PAUSE also blocks the automatic line re-arm. */
+        if (!line_halt || paused || !line_rearm_ready(now, l, r)) {
             cmd = (MOTION_COMMAND){MOTION_CMD_STOP, 0.0f};
             (void)motion_control_command(ctl, &cmd, now, l, r);
             return;
@@ -262,19 +471,20 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         tm_printf((UB *)"[ROBOT] line found, re-armed\n");
         return;
     }
+    if (paused) {
+        vc_stop_motors(ctl, now, l, r);
+        return;
+    }
     if (ctl->status.state == MOTION_STATE_FAULT) {
         halt(ctl, now, l, r, "motion fault / calibration missing");
         return;
     }
-    er = subsystem4_get_latest(&imu);
-    if (er < E_OK) {
+    /* robot_control_step() reads S4 once per step into last_imu. */
+    if (!have_imu) {
         halt(ctl, now, l, r, "IMU snapshot failed");
         return;
     }
-    if (imu.sample_count != imu_count) {
-        imu_count = imu.sample_count;
-        last_imu_sample = now;
-    }
+    imu = last_imu;
     if (!armed) {
         /* Remain stationary throughout IMU baseline calibration, and while
            S5 holds at start-up (its servo swing shakes the IMU). */
@@ -293,7 +503,7 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         if (!configured) {
             er = line_service_calibrate(S2_LINE_BLACK_RAW, S2_LINE_WHITE_RAW);
             if (er == E_OK) er = line_service_set_layout(S2_LINE_LAYOUT);
-            if (er == E_OK) er = line_service_set_mapping('A', 'B', 'C', 'Z');
+            /* No built-in letter map (#72): the map arrives over MQTT. */
             if (er == E_OK) er = line_service_enable(true);
             if (er < E_OK) {
                 halt(ctl, now, l, r, "line configuration failed");
@@ -303,7 +513,8 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
             resumed_at = now;
             imu_errors = imu.read_errors;
             armed = true;
-            tm_printf((UB *)"[ROBOT] armed: A=left B=right C=straight Z=U-turn\n");
+            tm_printf((UB *)"[ROBOT] armed: %s\n", map_received ?
+                      "letter map from MQTT" : "no letter map yet, straight at junctions");
         }
     }
     /* Tilt is report-only (#67, decided 20 Nov 2026): S4 still logs it and
@@ -320,7 +531,8 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         return;
     }
     /* S5 obstacle avoidance takes control while it has a request. */
-    if (avoid_step(ctl, now, l, r)) return;
+    in_avoid = avoid_step(ctl, now, l, r);
+    if (in_avoid) return;
     /* Hump is terrain information; keep following, without inventing speed
        compensation before physical tuning. */
     if (turning) {
@@ -351,9 +563,17 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
             return;
         }
         uint8_t event = (msg.data[1] >> 3u) & 7u;
-        if (event == LINE_BARCODE_EVT_LOST || event == LINE_BARCODE_EVT_FAULT ||
-            event == LINE_BARCODE_EVT_JUNCTION) {
-            halt_line(ctl, now, l, r, "line lost, fault, or unmapped junction");
+        if (event == LINE_BARCODE_EVT_BARCODE || event == LINE_BARCODE_EVT_COMMAND)
+            last_letter = (msg.data[2] & LINE_BARCODE_LETTER_MASK) + 1u;
+        if (event == LINE_BARCODE_EVT_JUNCTION) {
+            /* #72 (decided 21 Nov): a junction without a mapped barcode before
+               it goes straight, with or without an MQTT map (as all_test). */
+            tm_printf((UB *)"[ROBOT] junction: %s, straight on\n",
+                      map_received ? "no mapped barcode" : "no MQTT letter map yet");
+            continue;
+        }
+        if (event == LINE_BARCODE_EVT_LOST || event == LINE_BARCODE_EVT_FAULT) {
+            halt_line(ctl, now, l, r, "line lost or fault");
             return;
         }
         if (event == LINE_BARCODE_EVT_COMMAND) {
@@ -387,6 +607,25 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
     cmd.value = pos <= 4u ? ((float)pos - 2.0f) * 0.5f : 0.0f;
     if (motion_control_command(ctl, &cmd, now, l, r) != MOTION_RESULT_OK)
         halt(ctl, now, l, r, "follow command rejected");
+}
+
+void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    IMU_DATA imu;
+    /* One S4 read per step, shared by control, RESUME checks and telemetry. */
+    have_imu = subsystem4_get_latest(&imu) >= E_OK;
+    if (have_imu) {
+        last_imu = imu;
+        if (imu.sample_count != imu_count) {
+            imu_count = imu.sample_count;
+            last_imu_sample = now;
+        }
+    }
+    poll_mapping();
+    poll_commands(ctl, now, l, r);
+    control_step(ctl, now, l, r);
+    update_distance(ctl, l, r);
+    report_telemetry(ctl, now);
 }
 
 #elif S2_MOTION_DEMO && !APP_TEST

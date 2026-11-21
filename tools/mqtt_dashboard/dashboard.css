@@ -76,7 +76,7 @@ dd { margin: 0; text-align: right; overflow-wrap: anywhere; font-size: .875rem; 
 
 .control-buttons {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -95,6 +95,11 @@ dd { margin: 0; text-align: right; overflow-wrap: anywhere; font-size: .875rem; 
 .controls button[data-command="pause"] {
   background: #ff8f98;
   color: #391019;
+}
+
+.controls button[data-command="resume"] {
+  background: #ffd38a;
+  color: #3a2706;
 }
 
 .controls button[data-command="start"] {
@@ -145,6 +150,8 @@ dd { margin: 0; text-align: right; overflow-wrap: anywhere; font-size: .875rem; 
   .barcode-actions fieldset { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+#map-status[data-state="received"] { color: var(--accent); }
+#map-status[data-state="waiting"] { color: #ffcb86; }
 .scans { margin-top: 12px; }
 .scans-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
 .scans-head p { margin-top: 0; font-size: .875rem; max-width: 52ch; }

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Line Robot | MQTT Dashboard</title>
-  <link rel="stylesheet" href="dashboard.css?v=start-command">
-  <script src="dashboard.js?v=start-command" defer></script>
+  <link rel="stylesheet" href="dashboard.css?v=map-status">
+  <script src="dashboard.js?v=map-status" defer></script>
 </head>
 <body>
 <main>
@@ -22,7 +22,8 @@
     <span id="command-status" role="status"></span>
     <div class="control-buttons">
       <button type="button" data-command="pause" disabled>Pause</button>
-      <button type="button" data-command="start" disabled>Start</button>
+      <button type="button" data-command="resume" disabled title="Continue after Pause">Resume</button>
+      <button type="button" data-command="start" disabled title="Leave Ready and start the run">Start</button>
     </div>
   </section>
   <section class="card barcode-actions" aria-labelledby="barcode-actions-title">
@@ -36,7 +37,7 @@
         <label>U-turn<input name="uturn" value="W" maxlength="1" pattern="[A-Za-z]" required></label>
       </fieldset>
     </form>
-    <p id="barcode-action-status" role="status">Showing firmware defaults.</p>
+    <p id="barcode-action-status" role="status">Not sent from this page yet. The robot has no built-in map.</p>
   </section>
   <section class="summary" aria-label="Robot overview">
     <div><span>Robot state</span><strong id="state">—</strong></div>
@@ -73,6 +74,7 @@
         <div><dt>White gaps detected</dt><dd id="barcode-white">—</dd></div>
         <div><dt>Last decoded barcode</dt><dd id="barcode-letter">—</dd></div>
         <div><dt>Mapped direction</dt><dd id="barcode">—</dd></div>
+        <div><dt>Letter map</dt><dd id="map-status" data-state="">—</dd></div>
       </dl>
     </section>
     <section class="card">

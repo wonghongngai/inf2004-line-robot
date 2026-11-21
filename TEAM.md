@@ -214,14 +214,14 @@ first, then S5 avoidance, then line following.
 
 | ID | From → To | Mechanism | Object ID / function | Data / meaning | Agreed by | Issue |
 | --- | --- | --- | --- | --- | --- | --- |
-| IF-05 | VC → S1 | message buffer, nonblocking send (owned by S1) | `subsystem1_publish_telemetry()` | 80-bit telemetry packet once a second: state, faults, speed, distance, line sensors, barcode, highest hump, encoder counts, obstacle scan results (layout in `subsystem1/README.md`) | Buddy 1; VC side pending | #72, #40, #41 |
-| IF-06 | S1 → VC | message buffer, polled with `TMO_POL` (owned by S1) | `subsystem1_receive_command()` | PC commands STATUS, PAUSE, RESUME, RESET_STATS, START | Buddy 1; VC handles START (#48), the rest pending | #72, #49 |
+| IF-05 | VC → S1 | message buffer, nonblocking send (owned by S1) | `subsystem1_publish_telemetry()` | 80-bit telemetry packet once a second: state, faults, speed, distance, line sensors, barcode, highest hump, encoder counts, obstacle scan results (layout in `subsystem1/README.md`) | Buddy 1; VC publishes it (#72) | #40, #41 |
+| IF-06 | S1 → VC | message buffer, polled with `TMO_POL` (owned by S1) | `subsystem1_receive_command()` | PC commands STATUS, PAUSE, RESUME, RESET_STATS, START | Buddy 1; VC handles STATUS, PAUSE, RESUME, START (#72, #48) | #49 |
 | IF-07 | S3 → VC | S3 message buffer and snapshot API | `g_h_line_nav_q` | line positions; barcode letter and junction command; one consumer | integrated build | #38, #68 |
 | IF-08 | S4 → VC, S5 | snapshot under S4 mutex | `subsystem4_get_latest()` | IMU calibrated, terrain (hump, tilt, highest-hump height), lift-stop, motion class, turn rate. S5 ignores readings while tilted or on a hump (A5-2) | integrated build | #53, #42, #43, #44, #67 |
 | IF-09 | Application → S2 | message buffer, separate STOP flag | `mbf_motion_cmd`, `flg_motion_stop` | `MOTION_COMMAND` (forward, reverse, turn, stop); autonomous profiles reject external moves | motion build | #39 |
 | IF-10 | S5 → VC | packed 32-bit request word, single writer, read with `subsystem5_get_request()` (owned by S5) | `subsystem5_get_request()` | `S5_REQUEST`: NONE / HOLD / MOVE{fwd or reverse cm, pivot deg, stop-on-line (first sensor, or with bit 28 `line_all` once every steering sensor has crossed)} / RESUME / SAFE_STOP plus a 4-bit seq; reserved values → VC stops (`E_PAR`). S5 posts HOLD at boot and the VC does not arm until S5 releases it (after the servo's start-up swing) | **proposed** by Buddy 5; needs Buddy 2's OK | #39 |
 | IF-11 | VC → S5 | event flag (owned by S5) | `flg_s5_evt` | `S5_EVT_FOLLOWING` / `STOPPED` / `MOTION_DONE` / `LINE_FOUND` / `MOVE_FAILED` | **proposed** by Buddy 5; needs Buddy 2's OK | — |
-| IF-12 | S1 → VC → S3 | message buffer (owned by S1), then S3 setter | `subsystem1_receive_mapping()`, `line_service_set_mapping()` | 4-letter letter-to-movement map sent from the PC before the demo. Until a map arrives, the robot goes straight at junctions. No hard-coded map | pending | #72, #38 |
+| IF-12 | S1 → VC → S3 | message buffer (owned by S1), then S3 setter | `subsystem1_receive_mapping()`, `line_service_set_mapping()` | 4-letter letter-to-movement map sent from the PC before the demo. Until a map arrives, the robot goes straight at junctions; a junction with no mapped barcode before it also goes straight. No hard-coded map in either build; telemetry bit 86 reports whether a map has been applied | VC and all_test apply it (#72, #38) | #38 |
 | IF-13 | S3 → S1 | message buffer (owned by S1), nonblocking send | `subsystem1_publish_barcode()` | barcode result event: frame, valid/invalid, letter, run count; published on `<id>/barcode` as a 4-byte binary packet with QoS 1 (`testing/subsystem1/BARCODE_MQTT.md`) | host-tested (branch `s1/barcode-queue`) | #3, #16 |
 
 While S5 has a HOLD or MOVE request, the VC's `avoid_step()` in
@@ -252,13 +252,11 @@ interface's owner.
 | line faults, byte 2 bits 7:5 (`LINE_BARCODE_ERR_LINE`, `_QUEUE`, `_TIMING`) | S3 snapshot | `line_service_task` | VC (as state FAULT) | line lost longer than the search time; queue overflow; sampling gap | S3, only on calibration or mode reset | **yes** | any one sets state FAULT |
 | `IMU_DATA.motion_state` | S4 snapshot (`mtx_imu_data`) | `imu_task` | VC (stops on COLLISION and FAULT; TILT is report-only, #67), S5 (ignores readings on HUMP and TILT) | every sample (20 ms) | overwritten every sample | level | S4 picks one class per sample: COLLISION > hump just completed > TILT > hump in progress > NORMAL; FAULT on a read failure |
 | `IMU_DATA.event` | S4 snapshot | `imu_task` | VC | for one sample, when it happens. TILT once per tilt episode (`tilt_reported`) | next sample | no: one sample wide | as `motion_state`. The VC runs every 10 ms, so it sees every 20 ms sample |
-| telemetry faults, bits 0–4 (`S1_FAULT_*`) | IF-05 packet | **VC (planned, #72)**. Today only `all_test` sets one (`S1_FAULT_IMU`) | PC over MQTT | — | rebuilt from the VC's snapshot each packet (S1 README) | level: the VC's own stop latch holds the memory | independent flags |
+| telemetry faults, bits 0–4 (`S1_FAULT_*`) | IF-05 packet | **VC (#72)**: `S1_FAULT_IMU` when the IMU is unhealthy, `S1_FAULT_MOTOR_STALL` on an encoder stall; `all_test` sets `S1_FAULT_IMU` | PC over MQTT | — | rebuilt from the VC's snapshot each packet (S1 README) | level: the VC's own stop latch holds the memory | independent flags |
 | VC stop latch (`halted`, `line_halt`) | `robot_control.c` (internal) | VC | VC | any `halt()` or `halt_line()` | line stops: back on the line with the wheels still for 1 s (`S2_LINE_REARM_MS`). Every other stop: reboot | **yes** | safety stop (IMU, motion fault, bad S5 word) > S5 avoidance > line following |
 
 What still has to be done before this table is final:
 
-- **S1 fault bits have no producer in `integrated`.** The VC must fill them
-  when IF-05 is connected (#72).
 - **IMU COLLISION still stops the robot in the VC.** Collision is being
   removed (#53). TILT no longer stops it (#67, decided 20 Nov).
 - **`IMU_DATA.event` is one sample wide.** A consumer that polls slower than

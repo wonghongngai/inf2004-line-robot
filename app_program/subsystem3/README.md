@@ -37,16 +37,32 @@ and independent sample-width fixtures are in `testing/subsystem3/fixtures/`.
    The stored letter is then cleared.
 5. Repeat for the next barcode.
 
-The letter-to-movement mapping is **not** fixed in the decoder. It is set at
-run time with `line_service_set_mapping(left, right, straight, uturn)`, which
-Buddy 1 calls when the MQTT mapping message arrives (allowed at any time; a
-bad message leaves the old map). Until then `line_demo.h` loads a temporary
-map: A=LEFT, B=RIGHT, C=STRAIGHT, Z=U-TURN.
+The letter-to-movement mapping is **not** fixed anywhere in the robot (#38,
+prof instruction 13 Nov). The instructor picks the four letters just before
+the demo and sends them PC → car over MQTT (`<id>/mapping`, S1). The
+controller (`robot_control.c` in `integrated`, `all_buddies_test.c` in
+`all_test`) applies every valid map with
+`line_service_set_mapping(left, right, straight, uturn)`; it may arrive at any
+time, and a bad message leaves the old map. **Until a map arrives, no letter is
+mapped and the robot goes straight at junctions.** A letter with no mapping
+also goes straight. Telemetry bit 86 (`map_received`) tells the PC whether a
+map has been applied; the dashboard shows "Waiting for map" until it has.
+
+Send a map from the PC with the dashboard's *Barcode actions* card, or:
+
+```sh
+python3 tools/mqtt_binary.py mapping --left F --right A --straight Z --uturn W |
+  mosquitto_pub -h BROKER -t 'CLIENT_ID/mapping' -q 1 -s
+```
+
+The only built-in map left is the bench demo below (`barcode_test`, which has
+no MQTT, so nothing could send it one).
 
 ### Bench demo printout
 
 `line_demo.c` (enabled by `LINE_DEMO_ENABLE` in `line_demo.h`, never in test
-builds) calibrates, loads the temporary map, enables the service and prints
+builds) calibrates, loads a demo-only map (`line_demo.h`; never used on the
+track), enables the service and prints
 every event on the USB console, plus a sensor line every second:
 
 ```
@@ -113,11 +129,13 @@ At power-up the service samples but remains **paused**:
 4. While paused, select the mounting profile; letter meanings may be set any time.
 5. Call `line_service_enable(true)` when the controller is ready.
 
-Example configuration (letters come from the MQTT mapping message):
+Example configuration. The letters come from the MQTT mapping message
+(`s1_mapping_get()` gives 0..25 per slot); never hard-code them:
 
 ```c
 line_service_set_layout(LINE_BARCODE_LAYOUT_SIDE);
-line_service_set_mapping('A', 'B', 'C', 'Z'); /* left, right, straight, U */
+line_service_set_mapping('A' + letters[S1_MAP_LEFT], 'A' + letters[S1_MAP_RIGHT],
+                         'A' + letters[S1_MAP_STRAIGHT], 'A' + letters[S1_MAP_UTURN]);
 /* Check each ER result, then enable after measured calibration. */
 ```
 

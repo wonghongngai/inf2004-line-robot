@@ -202,7 +202,7 @@ Topics are prefixed with `MQTT_CLIENT_ID` from `config/wifi_secrets.h`:
 | Topic | Direction | Payload |
 | --- | --- | --- |
 | `<id>/telemetry` | car → PC | 15-byte binary packet once a second (layout in `app_program/subsystem1/README.md`) |
-| `<id>/command` | PC → car | 1 raw byte: STATUS, PAUSE, RESUME, START. RESET_STATS and REVERSE are defined by the protocol and currently unsupported in `all_test`. `integrated` acts on START only; the others wait for #72 |
+| `<id>/command` | PC → car | 1 raw byte: STATUS, PAUSE, RESUME, START. RESET_STATS and REVERSE are defined by the protocol and currently unsupported in `all_test`. `integrated` handles STATUS, PAUSE, RESUME and START (#48, #72) |
 | `<id>/mapping` | PC → car | 3-byte letter-to-movement map (left, right, straight, U-turn) |
 | `<id>/barcode` | car → PC | 4-byte result per finished scan: frame, letter (or rejected), runs ([BARCODE_MQTT.md](testing/subsystem1/BARCODE_MQTT.md)) |
 
@@ -306,12 +306,22 @@ python3 tools/mqtt_binary.py mapping --left F --right A --straight Z --uturn W |
 ```
 
 Use the robot's client ID in the topic. Send the map after the robot subscribes
-to the topic and check the Pico's serial console for `[ALL TEST] MQTT map applied`.
+to the topic and check the Pico's serial console for `[ALL TEST] MQTT map applied`
+(`all_test`) or `[ROBOT] MQTT map applied` (`integrated`).
 The controller looks up the detected letter at the next junction where the
 centre and right sensors both see black. The map replaces all four assignments.
-The local map resets to A/F/Z/W on reboot. This MQTT update is supported by
-`all_test`; the `integrated` controller still uses its startup map.
-Until a map arrives, the robot goes straight at junctions.
+Neither build has a built-in map (#38, #72): after a reboot, until a map
+arrives, the robot goes straight at every junction, and the dashboard's
+**Letter map** row says "Waiting for map" (telemetry bit 86). In both builds, a
+junction with no mapped barcode before it goes straight, with or without a
+map (decided 21 Nov). Resend the map after every reboot.
+
+**`integrated` over MQTT (#72).** It publishes telemetry once a second (state,
+faults, speed, distance, line sensors, last barcode letter and its mapped
+direction, barcode counts, highest hump; battery and obstacle fields are still
+0). Commands: **Start** leaves Ready (#48); **Pause** stops at once and blocks
+the automatic line re-arm; **Resume** continues only with the centre and right
+sensors on the line and a healthy IMU; a safety stop still needs a reboot.
 
 **Telemetry fields not filled yet:** battery, and obstacle distance, scan
 angle and width (issue #40). They read as zero placeholders, not measurements.

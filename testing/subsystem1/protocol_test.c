@@ -3,8 +3,8 @@
 #include <string.h>
 #include "communication_protocol.h"
 
-static const int minima[] = {0,0,0,-200,0,0,0,0,0,0,0,0,0,0,0};
-static const int maxima[] = {7,31,100,200,65535,7,4,255,400,180,400,26,1,65535,65535};
+static const int minima[] = {0,0,0,-200,0,0,0,0,0,0,0,0,0,0,0,0};
+static const int maxima[] = {7,31,100,200,65535,7,4,255,400,180,400,26,1,65535,65535,1};
 
 int main(void)
 {
@@ -36,8 +36,9 @@ int main(void)
         assert(memcmp(&packet, &before, sizeof packet) == 0);
     }
     {
-        static const int values[] = {7,31,100,-123,65535,7,4,255,400,180,400,6,1,15,14};
-        static const unsigned char expected[] = {0xff,0xe4,0x26,0xff,0xff,0xe7,0x3f,0x64,0x5a,0xc8,0x26,0x0f,0x00,0x0e,0x00};
+        /* Last value: map received (#38), bit 86 = 0x40 in byte 10. */
+        static const int values[] = {7,31,100,-123,65535,7,4,255,400,180,400,6,1,15,14,1};
+        static const unsigned char expected[] = {0xff,0xe4,0x26,0xff,0xff,0xe7,0x3f,0x64,0x5a,0xc8,0x66,0x0f,0x00,0x0e,0x00};
         s1_telemetry_init(&packet);
         for (field = 0; field < S1_FIELD_COUNT; ++field) {
             assert(s1_telemetry_set(&packet, (S1_FIELD)field, values[field]));
@@ -55,6 +56,13 @@ int main(void)
     /* Battery 127 is an unused wire encoding. */
     s1_telemetry_init(&packet);
     packet.bytes[1] |= 127;
+    assert(!s1_telemetry_valid(&packet));
+    /* Bit 87 is still reserved; bit 86 alone (map received) is valid. */
+    s1_telemetry_init(&packet);
+    packet.bytes[10] |= 0x40;
+    assert(s1_telemetry_valid(&packet));
+    assert(s1_telemetry_get(&packet, S1_FIELD_MAP_RECEIVED, &decoded) && decoded == 1);
+    packet.bytes[10] |= 0x80;
     assert(!s1_telemetry_valid(&packet));
     {
         /* Barcode result packet: every letter x runs, frame wraps to 16 bits. */

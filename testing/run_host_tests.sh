@@ -186,7 +186,7 @@ run_c  s4/hump_height         $STRICT $INT/hump_height_host_test.c
 # ---- Integration (two or more subsystems) ----------------------------------
 run_c  int/robot_control      $STRICT -DAPP_ROBOT_INTEGRATED=1 -DAPP_TEST=0 -DS2_MOTION_DEMO=0 \
                               -DS2_LINE_CALIBRATION_READY=1 -include $INT/robot_host_stubs.h \
-                              $INT/robot_host_test.c app_program/subsystem2/motion_control.c
+                              $INT/robot_host_test.c app_program/subsystem2/motion_control.c $S1/communication_protocol.c
 run_c  int/line_service       $STRICT $INT/line_service_host_test.c $S3/line_barcode.c $S1/communication_protocol.c
 run_py int/steering_ramp      $INT/test_steering_ramp.py
 

@@ -19,8 +19,15 @@ int tm_printf(UB *format, ...) { (void)format; return 0; }
 ER subsystem4_get_latest(IMU_DATA *out) { *out = fake_imu; return E_OK; }
 ER line_service_calibrate(uint8_t b, uint8_t w) { return (b ^ w) == 7u ? E_OK : E_PAR; }
 ER line_service_set_layout(uint8_t layout) { (void)layout; return E_OK; }
+static char applied_map[5];   /* last map handed to S3, as "LRSU" */
 ER line_service_set_mapping(char l, char r, char s, char u)
-{ (void)l; (void)r; (void)s; (void)u; return E_OK; }
+{
+    applied_map[0] = l; applied_map[1] = r; applied_map[2] = s; applied_map[3] = u;
+    return E_OK;
+}
+static unsigned fake_black, fake_white;
+void line_service_barcode_debug(unsigned *black, unsigned *white, uint8_t *letter)
+{ *black = fake_black; *white = fake_white; *letter = 0xffu; }
 ER line_service_enable(bool on) { enabled = on; has_event = false; return E_OK; }
 ER line_service_snapshot(line_barcode_msg_t *msg) { *msg = snapshot; return snapshot_error; }
 ER line_service_receive(line_barcode_msg_t *msg, TMO timeout)
@@ -45,6 +52,36 @@ INT subsystem1_receive_command(S1_COMMAND *command, TMO timeout)
 static void send_command(unsigned code)
 {
     commands[(command_head + command_count++) % 16u] = (unsigned char)code;
+}
+
+/* S1 letter-map queue and telemetry sink (#72). */
+static S1_MAPPING pending_map;
+static bool has_map;
+INT subsystem1_receive_mapping(S1_MAPPING *mapping, TMO timeout)
+{
+    (void)timeout;
+    if (!has_map) return E_TMOUT;
+    *mapping = pending_map; has_map = false;
+    return (INT)S1_MAPPING_BYTES;
+}
+static void send_map(const char *letters) /* "LRSU", e.g. "FAZW" */
+{
+    unsigned char codes[S1_MAP_SLOTS];
+    for (unsigned i = 0u; i < S1_MAP_SLOTS; ++i) codes[i] = (unsigned char)(letters[i] - 'A');
+    EXPECT(s1_mapping_set(&pending_map, codes));
+    has_map = true;
+}
+static S1_TELEMETRY published;
+static unsigned publish_count;
+ER subsystem1_publish_telemetry(const S1_TELEMETRY *packet)
+{
+    published = *packet; ++publish_count; return E_OK;
+}
+static int field(S1_FIELD f)
+{
+    int value = -1;
+    EXPECT(s1_telemetry_get(&published, f, &value));
+    return value;
 }
 
 /* S5 executor: modelled as idle (no obstacle, no start-up hold), so these
@@ -83,6 +120,19 @@ static void reset(MOTION_CONTROLLER *ctl)
     auto_start = true;
     start_requested = ready_reported = false;
     command_head = command_count = command_polls = 0u;
+    /* #72 state. */
+    paused = map_received = status_requested = have_imu = in_avoid = false;
+    odo_started = false;
+    last_letter = 0u;
+    last_telemetry = 0u;
+    telemetry_error = E_OK;
+    distance_cm = 0.0f;
+    memset(&last_imu, 0, sizeof(last_imu));
+    memset(map_letters, 0, sizeof(map_letters));
+    memset(applied_map, 0, sizeof(applied_map));
+    has_map = false;
+    publish_count = 0u;
+    fake_black = fake_white = 0u;
     has_event = enabled = false; snapshot_error = E_OK;
     memset(&fake_imu, 0, sizeof(fake_imu));
     fake_imu.sensor_ok = fake_imu.calibrated = TRUE;
@@ -194,11 +244,23 @@ int main(void)
     follow(&ctl); snapshot_error = E_TMOUT; stopped_debounced(&ctl, 5041);
     follow(&ctl); snapshot.data[1] = LINE_BARCODE_FAULT; stopped(&ctl, 5041);
     follow(&ctl); snapshot.data[1] = LINE_BARCODE_SEARCH; stopped_debounced(&ctl, 5041);
-    for (unsigned event = 0; event < 3; ++event) {
-        const unsigned events[] = {LINE_BARCODE_EVT_LOST, LINE_BARCODE_EVT_FAULT, LINE_BARCODE_EVT_JUNCTION};
+    for (unsigned event = 0; event < 2; ++event) {
+        const unsigned events[] = {LINE_BARCODE_EVT_LOST, LINE_BARCODE_EVT_FAULT};
         follow(&ctl); queued = snapshot;
         queued.data[1] = (uint8_t)(events[event] << 3u); has_event = true;
         stopped(&ctl, 5041);
+    }
+    /* #72 (decided 21 Nov): a junction with no mapped barcode before it goes
+     * straight on, both before and after an MQTT map has arrived. */
+    for (unsigned with_map = 0; with_map < 2; ++with_map) {
+        follow(&ctl); queued = snapshot;
+        queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_JUNCTION << 3u); has_event = true;
+        map_received = with_map != 0u;
+        robot_control_step(&ctl, 5041, 1, 1);
+        EXPECT(!halted && enabled && !turning);
+        robot_control_step(&ctl, 5042, 1, 1);
+        motion_control_step(&ctl, 5050, 2, 2);
+        EXPECT(ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
     }
     /* Line stops re-arm by themselves after S2_LINE_REARM_MS of stable black
      * on centre + right with the wheels still (ported from the retired
@@ -317,6 +379,151 @@ int main(void)
     for (unsigned i = 0u; i < 10u; ++i) send_command(S1_COMMAND_STATUS);
     robot_control_step(&ctl, 1000, 0, 0);
     EXPECT(command_count == 10u - S1_QUEUE_DEPTH && command_polls == S1_QUEUE_DEPTH);
+
+    /* ---- #72 MQTT link ------------------------------------------------- */
+
+    /* PAUSE stops at once and holds; RESUME on a healthy line and IMU
+     * restarts line following. */
+    follow(&ctl);
+    send_command(S1_COMMAND_PAUSE);
+    robot_control_step(&ctl, 5041, 1, 1);
+    EXPECT(paused && !enabled && !halted);
+    EXPECT(ctl.status.left_pwm_percent == 0 && ctl.status.right_pwm_percent == 0);
+    for (uint32_t t = 5100u; t <= 7000u; t += 100u) {
+        fake_imu.sample_count++;
+        robot_control_step(&ctl, t, 1, 1);
+        motion_control_step(&ctl, t, 1, 1);
+        EXPECT(paused && ctl.status.left_pwm_percent == 0);
+    }
+    send_command(S1_COMMAND_RESUME);
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, 7050, 1, 1);
+    EXPECT(!paused && enabled);
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, 7100, 1, 1);
+    motion_control_step(&ctl, 7110, 2, 2);
+    EXPECT(ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+
+    /* RESUME is refused off the line or with an unhealthy IMU. */
+    follow(&ctl);
+    send_command(S1_COMMAND_PAUSE);
+    robot_control_step(&ctl, 5041, 1, 1);
+    snapshot.data[0] = 0u;                                 /* off the line */
+    send_command(S1_COMMAND_RESUME);
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, 5060, 1, 1);
+    EXPECT(paused && !enabled);
+    snapshot.data[0] = 3u | (2u << 3u);
+    fake_imu.sensor_ok = FALSE;
+    send_command(S1_COMMAND_RESUME);
+    robot_control_step(&ctl, 5070, 1, 1);
+    EXPECT(paused && !enabled);
+
+    /* PAUSE during a line stop blocks the automatic re-arm until RESUME. */
+    {
+        const uint32_t t0 = 5041u, rearm = S2_LINE_REARM_MS;
+        follow(&ctl); line_stop(&ctl, t0);
+        send_command(S1_COMMAND_PAUSE);
+        robot_control_step(&ctl, t0 + 10u, 1, 1);
+        robot_control_step(&ctl, t0 + 3u * rearm, 1, 1);
+        EXPECT(halted && paused && !enabled);              /* no re-arm while paused */
+        send_command(S1_COMMAND_RESUME);
+        fake_imu.sample_count++;
+        robot_control_step(&ctl, t0 + 3u * rearm + 1u, 1, 1);
+        EXPECT(!paused && halted);          /* time paused doesn't count */
+        robot_control_step(&ctl, t0 + 4u * rearm, 1, 1);
+        EXPECT(halted && !enabled);
+        robot_control_step(&ctl, t0 + 4u * rearm + 1u, 1, 1);
+        EXPECT(!halted && enabled);         /* a full re-arm wait after RESUME */
+    }
+
+    /* A safety stop ignores PAUSE and RESUME: it needs a reboot. */
+    follow(&ctl); fake_imu.event = IMU_EVENT_FAULT;
+    robot_control_step(&ctl, 5041, 1, 1);
+    EXPECT(halted && !line_halt);
+    fake_imu.event = IMU_EVENT_NONE;
+    send_command(S1_COMMAND_PAUSE);
+    send_command(S1_COMMAND_RESUME);
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, 5100, 1, 1);
+    EXPECT(halted && !line_halt && !paused && !enabled);
+
+    /* PAUSE in Ready cancels a pending START. */
+    reset(&ctl);
+    auto_start = false;
+    send_command(S1_COMMAND_START);
+    robot_control_step(&ctl, 1000, 0, 0);
+    send_command(S1_COMMAND_PAUSE);
+    robot_control_step(&ctl, 1100, 0, 0);
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, 5000, 0, 0);
+    EXPECT(!armed && !start_requested);
+
+    /* The MQTT letter map is applied to S3; a later barcode and its mapped
+     * direction appear in telemetry. A bad map changes nothing. */
+    follow(&ctl);
+    EXPECT(applied_map[0] == '\0' && !map_received);        /* no built-in map */
+    send_map("FAZW");
+    robot_control_step(&ctl, 5041, 1, 1);
+    EXPECT(map_received && strcmp(applied_map, "FAZW") == 0);
+    pending_map.bytes[0] = pending_map.bytes[1] = pending_map.bytes[2] = 0u; /* A,A,A,A */
+    has_map = true;
+    robot_control_step(&ctl, 5042, 1, 1);
+    EXPECT(strcmp(applied_map, "FAZW") == 0);               /* duplicates rejected */
+    queued = snapshot;
+    queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_BARCODE << 3u);
+    queued.data[2] = 'Z' - 'A';
+    has_event = true;
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, 5060, 1, 1);
+    EXPECT(last_letter == 26u);
+    send_command(S1_COMMAND_STATUS);
+    robot_control_step(&ctl, 5061, 1, 1);
+    EXPECT(field(S1_FIELD_BARCODE_LETTER) == 26 &&
+           field(S1_FIELD_BARCODE) == S1_BARCODE_STRAIGHT); /* Z = straight */
+    EXPECT(field(S1_FIELD_MAP_RECEIVED) == 1);             /* #38 */
+
+    /* Telemetry: once a second, STATUS forces one at once; state, line bits,
+     * distance, hump and barcode counts come from the live sources. */
+    reset(&ctl);
+    auto_start = false;
+    robot_control_step(&ctl, 1000, 0, 0);
+    EXPECT(publish_count == 1u && field(S1_FIELD_STATE) == S1_STATE_IDLE);
+    EXPECT(field(S1_FIELD_MAP_RECEIVED) == 0);             /* #38: waiting for map */
+    robot_control_step(&ctl, 1500, 0, 0);
+    EXPECT(publish_count == 1u);
+    robot_control_step(&ctl, 2000, 0, 0);
+    EXPECT(publish_count == 2u);
+    send_command(S1_COMMAND_STATUS);
+    robot_control_step(&ctl, 2001, 0, 0);
+    EXPECT(publish_count == 3u);
+    follow(&ctl);
+    fake_imu.ramp_height_mm = 23u;
+    fake_black = 15u; fake_white = 14u;
+    snapshot.data[0] = 6u | (2u << 3u);                    /* S3 L+C black */
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, 6000, 100, 100);              /* 10 ticks/cm: 10 cm */
+    send_command(S1_COMMAND_STATUS);
+    robot_control_step(&ctl, 6001, 100, 100);
+    EXPECT(field(S1_FIELD_STATE) == S1_STATE_FOLLOWING);
+    EXPECT(field(S1_FIELD_LINE_SENSORS) == 3);             /* wire: L bit0, C bit1 */
+    EXPECT(field(S1_FIELD_DISTANCE_CM) == 10);
+    EXPECT(field(S1_FIELD_HIGHEST_HUMP_MM) == 23);
+    EXPECT(field(S1_FIELD_BARCODE_BLACK) == 15 && field(S1_FIELD_BARCODE_WHITE) == 14);
+    EXPECT(field(S1_FIELD_FAULTS) == 0);
+    send_command(S1_COMMAND_PAUSE);
+    send_command(S1_COMMAND_STATUS);
+    robot_control_step(&ctl, 6002, 100, 100);
+    EXPECT(field(S1_FIELD_STATE) == S1_STATE_IDLE);        /* paused */
+    follow(&ctl); line_stop(&ctl, 5041);
+    send_command(S1_COMMAND_STATUS);
+    robot_control_step(&ctl, 5042, 1, 1);
+    EXPECT(field(S1_FIELD_STATE) == S1_STATE_RECOVERING);
+    follow(&ctl); fake_imu.sensor_ok = FALSE;
+    send_command(S1_COMMAND_STATUS);
+    robot_control_step(&ctl, 5041, 1, 1);
+    EXPECT(field(S1_FIELD_STATE) == S1_STATE_FAULT &&
+           (field(S1_FIELD_FAULTS) & S1_FAULT_IMU) != 0);
 
     printf("robot host tests: %u checks passed\n", checks);
     return 0;

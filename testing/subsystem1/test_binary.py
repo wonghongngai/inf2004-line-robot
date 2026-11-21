@@ -15,8 +15,8 @@ spec.loader.exec_module(codec)
 class ProtocolTests(unittest.TestCase):
     def test_boundary_fixture(self):
         values = dict(zip((f[0] for f in codec.FIELDS),
-                          [7, 31, 100, -123, 65535, 7, 4, 255, 400, 180, 400, 6, 1, 15, 14]))
-        wire = bytes.fromhex('ffe426ffffe73f645ac8260f000e00')
+                          [7, 31, 100, -123, 65535, 7, 4, 255, 400, 180, 400, 6, 1, 15, 14, 1]))
+        wire = bytes.fromhex('ffe426ffffe73f645ac8660f000e00')  # byte 10 bit 6 = map (#38)
         self.assertEqual(codec.encode_telemetry(values), wire)
         self.assertEqual(codec.decode_telemetry(wire), values)
         del values["barcode_black"]
@@ -26,6 +26,7 @@ class ProtocolTests(unittest.TestCase):
         self.assertEqual(codec.decode_telemetry(wire[:-1] + b"\x06")["speed_valid"], 0)
         del values["speed_valid"]
         del values["barcode_letter"]
+        del values["map_received"]
         self.assertEqual(codec.decode_telemetry(wire[:-1]), values)
         with self.assertRaises(ValueError):
             codec.decode_telemetry(wire[:-1] + b"\xe6")

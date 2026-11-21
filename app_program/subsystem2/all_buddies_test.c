@@ -93,6 +93,7 @@ typedef struct {
     unsigned white_report_pattern, white_report_action;
     unsigned barcode_consumed_rises, barcode_consumed_falls;
     uint8_t pending_letter;          /* bit 7 = waiting, bits 4..0 = A=0..Z=25 */
+    bool map_received;               /* #38: an MQTT letter map has been applied */
     unsigned turn_stage, turn_command;
     uint32_t turn_started, turn_done;
     int32_t turn_left0, turn_right0;
@@ -380,6 +381,23 @@ static bool start_junction_turn(ALL_TEST *t, uint32_t now)
     return true;
 }
 
+/* #38: a decoded letter with no mapping (or no map yet) crosses straight.
+ * Its scanner edges count as used, so the next junction does not see them. */
+static bool junction_unmapped_letter(ALL_TEST *t)
+{
+    uint8_t command;
+    unsigned level = 0u;
+    if ((t->pending_letter & 0x80u) == 0u) return false;
+    unsigned letter = t->pending_letter & LINE_BARCODE_LETTER_MASK;
+    if (line_service_lookup((uint8_t)letter, &command) == E_OK) return false;
+    t->pending_letter = 0u;
+    line_service_barcode_raw(&level, &t->barcode_consumed_rises,
+                            &t->barcode_consumed_falls);
+    tm_printf((UB *)"[MOTION] junction: letter '%c' %s; continuing forward\n",
+              'A' + letter, t->map_received ? "has no mapping" : "read before any MQTT map");
+    return true;
+}
+
 /* Any scanner activity includes partial frames; only a completely absent
  * scan allows an uncommanded crossing. S3 keeps ownership of decoding. */
 static bool junction_barcode_seen(const ALL_TEST *t)
@@ -561,12 +579,14 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
         t->white_report_action = action;
     }
     bool barcode_seen = sensors == 3u && junction_barcode_seen(t);
+    /* Checked before start_junction_turn(), which would consume the letter. */
+    bool unmapped = sensors == 3u && !t->leaving_junction && junction_unmapped_letter(t);
     if (sensors == 3u && t->leaving_junction) {
         /* Still on the crossing just left by a movement. */
         apply_line_pwm(t, ALL_CRUISE_LEFT_PWM, ALL_CRUISE_RIGHT_PWM, now);
-    } else if (sensors == 3u && start_junction_turn(t, now)) {
+    } else if (sensors == 3u && !unmapped && start_junction_turn(t, now)) {
         turn_step(t, now);
-    } else if (sensors == 3u && !barcode_seen) {
+    } else if (sensors == 3u && (!barcode_seen || unmapped)) {
         t->leaving_junction = true;
         t->turn_done = now;
         t->steering_action = 0u;
@@ -575,7 +595,7 @@ static void white_follow_step(ALL_TEST *t, uint32_t now)
         apply_line_pwm(t, ALL_CRUISE_LEFT_PWM, ALL_CRUISE_RIGHT_PWM, now);
         tm_printf((UB *)"[MOTION] junction: no barcode sensed; continuing forward\n");
     } else if (sensors == 3u) {
-        stop_test(t, "junction: incomplete or unmapped barcode", S1_STATE_FAULT);
+        stop_test(t, "junction: incomplete barcode (no letter decoded)", S1_STATE_FAULT);
     } else if (action == 1u) {
         t->stop_reason = "right black: right correction";
         apply_line_pwm(t, ALL_CRUISE_LEFT_PWM + ALL_LINE_STEER_BOOST,
@@ -814,6 +834,7 @@ static void report_telemetry(ALL_TEST *t, uint32_t now)
                          barcode_action(t->barcode_letter - 1u);
     (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE, direction);
     (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_LETTER, t->barcode_letter);
+    (void)s1_telemetry_set(&packet, S1_FIELD_MAP_RECEIVED, t->map_received ? 1 : 0);
     unsigned black_bars = 0u, white_gaps = 0u;
     uint8_t decoded_letter;
     line_service_barcode_debug(&black_bars, &white_gaps, &decoded_letter);
@@ -937,6 +958,7 @@ static void commands(ALL_TEST *t, uint32_t now)
             continue;
         }
         t->force_status = true;
+        t->map_received = true;
         tm_printf((UB *)"[ALL TEST] MQTT map applied: %c=LEFT %c=RIGHT %c=STRAIGHT %c=U-TURN\n",
                   'A' + letters[S1_MAP_LEFT], 'A' + letters[S1_MAP_RIGHT],
                   'A' + letters[S1_MAP_STRAIGHT], 'A' + letters[S1_MAP_UTURN]);
@@ -1324,7 +1346,7 @@ static void all_task(INT stacd, void *exinf)
     tm_printf((UB *)"[ALL TEST] layout=%s\n",
               ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_TRACK ?
               "TRACK (three line sensors; barcode decoding disabled)" : "SIDE (offset scanner)");
-    tm_printf((UB *)"[ALL TEST] default barcode map: A=LEFT F=RIGHT Z=STRAIGHT W=U-TURN\n");
+    tm_printf((UB *)"[ALL TEST] no letter map yet: straight at junctions until an MQTT map arrives\n");
     if (tk_get_tim(&now) < E_OK) {
         drv_motor_stop();
         tk_slp_tsk(TMO_FEVR);
@@ -1381,8 +1403,7 @@ ER all_buddies_test_start(void)
     if (er == E_OK) er = line_service_init();
     if (er == E_OK) er = line_service_calibrate(7u, 0u);
     if (er == E_OK) er = line_service_set_layout(ALL_TEST_LINE_LAYOUT);
-    /* Only these four letters request junction movements. */
-    if (er == E_OK) er = line_service_set_mapping('A', 'F', 'Z', 'W');
+    /* No built-in letter map (#38): the instructor sends it over MQTT. */
     if (er == E_OK) er = subsystem4_init();
     if (er == E_OK) er = subsystem5_init();
     if (er == E_OK) er = subsystem1_start();

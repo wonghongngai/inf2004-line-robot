@@ -16,6 +16,8 @@ Decided by the team on 20 Nov 2026, from `main` @ `42be6ea`.
 | #5 | S4 keeps the climb height after a hump. The test was changed, not the firmware | — |
 | #6 | Every `[set]` threshold in `TEST_PLAN.md` agreed (table below) | — |
 | #48 | **Add a START command.** The robot waits in Ready until START arrives | Built 21 Nov: `S1_COMMAND_START` (code 5) + VC Ready state; `S2_AUTO_START` fallback. Bench test with the broker pending |
+| #38 | **No on-robot A–Z print test** (decided 21 Nov, time). A–Z in both directions rests on S3-U07 (all 26 letters, synthetic frames, host + Pico) and S3-U18 (real PDF A/Z); on the robot only A was scanned (large print 3/3 forward, 3/3 reversed; medium print failed reversed) | Use **large prints** on demo day; the medium-print failure is a known risk |
+| #72 | **No built-in letter map; a junction without a mapped barcode goes straight** (decided 21 Nov), before and after an MQTT map arrives, as in `all_test` | Built in `robot_control.c`; host-tested in `int/robot_control` |
 | #54 | Obstacle distance is 9-bit cm on the wire, mm inside S5 | VC converts `mm / 10` when filling IF-05 (#72) |
 | #64 | Keep 20 cm detection | Buddy 5 records the reason; S5-U40 (#31) must show the robot rests ≥ 10 cm away |
 | #65 | Keep the 50–130° scan. FR5-1 changed to 50, 70, 90, 110, 130° | Re-measure NFR5-2 with the sensor mounted (#29) |
