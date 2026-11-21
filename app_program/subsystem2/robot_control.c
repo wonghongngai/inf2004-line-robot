@@ -43,7 +43,7 @@ static void stop_robot(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l,
         /* Tell S5 the robot is no longer following (no new obstacles). */
         s5_exec_set_following(&vc_s5, FALSE);
         (void)line_service_enable(false);
-        tm_printf((UB *)"[ROBOT] stopped: %s; %s\n", reason,
+        LOG_WARN(TAG_S2_ROBOT, "stopped: %s; %s", reason,
                   recoverable ? "re-arms when back on the line"
                               : "reboot to re-arm");
         line_halt = recoverable;
@@ -114,7 +114,7 @@ static bool line_snapshot_ok(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l,
         line_unsafe_since = now;
     }
     if (fault || (uint32_t)(now - line_unsafe_since) >= S2_LINE_UNSAFE_MS) {
-        tm_printf((UB *)"[ROBOT] line er=%d state=%u pos=%u sensors=%u\n",
+        LOG_WARN(TAG_S2_ROBOT, "line er=%d state=%u pos=%u sensors=%u",
                   (int)er, state, pos, (unsigned)(msg->data[0] & 7u));
         halt_line(ctl, now, l, r, "line snapshot unsafe or stale");
     }
@@ -190,7 +190,7 @@ static BOOL vc_take_control(void *p)
         halt(c->ctl, c->now, c->l, c->r, "line pause failed");
         return false;
     }
-    tm_printf((UB *)"[ROBOT] obstacle: S5 has control\n");
+    LOG_INFO(TAG_S2_ROBOT, "obstacle: S5 has control");
     return true;
 }
 
@@ -210,7 +210,7 @@ static BOOL vc_give_back(void *p)
     junction_done = c->now;
     steer_action = steer_candidate = 0u;
     clear_pending = false;
-    tm_printf((UB *)"[ROBOT] obstacle handled, line following\n");
+    LOG_INFO(TAG_S2_ROBOT, "obstacle handled, line following");
     return true;
 }
 
@@ -275,11 +275,11 @@ static void pause_robot(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
 {
     if (!armed) {
         start_requested = false; /* a PAUSE in Ready cancels a pending START */
-        tm_printf((UB *)"[ROBOT] PAUSE in Ready: pending START cancelled\n");
+        LOG_INFO(TAG_S2_ROBOT, "PAUSE in Ready: pending START cancelled");
         return;
     }
     if (halted && !line_halt) {
-        tm_printf((UB *)"[ROBOT] PAUSE ignored: already in a safety stop\n");
+        LOG_WARN(TAG_S2_ROBOT, "PAUSE ignored: already in a safety stop");
         return;
     }
     vc_stop_motors(ctl, now, l, r);
@@ -289,7 +289,7 @@ static void pause_robot(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         turning = false;
         turn_stage = 0u;
         paused = true;
-        tm_printf((UB *)"[ROBOT] paused (MQTT); RESUME to continue\n");
+        LOG_INFO(TAG_S2_ROBOT, "paused (MQTT); RESUME to continue");
     }
 }
 
@@ -297,18 +297,18 @@ static void resume_robot(uint32_t now)
 {
     line_barcode_msg_t msg = {{0u, 0u, 0u}};
     if (!paused) {
-        tm_printf((UB *)"[ROBOT] RESUME ignored: not paused%s\n",
+        LOG_WARN(TAG_S2_ROBOT, "RESUME ignored: not paused%s",
                   armed ? "" : " (use START to leave Ready)");
         return;
     }
     if (!imu_healthy(now)) {
-        tm_printf((UB *)"[ROBOT] RESUME refused: IMU not healthy; still paused\n");
+        LOG_WARN(TAG_S2_ROBOT, "RESUME refused: IMU not healthy; still paused");
         return;
     }
     /* Same line test as the automatic re-arm. */
     if (line_service_snapshot(&msg) < E_OK ||
         (straddle ? (msg.data[1] & 7u) == LINE_BARCODE_FAULT : (msg.data[0] & 3u) != 3u)) {
-        tm_printf((UB *)"[ROBOT] RESUME refused: put the robot on the line; still paused\n");
+        LOG_WARN(TAG_S2_ROBOT, "RESUME refused: put the robot on the line; still paused");
         return;
     }
     paused = false;
@@ -316,17 +316,17 @@ static void resume_robot(uint32_t now)
         /* The recoverable line-stop path re-arms as usual, but the "held
            still" wait starts now: time spent paused does not count. */
         rearm_since = now;
-        tm_printf((UB *)"[ROBOT] resumed; re-arms when the line is held still\n");
+        LOG_INFO(TAG_S2_ROBOT, "resumed; re-arms when the line is held still");
         return;
     }
     if (line_service_enable(true) < E_OK) {
         paused = true;
-        tm_printf((UB *)"[ROBOT] RESUME failed: line service; still paused\n");
+        LOG_ERR(TAG_S2_ROBOT, "RESUME failed: line service; still paused");
         return;
     }
     resumed_at = now;
     line_unsafe_active = false;
-    tm_printf((UB *)"[ROBOT] resumed (MQTT)\n");
+    LOG_INFO(TAG_S2_ROBOT, "resumed (MQTT)");
 }
 
 /* Drain up to one queue's worth of MQTT commands without blocking. */
@@ -347,17 +347,17 @@ static void poll_commands(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32
             break;
         case S1_COMMAND_START:
             if (armed) {
-                tm_printf((UB *)"[ROBOT] START ignored: already started%s\n",
+                LOG_WARN(TAG_S2_ROBOT, "START ignored: already started%s",
                           halted && !line_halt ? " (safety stop: reboot to retry)" :
                           paused ? " (paused: use RESUME)" : "");
             } else if (!start_requested) {
                 start_requested = true;
-                tm_printf((UB *)"[ROBOT] START received%s\n",
+                LOG_INFO(TAG_S2_ROBOT, "START received%s",
                           ready_reported ? "" : "; starts once initialisation finishes");
             }
             break;
         default: /* RESET_STATS, REVERSE: defined, not supported here */
-            tm_printf((UB *)"[ROBOT] command %u not supported by the integrated VC\n",
+            LOG_WARN(TAG_S2_ROBOT, "command %u not supported by the integrated VC",
                       (unsigned)command.bytes[0]);
             break;
         }
@@ -376,12 +376,12 @@ static void poll_mapping(void)
                                      (char)('A' + letters[S1_MAP_RIGHT]),
                                      (char)('A' + letters[S1_MAP_STRAIGHT]),
                                      (char)('A' + letters[S1_MAP_UTURN])) < E_OK) {
-            tm_printf((UB *)"[ROBOT] MQTT map rejected by the line service\n");
+            LOG_WARN(TAG_S2_ROBOT, "MQTT map rejected by the line service");
             continue;
         }
         for (unsigned s = 0u; s < S1_MAP_SLOTS; ++s) map_letters[s] = letters[s];
         map_received = true;
-        tm_printf((UB *)"[ROBOT] MQTT map applied: %c=left %c=right %c=straight %c=U-turn\n",
+        LOG_INFO(TAG_S2_ROBOT, "MQTT map applied: %c=left %c=right %c=straight %c=U-turn",
                   'A' + letters[0], 'A' + letters[1], 'A' + letters[2], 'A' + letters[3]);
     }
 }
@@ -431,13 +431,13 @@ static void report_barcode_frame(uint32_t now)
     frame_report_ms = now;
     line_service_barcode_frame(&frame);
     if (frame.sequence == frame_sequence) return;
-    tm_printf((UB *)"[BARCODE FRAME] id=%lu runs=%u/29 black=%u white=%u result=%c skipped=%lu\n",
+    LOG_INFO(TAG_S2_BARCODE, "frame id=%lu runs=%u/29 black=%u white=%u result=%c skipped=%lu",
               (unsigned long)frame.sequence, (unsigned)frame.count,
               (unsigned)((frame.count + 1u) / 2u), (unsigned)(frame.count / 2u),
               frame.letter < 26u ? 'A' + frame.letter : '?',
               (unsigned long)(frame.sequence - frame_sequence - 1u));
     for (unsigned i = 0; i < frame.count; ++i)
-        tm_printf((UB *)"[BARCODE WIDTH] frame=%lu run=%u %s width_ms=%u\n",
+        LOG_INFO(TAG_S2_BARCODE, "width frame=%lu run=%u %s width_ms=%u",
                   (unsigned long)frame.sequence, i + 1u,
                   (i & 1u) ? "WHITE" : "BLACK", (unsigned)frame.widths[i]);
     frame_sequence = frame.sequence;
@@ -488,7 +488,7 @@ static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now)
     /* Battery and obstacle fields stay 0 placeholders (#40). */
     er = subsystem1_publish_telemetry(&packet);
     if (er != telemetry_error && er != E_NOSPT) {
-        tm_printf((UB *)"[ROBOT] telemetry queue %s (%d)\n",
+        LOG_INFO(TAG_S2_ROBOT, "telemetry queue %s (%d)",
                   er >= E_OK ? "accepting packets again" :
                   er == E_TMOUT ? "full; waiting for MQTT" : "error", (int)er);
     }
@@ -516,7 +516,7 @@ static bool straddle_junction(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, i
     steer_action = 0u;
     clear_pending = false;
     if (!waiting || line_service_lookup((uint8_t)letter, &command) != E_OK) {
-        tm_printf((UB *)"[ROBOT] junction: %s, straight on\n",
+        LOG_INFO(TAG_S2_ROBOT, "junction: %s, straight on",
                   !waiting ? "no barcode" : map_received ? "no mapped barcode" :
                   "no MQTT letter map yet");
         return false;
@@ -541,7 +541,7 @@ static bool straddle_junction(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, i
     turn_started = now;
     turn_stage = TURN_ADVANCE;
     turn_cmd = command & 3u;
-    tm_printf((UB *)"[ROBOT] junction: letter '%c' -> %s\n", 'A' + letter,
+    LOG_INFO(TAG_S2_ROBOT, "junction: letter '%c' -> %s", 'A' + letter,
               turn_cmd == LINE_BARCODE_CMD_LEFT ? "LEFT" :
               turn_cmd == LINE_BARCODE_CMD_RIGHT ? "RIGHT" :
               turn_cmd == LINE_BARCODE_CMD_STRAIGHT ? "STRAIGHT" : "U-TURN");
@@ -591,13 +591,13 @@ static void straddle_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32
             return;
         }
         if (event == LINE_BARCODE_EVT_INVALID)
-            tm_printf((UB *)"[BARCODE REJECT] invalid frame: check start/stop, narrow/wide widths and white margins\n");
+            LOG_WARN(TAG_S2_BARCODE, "rejected invalid frame: check start/stop, narrow/wide widths and white margins");
         if (event == LINE_BARCODE_EVT_BARCODE) {
             unsigned letter = ev.data[2] & LINE_BARCODE_LETTER_MASK;
             uint8_t command;
             pending_letter = (uint8_t)(0x80u | letter);
             last_letter = letter + 1u;
-            tm_printf((UB *)"[BARCODE -> MOTION] decoded=%c queued=%s; execute at next C/R junction\n",
+            LOG_INFO(TAG_S2_BARCODE, "decoded=%c queued=%s; execute at next C/R junction",
                       'A' + letter,
                       line_service_lookup((uint8_t)letter, &command) != E_OK ? "no mapping" :
                       command == LINE_BARCODE_CMD_LEFT ? "LEFT" :
@@ -672,7 +672,7 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
         }
         resumed_at = now;
         line_unsafe_active = false;
-        tm_printf((UB *)"[ROBOT] line found, re-armed\n");
+        LOG_INFO(TAG_S2_ROBOT, "line found, re-armed");
         return;
     }
     if (paused) {
@@ -700,7 +700,7 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
         if (!auto_start && !start_requested) {
             if (!ready_reported) {
                 ready_reported = true;
-                tm_printf((UB *)"[ROBOT] ready: motors off, waiting for START over MQTT\n");
+                LOG_INFO(TAG_S2_ROBOT, "ready: motors off, waiting for START over MQTT");
             }
             return;
         }
@@ -717,7 +717,7 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
             resumed_at = now;
             imu_errors = imu.read_errors;
             armed = true;
-            tm_printf((UB *)"[ROBOT] armed: %s\n", map_received ?
+            LOG_INFO(TAG_S2_ROBOT, "armed: %s", map_received ?
                       "letter map from MQTT" : "no letter map yet, straight at junctions");
         }
     }
@@ -735,7 +735,7 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
         imu.event == IMU_EVENT_FAULT) {
         halt(ctl, now, l, r, lifted ? "robot lifted (IMU)" : "IMU unsafe or stale");
         /* all_test: the values that latched the stop, printed once. */
-        tm_printf((UB *)"[ROBOT] IMU stop data: age=%lu ms samples=%lu ok=%d calibrated=%d motion=%d event=%d errors=%lu baseline_errors=%lu\n",
+        LOG_INFO(TAG_S2_ROBOT, "IMU stop data: age=%lu ms samples=%lu ok=%d calibrated=%d motion=%d event=%d errors=%lu baseline_errors=%lu",
                   (unsigned long)(now - last_imu_sample), (unsigned long)imu_count,
                   (int)imu.sensor_ok, (int)imu.calibrated, (int)imu.motion_state,
                   (int)imu.event, (unsigned long)imu.read_errors,
@@ -818,7 +818,7 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
         if (event == LINE_BARCODE_EVT_JUNCTION) {
             /* #72 (decided 21 Nov): a junction without a mapped barcode before
                it goes straight, with or without an MQTT map (as all_test). */
-            tm_printf((UB *)"[ROBOT] junction: %s, straight on\n",
+            LOG_INFO(TAG_S2_ROBOT, "junction: %s, straight on",
                       map_received ? "no mapped barcode" : "no MQTT letter map yet");
             continue;
         }
@@ -906,18 +906,18 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
             pause_until = now + 1500u;
             if (++stage == sizeof(sequence) / sizeof(sequence[0])) {
                 done = true;
-                tm_printf((UB *)"[S2 DEMO] finished; motors OFF\n");
+                LOG_INFO(TAG_S2_DEMO, "finished; motors OFF");
             }
         } else if ((uint32_t)(now - started) > S2_DEMO_TIMEOUT_MS) {
             (void)motion_control_command(ctl, &stop, now, l, r);
             done = true;
-            tm_printf((UB *)"[S2 DEMO] timeout; motors OFF\n");
+            LOG_WARN(TAG_S2_DEMO, "timeout; motors OFF");
         }
     } else if ((int32_t)(now - pause_until) >= 0) {
         if (motion_control_command(ctl, &sequence[stage], now, l, r) == MOTION_RESULT_OK) {
             waiting = true;
             started = now;
-            tm_printf((UB *)"[S2 DEMO] stage %u started\n", stage + 1u);
+            LOG_INFO(TAG_S2_DEMO, "stage %u started", stage + 1u);
         }
     }
 }

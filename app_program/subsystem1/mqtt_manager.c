@@ -22,7 +22,7 @@
 #include "wifi_secrets.h"
 #include "mqtt_utk.h"
 #include "communication_internal.h"
-#include <tm/tmonitor.h>
+#include "../app_log.h"	/* LOG_xxx console macros; not app.h (size_t clash) */
 
 #define MQTT_UTK_HEARTBEAT_MS   2000
 #define MQTT_UTK_KEEPALIVE_S    60
@@ -78,7 +78,7 @@ static void incoming_publish_cb(void *arg, const char *topic, u32_t tot_len)
     (void)arg;
     rx_length = 0;
     rx_kind = RX_NONE;
-    tm_printf((UB *)"mqtt: RX topic=%s length=%lu\n", topic, (unsigned long)tot_len);
+    LOG_INFO(TAG_S1_MQTT, "RX topic=%s length=%lu", topic, (unsigned long)tot_len);
     if (topic_is(topic, MQTT_COMMAND_TOPIC) && tot_len == S1_COMMAND_BYTES) {
         rx_kind = RX_COMMAND;
     } else if (topic_is(topic, MQTT_MAPPING_TOPIC) && tot_len == S1_MAPPING_BYTES) {
@@ -105,12 +105,12 @@ static void incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
         S1_COMMAND command = {{rx_payload[0]}};
         if (rx_kind == RX_COMMAND && rx_length == S1_COMMAND_BYTES &&
             s1_command_valid(&command)) {
-            tm_printf((UB *)"mqtt: RX command=%u\n", (unsigned int)rx_payload[0]);
+            LOG_INFO(TAG_S1_MQTT, "RX command=%u", (unsigned int)rx_payload[0]);
             s1_deliver_command(rx_payload, S1_COMMAND_BYTES);
         } else if (rx_kind == RX_MAPPING && rx_length == S1_MAPPING_BYTES) {
             s1_deliver_mapping(rx_payload, S1_MAPPING_BYTES); /* validates */
         } else {
-            tm_printf((UB *)"mqtt: invalid binary command/mapping rejected\n");
+            LOG_WARN(TAG_S1_MQTT, "invalid binary command/mapping rejected");
         }
         rx_kind = RX_NONE;
         rx_length = 0;
@@ -120,9 +120,9 @@ static void incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
 static void subscribe_done_cb(void *arg, err_t result)
 {
     if(result == ERR_OK) {
-        tm_printf((UB*)"mqtt: subscribed to %s\n", (const char *)arg);
+        LOG_INFO(TAG_S1_MQTT, "subscribed to %s", (const char *)arg);
     } else {
-        tm_printf((UB*)"mqtt: subscribe %s failed, err=%d\n",
+        LOG_ERR(TAG_S1_MQTT, "subscribe %s failed, err=%d",
                   (const char *)arg, (int)result);
     }
 }
@@ -131,7 +131,7 @@ static void publish_done_cb(void *arg, err_t result)
 {
     (void)arg;
     if(result != ERR_OK) {
-        tm_printf((UB*)"mqtt: publish failed, err=%d\n", (int)result);
+        LOG_ERR(TAG_S1_MQTT, "publish failed, err=%d", (int)result);
     }
 }
 
@@ -143,10 +143,10 @@ static void barcode_done_cb(void *arg, err_t result)
         return;
     }
     if (result == ERR_OK) {
-        tm_printf((UB *)"[BARCODE MQTT] acked frame=%u\n", frame);
+        LOG_INFO(TAG_S1_MQTT, "barcode acked frame=%u", frame);
         barcode_state = BARCODE_NONE;
     } else {
-        tm_printf((UB *)"[BARCODE MQTT] publish frame=%u failed, err=%d; retrying\n",
+        LOG_WARN(TAG_S1_MQTT, "barcode publish frame=%u failed, err=%d; retrying",
                   frame, (int)result);
         barcode_state = BARCODE_WAITING;
     }
@@ -216,7 +216,7 @@ static void connection_cb(mqtt_client_t *c, void *arg, mqtt_connection_status_t 
         connecting = 0;
         sys_untimeout(retry_timeout, NULL);
 
-        tm_printf((UB*)"mqtt: connected to " MQTT_BROKER_IP "\n");
+        LOG_INFO(TAG_S1_MQTT, "connected to " MQTT_BROKER_IP "");
 
         /* lwIP drops unacknowledged requests on disconnect without calling
          * their callbacks, so resend the pending barcode event. */
@@ -231,14 +231,14 @@ static void connection_cb(mqtt_client_t *c, void *arg, mqtt_connection_status_t 
         err = mqtt_subscribe(client, MQTT_COMMAND_TOPIC, 1 /* qos */,
                      subscribe_done_cb, (void *)MQTT_COMMAND_TOPIC);
         if(err != ERR_OK) {
-            tm_printf((UB*)"mqtt: mqtt_subscribe() failed, err=%d\n",
+            LOG_ERR(TAG_S1_MQTT, "mqtt_subscribe() failed, err=%d",
                   (int)err);
         }
         /* QoS 1: a lost map would leave every barcode unmapped. */
         err = mqtt_subscribe(client, MQTT_MAPPING_TOPIC, 1 /* qos */,
                      subscribe_done_cb, (void *)MQTT_MAPPING_TOPIC);
         if(err != ERR_OK) {
-            tm_printf((UB*)"mqtt: mapping mqtt_subscribe() failed, err=%d\n",
+            LOG_ERR(TAG_S1_MQTT, "mapping mqtt_subscribe() failed, err=%d",
                   (int)err);
         }
 
@@ -254,7 +254,7 @@ static void connection_cb(mqtt_client_t *c, void *arg, mqtt_connection_status_t 
          * retry itself, so do that here -- on a delay, so a broker
          * that keeps rejecting (e.g. bad client ID) can't turn this
          * into a tight reconnect loop. */
-        tm_printf((UB*)"mqtt: connection status %d, retrying in %ds\n",
+        LOG_WARN(TAG_S1_MQTT, "connection status %d, retrying in %ds",
               (int)status, MQTT_UTK_RETRY_MS / 1000);
         connecting = 1; /* Guard poll-loop retries until the timer fires. */
         sys_untimeout(heartbeat_timeout, NULL);
@@ -285,7 +285,7 @@ void mqtt_utk_network_down(void)
     sys_untimeout(retry_timeout, NULL);
     sys_untimeout(heartbeat_timeout, NULL);
     if (client != NULL && (connecting || mqtt_client_is_connected(client))) {
-        tm_printf((UB*)"mqtt: Wi-Fi unavailable; waiting for IP\n");
+        LOG_WARN(TAG_S1_MQTT, "Wi-Fi unavailable; waiting for IP");
         mqtt_disconnect(client);
     }
     connecting = 0;
@@ -308,13 +308,13 @@ void mqtt_utk_start(void)
     if(client == NULL) {
         client = mqtt_client_new();
         if(client == NULL) {
-            tm_printf((UB*)"mqtt: mqtt_client_new() failed\n");
+            LOG_ERR(TAG_S1_MQTT, "mqtt_client_new() failed");
             return;
         }
     }
 
     if(!ip4addr_aton(MQTT_BROKER_IP, ip_2_ip4(&broker_addr))) {
-        tm_printf((UB*)"mqtt: bad MQTT_BROKER_IP\n");
+        LOG_ERR(TAG_S1_MQTT, "bad MQTT_BROKER_IP");
         return;
     }
     IP_SET_TYPE(&broker_addr, IPADDR_TYPE_V4);
@@ -327,13 +327,13 @@ void mqtt_utk_start(void)
     client_info.will_qos = 1;
     client_info.will_retain = 1;
 
-    tm_printf((UB*)"mqtt: connecting to " MQTT_BROKER_IP ":%u as " MQTT_CLIENT_ID "\n",
+    LOG_INFO(TAG_S1_MQTT, "connecting to " MQTT_BROKER_IP ":%u as " MQTT_CLIENT_ID "",
               (unsigned)MQTT_BROKER_PORT);
     connecting = 1;
     err = mqtt_client_connect(client, &broker_addr, MQTT_BROKER_PORT,
                   connection_cb, NULL, &client_info);
     if(err != ERR_OK) {
-        tm_printf((UB*)"mqtt: mqtt_client_connect() failed, err=%d\n", (int)err);
+        LOG_ERR(TAG_S1_MQTT, "mqtt_client_connect() failed, err=%d", (int)err);
         connecting = 1;
         sys_untimeout(retry_timeout, NULL);
         sys_timeout(MQTT_UTK_RETRY_MS, retry_timeout, NULL);

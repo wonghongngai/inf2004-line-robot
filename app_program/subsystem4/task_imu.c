@@ -307,7 +307,7 @@ LOCAL BOOL update_calibration(const LSM303_SAMPLE *sample,
     *baseline_y = cal_state.sum_y / (W)cal_state.count;
     *baseline_z = cal_state.sum_z / (W)cal_state.count;
 
-    tm_printf((UB *)"Buddy4: calibration complete base=(%d,%d,%d) mg\n",
+    LOG_INFO(TAG_S4_IMU, "calibration complete base=(%d,%d,%d) mg",
               *baseline_x, *baseline_y, *baseline_z);
 
     return TRUE;
@@ -439,7 +439,7 @@ LOCAL BOOL update_hump(W forward_mg,
                 hump_armed = TRUE;
                 hump_rearm_count = 0U;
 
-                tm_printf((UB *)"Buddy4: hump detector re-armed\n");
+                LOG_INFO(TAG_S4_IMU, "hump detector re-armed");
             }
 
         } else {
@@ -457,7 +457,7 @@ LOCAL BOOL update_hump(W forward_mg,
             hump_rearm_count = 0U;
             reset_hump_detector();
             reset_height_tracker();
-            tm_printf((UB *)"Buddy4: hump timed out; waiting for level ground\n");
+            LOG_WARN(TAG_S4_IMU, "hump timed out; waiting for level ground");
             return FALSE;
         }
     }
@@ -522,8 +522,8 @@ LOCAL BOOL update_hump(W forward_mg,
                 hump_state.entry_sign = 0;
                 hump_state.entry_samples = 0U;
 
-                tm_printf((UB *)
-                          "Buddy4: hump entry confirmed sign=%d peak=%dmg\n",
+                LOG_INFO(TAG_S4_IMU,
+                          "hump entry confirmed sign=%d peak=%dmg",
                           hump_state.first_sign,
                           hump_state.peak_mg);
             }
@@ -540,8 +540,8 @@ LOCAL BOOL update_hump(W forward_mg,
 
     case HUMP_FIRST_SLOPE:
 
-        tm_printf((UB *)
-            "HUMP ACTIVE: forward=%d abs=%d dist=%u height=%u\n",
+        LOG_INFO(TAG_S4_IMU,
+            "HUMP ACTIVE: forward=%d abs=%d dist=%u height=%u",
             forward_mg,
             abs_forward,
             distance_mm,
@@ -639,16 +639,15 @@ LOCAL void print_periodic_status(const LSM303_SAMPLE *sample,
     dx = sample->ax_mg - baseline_x;
     dy = sample->ay_mg - baseline_y;
 
-    tm_printf(
-        (UB *)
-        "Buddy4: n=%u "
+    LOG_INFO(TAG_S4_IMU,
+        "n=%u "
         "acc=(%d,%d,%d)mg "
         "delta=(x:%d,y:%d)mg "
         "mag=(%d,%d,%d) "
         "pitch=%d "
         "height=%umm "
         "height_valid=%d "
-        "state=%d\n",
+        "state=%d",
 
         sample_count,
 
@@ -721,7 +720,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
     reset_height_tracker();
     reset_lift_detector();
 
-    tm_printf((UB *)"Buddy4: IMU task started, period=%d ms\n",
+    LOG_INFO(TAG_S4_IMU, "IMU task started, period=%d ms",
               S4_SAMPLE_PERIOD_MS);
 
     while (1) {
@@ -823,7 +822,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
                 if (!lift_reported) {
                     event = IMU_EVENT_LIFT;
                     lift_reported = TRUE;
-                    tm_printf((UB *)"Buddy4 EVENT: LIFT z_avg-base=%dmg threshold=%dmg acc=(%d,%d,%d) base_z=%d\n",
+                    LOG_INFO(TAG_S4_IMU, "EVENT LIFT z_avg-base=%dmg threshold=%dmg acc=(%d,%d,%d) base_z=%d",
                               lift_delta_mg, S4_LIFT_DELTA_MG,
                               sample.ax_mg, sample.ay_mg, sample.az_mg, baseline_z);
                 }
@@ -841,8 +840,8 @@ EXPORT void imu_task(INT stacd, void *exinf)
                 hump_was_active = (hump_state.phase != HUMP_IDLE);
                 if (!hump_was_active && hump_armed &&
                     abs_w(hump_dy) >= S4_HUMP_OPPOSITE_MG) {
-                    tm_printf((UB *)
-                              "HUMP DEBUG: raw=%d filtered=%d moving=%d dist=%u entry=%u\n",
+                    LOG_INFO(TAG_S4_IMU,
+                              "HUMP DEBUG: raw=%d filtered=%d moving=%d dist=%u entry=%u",
                               dy, hump_dy, movement_hold_samples > 0U,
                               distance_mm, hump_state.entry_samples);
                 }
@@ -896,11 +895,11 @@ EXPORT void imu_task(INT stacd, void *exinf)
                             last_ramp_height = peak_height_mm;
                             last_ramp_height_valid = TRUE;
                         }
-                        tm_printf((UB *)
-                                  "Buddy4 EVENT: HUMP height=%u mm highest=%u mm peak=%d mg\n",
+                        LOG_INFO(TAG_S4_IMU,
+                                  "EVENT HUMP height=%u mm highest=%u mm peak=%d mg",
                                   peak_height_mm, last_ramp_height, last_hump_peak);
                     } else {
-                        tm_printf((UB *)"Buddy4 EVENT: HUMP height=unavailable (no wheel distance) peak=%d mg\n",
+                        LOG_INFO(TAG_S4_IMU, "EVENT HUMP height=unavailable (no wheel distance) peak=%d mg",
                                   last_hump_peak);
                     }
                 } else {
@@ -913,8 +912,8 @@ EXPORT void imu_task(INT stacd, void *exinf)
                         if (!tilt_reported) {
                             event = IMU_EVENT_TILT;
                             tilt_reported = TRUE;
-                            tm_printf((UB *)
-                                      "Buddy4 EVENT: TILT roll=%d deg lateral=%d mg\n", roll_deg,dx);
+                            LOG_INFO(TAG_S4_IMU,
+                                      "EVENT TILT roll=%d deg lateral=%d mg", roll_deg,dx);
                         }
                     }
                 }

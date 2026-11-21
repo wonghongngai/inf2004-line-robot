@@ -367,9 +367,8 @@ EXPORT void motion_task(
             right_ticks
         );
 
-    tm_printf(
-        (UB *)
-        "motion: calibration not set; motors remain OFF\n"
+    LOG_WARN(TAG_S2_MOTION,
+        "calibration not set; motors remain OFF"
     );
 
 #endif
@@ -421,7 +420,7 @@ EXPORT void motion_task(
             manual_stop = true;
             MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
             (void)motion_control_command(&controller, &stop, now_ms, left_ticks, right_ticks);
-            tm_printf((UB *)"[MOTION] stopped: wheel-distance input failed\n");
+            LOG_ERR(TAG_S2_MOTION, "stopped: wheel-distance input failed");
         }
 #endif
 
@@ -509,7 +508,7 @@ EXPORT void motion_task(
         }
 
         if ((uint32_t)(now_ms - last_report_ms) >= 1000u) {
-            tm_printf((UB *)"[MOTION] state=%d fault=%d ticks L=%ld R=%ld PWM=%d/%d\n",
+            LOG_INFO(TAG_S2_MOTION, "state=%d fault=%d ticks L=%ld R=%ld PWM=%d/%d",
                       status.state, status.fault, (long)left_ticks, (long)right_ticks,
                       (int)status.left_pwm_percent, (int)status.right_pwm_percent);
             last_report_ms = now_ms;

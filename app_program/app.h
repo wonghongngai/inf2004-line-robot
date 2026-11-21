@@ -59,12 +59,15 @@ IMPORT void subsystem4_test(void);
 IMPORT void subsystem5_test(void);
 #endif
 
+/* Console messages: LOG_INFO / LOG_WARN / LOG_ERR and the TAG_xxx names */
+#include "app_log.h"
+
 /* Print a readable message if a kernel call failed (negative error code) */
 #define CHECK(er, what)							\
 	do {								\
 		INT check_er_ = (INT)(er);	/* evaluate once */	\
 		if (check_er_ < E_OK) {					\
-			tm_printf((UB*)"ERROR %s: %d\n", (what), check_er_); \
+			LOG_ERR(TAG_APP, "%s: %d", (what), check_er_);	\
 		}							\
 	} while (0)
 

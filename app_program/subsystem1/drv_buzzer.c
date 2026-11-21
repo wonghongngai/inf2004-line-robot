@@ -85,7 +85,7 @@ EXPORT void wifi_utk_link_up(void)
 #if WIFI_CONNECT_BEEP
     ER er = buzzer_beep(WIFI_BEEP_MS);
     if (er < E_OK) {
-        tm_printf((UB *)"buzzer: connect beep failed, er=%d\n", (int)er);
+        LOG_ERR(TAG_S1_BUZZER, "connect beep failed, er=%d", (int)er);
     }
 #endif
 }

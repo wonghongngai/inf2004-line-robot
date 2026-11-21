@@ -147,9 +147,9 @@ void s1_deliver_command(const unsigned char *payload, unsigned int length)
     }
     result = tk_snd_mbf(command_queue, command.bytes, S1_COMMAND_BYTES, TMO_POL);
     if (result < E_OK) {
-        tm_printf((UB *)"Buddy 1: command queue full/error %d\n", result);
+        LOG_ERR(TAG_S1_CMD, "command queue full/error %d", result);
     } else {
-        tm_printf((UB *)"Buddy 1: command queued=%u\n", (unsigned int)command.bytes[0]);
+        LOG_INFO(TAG_S1_CMD, "command queued=%u", (unsigned int)command.bytes[0]);
     }
 }
 
@@ -166,11 +166,11 @@ void s1_deliver_mapping(const unsigned char *payload, unsigned int length)
         mapping.bytes[i] = payload[i];
     }
     if (!s1_mapping_get(&mapping, letters)) {
-        tm_printf((UB *)"Buddy 1: invalid barcode map rejected\n");
+        LOG_WARN(TAG_S1_CMD, "invalid barcode map rejected");
         return;
     }
     result = tk_snd_mbf(mapping_queue, mapping.bytes, S1_MAPPING_BYTES, TMO_POL);
     if (result < E_OK) {
-        tm_printf((UB *)"Buddy 1: mapping queue full/error %d\n", result);
+        LOG_ERR(TAG_S1_CMD, "mapping queue full/error %d", result);
     }
 }
