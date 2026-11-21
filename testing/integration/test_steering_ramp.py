@@ -17,9 +17,14 @@ root = Path(__file__).resolve().parents[2]
 source = (root / 'app_program/subsystem2/all_buddies_test.c').read_text(encoding='utf-8')
 header = (root / 'app_program/subsystem2/all_buddies_test.h').read_text(encoding='utf-8')
 barcode_h = (root / 'app_program/subsystem3/line_barcode.h').read_text(encoding='utf-8')
+s2_h = (root / 'app_program/subsystem2/subsystem2.h').read_text(encoding='utf-8')
 period = re.search(r'#define LINE_BARCODE_PERIOD_MS\s+(\d+)u', barcode_h).group(1)
-macros = '\n'.join(line for line in (source + '\n' + header).splitlines()
-                   if line.startswith('#define ALL_'))
+# all_test's ALL_* numbers are shared S2_* constants (#8), so take those too
+# (single-line ones; the multi-line helper macro is not needed here).
+macros = '\n'.join([line for line in s2_h.splitlines()
+                    if line.startswith('#define S2_') and not line.rstrip().endswith('\\')] +
+                   [line for line in (source + '\n' + header).splitlines()
+                    if line.startswith('#define ALL_')])
 functions = source[source.index('static float approach_pwm'):source.index('static bool barcode_scanning')]
 white_start = source.index('static void white_follow_step')
 # Only this function: S5's obstacle code that follows it stops wheels on purpose.

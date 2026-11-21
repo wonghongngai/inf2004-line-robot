@@ -162,7 +162,56 @@ typedef struct {
 
     float follow_ramp_pwm_per_s;      /* speed-up limit per wheel; slow-downs at once */
 
+    /*
+     * all_test's straight trim and barcode-scan slow-down for FOLLOW_LINE.
+     * Trim is active when follow_straight_kp > 0, scan when follow_scan_scale
+     * > 0 and motion_control_set_scanning() reports a scan in progress.
+     */
+    float follow_straight_kp;         /* PWM points per cm of wheel difference */
+    float follow_straight_max_trim;
+    float follow_straight_trim_rate;  /* PWM points per second */
+    float follow_straight_deadband_cm;
+    float follow_scan_scale;          /* 0..1 */
+    float follow_scan_left_inner_pwm_percent;
+
+    /*
+     * all_test drive profiles (motion_control_set_profile()). Active when
+     * move_left_pwm_percent > 0; otherwise every profile behaves as BASE.
+     * Profile moves have no moving floor and no tolerance, ramp
+     * move_ramp_pwm_per_s both ways, and may take over from FOLLOW_LINE
+     * without a stop in between.
+     */
+    float move_left_pwm_percent;      /* FORWARD_CM, left wheel */
+    float move_right_pwm_percent;     /* FORWARD_CM, right wheel */
+    float move_ramp_pwm_per_s;
+    float junction_right_pivot_pwm_percent; /* left wheel during a right pivot */
+    float junction_left_pivot_pwm_percent;  /* right wheel during a left pivot */
+    float uturn_left_pwm_percent;     /* may be negative (reverse) */
+    float uturn_right_pwm_percent;
+    float avoid_heading_kp;           /* PWM points cut per cm the leader is ahead */
+    float avoid_pivot_pwm_percent;
+    float avoid_left_turn_ticks_per_degree;  /* left wheel during a right pivot */
+    float avoid_right_turn_ticks_per_degree; /* right wheel during a left pivot */
+
 } MOTION_CONFIG;
+
+/*
+ * Which drive numbers the next FORWARD_CM / TURN_*_DEG command uses.
+ *
+ * BASE      base_pwm_percent, moving floor, tolerances (the original S2 moves)
+ * JUNCTION  all_test's barcode junction: advance at move_*, pivots at
+ *           junction_*_pivot with the S2 turn calibration
+ * UTURN     TURN_LEFT_DEG counter-rotates at uturn_*; it runs until STOP
+ *           (the caller ends it on the centre sensor, as all_test does)
+ * AVOID     all_test's S5 moves: heading-held legs at move_*, pivots at
+ *           avoid_pivot with avoid_*_turn_ticks_per_degree
+ */
+typedef enum {
+    MOTION_PROFILE_BASE = 0,
+    MOTION_PROFILE_JUNCTION,
+    MOTION_PROFILE_UTURN,
+    MOTION_PROFILE_AVOID
+} MOTION_PROFILE;
 
 /*
  * Information exposed by Buddy 2 to the rest of the system.
@@ -228,6 +277,21 @@ typedef struct {
 
     bool configuration_valid;
 
+    /* Drive profiles: requested for the next command, and the running one. */
+    MOTION_PROFILE next_profile;
+    MOTION_PROFILE active_profile;
+    /* PWM a profile move ended on, so a move or FOLLOW_LINE started just
+       after it carries on from there instead of from rest. */
+    float carry_left_pwm, carry_right_pwm;
+    uint32_t carry_ms;
+    bool carry_valid;
+    /* FOLLOW_LINE straight trim and scan state. */
+    bool scanning;
+    bool straight_active;
+    int32_t straight_left0, straight_right0;
+    float straight_trim;
+    float previous_follow_target;
+
 } MOTION_CONTROLLER;
 
 /*
@@ -252,6 +316,22 @@ MOTION_RESULT motion_control_command(
     uint32_t now_ms,
     int32_t left_ticks,
     int32_t right_ticks
+);
+
+/*
+ * Choose the drive profile for the next FORWARD_CM / TURN_*_DEG command.
+ */
+void motion_control_set_profile(
+    MOTION_CONTROLLER *controller,
+    MOTION_PROFILE profile
+);
+
+/*
+ * Tell FOLLOW_LINE whether a barcode is being scanned (slow-down).
+ */
+void motion_control_set_scanning(
+    MOTION_CONTROLLER *controller,
+    bool scanning
 );
 
 /*

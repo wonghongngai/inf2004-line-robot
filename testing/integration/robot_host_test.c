@@ -39,6 +39,9 @@ ER line_service_lookup(uint8_t letter, uint8_t *command)
 static unsigned fake_black, fake_white;
 void line_service_barcode_debug(unsigned *black, unsigned *white, uint8_t *letter)
 { *black = fake_black; *white = fake_white; *letter = 0xffu; }
+static unsigned frame_calls;
+void line_service_barcode_frame(line_service_barcode_frame_t *frame)
+{ ++frame_calls; memset(frame, 0, sizeof(*frame)); }
 ER line_service_enable(bool on) { enabled = on; has_event = false; return E_OK; }
 ER line_service_snapshot(line_barcode_msg_t *msg) { *msg = snapshot; return snapshot_error; }
 ER line_service_receive(line_barcode_msg_t *msg, TMO timeout)
@@ -218,9 +221,57 @@ static void follow_tuning_tests(void)
     EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
 }
 
+/* The integrated build's configuration: every number all_test drives with
+ * (#8), as build_config() in task_motion.c sets it. */
+static MOTION_CONFIG alltest_config(void)
+{
+    MOTION_CONFIG c = {0};
+    c.left_ticks_per_cm = S2_ENC_LEFT_TICKS_PER_CM;
+    c.right_ticks_per_cm = S2_ENC_RIGHT_TICKS_PER_CM;
+    c.left_turn_ticks_per_degree = S2_LEFT_TURN_TICKS_PER_DEGREE;
+    c.right_turn_ticks_per_degree = S2_RIGHT_TURN_TICKS_PER_DEGREE;
+    c.base_pwm_percent = S2_BASE_PWM_PERCENT;
+    c.minimum_effective_pwm_percent = S2_MIN_EFFECTIVE_PWM_PERCENT;
+    c.maximum_pwm_percent = S2_MAX_PWM_PERCENT;
+    c.distance_tolerance_cm = S2_DISTANCE_TOLERANCE_CM;
+    c.angle_tolerance_deg = S2_ANGLE_TOLERANCE_DEG;
+    c.encoder_stall_timeout_ms = S2_ENCODER_STALL_TIMEOUT_MS;
+    c.integral_limit = S2_PID_INTEGRAL_LIMIT;
+    c.correction_limit = S2_PID_CORRECTION_LIMIT;
+    c.follow_left_pwm_percent = S2_FOLLOW_LEFT_PWM_PERCENT;
+    c.follow_right_pwm_percent = S2_FOLLOW_RIGHT_PWM_PERCENT;
+    c.follow_boost_pwm_percent = S2_FOLLOW_BOOST_PWM_PERCENT;
+    c.follow_inner_pwm_percent = S2_FOLLOW_INNER_PWM_PERCENT;
+    c.follow_hard_inner_pwm_percent = S2_FOLLOW_HARD_INNER_PWM_PERCENT;
+    c.follow_ramp_pwm_per_s = S2_FOLLOW_RAMP_PWM_PER_S;
+    c.follow_straight_kp = S2_FOLLOW_STRAIGHT_KP;
+    c.follow_straight_max_trim = S2_FOLLOW_STRAIGHT_MAX_TRIM;
+    c.follow_straight_trim_rate = S2_FOLLOW_STRAIGHT_TRIM_RATE;
+    c.follow_straight_deadband_cm = S2_FOLLOW_STRAIGHT_DEADBAND_CM;
+    c.follow_scan_scale = S2_FOLLOW_SCAN_SCALE;
+    c.follow_scan_left_inner_pwm_percent = S2_FOLLOW_SCAN_LEFT_INNER_PWM_PERCENT;
+    c.move_left_pwm_percent = S2_MOVE_LEFT_PWM_PERCENT;
+    c.move_right_pwm_percent = S2_MOVE_RIGHT_PWM_PERCENT;
+    c.move_ramp_pwm_per_s = S2_MOVE_RAMP_PWM_PER_S;
+    c.junction_right_pivot_pwm_percent = S2_JUNCTION_RIGHT_PIVOT_PWM_PERCENT;
+    c.junction_left_pivot_pwm_percent = S2_JUNCTION_LEFT_PIVOT_PWM_PERCENT;
+    c.uturn_left_pwm_percent = S2_UTURN_LEFT_PWM_PERCENT;
+    c.uturn_right_pwm_percent = S2_UTURN_RIGHT_PWM_PERCENT;
+    c.avoid_heading_kp = S2_AVOID_HEADING_KP;
+    c.avoid_pivot_pwm_percent = S2_AVOID_PIVOT_PWM_PERCENT;
+    c.avoid_left_turn_ticks_per_degree = S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_LEFT_TICKS_PER_CM);
+    c.avoid_right_turn_ticks_per_degree = S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_RIGHT_TICKS_PER_CM);
+    return c;
+}
+
+/* 1 = reset() configures the controller with alltest_config(). */
+static bool all_numbers;
+
 static void reset(MOTION_CONTROLLER *ctl)
 {
-    MOTION_CONFIG cfg = config();
+    MOTION_CONFIG cfg = all_numbers ? alltest_config() : config();
+    uturn_r0 = 0;
+    frame_report_ms = frame_sequence = 0u;
     armed = halted = turning = configured = false;
     last_imu_sample = imu_count = imu_errors = resumed_at = turn_started = 0;
     /* Controller state added after 2026-10-28 (line-stop debounce/re-arm, S5). */
@@ -468,6 +519,306 @@ static void straddle_tests(void)
     send_command(S1_COMMAND_RESUME);
     sstep(&ctl, 6010, 1, 1);
     EXPECT(!paused && enabled);
+}
+
+#define NEAR(a, b) (fabsf((a) - (b)) < 1e-3f)
+
+/* Step the controller every 10 ms, n times, with fixed encoder counts. */
+static uint32_t msteps(MOTION_CONTROLLER *m, uint32_t now, int n, int32_t l, int32_t r)
+{
+    for (int i = 0; i < n; ++i) { now += 10u; motion_control_step(m, now, l, r); }
+    return now;
+}
+
+/* ---- The rest of all_test, on the motion controller alone --------------- */
+static void alltest_motion_tests(void)
+{
+    MOTION_CONTROLLER m;
+    MOTION_CONFIG cfg = alltest_config();
+    MOTION_COMMAND follow = {MOTION_CMD_FOLLOW_LINE, 0.0f}, cmd;
+    const float L = S2_FOLLOW_LEFT_PWM_PERCENT, R = S2_FOLLOW_RIGHT_PWM_PERCENT;
+    const float trim_step = S2_FOLLOW_STRAIGHT_TRIM_RATE * 0.010f;
+    const float move_step = S2_MOVE_RAMP_PWM_PER_S * 0.010f;
+    const float lt = S2_ENC_LEFT_TICKS_PER_CM, rt = S2_ENC_RIGHT_TICKS_PER_CM;
+    uint32_t now;
+
+    EXPECT(motion_control_init(&m, &cfg, 0u, 0, 0));
+
+    /* Straight trim: right wheel 1.1 cm ahead -> the left wheel gains trim at
+     * TRIM_RATE up to KP x (1.1 - deadband); the right wheel is never cut. */
+    EXPECT(motion_control_command(&m, &follow, 0u, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, 0u, 100, 0, 0);
+    EXPECT(NEAR(m.status.left_pwm_percent, L) && NEAR(m.status.right_pwm_percent, R));
+    now = msteps(&m, now, 1, 0, (int32_t)(1.1f * rt));
+    EXPECT(NEAR(m.status.left_pwm_percent, L + trim_step) &&
+           NEAR(m.status.right_pwm_percent, R));
+    now = msteps(&m, now, 200, 0, (int32_t)(1.1f * rt));
+    EXPECT(fabsf(m.status.left_pwm_percent -
+                 (L + S2_FOLLOW_STRAIGHT_KP * (1.1f - S2_FOLLOW_STRAIGHT_DEADBAND_CM))) < 0.02f);
+    /* Far ahead: capped at MAX_TRIM. */
+    now = msteps(&m, now, 200, 0, (int32_t)(5.0f * rt));
+    EXPECT(NEAR(m.status.left_pwm_percent, L + S2_FOLLOW_STRAIGHT_MAX_TRIM));
+    /* Steering ends the stretch; the next one starts from the current ticks,
+     * so the old 5 cm difference no longer counts. */
+    follow.value = 0.5f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, (int32_t)(5.0f * rt)) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, 0, (int32_t)(5.0f * rt));
+    follow.value = 0.0f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, (int32_t)(5.0f * rt)) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 50, 0, (int32_t)(5.0f * rt));
+    EXPECT(NEAR(m.status.left_pwm_percent, L) && m.straight_trim == 0.0f);
+    /* Left ahead: the right wheel is boosted. Within the deadband: no trim. */
+    now = msteps(&m, now, 200, (int32_t)(1.1f * lt), (int32_t)(5.0f * rt));
+    EXPECT(NEAR(m.status.left_pwm_percent, L) && m.status.right_pwm_percent > R + 1.0f);
+    EXPECT(motion_control_command(&m, &(MOTION_COMMAND){MOTION_CMD_STOP, 0}, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, 0, 0);
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 300, 0, (int32_t)(0.05f * rt));
+    EXPECT(m.straight_trim == 0.0f);
+
+    /* Correction over: the slowed inner wheel snaps back to cruise at once. */
+    follow.value = -1.0f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, 0, 0);
+    EXPECT(m.status.left_pwm_percent == S2_FOLLOW_HARD_INNER_PWM_PERCENT);
+    follow.value = 0.0f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, 0, 0);
+    EXPECT(m.status.left_pwm_percent >= L - 1e-4f);
+
+    /* Barcode scan: everything at SCAN_SCALE; a left correction keeps the
+     * scanner-side wheel at the scan inner PWM instead of stopping it. */
+    motion_control_set_scanning(&m, true);
+    now = msteps(&m, now, 1, 0, 0);
+    EXPECT(NEAR(m.status.left_pwm_percent, L * S2_FOLLOW_SCAN_SCALE) &&
+           NEAR(m.status.right_pwm_percent, R * S2_FOLLOW_SCAN_SCALE));
+    follow.value = -1.0f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 100, 0, 0);
+    EXPECT(NEAR(m.status.left_pwm_percent,
+                S2_FOLLOW_SCAN_LEFT_INNER_PWM_PERCENT * S2_FOLLOW_SCAN_SCALE));
+    EXPECT(NEAR(m.status.right_pwm_percent,
+                (R + S2_FOLLOW_BOOST_PWM_PERCENT) * S2_FOLLOW_SCAN_SCALE));
+    motion_control_set_scanning(&m, false);
+    now = msteps(&m, now, 1, 0, 0);
+    EXPECT(m.status.left_pwm_percent == S2_FOLLOW_HARD_INNER_PWM_PERCENT);
+    follow.value = 0.0f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 100, 0, 0);
+
+    /* Junction advance takes over FOLLOW_LINE with no stop and keeps its
+     * PWM; no tolerance (the base 1 cm would end a 0.8 cm move at once). */
+    motion_control_set_profile(&m, MOTION_PROFILE_BASE);
+    cmd = (MOTION_COMMAND){MOTION_CMD_FORWARD_CM, 0.8f};
+    EXPECT(motion_control_command(&m, &cmd, now, 0, 0) == MOTION_RESULT_BUSY);
+    motion_control_set_profile(&m, MOTION_PROFILE_JUNCTION);
+    EXPECT(motion_control_command(&m, &cmd, now, 0, 0) == MOTION_RESULT_OK);
+    EXPECT(m.status.active_command == MOTION_CMD_FORWARD_CM &&
+           NEAR(m.status.left_pwm_percent, L) && NEAR(m.status.right_pwm_percent, R));
+    now = msteps(&m, now, 1, 90, 90);                       /* 0.76 cm */
+    EXPECT(m.status.state == MOTION_STATE_MOVING_FORWARD &&
+           NEAR(m.status.left_pwm_percent, S2_MOVE_LEFT_PWM_PERCENT) &&
+           NEAR(m.status.right_pwm_percent, S2_MOVE_RIGHT_PWM_PERCENT));
+    now = msteps(&m, now, 1, 95, 95);                       /* 0.80 cm */
+    EXPECT(m.status.state == MOTION_STATE_IDLE && m.status.motion_complete);
+
+    /* The pivot starts straight after from the advance's PWM (carry). Right
+     * pivot: right wheel stops at once, left at the junction pivot PWM,
+     * S2 turn calibration and no 2-degree tolerance. */
+    cmd = (MOTION_COMMAND){MOTION_CMD_TURN_RIGHT_DEG, 90.0f};
+    EXPECT(motion_control_command(&m, &cmd, now + 1u, 95, 95) == MOTION_RESULT_OK);
+    EXPECT(NEAR(m.status.left_pwm_percent, S2_MOVE_LEFT_PWM_PERCENT));
+    now = msteps(&m, now + 1u, 1, 96, 95);
+    EXPECT(m.status.right_pwm_percent == 0.0f &&
+           NEAR(m.status.left_pwm_percent, S2_JUNCTION_RIGHT_PIVOT_PWM_PERCENT));
+    {
+        int32_t target = (int32_t)(90.0f * S2_LEFT_TURN_TICKS_PER_DEGREE);
+        now = msteps(&m, now, 1, 95 + target - 5, 95);
+        EXPECT(m.status.state == MOTION_STATE_TURNING_RIGHT);
+        now = msteps(&m, now, 1, 95 + target + 1, 95);
+        EXPECT(m.status.state == MOTION_STATE_IDLE && m.status.motion_complete);
+    }
+    /* Left pivot drives the right wheel at its own PWM. Started late (no
+     * carry), it ramps from rest. */
+    cmd = (MOTION_COMMAND){MOTION_CMD_TURN_LEFT_DEG, 90.0f};
+    EXPECT(motion_control_command(&m, &cmd, now + 200u, 0, 0) == MOTION_RESULT_OK);
+    EXPECT(m.status.right_pwm_percent == 0.0f);
+    now = msteps(&m, now + 200u, 1, 0, 1);
+    EXPECT(NEAR(m.status.right_pwm_percent, move_step) && m.status.left_pwm_percent == 0.0f);
+    for (int i = 2; i <= 30; ++i) now = msteps(&m, now, 1, 0, i);
+    EXPECT(NEAR(m.status.right_pwm_percent, S2_JUNCTION_LEFT_PIVOT_PWM_PERCENT));
+    {
+        int32_t target = (int32_t)(90.0f * S2_RIGHT_TURN_TICKS_PER_DEGREE);
+        now = msteps(&m, now, 1, 0, target - 5);
+        EXPECT(m.status.state == MOTION_STATE_TURNING_LEFT);   /* no 2-degree tolerance */
+        now = msteps(&m, now, 1, 0, target + 1);
+        EXPECT(m.status.state == MOTION_STATE_IDLE && m.status.motion_complete);
+    }
+
+    /* U-turn: counter-rotates, never ends by itself, ends on STOP. */
+    EXPECT(motion_control_init(&m, &cfg, 0u, 0, 0));
+    motion_control_set_profile(&m, MOTION_PROFILE_UTURN);
+    cmd = (MOTION_COMMAND){MOTION_CMD_TURN_RIGHT_DEG, 180.0f};
+    EXPECT(motion_control_command(&m, &cmd, 0u, 0, 0) == MOTION_RESULT_INVALID_COMMAND);
+    cmd = (MOTION_COMMAND){MOTION_CMD_TURN_LEFT_DEG, 180.0f};
+    EXPECT(motion_control_command(&m, &cmd, 0u, 0, 0) == MOTION_RESULT_OK);
+    now = 0u;
+    for (int i = 1; i <= 300; ++i) now = msteps(&m, now, 1, -i * 10, i * 10);
+    EXPECT(m.status.state == MOTION_STATE_TURNING_LEFT &&
+           NEAR(m.status.left_pwm_percent, S2_UTURN_LEFT_PWM_PERCENT) &&
+           NEAR(m.status.right_pwm_percent, S2_UTURN_RIGHT_PWM_PERCENT));
+    EXPECT(motion_control_command(&m, &(MOTION_COMMAND){MOTION_CMD_STOP, 0}, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, -3000, 3000);
+    EXPECT(m.status.state == MOTION_STATE_IDLE && m.status.left_pwm_percent == 0.0f);
+    /* ... but a stalled right wheel still faults. */
+    EXPECT(motion_control_command(&m, &cmd, now, -3000, 3000) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 60, -3000, 3000);
+    EXPECT(m.status.state == MOTION_STATE_FAULT);
+
+    /* S5 leg: heading held by cutting the leading wheel KP per cm; no stall
+     * fault (a cut wheel may stand still); no tolerance. */
+    EXPECT(motion_control_init(&m, &cfg, 0u, 0, 0));
+    motion_control_set_profile(&m, MOTION_PROFILE_AVOID);
+    cmd = (MOTION_COMMAND){MOTION_CMD_FORWARD_CM, 10.0f};
+    EXPECT(motion_control_command(&m, &cmd, 0u, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, 0u, 1, 0, 0);
+    EXPECT(NEAR(m.status.left_pwm_percent, move_step) && NEAR(m.status.right_pwm_percent, move_step));
+    now = msteps(&m, now, 100, 0, 0);                       /* 1 s still: no fault */
+    EXPECT(m.status.state == MOTION_STATE_MOVING_FORWARD &&
+           NEAR(m.status.left_pwm_percent, S2_MOVE_LEFT_PWM_PERCENT) &&
+           NEAR(m.status.right_pwm_percent, S2_MOVE_RIGHT_PWM_PERCENT));
+    now = msteps(&m, now, 100, (int32_t)(2.0f * lt), (int32_t)(2.5f * rt));
+    EXPECT(fabsf(m.status.right_pwm_percent -
+                 (S2_MOVE_RIGHT_PWM_PERCENT - S2_AVOID_HEADING_KP * 0.5f)) < 0.05f &&
+           NEAR(m.status.left_pwm_percent, S2_MOVE_LEFT_PWM_PERCENT));
+    now = msteps(&m, now, 1, (int32_t)(9.95f * lt), (int32_t)(9.95f * rt));
+    EXPECT(m.status.state == MOTION_STATE_MOVING_FORWARD);
+    now = msteps(&m, now, 1, (int32_t)(10.01f * lt), (int32_t)(10.01f * rt));
+    EXPECT(m.status.state == MOTION_STATE_IDLE && m.status.motion_complete);
+    /* S5 pivot: 20 % on the moving wheel, S5's pivot-radius calibration. */
+    cmd = (MOTION_COMMAND){MOTION_CMD_TURN_RIGHT_DEG, 90.0f};
+    EXPECT(motion_control_command(&m, &(MOTION_COMMAND){MOTION_CMD_STOP, 0}, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, 0, 0);
+    EXPECT(motion_control_command(&m, &cmd, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, 1, 0);
+    EXPECT(NEAR(m.status.left_pwm_percent, move_step));     /* from rest after STOP */
+    now = msteps(&m, now, 50, 50, 0);
+    EXPECT(NEAR(m.status.left_pwm_percent, S2_AVOID_PIVOT_PWM_PERCENT));
+    {
+        float tpd = S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_LEFT_TICKS_PER_CM);
+        now = msteps(&m, now, 1, (int32_t)(90.0f * tpd) - 5, 0);
+        EXPECT(m.status.state == MOTION_STATE_TURNING_RIGHT);   /* S2 calibration would be done */
+        now = msteps(&m, now, 1, (int32_t)(90.0f * tpd) + 1, 0);
+        EXPECT(m.status.state == MOTION_STATE_IDLE && m.status.motion_complete);
+    }
+
+    /* Invalid profile numbers are rejected. */
+    cfg.uturn_right_pwm_percent = 0.0f;
+    EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
+    cfg = alltest_config();
+    cfg.uturn_left_pwm_percent = -101.0f;
+    EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
+    cfg = alltest_config();
+    cfg.follow_scan_scale = 1.5f;
+    EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
+    cfg = alltest_config();
+    cfg.avoid_left_turn_ticks_per_degree = 0.0f;
+    EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
+    cfg = alltest_config();
+    EXPECT(motion_control_init(&m, &cfg, 0u, 0, 0));
+}
+
+/* ---- ... and through the VC (straddle model, integrated numbers) ------- */
+static void alltest_robot_tests(void)
+{
+    MOTION_CONTROLLER ctl;
+    uint32_t now;
+
+    all_numbers = true;
+
+    /* The scan flag follows GP28 (scanner) or an open capture. */
+    sfollow(&ctl);
+    snapshot = (line_barcode_msg_t){{LINE_BARCODE_LEFT, LINE_BARCODE_SEARCH, 0u}};
+    sstep(&ctl, 5040, 0, 0);
+    EXPECT(ctl.scanning);
+    snapshot = (line_barcode_msg_t){{0u, LINE_BARCODE_SEARCH | LINE_BARCODE_CAPTURE_ACTIVE, 0u}};
+    sstep(&ctl, 5050, 0, 0);
+    EXPECT(ctl.scanning);
+    set_sensors(0u);
+    sstep(&ctl, 5060, 0, 0);
+    EXPECT(!ctl.scanning);
+
+    /* Mapped U-turn: no stop between following and the advance, then the
+     * counter-rotating spin ends only once the right wheel has done half its
+     * pivot arc AND the centre sensor is on black. */
+    for (int centre_late = 0; centre_late < 2; ++centre_late) {
+        int32_t half = (int32_t)(180.0f * S2_RIGHT_TURN_TICKS_PER_DEGREE * 0.5f);
+        sfollow(&ctl);
+        send_map("FAZW");                                   /* W = U-turn */
+        now = msteps(&ctl, 5030, 50, 0, 0);                 /* cruising */
+        queued = snapshot;
+        queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_BARCODE << 3u);
+        queued.data[2] = 'W' - 'A';
+        has_event = true;
+        sstep(&ctl, now, 0, 0);
+        set_sensors(3u);
+        sstep(&ctl, now + 1u, 0, 0);
+        EXPECT(turning && turn_stage == TURN_ADVANCE && turn_cmd == LINE_BARCODE_CMD_UTURN);
+        EXPECT(ctl.status.active_command == MOTION_CMD_FORWARD_CM &&
+               ctl.status.left_pwm_percent > 10.0f);        /* not stopped first */
+        now = msteps(&ctl, now + 1u, 1, 100, 100);          /* > 0.8 cm */
+        EXPECT(ctl.status.state == MOTION_STATE_IDLE);
+        sstep(&ctl, now + 1u, 100, 100);
+        EXPECT(turn_stage == TURN_PIVOT && ctl.active_profile == MOTION_PROFILE_UTURN &&
+               ctl.status.left_pwm_percent > 10.0f);        /* carried on */
+        now = msteps(&ctl, now + 1u, 30, 100 - 300, 100 + 300);
+        EXPECT(ctl.status.left_pwm_percent < 0.0f);         /* reversing */
+        set_sensors(centre_late ? 0u : 2u);                 /* centre black early */
+        sstep(&ctl, now, 100 - half + 100, 100 + half - 100);
+        EXPECT(turning);                                    /* arc not done yet */
+        set_sensors(0u);
+        sstep(&ctl, now + 1u, 100 - half, 100 + half + 1);
+        EXPECT(turning);                                    /* arc done, centre white */
+        set_sensors(2u);
+        sstep(&ctl, now + 2u, 100 - half, 100 + half + 2);
+        EXPECT(!turning && !halted && enabled && leaving_junction);
+        EXPECT(ctl.status.left_pwm_percent == 0.0f);        /* spin stopped */
+    }
+
+    /* Right turn: the pivot uses the junction profile. */
+    sfollow(&ctl);
+    send_map("FAZW");
+    queued = snapshot;
+    queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_BARCODE << 3u);
+    queued.data[2] = 'A' - 'A';
+    has_event = true;
+    sstep(&ctl, 5040, 0, 0);
+    set_sensors(3u);
+    sstep(&ctl, 5050, 0, 0);
+    motion_control_step(&ctl, 5060, 100, 100);
+    sstep(&ctl, 5061, 100, 100);
+    EXPECT(turn_stage == TURN_PIVOT && ctl.active_profile == MOTION_PROFILE_JUNCTION &&
+           ctl.status.active_command == MOTION_CMD_TURN_RIGHT_DEG);
+
+    /* S5: moves use the AVOID profile, all_test's settle and timeout, and
+     * handing back gives the rejoin the same grace as a junction exit. */
+    EXPECT(vc_s5_ops.hold_settle_ms == S2_AVOID_HOLD_SETTLE_MS);
+    sfollow(&ctl);
+    {
+        VC_CTX c = {&ctl, 6000u, 0, 0};
+        S5_REQUEST req = {0};
+        req.move = S5_MOVE_FWD;
+        req.value = 30u;
+        vc_stop(&c);
+        EXPECT(vc_start_move(&c, &req));
+        EXPECT(ctl.active_profile == MOTION_PROFILE_AVOID &&
+               ctl.status.active_command == MOTION_CMD_FORWARD_CM);
+        steer_action = 1u;
+        EXPECT(vc_give_back(&c));
+        EXPECT(leaving_junction && junction_done == 6000u && steer_action == 0u);
+    }
+
+    all_numbers = false;
 }
 
 int main(void)
@@ -804,6 +1155,8 @@ int main(void)
 
     follow_tuning_tests();   /* #8 */
     straddle_tests();        /* #8 */
+    alltest_motion_tests();  /* #8: the rest of all_test */
+    alltest_robot_tests();
 
     printf("robot host tests: %u checks passed\n", checks);
     return 0;

@@ -14,8 +14,13 @@
 #define LINE_BARCODE_PERIOD_MS       1u
 #define LINE_BARCODE_DEBOUNCE_MS     3u
 #define LINE_BARCODE_LOST_MS         100u
-#if defined(APP_ALL_TEST) && APP_ALL_TEST
-/* Combined hardware trial: no line-search deadline. */
+#if (defined(APP_ALL_TEST) && APP_ALL_TEST) || \
+    (defined(APP_ROBOT_INTEGRATED) && APP_ROBOT_INTEGRATED)
+/* No line-search deadline on the robot. C and R straddle the line, so both
+ * white (S3 "no line", SEARCH) is the normal reading on a straight: a 2 s
+ * deadline latched FAULT on every long straight and integrated stopped,
+ * re-arming 1 s later (21 Nov 19:57 log, #8). all_test never had it. The S2
+ * VC handles a really lost line itself (S3 LOST event in the S3 model). */
 #define LINE_BARCODE_SEARCH_MS       0u
 #else
 #define LINE_BARCODE_SEARCH_MS       2000u

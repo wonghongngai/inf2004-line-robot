@@ -92,7 +92,85 @@ static bool config_is_valid(const MOTION_CONFIG *cfg)
           cfg->follow_inner_pwm_percent <= cfg->maximum_pwm_percent &&
           cfg->follow_hard_inner_pwm_percent <= cfg->maximum_pwm_percent)) &&
 
-        (cfg->follow_ramp_pwm_per_s >= 0.0f);
+        (cfg->follow_ramp_pwm_per_s >= 0.0f) &&
+
+        /* Straight trim and scan slow-down: 0 = off. */
+        (cfg->follow_straight_kp >= 0.0f) &&
+        (cfg->follow_straight_max_trim >= 0.0f) &&
+        (cfg->follow_straight_trim_rate >= 0.0f) &&
+        (cfg->follow_straight_deadband_cm >= 0.0f) &&
+        (cfg->follow_scan_scale >= 0.0f) &&
+        (cfg->follow_scan_scale <= 1.0f) &&
+        (cfg->follow_scan_left_inner_pwm_percent >= 0.0f) &&
+        (cfg->follow_scan_left_inner_pwm_percent <= cfg->maximum_pwm_percent) &&
+        (cfg->follow_left_pwm_percent + cfg->follow_straight_max_trim <=
+             cfg->maximum_pwm_percent) &&
+        (cfg->follow_right_pwm_percent + cfg->follow_straight_max_trim <=
+             cfg->maximum_pwm_percent) &&
+
+        /* all_test drive profiles: 0 = off; otherwise every output in range. */
+        (cfg->move_left_pwm_percent == 0.0f ||
+         (cfg->move_left_pwm_percent > 0.0f &&
+          cfg->move_right_pwm_percent > 0.0f &&
+          cfg->move_ramp_pwm_per_s >= 0.0f &&
+          cfg->junction_right_pivot_pwm_percent > 0.0f &&
+          cfg->junction_left_pivot_pwm_percent > 0.0f &&
+          cfg->uturn_right_pwm_percent > 0.0f &&
+          cfg->avoid_heading_kp >= 0.0f &&
+          cfg->avoid_pivot_pwm_percent > 0.0f &&
+          cfg->avoid_left_turn_ticks_per_degree > 0.0f &&
+          cfg->avoid_right_turn_ticks_per_degree > 0.0f &&
+          cfg->move_left_pwm_percent <= cfg->maximum_pwm_percent &&
+          cfg->move_right_pwm_percent <= cfg->maximum_pwm_percent &&
+          cfg->junction_right_pivot_pwm_percent <= cfg->maximum_pwm_percent &&
+          cfg->junction_left_pivot_pwm_percent <= cfg->maximum_pwm_percent &&
+          cfg->uturn_right_pwm_percent <= cfg->maximum_pwm_percent &&
+          cfg->uturn_left_pwm_percent >= -cfg->maximum_pwm_percent &&
+          cfg->uturn_left_pwm_percent <= cfg->maximum_pwm_percent &&
+          cfg->avoid_pivot_pwm_percent <= cfg->maximum_pwm_percent));
+}
+
+/* A profile move or FOLLOW_LINE starting within this long of a profile move
+   ending carries on from its PWM (all_test never stops in between). */
+#define MOTION_CARRY_MS 50U
+
+/*
+ * True when the running command uses an all_test drive profile.
+ */
+static bool profile_running(const MOTION_CONTROLLER *controller)
+{
+    return controller->active_profile != MOTION_PROFILE_BASE &&
+           controller->cfg.move_left_pwm_percent > 0.0f;
+}
+
+/*
+ * all_test's apply_follow_pwm(): move each wheel towards its target by at
+ * most move_ramp_pwm_per_s, both ways; dt is capped at two periods so a late
+ * step cannot become a sudden jump.
+ */
+static float ramp_move_pwm(
+    const MOTION_CONTROLLER *controller,
+    float current,
+    float target,
+    float dt_s
+)
+{
+    float step;
+
+    if (controller->cfg.move_ramp_pwm_per_s <= 0.0f) {
+        return target;
+    }
+    if (dt_s > 0.020f) {
+        dt_s = 0.020f;
+    }
+    step = controller->cfg.move_ramp_pwm_per_s * dt_s;
+    if (target > current + step) {
+        return current + step;
+    }
+    if (target < current - step) {
+        return current - step;
+    }
+    return target;
 }
 
 /*
@@ -239,6 +317,8 @@ static void enter_fault(
 {
     stop_outputs(controller);
 
+    controller->carry_valid = false;
+
     controller->status.fault = fault;
 
     controller->status.state = MOTION_STATE_FAULT;
@@ -290,6 +370,10 @@ static void begin_motion(
 
     controller->status.distance_cm = 0.0f;
 
+    controller->straight_active = false;
+
+    controller->previous_follow_target = target_value;
+
     reset_pid(controller);
 }
 
@@ -336,6 +420,19 @@ bool motion_control_init(
         now_ms;
 
     reset_pid(controller);
+
+    controller->next_profile = MOTION_PROFILE_BASE;
+    controller->active_profile = MOTION_PROFILE_BASE;
+    controller->carry_left_pwm = 0.0f;
+    controller->carry_right_pwm = 0.0f;
+    controller->carry_ms = now_ms;
+    controller->carry_valid = false;
+    controller->scanning = false;
+    controller->straight_active = false;
+    controller->straight_left0 = left_ticks;
+    controller->straight_right0 = right_ticks;
+    controller->straight_trim = 0.0f;
+    controller->previous_follow_target = 0.0f;
 
     controller->status.state =
         MOTION_STATE_INITIALISING;
@@ -409,6 +506,10 @@ MOTION_RESULT motion_control_command(
     if (command->type == MOTION_CMD_STOP) {
 
         stop_outputs(controller);
+
+        controller->carry_valid = false;
+
+        controller->straight_active = false;
 
         controller->status.active_command =
             MOTION_CMD_NONE;
@@ -495,10 +596,47 @@ MOTION_RESULT motion_control_command(
         return MOTION_RESULT_OK;
     }
 
-    if (controller->status.state !=
-        MOTION_STATE_IDLE) {
+    {
+        bool profile_move =
+            command->type != MOTION_CMD_FOLLOW_LINE &&
+            controller->next_profile != MOTION_PROFILE_BASE &&
+            controller->cfg.move_left_pwm_percent > 0.0f;
+        bool from_follow =
+            controller->status.active_command == MOTION_CMD_FOLLOW_LINE;
 
-        return MOTION_RESULT_BUSY;
+        /* all_test drives straight from line following onto a junction:
+           a profile move may take over FOLLOW_LINE, keeping its PWM. */
+        if (controller->status.state != MOTION_STATE_IDLE &&
+            !(profile_move && from_follow)) {
+
+            return MOTION_RESULT_BUSY;
+        }
+
+        if (controller->next_profile == MOTION_PROFILE_UTURN &&
+            profile_move && command->type != MOTION_CMD_TURN_LEFT_DEG) {
+
+            return MOTION_RESULT_INVALID_COMMAND;
+        }
+
+        if (command->type == MOTION_CMD_FOLLOW_LINE ||
+            command->type == MOTION_CMD_FORWARD_CM ||
+            command->type == MOTION_CMD_TURN_LEFT_DEG ||
+            command->type == MOTION_CMD_TURN_RIGHT_DEG) {
+
+            bool numbers = command->type == MOTION_CMD_FOLLOW_LINE ?
+                controller->cfg.follow_left_pwm_percent > 0.0f : profile_move;
+
+            /* Start from where the last profile move left the wheels. */
+            if (!from_follow && numbers && controller->carry_valid &&
+                (uint32_t)(now_ms - controller->carry_ms) <= MOTION_CARRY_MS) {
+
+                controller->status.left_pwm_percent = controller->carry_left_pwm;
+                controller->status.right_pwm_percent = controller->carry_right_pwm;
+            }
+            controller->carry_valid = false;
+            controller->active_profile = profile_move ?
+                controller->next_profile : MOTION_PROFILE_BASE;
+        }
     }
 
     /*
@@ -672,6 +810,13 @@ static void complete_motion(
     MOTION_CONTROLLER *controller
 )
 {
+    if (profile_running(controller)) {
+        controller->carry_left_pwm = controller->status.left_pwm_percent;
+        controller->carry_right_pwm = controller->status.right_pwm_percent;
+        controller->carry_ms = controller->previous_step_ms;
+        controller->carry_valid = true;
+    }
+
     stop_outputs(controller);
 
     controller->status.active_command =
@@ -742,6 +887,44 @@ static void run_forward(
         average_cm;
 
     /*
+     * all_test's junction advance and S5 legs: no tolerance, no floor and,
+     * as all_test, no stall fault (heading hold may stop the leading wheel);
+     * the caller's move timeout covers a stuck robot.
+     */
+    if (controller->status.active_command == MOTION_CMD_FORWARD_CM &&
+        profile_running(controller)) {
+        float l_target = controller->cfg.move_left_pwm_percent;
+        float r_target = controller->cfg.move_right_pwm_percent;
+
+        if (average_cm >= controller->target_value) {
+            complete_motion(controller);
+            return;
+        }
+        if (controller->active_profile == MOTION_PROFILE_AVOID) {
+            float err = controller->cfg.avoid_heading_kp * (right_cm - left_cm);
+
+            if (err > 0.0f) {
+                r_target -= err;        /* right wheel ahead: slow it */
+            } else {
+                l_target += err;        /* left wheel ahead: slow it */
+            }
+            if (l_target < 0.0f) {
+                l_target = 0.0f;
+            }
+            if (r_target < 0.0f) {
+                r_target = 0.0f;
+            }
+        }
+        controller->status.left_pwm_percent =
+            ramp_move_pwm(controller, controller->status.left_pwm_percent,
+                          l_target, dt_s);
+        controller->status.right_pwm_percent =
+            ramp_move_pwm(controller, controller->status.right_pwm_percent,
+                          r_target, dt_s);
+        return;
+    }
+
+    /*
      * Target reached.
      */
     if (controller->status.active_command != MOTION_CMD_FOLLOW_LINE && remaining <=
@@ -761,6 +944,7 @@ static void run_forward(
         float l_target = controller->cfg.follow_left_pwm_percent;
         float r_target = controller->cfg.follow_right_pwm_percent;
         float v = controller->target_value;
+        bool scan = controller->scanning && controller->cfg.follow_scan_scale > 0.0f;
 
         if (v > 0.0f) {              /* steer right: left wheel is outer */
             l_target += controller->cfg.follow_boost_pwm_percent;
@@ -768,8 +952,72 @@ static void run_forward(
                                    controller->cfg.follow_inner_pwm_percent;
         } else if (v < 0.0f) {       /* steer left: right wheel is outer */
             r_target += controller->cfg.follow_boost_pwm_percent;
-            l_target = v <= -1.0f ? controller->cfg.follow_hard_inner_pwm_percent :
+            /* While scanning, keep the scanner-side (left) wheel moving over
+               the bars: no pivot on it (all_test, 19 Nov). */
+            l_target = scan ? controller->cfg.follow_scan_left_inner_pwm_percent :
+                       v <= -1.0f ? controller->cfg.follow_hard_inner_pwm_percent :
                                     controller->cfg.follow_inner_pwm_percent;
+        }
+
+        if (v == 0.0f && controller->cfg.follow_straight_kp > 0.0f) {
+            /* all_test's white_straight_step(): boost the wheel that is
+               behind since the stretch began; never cut one. */
+            float l_cm, r_cm, err, trim_target, step;
+            float dt = dt_s > 0.020f ? 0.020f : dt_s;
+
+            if (!controller->straight_active) {
+                controller->straight_active = true;
+                controller->straight_left0 = left_ticks;
+                controller->straight_right0 = right_ticks;
+                controller->straight_trim = 0.0f;
+            }
+            l_cm = ticks_to_cm(left_ticks - controller->straight_left0,
+                               controller->cfg.left_ticks_per_cm);
+            r_cm = ticks_to_cm(right_ticks - controller->straight_right0,
+                               controller->cfg.right_ticks_per_cm);
+            err = r_cm - l_cm;          /* > 0: right ahead, boost left */
+            if (err > controller->cfg.follow_straight_deadband_cm) {
+                err -= controller->cfg.follow_straight_deadband_cm;
+            } else if (err < -controller->cfg.follow_straight_deadband_cm) {
+                err += controller->cfg.follow_straight_deadband_cm;
+            } else {
+                err = 0.0f;
+            }
+            trim_target = clamp_float(controller->cfg.follow_straight_kp * err,
+                                      -controller->cfg.follow_straight_max_trim,
+                                      controller->cfg.follow_straight_max_trim);
+            step = controller->cfg.follow_straight_trim_rate * dt;
+            if (trim_target > controller->straight_trim + step) {
+                controller->straight_trim += step;
+            } else if (trim_target < controller->straight_trim - step) {
+                controller->straight_trim -= step;
+            } else {
+                controller->straight_trim = trim_target;
+            }
+            if (controller->straight_trim > 0.0f) {
+                l_target += controller->straight_trim;
+            } else {
+                r_target -= controller->straight_trim;
+            }
+        } else {
+            controller->straight_active = false;
+        }
+
+        /* Correction over: the slowed inner wheel goes straight back to
+           cruise, or its ramp keeps turning the robot past the line. */
+        if (controller->previous_follow_target != 0.0f && v == 0.0f) {
+            if (controller->status.left_pwm_percent < controller->cfg.follow_left_pwm_percent) {
+                controller->status.left_pwm_percent = controller->cfg.follow_left_pwm_percent;
+            }
+            if (controller->status.right_pwm_percent < controller->cfg.follow_right_pwm_percent) {
+                controller->status.right_pwm_percent = controller->cfg.follow_right_pwm_percent;
+            }
+        }
+        controller->previous_follow_target = v;
+
+        if (scan) {
+            l_target *= controller->cfg.follow_scan_scale;
+            r_target *= controller->cfg.follow_scan_scale;
         }
         controller->status.left_pwm_percent =
             ramp_follow_pwm(controller, controller->status.left_pwm_percent,
@@ -867,24 +1115,29 @@ static void run_forward(
 static void run_left_turn(
     MOTION_CONTROLLER *controller,
     uint32_t now_ms,
-    int32_t right_ticks
+    int32_t right_ticks,
+    float dt_s
 )
 {
     float turned_deg;
+
+    bool profile = profile_running(controller);
+    bool avoid = profile && controller->active_profile == MOTION_PROFILE_AVOID;
 
     turned_deg =
         (float)abs_i32(
             right_ticks -
             controller->command_start_right_ticks
         ) /
-        controller->cfg.right_turn_ticks_per_degree;
+        (avoid ? controller->cfg.avoid_right_turn_ticks_per_degree :
+                 controller->cfg.right_turn_ticks_per_degree);
 
     /*
-     * Target angle reached.
+     * Target angle reached (profile pivots: no tolerance, as all_test).
      */
     if ((controller->target_value -
          turned_deg) <=
-        controller->cfg.angle_tolerance_deg) {
+        (profile ? 0.0f : controller->cfg.angle_tolerance_deg)) {
 
         complete_motion(controller);
 
@@ -911,8 +1164,12 @@ static void run_left_turn(
     controller->status.left_pwm_percent =
         0.0f;
 
-    controller->status.right_pwm_percent =
-        controller->cfg.base_pwm_percent;
+    controller->status.right_pwm_percent = !profile ?
+        controller->cfg.base_pwm_percent :
+        ramp_move_pwm(controller, controller->status.right_pwm_percent,
+                      avoid ? controller->cfg.avoid_pivot_pwm_percent :
+                              controller->cfg.junction_left_pivot_pwm_percent,
+                      dt_s);
 }
 
 /*
@@ -923,24 +1180,29 @@ static void run_left_turn(
 static void run_right_turn(
     MOTION_CONTROLLER *controller,
     uint32_t now_ms,
-    int32_t left_ticks
+    int32_t left_ticks,
+    float dt_s
 )
 {
     float turned_deg;
+
+    bool profile = profile_running(controller);
+    bool avoid = profile && controller->active_profile == MOTION_PROFILE_AVOID;
 
     turned_deg =
         (float)abs_i32(
             left_ticks -
             controller->command_start_left_ticks
         ) /
-        controller->cfg.left_turn_ticks_per_degree;
+        (avoid ? controller->cfg.avoid_left_turn_ticks_per_degree :
+                 controller->cfg.left_turn_ticks_per_degree);
 
     /*
-     * Target angle reached.
+     * Target angle reached (profile pivots: no tolerance, as all_test).
      */
     if ((controller->target_value -
          turned_deg) <=
-        controller->cfg.angle_tolerance_deg) {
+        (profile ? 0.0f : controller->cfg.angle_tolerance_deg)) {
 
         complete_motion(controller);
 
@@ -964,11 +1226,49 @@ static void run_right_turn(
         return;
     }
 
-    controller->status.left_pwm_percent =
-        controller->cfg.base_pwm_percent;
+    controller->status.left_pwm_percent = !profile ?
+        controller->cfg.base_pwm_percent :
+        ramp_move_pwm(controller, controller->status.left_pwm_percent,
+                      avoid ? controller->cfg.avoid_pivot_pwm_percent :
+                              controller->cfg.junction_right_pivot_pwm_percent,
+                      dt_s);
 
     controller->status.right_pwm_percent =
         0.0f;
+}
+
+/*
+ * all_test's U-turn: both wheels counter-rotate until the caller sends STOP
+ * (it watches the right wheel's ticks and the centre sensor). The right
+ * wheel must keep making progress.
+ */
+static void run_uturn(
+    MOTION_CONTROLLER *controller,
+    uint32_t now_ms,
+    float dt_s
+)
+{
+    if (timed_out(
+            now_ms,
+            controller->last_right_progress_ms,
+            controller->cfg.encoder_stall_timeout_ms
+        )) {
+
+        enter_fault(
+            controller,
+            MOTION_FAULT_RIGHT_ENCODER_STALL
+        );
+
+        return;
+    }
+
+    controller->status.left_pwm_percent =
+        ramp_move_pwm(controller, controller->status.left_pwm_percent,
+                      controller->cfg.uturn_left_pwm_percent, dt_s);
+
+    controller->status.right_pwm_percent =
+        ramp_move_pwm(controller, controller->status.right_pwm_percent,
+                      controller->cfg.uturn_right_pwm_percent, dt_s);
 }
 
 /*
@@ -1033,10 +1333,19 @@ void motion_control_step(
 
     case MOTION_STATE_TURNING_LEFT:
 
+        if (profile_running(controller) &&
+            controller->active_profile == MOTION_PROFILE_UTURN) {
+
+            run_uturn(controller, now_ms, dt_s);
+
+            break;
+        }
+
         run_left_turn(
             controller,
             now_ms,
-            right_ticks
+            right_ticks,
+            dt_s
         );
 
         break;
@@ -1046,7 +1355,8 @@ void motion_control_step(
         run_right_turn(
             controller,
             now_ms,
-            left_ticks
+            left_ticks,
+            dt_s
         );
 
         break;
@@ -1071,6 +1381,26 @@ void motion_control_step(
         stop_outputs(controller);
 
         break;
+    }
+}
+
+void motion_control_set_profile(
+    MOTION_CONTROLLER *controller,
+    MOTION_PROFILE profile
+)
+{
+    if (controller != 0) {
+        controller->next_profile = profile;
+    }
+}
+
+void motion_control_set_scanning(
+    MOTION_CONTROLLER *controller,
+    bool scanning
+)
+{
+    if (controller != 0) {
+        controller->scanning = scanning;
     }
 }
 

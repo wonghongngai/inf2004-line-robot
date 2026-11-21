@@ -1,0 +1,57 @@
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: 0c77284 + uncommitted changes
+
+int/robot_control            PASS
+robot host tests: 837 checks passed
+
+================ summary ================
+PASS   int/robot_control            
+-----------------------------------------
+1 passed, 0 failed, 0 known failures, 0 skipped
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: 0c77284 + uncommitted changes
+
+s1/protocol                  PASS
+s1/barcode_queue             PASS
+s1/binary_cli                PASS
+s2/motion_protocol           PASS
+s2/motor_pwm                 PASS
+s3/line_barcode              PASS
+s3/pptx_samples              PASS
+s3/line_service              PASS
+s4/hump_height               PASS
+int/robot_control            PASS
+int/line_service             PASS
+int/steering_ramp            PASS
+
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/line_service              
+PASS   s4/hump_height               
+PASS   int/robot_control            
+PASS   int/line_service             
+PASS   int/steering_ramp            
+-----------------------------------------
+12 passed, 0 failed, 0 known failures, 0 skipped
+
+Mutations (each run of int/robot_control, then reverted):
+  FAIL (caught): pivot tolerance (S2 2-degree tolerance kept)
+  FAIL (caught): advance tolerance (1 cm early)
+  FAIL (caught): carry (pivot from rest)
+  FAIL (caught): scan scale removed
+  FAIL (caught): straight trim removed
+  FAIL (caught): white-clear snap removed
+  FAIL (caught): AVOID heading cut removed
+  FAIL (caught): FOLLOW pre-emption removed
+  FAIL (caught): U-turn ends without centre black
+  FAIL (caught): S5 give-back grace removed
+  FAIL (caught): AVOID profile not set for S5 moves
+  FAIL (caught): capture-active ignored for scan
+
+Firmware: sh build.sh all -> 11 passed, 0 failed (PICO_SDK 2.3.1, arm-none-eabi-gcc 15.2), 0 warnings in subsystem2

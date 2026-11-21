@@ -108,6 +108,34 @@ static MOTION_CONFIG build_config(void)
     cfg.follow_hard_inner_pwm_percent = S2_FOLLOW_HARD_INNER_PWM_PERCENT;
     cfg.follow_ramp_pwm_per_s = S2_FOLLOW_RAMP_PWM_PER_S;
 
+#if APP_ROBOT_INTEGRATED && S2_CALIBRATION_READY
+    /* Everything else all_test drives with (#8): the interrupt-encoder
+       distance calibration (speed, distance, S5 legs), straight trim,
+       barcode-scan slow-down and the junction / U-turn / S5 profiles.
+       Pivots at junctions keep the S2 turn calibration, as all_test. */
+    cfg.left_ticks_per_cm = S2_ENC_LEFT_TICKS_PER_CM;
+    cfg.right_ticks_per_cm = S2_ENC_RIGHT_TICKS_PER_CM;
+    cfg.follow_straight_kp = S2_FOLLOW_STRAIGHT_KP;
+    cfg.follow_straight_max_trim = S2_FOLLOW_STRAIGHT_MAX_TRIM;
+    cfg.follow_straight_trim_rate = S2_FOLLOW_STRAIGHT_TRIM_RATE;
+    cfg.follow_straight_deadband_cm = S2_FOLLOW_STRAIGHT_DEADBAND_CM;
+    cfg.follow_scan_scale = S2_FOLLOW_SCAN_SCALE;
+    cfg.follow_scan_left_inner_pwm_percent = S2_FOLLOW_SCAN_LEFT_INNER_PWM_PERCENT;
+    cfg.move_left_pwm_percent = S2_MOVE_LEFT_PWM_PERCENT;
+    cfg.move_right_pwm_percent = S2_MOVE_RIGHT_PWM_PERCENT;
+    cfg.move_ramp_pwm_per_s = S2_MOVE_RAMP_PWM_PER_S;
+    cfg.junction_right_pivot_pwm_percent = S2_JUNCTION_RIGHT_PIVOT_PWM_PERCENT;
+    cfg.junction_left_pivot_pwm_percent = S2_JUNCTION_LEFT_PIVOT_PWM_PERCENT;
+    cfg.uturn_left_pwm_percent = S2_UTURN_LEFT_PWM_PERCENT;
+    cfg.uturn_right_pwm_percent = S2_UTURN_RIGHT_PWM_PERCENT;
+    cfg.avoid_heading_kp = S2_AVOID_HEADING_KP;
+    cfg.avoid_pivot_pwm_percent = S2_AVOID_PIVOT_PWM_PERCENT;
+    cfg.avoid_left_turn_ticks_per_degree =
+        S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_LEFT_TICKS_PER_CM);
+    cfg.avoid_right_turn_ticks_per_degree =
+        S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_RIGHT_TICKS_PER_CM);
+#endif
+
     return cfg;
 }
 
@@ -305,8 +333,10 @@ EXPORT void motion_task(
     now_ms =
         current_ms();
 #if APP_ROBOT_INTEGRATED
-    wheel_odometry_init(&odometry, S2_LEFT_TICKS_PER_CM,
-                        S2_RIGHT_TICKS_PER_CM, left_ticks, right_ticks);
+    /* S4's hump height needs real distance: the interrupt-encoder
+       calibration, as all_test (S2_*_TICKS_PER_CM predate it). */
+    wheel_odometry_init(&odometry, S2_ENC_LEFT_TICKS_PER_CM,
+                        S2_ENC_RIGHT_TICKS_PER_CM, left_ticks, right_ticks);
 #endif
 
 #if S2_CALIBRATION_READY
