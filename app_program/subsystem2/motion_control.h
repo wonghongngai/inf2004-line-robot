@@ -141,6 +141,27 @@ typedef struct {
 
     float correction_limit;
 
+    /*
+     * Line following with all_test's tuned motor numbers (#8). Active when
+     * follow_left_pwm_percent > 0; then FOLLOW_LINE drives these PWMs
+     * directly, with no moving floor and no encoder-stall fault, as all_test
+     * does. Zero keeps the original base_pwm/correction_limit behaviour.
+     * Target 0 = cruise; 0 < |target| < 1 = soft (inner wheel at
+     * follow_inner_pwm_percent); |target| >= 1 = hard (follow_hard_inner_...).
+     * Distance moves, pivots and S5 manoeuvres always use base_pwm_percent.
+     */
+    float follow_left_pwm_percent;    /* left cruise */
+
+    float follow_right_pwm_percent;   /* right cruise (the right motor is weaker) */
+
+    float follow_boost_pwm_percent;   /* added to the outer wheel while steering */
+
+    float follow_inner_pwm_percent;   /* inner wheel, soft correction */
+
+    float follow_hard_inner_pwm_percent; /* inner wheel, hard correction */
+
+    float follow_ramp_pwm_per_s;      /* speed-up limit per wheel; slow-downs at once */
+
 } MOTION_CONFIG;
 
 /*

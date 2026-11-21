@@ -27,7 +27,7 @@
  */
 static MOTION_CONFIG build_config(void)
 {
-    MOTION_CONFIG cfg;
+    MOTION_CONFIG cfg = {0}; /* new fields default to 0 = legacy behaviour */
 
 #if S2_CALIBRATION_READY
 
@@ -100,6 +100,13 @@ static MOTION_CONFIG build_config(void)
 
     cfg.correction_limit =
         S2_PID_CORRECTION_LIMIT;
+
+    cfg.follow_left_pwm_percent = S2_FOLLOW_LEFT_PWM_PERCENT;
+    cfg.follow_right_pwm_percent = S2_FOLLOW_RIGHT_PWM_PERCENT;
+    cfg.follow_boost_pwm_percent = S2_FOLLOW_BOOST_PWM_PERCENT;
+    cfg.follow_inner_pwm_percent = S2_FOLLOW_INNER_PWM_PERCENT;
+    cfg.follow_hard_inner_pwm_percent = S2_FOLLOW_HARD_INNER_PWM_PERCENT;
+    cfg.follow_ramp_pwm_per_s = S2_FOLLOW_RAMP_PWM_PER_S;
 
     return cfg;
 }

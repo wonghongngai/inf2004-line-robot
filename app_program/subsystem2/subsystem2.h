@@ -54,6 +54,17 @@
 #define S2_PID_INTEGRAL_LIMIT                100.0f
 #define S2_PID_CORRECTION_LIMIT              30.0f
 
+/* #8 line-following motor numbers, tuned on the track in all_test and used
+   by BOTH builds (all_test's ALL_CRUISE_* / ALL_LINE_* read these), so they
+   cannot drift apart again. Following uses no moving floor and no stall
+   stop, as all_test always did. */
+#define S2_FOLLOW_LEFT_PWM_PERCENT           12.5f
+#define S2_FOLLOW_RIGHT_PWM_PERCENT          15.0f  /* right motor is weaker */
+#define S2_FOLLOW_BOOST_PWM_PERCENT          4.0f   /* outer wheel while steering */
+#define S2_FOLLOW_INNER_PWM_PERCENT          5.0f   /* inner wheel, soft correction */
+#define S2_FOLLOW_HARD_INNER_PWM_PERCENT     0.0f   /* inner wheel, hard correction */
+#define S2_FOLLOW_RAMP_PWM_PER_S             80.0f  /* speed-ups only */
+
 /* Receiver-owned command message buffer: Vehicle Controller -> Buddy 2. */
 IMPORT ID mbf_motion_cmd;
 IMPORT ID flg_motion_stop;

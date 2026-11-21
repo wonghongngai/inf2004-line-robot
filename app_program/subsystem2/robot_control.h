@@ -30,6 +30,20 @@
 #define S2_ROBOT_TURN_TIMEOUT_MS 10000u
 #define S2_DEMO_TIMEOUT_MS 15000u
 
+/* #8 (21 Nov): line model ported from all_test's tuned white-track mode.
+   On this robot the centre (GP27) and right (GP0) sensors sit either side
+   of the black line: C/R = 0/0 on the line (straight), 0/1 drifting left
+   (steer right), 1/0 drifting right (steer left), 1/1 a junction.
+   0 restores the S3 position model (line under both sensors). */
+#ifndef S2_LINE_STRADDLE
+#define S2_LINE_STRADDLE 1
+#endif
+#define S2_LINE_CONFIRM_MS 5u        /* a left<->right reversal must persist */
+#define S2_WHITE_CLEAR_MS 30u        /* hold a correction this long after white */
+#define S2_LINE_HARD_MS 150u         /* soft correction becomes hard (inner wheel stops) */
+#define S2_TURN_ADVANCE_CM 5.0f      /* drive onto the crossing before pivoting */
+#define S2_JUNCTION_SETTLE_MS 500u   /* ignore the crossing just handled */
+
 /* Called only by the motor-owning task; no second writer to motor GPIO. */
 void robot_control_step(MOTION_CONTROLLER *controller, uint32_t now,
                         int32_t left, int32_t right);

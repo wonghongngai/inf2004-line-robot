@@ -10,6 +10,17 @@
 #include "../subsystem1/subsystem1.h"
 
 static bool armed, halted, line_halt, turning, configured;
+/* #8 straddle line model (S2_LINE_STRADDLE); runtime so host tests can
+   exercise both models. */
+static bool straddle = S2_LINE_STRADDLE;
+static unsigned steer_action;            /* 0 straight, 1 right, 2 left */
+static unsigned steer_candidate;
+static uint32_t candidate_since, action_since, clear_since, junction_done;
+static bool clear_pending, leaving_junction;
+static uint8_t pending_letter;           /* bit 7 = waiting, bits 4..0 = A..Z */
+#define TURN_ADVANCE 1u
+#define TURN_PIVOT 2u
+static unsigned turn_stage, turn_cmd;
 /* #48 Ready state: arm only once START has arrived (or auto_start is set).
    A START that arrives while still initialising is kept until Ready. */
 static bool auto_start = S2_AUTO_START, start_requested, ready_reported;
@@ -62,8 +73,12 @@ static void halt_line(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l,
 static bool line_rearm_ready(uint32_t now, int32_t l, int32_t r)
 {
     line_barcode_msg_t msg = {{0u, 0u, 0u}};
-    bool ready = line_service_snapshot(&msg) >= E_OK &&
-                 (msg.data[0] & 3u) == 3u && l == rearm_l && r == rearm_r;
+    ER er = line_service_snapshot(&msg);
+    /* Straddle (#8): both-white is the normal on-line reading, so any healthy
+       snapshot will do; the S3 model needs centre + right on black. */
+    bool on_line = straddle ? (msg.data[1] & 7u) != LINE_BARCODE_FAULT :
+                              (msg.data[0] & 3u) == 3u;
+    bool ready = er >= E_OK && on_line && l == rearm_l && r == rearm_r;
 
     if (!ready) {
         rearm_since = now;
@@ -261,6 +276,7 @@ static void pause_robot(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         s5_exec_set_following(&vc_s5, FALSE);
         (void)line_service_enable(false);
         turning = false;
+        turn_stage = 0u;
         paused = true;
         tm_printf((UB *)"[ROBOT] paused (MQTT); RESUME to continue\n");
     }
@@ -278,8 +294,9 @@ static void resume_robot(uint32_t now)
         tm_printf((UB *)"[ROBOT] RESUME refused: IMU not healthy; still paused\n");
         return;
     }
-    /* Same line test as the automatic re-arm: centre and right on black. */
-    if (line_service_snapshot(&msg) < E_OK || (msg.data[0] & 3u) != 3u) {
+    /* Same line test as the automatic re-arm. */
+    if (line_service_snapshot(&msg) < E_OK ||
+        (straddle ? (msg.data[1] & 7u) == LINE_BARCODE_FAULT : (msg.data[0] & 3u) != 3u)) {
         tm_printf((UB *)"[ROBOT] RESUME refused: put the robot on the line; still paused\n");
         return;
     }
@@ -443,6 +460,139 @@ static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now)
     telemetry_error = er;
 }
 
+/* ---- #8 straddle line model, ported from all_test's white_follow_step ----
+   C and R sit either side of the line. S3's SEARCH/LOST/JUNCTION/COMMAND
+   events assume the line under both sensors, so they are ignored here; S3
+   faults still stop the robot, and S3 still decodes barcodes. */
+
+/* Junction (C/R both black): a mapped stored letter drives onto the crossing,
+   then pivots; otherwise go straight (decided 21 Nov). Returns true when a
+   turn sequence started. */
+static bool straddle_junction(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    MOTION_COMMAND cmd;
+    uint8_t command;
+    unsigned letter = pending_letter & LINE_BARCODE_LETTER_MASK;
+    bool waiting = (pending_letter & 0x80u) != 0u;
+
+    pending_letter = 0u;
+    leaving_junction = true;
+    junction_done = now;
+    steer_action = 0u;
+    clear_pending = false;
+    if (!waiting || line_service_lookup((uint8_t)letter, &command) != E_OK) {
+        tm_printf((UB *)"[ROBOT] junction: %s, straight on\n",
+                  !waiting ? "no barcode" : map_received ? "no mapped barcode" :
+                  "no MQTT letter map yet");
+        return false;
+    }
+    if (line_service_enable(false) < E_OK) {
+        halt(ctl, now, l, r, "line pause failed");
+        return true;
+    }
+    vc_stop_motors(ctl, now, l, r);
+    motion_control_step(ctl, now, l, r); /* STOPPING -> IDLE */
+    cmd = (MOTION_COMMAND){MOTION_CMD_FORWARD_CM, S2_TURN_ADVANCE_CM};
+    if (motion_control_command(ctl, &cmd, now, l, r) != MOTION_RESULT_OK) {
+        halt(ctl, now, l, r, "junction advance rejected");
+        return true;
+    }
+    turning = true;
+    turn_started = now;
+    turn_stage = TURN_ADVANCE;
+    turn_cmd = command & 3u;
+    tm_printf((UB *)"[ROBOT] junction: letter '%c' -> %s\n", 'A' + letter,
+              turn_cmd == LINE_BARCODE_CMD_LEFT ? "LEFT" :
+              turn_cmd == LINE_BARCODE_CMD_RIGHT ? "RIGHT" :
+              turn_cmd == LINE_BARCODE_CMD_STRAIGHT ? "STRAIGHT" : "U-TURN");
+    return true;
+}
+
+static void straddle_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    line_barcode_msg_t msg = {{0u, 0u, 0u}};
+    MOTION_COMMAND cmd;
+    ER er = line_service_snapshot(&msg);
+    unsigned state = msg.data[1] & 7u, sensors;
+
+    /* S3 faults stop at once; a missing or stuck-paused snapshot only after
+       S2_LINE_UNSAFE_MS, as in the S3 model. */
+    if (er >= E_OK && state == LINE_BARCODE_FAULT) {
+        halt_line(ctl, now, l, r, "line sensor fault");
+        return;
+    }
+    if (er < E_OK || state == LINE_BARCODE_PAUSED) {
+        if (!line_unsafe_active) {
+            line_unsafe_active = true;
+            line_unsafe_since = now;
+        }
+        if ((uint32_t)(now - line_unsafe_since) >= S2_LINE_UNSAFE_MS)
+            halt_line(ctl, now, l, r, "line snapshot unsafe or stale");
+        return;
+    }
+    line_unsafe_active = false;
+
+    /* Barcodes: remember the newest letter until the next junction. */
+    for (unsigned i = 0; i < 24u; ++i) {
+        line_barcode_msg_t ev;
+        er = line_service_receive(&ev, TMO_POL);
+        if (er == E_TMOUT) break;
+        if (er < E_OK) {
+            halt(ctl, now, l, r, "line receive failed");
+            return;
+        }
+        unsigned event = (ev.data[1] >> 3u) & 7u;
+        if (event == LINE_BARCODE_EVT_FAULT) {
+            halt_line(ctl, now, l, r, "line sensor fault");
+            return;
+        }
+        if (event == LINE_BARCODE_EVT_BARCODE) {
+            pending_letter = (uint8_t)(0x80u | (ev.data[2] & LINE_BARCODE_LETTER_MASK));
+            last_letter = (ev.data[2] & LINE_BARCODE_LETTER_MASK) + 1u;
+        }
+    }
+
+    sensors = msg.data[0] & 3u; /* C bit 1, R bit 0; the scanner is ignored */
+    if (leaving_junction && sensors != 3u &&
+        (uint32_t)(now - junction_done) >= S2_JUNCTION_SETTLE_MS)
+        leaving_junction = false;
+    if (sensors == 3u && !leaving_junction && straddle_junction(ctl, now, l, r)) return;
+
+    if (sensors == 1u || sensors == 2u) {
+        if (sensors != steer_candidate) {
+            steer_candidate = sensors;
+            candidate_since = now;
+        }
+        /* A first correction acts at once; only a reversal must persist. */
+        if (steer_action == 0u ||
+            (uint32_t)(now - candidate_since) >= S2_LINE_CONFIRM_MS) {
+            if (steer_action != sensors) action_since = now;
+            steer_action = sensors;
+        }
+        clear_pending = false;
+    } else if (sensors == 0u && steer_action != 0u) {
+        steer_candidate = 0u;
+        if (!clear_pending) {
+            clear_pending = true;
+            clear_since = now;
+        }
+        if ((uint32_t)(now - clear_since) >= S2_WHITE_CLEAR_MS) {
+            steer_action = 0u;
+            clear_pending = false;
+        }
+    }
+    if (sensors == 0u) steer_candidate = 0u;
+
+    /* Right sensor black: drifting left, steer right (positive). */
+    float strength = (uint32_t)(now - action_since) >= S2_LINE_HARD_MS ? 1.0f : 0.5f;
+    cmd.type = MOTION_CMD_FOLLOW_LINE;
+    cmd.value = sensors == 3u ? 0.0f :         /* on the crossing: straight */
+                steer_action == 1u ? strength :
+                steer_action == 2u ? -strength : 0.0f;
+    if (motion_control_command(ctl, &cmd, now, l, r) != MOTION_RESULT_OK)
+        halt(ctl, now, l, r, "follow command rejected");
+}
+
 static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
 {
     IMU_DATA imu;
@@ -539,16 +689,35 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
         if ((uint32_t)(now - turn_started) > S2_ROBOT_TURN_TIMEOUT_MS) {
             halt(ctl, now, l, r, "turn timeout");
         } else if (ctl->status.state == MOTION_STATE_IDLE && ctl->status.motion_complete) {
+            if (turn_stage == TURN_ADVANCE && turn_cmd != LINE_BARCODE_CMD_STRAIGHT) {
+                /* #8: on the crossing now; pivot as all_test does. */
+                cmd.type = turn_cmd == LINE_BARCODE_CMD_RIGHT ?
+                           MOTION_CMD_TURN_RIGHT_DEG : MOTION_CMD_TURN_LEFT_DEG;
+                cmd.value = turn_cmd == LINE_BARCODE_CMD_UTURN ? 180.0f : 90.0f;
+                turn_stage = TURN_PIVOT;
+                if (motion_control_command(ctl, &cmd, now, l, r) != MOTION_RESULT_OK)
+                    halt(ctl, now, l, r, "turn rejected");
+                return;
+            }
             turning = false;
+            turn_stage = 0u;
             er = line_service_enable(true);
             resumed_at = now;
             line_unsafe_active = false;
+            /* #8: the sensors may still be on the crossing just handled. */
+            leaving_junction = straddle;
+            junction_done = now;
+            steer_action = 0u;
             if (er < E_OK) halt(ctl, now, l, r, "line resume failed");
         }
         return;
     }
     /* Permit two sensor periods after enable/reset, with zero motor output. */
     if ((uint32_t)(now - resumed_at) < 30u) return;
+    if (straddle) {
+        straddle_step(ctl, now, l, r);
+        return;
+    }
 
     /* A newer snapshot fault must win over an older queued turn command. */
     er = line_service_snapshot(&msg);

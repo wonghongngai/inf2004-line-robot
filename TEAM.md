@@ -90,7 +90,9 @@ One owner per pin.
 | GP27 | S3 | centre IR, digital input (steering); ADC pin initialization disabled |
 | GP28 | S3 | offset barcode scanner IR, digital input; ADC pin initialization disabled |
 
-IR layout: SIDE, as wired on the robot. GP27 (centre) and GP0 (right) steer,
+IR layout: SIDE, as wired on the robot. GP27 (centre) and GP0 (right) steer
+and sit **either side of the black line** (C/R = 0/0 on the line; found 21 Nov,
+#8: both builds now use this model, `S2_LINE_STRADDLE`),
 and GP28 (left) reads barcodes beside the line. Each sensor's digital output
 (D0) is wired; the analog outputs (A0) are not connected.
 
