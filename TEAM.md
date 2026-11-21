@@ -232,40 +232,49 @@ shared executor `subsystem5/s5_executor.c` (the IF-10/IF-11 hand-shake).
 
 ### Event bits (#50)
 
-**Draft, 20 Nov 2026, not agreed yet.** Written from the code on `main`
-(`42be6ea`). Every bit or event code that one subsystem raises for another
-is listed here: who sets it, who clears it, whether it latches, and which one
-wins when several fire at once. The rule: **one producer sets a bit. Only the
-producer or the one named consumer clears it.**
+**Agreed by the team, 21 Nov 2026.** Checked against the code on `main`
+(`882f522`). Change it only by team agreement. Every bit or event code that one subsystem raises for
+another is listed here: who sets it, who clears it, whether it latches, and
+which one wins when several fire at once. The rule: **one producer sets a
+bit. Only the producer or the one named consumer clears it.**
 
 There is no shared robot-wide event group. Each signal belongs to its
-interface's owner.
+interface's owner. INT-14 (`int/event_bits`, `testing/integration/test_event_bits.py`)
+reads the sources and fails if any file outside the "Producer" and
+"Consumer" columns sets, clears, waits on, sends to or reads one of these
+objects. Add a writer here first, then in the code and the check.
 
 | Bit / code | Object | Producer (only writer) | Consumer | Set when | Cleared by, and when | Latch? | Priority when several fire |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| STOP, bit 0 (`1u`) | `flg_motion_stop` (S2) | any caller of `subsystem2_send_command(MOTION_CMD_STOP)` | `motion_task` (`task_motion.c`) | STOP requested | consumer, on read (`TWF_CLR`) | no: consumed once | beats every queued move: the queue is drained in the same cycle |
-| `S5_EVT_FOLLOWING` | `flg_s5_evt` (S5) | VC, through `s5_exec_set_following()` | S5 (`s5_detect_allowed()`, polled) | VC armed and line-following | VC (the producer), on any stop or when S5 takes control | level, not latched | — (S5 counts obstacles only while it is set) |
-| `S5_EVT_STOPPED` | `flg_s5_evt` | VC executor (`exec_finish()`) | S5 | HOLD done, robot at rest | S5 clears the bits it is waiting for *before* each new request | yes, until S5's next request | one reply per request (`b_replied`) |
+| STOP, bit 0 (`1u`) | `flg_motion_stop` (S2) | `subsystem2_send_command(MOTION_CMD_STOP)` (`subsystem2.c`), for any caller | `motion_task` (`task_motion.c`) | STOP requested | consumer, on read (`TWF_CLR`); nobody calls `tk_clr_flg` | no: consumed once | beats every queued move: the queue is drained in the same cycle |
+| `S5_EVT_FOLLOWING` | `flg_s5_evt` (S5) | VC, through `s5_exec_set_following()` (`s5_executor.c`) | S5 (`s5_detect_allowed()`, polled with `TMO_POL`) | VC armed and line-following | VC only (the producer), on any stop, on PAUSE, or when S5 takes control. S5 never clears it: its clears keep every bit except its own reply mask, and it never waits with `TWF_CLR` | level, not latched | — (S5 counts obstacles only while it is set) |
+| `S5_EVT_STOPPED` | `flg_s5_evt` | VC executor (`exec_finish()`) | S5 (`task_obstacle.c`) | HOLD done, robot at rest | S5 clears the reply bits it is about to wait for *before* each new request (`s5_post_and_wait()`, the watched pass leg) | yes, until S5's next request | one reply per request (`b_replied`) |
 | `S5_EVT_MOTION_DONE` | `flg_s5_evt` | VC executor | S5 | MOVE finished | as above | yes, until S5's next request | one reply per request |
 | `S5_EVT_LINE_FOUND` | `flg_s5_evt` | VC executor | S5 | stop-on-line MOVE saw the line | as above | yes, until S5's next request | one reply per request |
-| `S5_EVT_MOVE_FAILED` | `flg_s5_evt` | VC executor | S5 | MOVE rejected or timed out (10 s) | as above | yes, until S5's next request | S5 treats FAILED as overriding any other bit it sees |
-| line event, byte 1 bits 5:3 (`LINE_BARCODE_EVT_*`) | `g_h_line_nav_q` (S3) | `line_service_task` | VC only | LOST, FOUND, JUNCTION, COMMAND, INVALID, BARCODE, FAULT, STATUS | message buffer: each event is read once | no: a queued event | VC drains up to 24 per cycle. LOST, FAULT or unmapped JUNCTION → line stop; COMMAND → turn; the rest are ignored |
-| line state, byte 1 bits 2:0 (`FOLLOW`…`FAULT`) | S3 snapshot | `line_service_task` | VC | every sample | overwritten every sample | level | FAULT stops at once; SEARCH, PAUSED or stale must last 200 ms (`S2_LINE_UNSAFE_MS`) first |
-| line faults, byte 2 bits 7:5 (`LINE_BARCODE_ERR_LINE`, `_QUEUE`, `_TIMING`) | S3 snapshot | `line_service_task` | VC (as state FAULT) | line lost longer than the search time; queue overflow; sampling gap | S3, only on calibration or mode reset | **yes** | any one sets state FAULT |
+| `S5_EVT_MOVE_FAILED` | `flg_s5_evt` | VC executor | S5 | MOVE rejected, or not finished within 20 s (`S2_AVOID_MOVE_TIMEOUT_MS`). If the VC never replies (it halted), S5 gives up by itself after 25 s (`MOVE_TIMEOUT_MS`) | as above | yes, until S5's next request | S5 treats FAILED as overriding any other bit it sees |
+| line event, byte 1 bits 5:3 (`LINE_BARCODE_EVT_*`) | `g_h_line_nav_q` (S3) | `line_service_task` (`line_service.c`, the only `tk_snd_mbf`) | VC only, through `line_service_receive()`. In the test images, the harness that replaces the VC (`all_test`, `line_follow_test`, `line_demo`) | LOST, FOUND, JUNCTION, COMMAND, INVALID, BARCODE, FAULT (STATUS is never queued) | message buffer: each event is read once. `line_service_enable()` empties it, so events from before a stop or pause are dropped | no: a queued event | VC drains up to 24 per cycle and a FAULT ends the drain. **Straddle model** (default, `S2_LINE_STRADDLE=1`, #8): FAULT → line stop; BARCODE → letter kept for the next junction; INVALID logged; LOST, FOUND, JUNCTION, COMMAND ignored (the VC finds junctions itself: C and R both black). **S3 model**: LOST or FAULT → line stop; COMMAND → turn (STRAIGHT carries on); JUNCTION with no mapped barcode → straight on (#72, 21 Nov) |
+| line state, byte 1 bits 2:0 (`FOLLOW`…`FAULT`) | S3 snapshot (`line_service_snapshot()`) | `line_service_task` | VC | every sample (1 ms) | overwritten every sample | level | FAULT stops at once. Straddle: PAUSED or a failed snapshot must last 200 ms (`S2_LINE_UNSAFE_MS`); SEARCH (both white) is the normal on-line reading. S3 model: SEARCH, PAUSED or a failed snapshot must last 200 ms |
+| line faults, byte 2 bits 7:5 (`LINE_BARCODE_ERR_LINE`, `_QUEUE`, `_TIMING`) | S3 snapshot | `line_service_task` | VC (as state FAULT) | `ERR_LINE`: sensor read failed, or the line was lost longer than `LINE_BARCODE_SEARCH_MS` (2 s; **0 = off** in the `all_test` and `integrated` builds, #8). `ERR_QUEUE`: `g_h_line_nav_q` full. `ERR_TIMING`: a sampling gap | S3 only, in `line_service_calibrate()` or `line_service_enable()`. The VC calls `enable(false)` on every stop and `enable(true)` when it re-arms, so a fault lasts until then | **yes** | any one sets state FAULT |
 | `IMU_DATA.motion_state` | S4 snapshot (`mtx_imu_data`) | `imu_task` | VC (stops on COLLISION and FAULT; TILT is report-only, #67), S5 (ignores readings on HUMP and TILT) | every sample (20 ms) | overwritten every sample | level | S4 picks one class per sample: COLLISION > hump just completed > TILT > hump in progress > NORMAL; FAULT on a read failure |
-| `IMU_DATA.event` | S4 snapshot | `imu_task` | VC | for one sample, when it happens. TILT once per tilt episode (`tilt_reported`) | next sample | no: one sample wide | as `motion_state`. The VC runs every 10 ms, so it sees every 20 ms sample |
-| telemetry faults, bits 0–4 (`S1_FAULT_*`) | IF-05 packet | **VC (#72)**: `S1_FAULT_IMU` when the IMU is unhealthy, `S1_FAULT_MOTOR_STALL` on an encoder stall; `all_test` sets `S1_FAULT_IMU` | PC over MQTT | — | rebuilt from the VC's snapshot each packet (S1 README) | level: the VC's own stop latch holds the memory | independent flags |
-| VC stop latch (`halted`, `line_halt`) | `robot_control.c` (internal) | VC | VC | any `halt()` or `halt_line()` | line stops: back on the line with the wheels still for 1 s (`S2_LINE_REARM_MS`). Every other stop: reboot | **yes** | safety stop (IMU, motion fault, bad S5 word) > S5 avoidance > line following |
+| `IMU_DATA.event` | S4 snapshot | `imu_task` | VC (stops on the COLLISION and FAULT events) | for one sample, when it happens. TILT once per tilt episode (`tilt_reported`) | next sample | no: one sample wide | as `motion_state`. The VC runs every 10 ms, so it sees every 20 ms sample |
+| IMU health (not a bit) | VC, from the S4 snapshot | VC | VC | not calibrated, sensor not OK, a new read error, or no sample for 100 ms (`S2_IMU_STALE_MS`) | — | the stop latches (below) | treated like COLLISION / FAULT: safety stop |
+| telemetry faults, bits 0–4 (`S1_FAULT_*`) | IF-05 packet | VC (`robot_control.c`, #72): `S1_FAULT_IMU` when the IMU is unhealthy, `S1_FAULT_MOTOR_STALL` on an encoder stall (only in moves and pivots: line following has no stall fault, #8). In the `all_test` image, `all_buddies_test.c` sets `S1_FAULT_IMU` | PC over MQTT | — | rebuilt from the VC's snapshot each packet (S1 README) | level: the VC's own stop latch holds the memory | independent flags |
+| VC stop latch (`halted`, `line_halt`) | `robot_control.c` (internal) | VC | VC | any `halt()` or `halt_line()` | line stops (S3 FAULT, LOST in the S3 model, a stale snapshot): back on the line with the wheels still for 1 s (`S2_LINE_REARM_MS`), and not paused. Every other stop: reboot | **yes** | safety stop (motion fault, IMU, bad S5 word) > PAUSE > S5 avoidance > line following. PAUSE is ignored during a safety stop |
+| VC pause latch (`paused`) | `robot_control.c` (internal) | VC, on an MQTT PAUSE (IF-06) | VC | PAUSE while armed | VC, on an MQTT RESUME, only when on the line with a healthy IMU; a paused line stop then restarts its 1 s re-arm wait | **yes** | below a safety stop; blocks the line re-arm |
 
-What still has to be done before this table is final:
+Notes:
 
-- **IMU COLLISION still stops the robot in the VC.** Collision is being
-  removed (#53). TILT no longer stops it (#67, decided 20 Nov).
+- **IMU COLLISION still stops the robot in the VC** (state and event).
+  Collision detection is being removed (#53); when it goes, drop it from the
+  `IMU_DATA` rows and from `imu_healthy()` / `control_step()`. TILT no longer
+  stops the robot (#67, decided 20 Nov).
 - **`IMU_DATA.event` is one sample wide.** A consumer that polls slower than
   20 ms can miss it. Such a consumer must read `motion_state` or the
-  highest-hump field instead.
-- The team agrees this table, then the **Draft** label is removed. Each row
-  is checked against an INT test (`testing/integration/TEST_LOG.md`).
+  highest-hump field instead. S5 reads `motion_state` only.
+- INT-14 checks *who* writes each object. *When* and *in what order* the
+  bits fire is covered by INT-03 (VC, S3 and S4 rows, host) and, for the S5
+  rows, by INT-13 (to do: INT-03 stubs the S5 executor as idle) and INT-10
+  on the robot.
 
 ### Other open points
 

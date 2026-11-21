@@ -218,6 +218,7 @@ is to measure real data.
 | INT-11 | Hump vs obstacle timing (open risk) | L4 | tilt flag is set before the ultrasonic reacts; 0 false obstacle stops on 10 hump passes |
 | INT-12 | Host suite clean | L1 | `sh testing/run_host_tests.sh` all PASS before each merge to `main` |
 | INT-13 | VC ↔ S5 hand-over on the PC | L1 | see Buddy 2 |
+| INT-14 | Event-bit table matches the code (#50) | L1 | `int/event_bits`: no file outside TEAM.md §5's producer/consumer columns sets, clears, waits on, sends to or reads an event object |
 
 ## System (`testing/system/`): the whole robot against the brief
 

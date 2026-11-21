@@ -189,6 +189,7 @@ run_c  int/robot_control      $STRICT -DAPP_ROBOT_INTEGRATED=1 -DAPP_TEST=0 -DS2
                               $INT/robot_host_test.c app_program/subsystem2/motion_control.c $S1/communication_protocol.c
 run_c  int/line_service       $STRICT $INT/line_service_host_test.c $S3/line_barcode.c $S1/communication_protocol.c
 run_py int/steering_ramp      $INT/test_steering_ramp.py
+run_py int/event_bits         $INT/test_event_bits.py
 
 echo
 echo "================ summary ================"

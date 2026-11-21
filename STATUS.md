@@ -4,7 +4,7 @@
 What to test next, and how, is in [testing/TEST_PLAN.md](testing/TEST_PLAN.md).
 Where the code differs from the Week 6 / PreTri plan, and why, is in [DEVIATIONS.md](DEVIATIONS.md).
 Team decisions and their reasons are in [DECISIONS.md](DECISIONS.md) (latest: the M1 decisions, 20 Nov: #5, #6, #48, #54, #64–#68).
-Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump test fixed) · subsystems 1, 2, 4 and 5 test results (`chore/m0-housekeeping` from `65ba452`; #14, #17, #24, #28) · subsystem 3 rows 2026-11-19 (`cc239d5`) · other sections as of 2026-11-13 (`double11` @ `1d78677`)
+Last updated: 2026-11-21, event-bit table checked against the code (#50, INT-14) · 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump test fixed) · subsystems 1, 2, 4 and 5 test results (`chore/m0-housekeeping` from `65ba452`; #14, #17, #24, #28) · subsystem 3 rows 2026-11-19 (`cc239d5`) · other sections as of 2026-11-13 (`double11` @ `1d78677`)
 
 ## Rules
 
@@ -109,6 +109,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 |---|---|---|---|
 | INT-01 S2 → S3 samples, INT-02 S3 → S4 summaries | Retired (#74) | — (template example tests; the example tasks are removed) | Write INT tests for the real interfaces in `TEAM.md` §5 |
 | INT-03 robot adapter / VC (host, simulated) | ✅ | `logs/2026-11-13_host_tests.txt` (`af2da1c`) | Add a host test of the S5 avoidance hand-over (currently stubbed as idle) |
+| INT-14 event-bit table (`TEAM.md` §5, #50) matches the code (host, static) | ✅ | `logs/2026-11-21_event_bits_host.txt` (`882f522` + this change; 8 seeded violations each caught) | Table agreed by the team (21 Nov). S5 bit timing still needs INT-13 (host) and INT-10 (robot); drop COLLISION from the table with #53 |
 | INT-04/06 all firmware profiles build | ✅ (28 Oct) | `logs/2026-10-28_robot_builds.txt` | Rerun on the current commit: the `integrated` UF2 is from 8 Nov, older than the latest fixes |
 | **Integrated firmware drives the full course on the robot** | ⬜ | — | Main goal: see *Top priorities* below |
 
@@ -139,7 +140,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 - [x] Delete the duplicate copies with " 2" in the name (done 2026-11-13: 8 files removed, all identical to or older than the originals).
 - [x] Stop committing build output: test `.exe` files and build `.log` files are untracked and gitignored (2026-11-13).
 - [x] One host-test runner: `sh testing/run_host_tests.sh` (2026-11-13).
-- [x] Host tests: 12 of 12 pass (21 Nov). The 6 `int/all_buddies*` tests were retired (#9) now that `integrated` is final. The rest need their owners:
+- [x] Host tests: 13 of 13 pass (21 Nov; `int/event_bits` added for #50). The 6 `int/all_buddies*` tests were retired (#9) now that `integrated` is final. The rest need their owners:
   - ~~**zhi xian:** push the missing local code~~. Resolved 20 Nov (#3 closed): the code was lost. `s1/barcode_queue` passes against a reimplementation on branch `s1/barcode-queue`; `int/steering_ramp` no longer checks terrain boost or barcode slow-down (not requirements) and passes.
 - [x] S1 barcode-over-MQTT code: reimplemented 20 Nov on branch `s1/barcode-queue`, with a binary payload (#3).
 - [ ] Choose one integration branch (`alicia` or `double11`), merge into it, and delete the dead branches (`zhixin`, `integration`, `master`, …).
