@@ -21,9 +21,9 @@ static void report_sensors(void)
     IMU_DATA imu = {0};
     ER line_er = line_service_snapshot(&line);
     ER imu_er = subsystem4_get_latest(&imu);
-    tm_printf((UB *)"[S2 HW] S3 IR heartbeat=%d bits=%u state=%u (paused)\n",
+    LOG_INFO(TAG_S2_HWTEST, "S3 IR heartbeat=%d bits=%u state=%u (paused)",
               line_er, (UINT)(line.data[0] & 7u), (UINT)(line.data[1] & 7u));
-    tm_printf((UB *)"[S2 HW] S4 IMU read=%d sensor_ok=%d calibrated=%d samples=%lu errors=%lu\n",
+    LOG_INFO(TAG_S2_HWTEST, "S4 IMU read=%d sensor_ok=%d calibrated=%d samples=%lu errors=%lu",
               imu_er, imu.sensor_ok, imu.calibrated,
               (unsigned long)imu.sample_count, (unsigned long)imu.read_errors);
 }
@@ -58,16 +58,16 @@ static bool run_stage(const char *name, float left, float right)
 
     drv_encoder_reset();
     /* Print before applying power; stop before printing the result. */
-    tm_printf((UB *)"[S2 HW] %s: %u ms\n", name,
+    LOG_INFO(TAG_S2_HWTEST, "%s: %u ms", name,
               (UINT)S2_HW_TEST_RUN_MS);
     drv_motor_set(left, right);
     check = drv_motor_diagnostics(&diag);
     waited = check == E_OK && wait_and_poll(S2_HW_TEST_RUN_MS);
     drv_motor_stop();
     drv_encoder_get_counts(&left_ticks, &right_ticks);
-    tm_printf((UB *)"[S2 HW] STOP; ticks left=%ld right=%ld\n",
+    LOG_INFO(TAG_S2_HWTEST, "STOP; ticks left=%ld right=%ld",
               (long)left_ticks, (long)right_ticks);
-    tm_printf((UB *)"[S2 HW] PWM check=%d counting=%d/%d compare=%lu/%lu\n",
+    LOG_INFO(TAG_S2_HWTEST, "PWM check=%d counting=%d/%d compare=%lu/%lu",
               check, diag.left_counting, diag.right_counting,
               (unsigned long)diag.left_compare, (unsigned long)diag.right_compare);
 #if APP_ROBOT_INTEGRATED
@@ -85,9 +85,9 @@ EXPORT void subsystem2_hw_test_task(INT stacd, void *exinf)
     (void)stacd;
     (void)exinf;
     drv_motor_stop();
-    tm_printf((UB *)"[S2 HW] MOTOR BENCH TEST: raise wheels off the ground.\n"
-                       "[S2 HW] Starts in %u ms; normal motion control disabled.\n",
-              (UINT)S2_HW_TEST_START_MS);
+    LOG_INFO(TAG_S2_HWTEST, "MOTOR BENCH TEST: raise wheels off the ground.");
+    LOG_INFO(TAG_S2_HWTEST, "starts in %u ms; normal motion control disabled.",
+             (UINT)S2_HW_TEST_START_MS);
 
     ok = (pwm > 0.0f && pwm <= 100.0f &&
           S2_HW_TEST_RUN_MS > 0U && S2_HW_TEST_RUN_MS <= 2000U);
@@ -111,7 +111,7 @@ EXPORT void subsystem2_hw_test_task(INT stacd, void *exinf)
     }
 
     drv_motor_stop();
-    tm_printf((UB *)"[S2 HW] %s; motors OFF. Inspect wheel behaviour manually.\n",
+    LOG_INFO(TAG_S2_HWTEST, "%s; motors OFF. Inspect wheel behaviour manually.",
               ok ? "Sequence finished" : "Sequence aborted");
 
     /* Remain the sole motor owner; do not start normal control afterwards. */

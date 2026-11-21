@@ -29,7 +29,7 @@ EXPORT ER subsystem2_init(void)
 
     MOTOR_DIAGNOSTICS motor_diag;
     er = drv_motor_diagnostics(&motor_diag);
-    tm_printf((UB *)"[MOTOR] PWM reset_done=%u counters L=%d R=%d check=%d\n",
+    LOG_INFO(TAG_S2_MOTOR, "PWM reset_done=%u counters L=%d R=%d check=%d",
               (UINT)(motor_diag.reset_done != 0u), motor_diag.left_counting,
               motor_diag.right_counting, er);
     if (er < E_OK) {

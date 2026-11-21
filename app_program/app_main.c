@@ -93,13 +93,14 @@ EXPORT INT usermain(void)
 
 	/* tk_ref_ver: ask the kernel who it is */
 	tk_ref_ver(&ver);
-	tm_printf((UB*)"\n=== micro T-Kernel on Raspberry Pi Pico W"
-		  " (spec 0x%04x, product 0x%04x) ===\n", ver.spver, ver.prver);
+	tm_printf((UB*)"\n");	/* blank line separates boots in the log */
+	LOG_INFO(TAG_APP, "micro T-Kernel on Raspberry Pi Pico W"
+		 " (spec 0x%04x, product 0x%04x)", ver.spver, ver.prver);
 #if TK_SUPPORT_SMP
-	tm_printf((UB*)"dual-core (SMP) build, usermain on core %d\n",
-		  tk_get_prc() - 1);	/* tk_get_prc() counts from 1 */
+	LOG_INFO(TAG_APP, "dual-core (SMP) build, usermain on core %d",
+		 tk_get_prc() - 1);	/* tk_get_prc() counts from 1 */
 #else
-	tm_printf((UB*)"single-core build\n");
+	LOG_INFO(TAG_APP, "single-core build");
 #endif
 
 #if APP_ALL_TEST
@@ -124,7 +125,7 @@ EXPORT INT usermain(void)
     if (bench_er == E_OK) bench_er = line_service_start();
     if (bench_er == E_OK) bench_er = line_demo_start();
     CHECK(bench_er, "barcode_bench_start");
-    tm_printf((UB *)"[APP] BARCODE BENCH: motors OFF; scanner GP28, centre GP27, right GP0\n");
+    LOG_INFO(TAG_APP, "BARCODE BENCH: motors OFF; scanner GP28, centre GP27, right GP0");
     tk_slp_tsk(TMO_FEVR);
     return 0;
 #endif
@@ -169,14 +170,14 @@ EXPORT INT usermain(void)
 
 #if APP_ROBOT_INTEGRATED
 #if S2_MOTOR_HW_TEST
-	tm_printf((UB*)"[APP] INTEGRATED MOTOR TEST: S2 motor pulses + S3 IR + S4 IMU; raise wheels\n\n");
+	LOG_INFO(TAG_APP, "INTEGRATED MOTOR TEST: S2 motor pulses + S3 IR + S4 IMU; raise wheels");
 #else
-	tm_printf((UB*)"[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started\n\n");
+	LOG_INFO(TAG_APP, "INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started");
 #endif
 #elif S2_MOTOR_HW_TEST
-	tm_printf((UB*)"[APP] MOTOR TEST: S2 only; S3/S4 are not started\n\n");
+	LOG_INFO(TAG_APP, "MOTOR TEST: S2 only; S3/S4 are not started");
 #else
-	tm_printf((UB*)"[APP] STANDALONE MOTION: S2 only; S3/S4 are not started\n\n");
+	LOG_INFO(TAG_APP, "STANDALONE MOTION: S2 only; S3/S4 are not started");
 #endif
 
 #if APP_TEST
