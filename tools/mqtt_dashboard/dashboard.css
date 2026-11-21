@@ -97,7 +97,7 @@ dd { margin: 0; text-align: right; overflow-wrap: anywhere; font-size: .875rem; 
   color: #391019;
 }
 
-.controls button[data-command="resume"] {
+.controls button[data-command="start"] {
   background: #77e7ae;
   color: #092c1a;
 }

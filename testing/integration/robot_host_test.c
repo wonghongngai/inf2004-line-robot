@@ -30,6 +30,23 @@ ER line_service_receive(line_barcode_msg_t *msg, TMO timeout)
     *msg = queued; has_event = false; return E_OK;
 }
 
+/* S1 command queue (#48): a FIFO the test fills; the VC polls it. */
+static unsigned char commands[16];
+static unsigned command_head, command_count, command_polls;
+INT subsystem1_receive_command(S1_COMMAND *command, TMO timeout)
+{
+    (void)timeout;
+    ++command_polls;
+    if (command_count == 0u) return E_TMOUT;
+    command->bytes[0] = commands[command_head++ % 16u];
+    --command_count;
+    return 1;
+}
+static void send_command(unsigned code)
+{
+    commands[(command_head + command_count++) % 16u] = (unsigned char)code;
+}
+
 /* S5 executor: modelled as idle (no obstacle, no start-up hold), so these
  * tests exercise the VC's own line/barcode/IMU logic. Avoidance hand-over is
  * not covered here. */
@@ -62,6 +79,10 @@ static void reset(MOTION_CONTROLLER *ctl)
     line_unsafe_since = rearm_since = 0;
     rearm_l = rearm_r = 0;
     memset(&vc_s5, 0, sizeof(vc_s5));
+    /* #48: these tests run with auto-start unless a test turns it off. */
+    auto_start = true;
+    start_requested = ready_reported = false;
+    command_head = command_count = command_polls = 0u;
     has_event = enabled = false; snapshot_error = E_OK;
     memset(&fake_imu, 0, sizeof(fake_imu));
     fake_imu.sensor_ok = fake_imu.calibrated = TRUE;
@@ -257,6 +278,46 @@ int main(void)
     EXPECT(ctl.status.state == MOTION_STATE_IDLE);
     cmd = (MOTION_COMMAND){MOTION_CMD_FORWARD_CM, NAN};
     EXPECT(motion_control_command(&ctl, &cmd, 40, 380, 200) == MOTION_RESULT_INVALID_COMMAND);
+    /* #48 Ready state: with auto-start off, an initialised robot waits,
+     * motors off, until START. Other commands do not start it. */
+    reset(&ctl);
+    auto_start = false;
+    robot_control_step(&ctl, 5000, 0, 0);
+    EXPECT(!armed && !enabled && ready_reported);
+    send_command(S1_COMMAND_PAUSE);
+    send_command(S1_COMMAND_RESUME);
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, 5050, 0, 0);
+    EXPECT(!armed && !enabled && command_count == 0u); /* drained, not a start */
+    EXPECT(ctl.status.left_pwm_percent == 0 && ctl.status.right_pwm_percent == 0);
+    send_command(S1_COMMAND_START);
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, 5100, 0, 0);
+    EXPECT(armed && enabled && start_requested);
+    robot_control_step(&ctl, 5130, 0, 0);
+    motion_control_step(&ctl, 5140, 1, 1);
+    EXPECT(ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+    send_command(S1_COMMAND_START);                       /* already running */
+    robot_control_step(&ctl, 5150, 1, 1);
+    EXPECT(armed && command_count == 0u);
+
+    /* A START sent during initialisation is kept until the robot is Ready. */
+    reset(&ctl);
+    auto_start = false;
+    send_command(S1_COMMAND_START);
+    robot_control_step(&ctl, 1000, 0, 0);                  /* before S2_ROBOT_START_MS */
+    EXPECT(!armed && start_requested && !ready_reported);
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, S2_ROBOT_START_MS, 0, 0);
+    EXPECT(armed && enabled);
+
+    /* Polling never blocks and drains at most S1_QUEUE_DEPTH per step. */
+    reset(&ctl);
+    auto_start = false;
+    for (unsigned i = 0u; i < 10u; ++i) send_command(S1_COMMAND_STATUS);
+    robot_control_step(&ctl, 1000, 0, 0);
+    EXPECT(command_count == 10u - S1_QUEUE_DEPTH && command_polls == S1_QUEUE_DEPTH);
+
     printf("robot host tests: %u checks passed\n", checks);
     return 0;
 }

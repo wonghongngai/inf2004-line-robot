@@ -63,12 +63,15 @@ typedef enum {
 #define S1_BARCODE_STRAIGHT 3
 #define S1_BARCODE_UTURN 4
 
-/* Commands use three bits; codes 5–7 and the upper five bits are reserved. */
+/* Commands use three bits; codes 6–7 and the upper five bits are reserved. */
 #define S1_COMMAND_STATUS 0U
 #define S1_COMMAND_PAUSE 1U
 #define S1_COMMAND_RESUME 2U
 #define S1_COMMAND_RESET_STATS 3U
 #define S1_COMMAND_REVERSE 4U
+/* Leave Ready and start navigating (#48). The integrated robot waits for it. */
+#define S1_COMMAND_START 5U
+#define S1_COMMAND_MAX S1_COMMAND_START
 #define S1_HEARTBEAT_OFFLINE 0U
 #define S1_HEARTBEAT_ONLINE 1U
 

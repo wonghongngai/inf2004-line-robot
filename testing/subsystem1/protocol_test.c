@@ -46,8 +46,8 @@ int main(void)
     }
     for (code = 0; code < 256; ++code) {
         command.bytes[0] = (unsigned char)code;
-        assert(s1_command_valid(&command) == (code <= 4));
-        assert(s1_command_set(&command, code) == (code <= 4));
+        assert(s1_command_valid(&command) == (code <= 5));   /* 5 = START (#48) */
+        assert(s1_command_set(&command, code) == (code <= 5));
     }
     assert(!s1_telemetry_set(&packet, (S1_FIELD)-1, 0));
     assert(!s1_telemetry_set(0, S1_FIELD_STATE, 0));

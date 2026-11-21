@@ -157,7 +157,7 @@ int s1_telemetry_valid(const S1_TELEMETRY *packet)
 
 int s1_command_set(S1_COMMAND *packet, unsigned int code)
 {
-    if (packet == 0 || code > S1_COMMAND_REVERSE) {
+    if (packet == 0 || code > S1_COMMAND_MAX) {
         return 0;
     }
     packet->bytes[0] = (unsigned char)code;
@@ -166,7 +166,7 @@ int s1_command_set(S1_COMMAND *packet, unsigned int code)
 
 int s1_command_valid(const S1_COMMAND *packet)
 {
-    return packet != 0 && packet->bytes[0] <= S1_COMMAND_REVERSE;
+    return packet != 0 && packet->bytes[0] <= S1_COMMAND_MAX;
 }
 
 int s1_mapping_get(const S1_MAPPING *packet, unsigned char letters[S1_MAP_SLOTS])

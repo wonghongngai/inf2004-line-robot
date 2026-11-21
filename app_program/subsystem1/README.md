@@ -52,7 +52,8 @@ A/B/C/Z = `20 88 0c`. Invalid maps are rejected and the old map stays. The
 controller applies a valid map with S3's `line_service_set_mapping()`.
 
 Command codes: 0 request status, 1 pause, 2 resume, 3 reset statistics,
-4 reverse. Codes use bits 0–2 of one byte. Codes 5–7 are reserved and the
+4 reverse, 5 start (#48: leave Ready and start navigating). Codes use bits
+0–2 of one byte. Codes 6–7 are reserved and the
 upper five bits must be zero. The MQTT layer accepts and queues reverse.
 Reverse movement is pending in the controller.
 
@@ -124,7 +125,7 @@ make -C build_make PICO_SDK_PATH=/path/to/pico-sdk NET=lwip MQTT=1 TEST=1
 | --- | --- | --- |
 | `MQTT_TOPIC` from secrets | One byte online every 2 seconds; offline Last Will | 1 / yes |
 | `<MQTT_CLIENT_ID>/telemetry` | Exactly 15 binary bytes | 1 / no |
-| `<MQTT_CLIENT_ID>/command` | Exactly 1 byte, code 0–4 | subscription QoS 1 |
+| `<MQTT_CLIENT_ID>/command` | Exactly 1 byte, code 0–5 | subscription QoS 1 |
 | `<MQTT_CLIENT_ID>/barcode` | Exactly 4 binary bytes, one per completed/rejected scan | 1 / no |
 
 Override command/telemetry/barcode topics in secrets if needed. Reconnect installs the
