@@ -25,6 +25,17 @@ ER line_service_set_mapping(char l, char r, char s, char u)
     applied_map[0] = l; applied_map[1] = r; applied_map[2] = s; applied_map[3] = u;
     return E_OK;
 }
+/* S3 lookup against the last applied map: slot = LEFT, RIGHT, STRAIGHT, U. */
+ER line_service_lookup(uint8_t letter, uint8_t *command)
+{
+    for (unsigned slot = 0u; slot < 4u; ++slot) {
+        if (applied_map[slot] != '\0' && (uint8_t)(applied_map[slot] - 'A') == letter) {
+            *command = (uint8_t)slot;
+            return E_OK;
+        }
+    }
+    return E_NOEXS;
+}
 static unsigned fake_black, fake_white;
 void line_service_barcode_debug(unsigned *black, unsigned *white, uint8_t *letter)
 { *black = fake_black; *white = fake_white; *letter = 0xffu; }
@@ -106,6 +117,107 @@ static MOTION_CONFIG config(void)
     };
 }
 
+/* #8: line following with all_test's motor numbers, checked on the motion
+ * controller alone. Expected values come from the S2_FOLLOW_* constants. */
+static void follow_tuning_tests(void)
+{
+    MOTION_CONTROLLER m;
+    MOTION_CONFIG cfg = config();
+    MOTION_COMMAND follow = {MOTION_CMD_FOLLOW_LINE, 0.0f};
+    const float L = S2_FOLLOW_LEFT_PWM_PERCENT, R = S2_FOLLOW_RIGHT_PWM_PERCENT;
+    const float boost = S2_FOLLOW_BOOST_PWM_PERCENT;
+    const float inner = S2_FOLLOW_INNER_PWM_PERCENT;
+    const float hard = S2_FOLLOW_HARD_INNER_PWM_PERCENT;
+    const float step = S2_FOLLOW_RAMP_PWM_PER_S * 0.010f;   /* 10 ms period */
+    uint32_t now = 0u;
+
+    cfg.minimum_effective_pwm_percent = 15.0f;  /* as integrated; follow ignores it */
+    cfg.follow_left_pwm_percent = L;
+    cfg.follow_right_pwm_percent = R;
+    cfg.follow_boost_pwm_percent = boost;
+    cfg.follow_inner_pwm_percent = inner;
+    cfg.follow_hard_inner_pwm_percent = hard;
+    cfg.follow_ramp_pwm_per_s = S2_FOLLOW_RAMP_PWM_PER_S;
+    EXPECT(motion_control_init(&m, &cfg, 0u, 0, 0));
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+
+    /* From rest: one ramp step per 10 ms, from 0 (no moving floor), up to
+     * the per-wheel cruise. The wheels never move: no stall fault either. */
+    now += 10u;
+    motion_control_step(&m, now, 0, 0);
+    EXPECT(fabsf(m.status.left_pwm_percent - step) < 1e-4f &&
+           fabsf(m.status.right_pwm_percent - step) < 1e-4f);
+    for (int i = 0; i < 200; ++i) {
+        float before = m.status.right_pwm_percent;
+        now += 10u;
+        motion_control_step(&m, now, 0, 0);
+        EXPECT(m.status.right_pwm_percent <= before + step + 1e-4f);
+    }
+    EXPECT(m.status.state != MOTION_STATE_FAULT);              /* 2 s, no ticks */
+    EXPECT(fabsf(m.status.left_pwm_percent - L) < 1e-4f &&
+           fabsf(m.status.right_pwm_percent - R) < 1e-4f);
+
+    /* Soft right: inner (right) wheel drops at once to the inner PWM, the
+     * outer ramps to cruise + boost. */
+    follow.value = 0.5f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now += 10u;
+    motion_control_step(&m, now, 0, 0);
+    EXPECT(m.status.right_pwm_percent == inner);
+    EXPECT(fabsf(m.status.left_pwm_percent - (L + step)) < 1e-4f);
+    for (int i = 0; i < 100; ++i) { now += 10u; motion_control_step(&m, now, 0, 0); }
+    EXPECT(fabsf(m.status.left_pwm_percent - (L + boost)) < 1e-4f);
+
+    /* Hard right: inner wheel to the hard PWM (stopped). */
+    follow.value = 1.0f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now += 10u;
+    motion_control_step(&m, now, 0, 0);
+    EXPECT(m.status.right_pwm_percent == hard &&
+           fabsf(m.status.left_pwm_percent - (L + boost)) < 1e-4f);
+
+    /* Soft and hard left mirror it, on the other wheel. */
+    follow.value = -0.5f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now += 10u;
+    motion_control_step(&m, now, 0, 0);
+    EXPECT(m.status.left_pwm_percent == inner);
+    for (int i = 0; i < 100; ++i) { now += 10u; motion_control_step(&m, now, 0, 0); }
+    EXPECT(fabsf(m.status.right_pwm_percent - (R + boost)) < 1e-4f);
+    follow.value = -1.0f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now += 10u;
+    motion_control_step(&m, now, 0, 0);
+    EXPECT(m.status.left_pwm_percent == hard);
+
+    /* Back to straight: the outer wheel slows at once to cruise. */
+    follow.value = 0.0f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now += 10u;
+    motion_control_step(&m, now, 0, 0);
+    EXPECT(fabsf(m.status.right_pwm_percent - R) < 1e-4f);
+    EXPECT(m.status.state != MOTION_STATE_FAULT);
+
+    /* Distance moves keep base PWM and the stall fault. */
+    MOTION_COMMAND fwd = {MOTION_CMD_FORWARD_CM, 50.0f};
+    EXPECT(motion_control_init(&m, &cfg, 0u, 0, 0));
+    EXPECT(motion_control_command(&m, &fwd, 0u, 0, 0) == MOTION_RESULT_OK);
+    motion_control_step(&m, 10u, 5, 5);
+    EXPECT(m.status.left_pwm_percent == cfg.base_pwm_percent);
+    motion_control_step(&m, 10u + cfg.encoder_stall_timeout_ms + 10u, 5, 5);
+    EXPECT(m.status.state == MOTION_STATE_FAULT);
+
+    /* Invalid numbers are rejected: outer wheel above the maximum, negatives. */
+    cfg.follow_boost_pwm_percent = 100.0f;
+    EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
+    cfg.follow_boost_pwm_percent = boost;
+    cfg.follow_inner_pwm_percent = -1.0f;
+    EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
+    cfg.follow_inner_pwm_percent = inner;
+    cfg.follow_ramp_pwm_per_s = -1.0f;
+    EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
+}
+
 static void reset(MOTION_CONTROLLER *ctl)
 {
     MOTION_CONFIG cfg = config();
@@ -133,6 +245,14 @@ static void reset(MOTION_CONTROLLER *ctl)
     has_map = false;
     publish_count = 0u;
     fake_black = fake_white = 0u;
+    /* #8: the tests above were written for the S3 position model; the
+     * straddle model has its own tests and turns this on itself. */
+    straddle = false;
+    steer_action = steer_candidate = 0u;
+    candidate_since = action_since = clear_since = junction_done = 0u;
+    clear_pending = leaving_junction = false;
+    pending_letter = 0u;
+    turn_stage = turn_cmd = 0u;
     has_event = enabled = false; snapshot_error = E_OK;
     memset(&fake_imu, 0, sizeof(fake_imu));
     fake_imu.sensor_ok = fake_imu.calibrated = TRUE;
@@ -191,6 +311,163 @@ static void stopped_debounced(MOTION_CONTROLLER *ctl, uint32_t now)
     }
     fake_imu.sample_count++;
     stopped(ctl, now + S2_LINE_UNSAFE_MS);
+}
+
+
+/* ---- #8 straddle line model (C and R either side of the line) ---------- */
+
+/* One VC step with a fresh IMU sample, so only the line logic is exercised. */
+static void sstep(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    fake_imu.sample_count++;
+    robot_control_step(ctl, now, l, r);
+}
+
+static void set_sensors(unsigned c_r)   /* C bit 1, R bit 0; S3 in SEARCH */
+{
+    snapshot = (line_barcode_msg_t){{(uint8_t)c_r, LINE_BARCODE_SEARCH, 0u}};
+}
+
+/* Armed and following on both-white, which S3 calls SEARCH. */
+static void sfollow(MOTION_CONTROLLER *ctl)
+{
+    reset(ctl);
+    straddle = true;
+    set_sensors(0u);
+    sstep(ctl, 5000, 0, 0);
+    EXPECT(armed && enabled);
+    sstep(ctl, 5030, 0, 0);
+    EXPECT(!halted && ctl->status.active_command == MOTION_CMD_FOLLOW_LINE &&
+           ctl->target_value == 0.0f);
+}
+
+static void straddle_tests(void)
+{
+    MOTION_CONTROLLER ctl;
+
+    /* Both white is "on the line": no stop, even with S3 SEARCH and LOST. */
+    sfollow(&ctl);
+    queued = snapshot;
+    queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_LOST << 3u);
+    has_event = true;
+    for (uint32_t t = 5040u; t <= 7000u; t += 20u) {
+        sstep(&ctl, t, 1, 1);
+        EXPECT(!halted && ctl.target_value == 0.0f);
+    }
+
+    /* Right black: steer right at once (soft), hard after S2_LINE_HARD_MS,
+     * and back to straight only after S2_WHITE_CLEAR_MS of white. */
+    sfollow(&ctl);
+    set_sensors(1u);
+    sstep(&ctl, 6000, 1, 1);
+    EXPECT(ctl.target_value == 0.5f);
+    sstep(&ctl, 6000 + S2_LINE_HARD_MS - 1u, 1, 1);
+    EXPECT(ctl.target_value == 0.5f);
+    sstep(&ctl, 6000 + S2_LINE_HARD_MS, 1, 1);
+    EXPECT(ctl.target_value == 1.0f);
+    set_sensors(0u);
+    sstep(&ctl, 6200, 1, 1);
+    sstep(&ctl, 6200 + S2_WHITE_CLEAR_MS - 1u, 1, 1);
+    EXPECT(ctl.target_value == 1.0f);                     /* correction held */
+    sstep(&ctl, 6200 + S2_WHITE_CLEAR_MS, 1, 1);
+    EXPECT(ctl.target_value == 0.0f);
+
+    /* Centre black: steer left. A reversal must persist S2_LINE_CONFIRM_MS. */
+    sfollow(&ctl);
+    set_sensors(2u);
+    sstep(&ctl, 6000, 1, 1);
+    EXPECT(ctl.target_value == -0.5f);
+    set_sensors(1u);
+    sstep(&ctl, 6010, 1, 1);
+    EXPECT(ctl.target_value < 0.0f);                      /* not yet reversed */
+    sstep(&ctl, 6010 + S2_LINE_CONFIRM_MS, 1, 1);
+    EXPECT(ctl.target_value == 0.5f);
+
+    /* Junction with no barcode: straight on, and the same crossing is
+     * ignored until the sensors leave it and S2_JUNCTION_SETTLE_MS passes. */
+    sfollow(&ctl);
+    set_sensors(3u);
+    sstep(&ctl, 6000, 1, 1);
+    EXPECT(!turning && leaving_junction && ctl.target_value == 0.0f &&
+           ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+    /* Still on that crossing: a mapped letter read now must not turn here. */
+    send_map("FAZW");
+    sstep(&ctl, 6010, 1, 1);
+    queued = snapshot;
+    queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_BARCODE << 3u);
+    queued.data[2] = 'A' - 'A';
+    has_event = true;
+    sstep(&ctl, 6020, 1, 1);
+    EXPECT(!turning && (pending_letter & 0x80u));        /* kept for the next one */
+    set_sensors(0u);
+    sstep(&ctl, 6100, 1, 1);
+    EXPECT(leaving_junction);
+    sstep(&ctl, 6000 + S2_JUNCTION_SETTLE_MS, 1, 1);
+    EXPECT(!leaving_junction);
+    set_sensors(3u);                                       /* the next crossing */
+    sstep(&ctl, 6000 + S2_JUNCTION_SETTLE_MS + 10u, 1, 1);
+    EXPECT(turning && turn_cmd == LINE_BARCODE_CMD_RIGHT);
+
+    /* Mapped letter: drive onto the crossing, pivot, then follow again. */
+    sfollow(&ctl);
+    send_map("FAZW");                       /* slots L,R,S,U: A = right turn */
+    sstep(&ctl, 6000, 1, 1);
+    queued = snapshot;
+    queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_BARCODE << 3u);
+    queued.data[2] = 'A' - 'A';
+    has_event = true;
+    sstep(&ctl, 6010, 1, 1);
+    EXPECT((pending_letter & 0x80u) && last_letter == 1u);
+    set_sensors(3u);
+    sstep(&ctl, 6020, 1, 1);
+    EXPECT(turning && turn_stage == TURN_ADVANCE && !enabled &&
+           ctl.status.active_command == MOTION_CMD_FORWARD_CM);
+    motion_control_step(&ctl, 6030, 1, 1);
+    motion_control_step(&ctl, 6040, 1 + 60, 1 + 60);      /* > 5 cm at 10 ticks/cm */
+    EXPECT(ctl.status.state == MOTION_STATE_IDLE && ctl.status.motion_complete);
+    sstep(&ctl, 6050, 61, 61);
+    EXPECT(turning && turn_stage == TURN_PIVOT &&
+           ctl.status.active_command == MOTION_CMD_TURN_RIGHT_DEG);
+    motion_control_step(&ctl, 6060, 61, 61);
+    motion_control_step(&ctl, 6070, 61 + 200, 61);        /* left wheel: 90 deg x 2 */
+    EXPECT(ctl.status.state == MOTION_STATE_IDLE && ctl.status.motion_complete);
+    sstep(&ctl, 6080, 261, 61);
+    EXPECT(!turning && enabled && leaving_junction && !halted);
+
+    /* A letter with no mapping goes straight. */
+    sfollow(&ctl);
+    send_map("FAZW");
+    sstep(&ctl, 6000, 1, 1);
+    queued = snapshot;
+    queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_BARCODE << 3u);
+    queued.data[2] = 'B' - 'A';
+    has_event = true;
+    sstep(&ctl, 6010, 1, 1);
+    set_sensors(3u);
+    sstep(&ctl, 6020, 1, 1);
+    EXPECT(!turning && leaving_junction && !(pending_letter & 0x80u));
+
+    /* An S3 fault stops at once and re-arms on a healthy snapshot held
+     * still (both white is fine in this model). */
+    sfollow(&ctl);
+    snapshot.data[1] = LINE_BARCODE_FAULT;
+    sstep(&ctl, 6000, 1, 1);
+    EXPECT(halted && line_halt && !enabled);
+    set_sensors(0u);
+    sstep(&ctl, 6100, 1, 1);
+    sstep(&ctl, 6100 + S2_LINE_REARM_MS - 101u, 1, 1);
+    EXPECT(halted);
+    sstep(&ctl, 6000 + S2_LINE_REARM_MS, 1, 1);
+    EXPECT(!halted && enabled);
+
+    /* RESUME after PAUSE works on both-white in this model. */
+    sfollow(&ctl);
+    send_command(S1_COMMAND_PAUSE);
+    sstep(&ctl, 6000, 1, 1);
+    EXPECT(paused);
+    send_command(S1_COMMAND_RESUME);
+    sstep(&ctl, 6010, 1, 1);
+    EXPECT(!paused && enabled);
 }
 
 int main(void)
@@ -524,6 +801,9 @@ int main(void)
     robot_control_step(&ctl, 5041, 1, 1);
     EXPECT(field(S1_FIELD_STATE) == S1_STATE_FAULT &&
            (field(S1_FIELD_FAULTS) & S1_FAULT_IMU) != 0);
+
+    follow_tuning_tests();   /* #8 */
+    straddle_tests();        /* #8 */
 
     printf("robot host tests: %u checks passed\n", checks);
     return 0;

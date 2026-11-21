@@ -29,8 +29,8 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_RIGHT_TURN_LEFT_PWM 12.5f
 /* Normal line-following cruise; legacy values above remain for S5 moves
  * and existing turn profiles. Hardware trial: 12.5/15 instead of 10/11. */
-#define ALL_CRUISE_LEFT_PWM         12.5f
-#define ALL_CRUISE_RIGHT_PWM        15.0f
+#define ALL_CRUISE_LEFT_PWM         S2_FOLLOW_LEFT_PWM_PERCENT  /* shared, #8 */
+#define ALL_CRUISE_RIGHT_PWM        S2_FOLLOW_RIGHT_PWM_PERCENT
 /* Scan slow-down. 0.5 stalled at the first bar; 0.75 (18 Nov) scanned so
  * slowly that a wide space took ~750 ms and a lost narrow bar pushed the
  * merged white past LINE_BARCODE_RUN_MAX_MS (1000 ms), aborting the frame
@@ -40,19 +40,19 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
 #define ALL_STRAIGHT_MAX_TRIM        2.5f
 #define ALL_STRAIGHT_TRIM_RATE       5.0f
 #define ALL_STRAIGHT_DEADBAND_CM     0.10f
-#define ALL_LINE_STEER_BOOST        4.0f  /* PWM points added to the outer wheel */
-#define ALL_LINE_INNER_PWM          5.0f  /* inner wheel; 0 = full pivot */
+#define ALL_LINE_STEER_BOOST        S2_FOLLOW_BOOST_PWM_PERCENT  /* outer wheel */
+#define ALL_LINE_INNER_PWM          S2_FOLLOW_INNER_PWM_PERCENT  /* 0 = full pivot */
 /* A correction still needed after this long is a tight bend: stop the inner
  * wheel (pivot). 5/19 held for 2.5 s still ran wide on 2026-11-11. */
 #define ALL_LINE_HARD_MS          150u
-#define ALL_LINE_HARD_INNER_PWM     0.0f
+#define ALL_LINE_HARD_INNER_PWM     S2_FOLLOW_HARD_INNER_PWM_PERCENT
 /* Inner (left) wheel during a LEFT correction while a barcode is being
  * scanned: no pivot. GP28 sits on the left, so stopping the left wheel
  * nearly stopped the scanner and stretched one element mid-character
  * (19 Nov: a 165 ms narrow space read 391 ms during six LEFT corrections,
  * frame rejected). 6.25 stalled from rest; scaled by the scan factor. */
 #define ALL_LINE_SCAN_INNER_PWM     8.0f
-#define ALL_LINE_PWM_RATE          80.0f /* PWM points/second, speed-ups only */
+#define ALL_LINE_PWM_RATE          S2_FOLLOW_RAMP_PWM_PER_S /* speed-ups only */
 #define ALL_LINE_CONFIRM_MS         5u   /* only when reversing direction */
 /* Scanner edges older than this (GP28 white since) are not a barcode in
  * progress; one stray 193 ms black 10 s earlier faulted a junction. */

@@ -24,7 +24,7 @@
  */
 static MOTION_CONFIG test_config(void)
 {
-    MOTION_CONFIG cfg;
+    MOTION_CONFIG cfg = {0}; /* #8 follow fields stay 0 = legacy */
 
     cfg.left_ticks_per_cm =
         10.0f;

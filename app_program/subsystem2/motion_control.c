@@ -75,7 +75,44 @@ static bool config_is_valid(const MOTION_CONFIG *cfg)
 
         (cfg->integral_limit >= 0.0f) &&
 
-        (cfg->correction_limit >= 0.0f);
+        (cfg->correction_limit >= 0.0f) &&
+
+        /* #8 follow-line motor numbers: 0 = legacy; otherwise every wheel
+           output must lie in 0..maximum. */
+        (cfg->follow_left_pwm_percent == 0.0f ||
+         (cfg->follow_left_pwm_percent > 0.0f &&
+          cfg->follow_right_pwm_percent > 0.0f &&
+          cfg->follow_boost_pwm_percent >= 0.0f &&
+          cfg->follow_inner_pwm_percent >= 0.0f &&
+          cfg->follow_hard_inner_pwm_percent >= 0.0f &&
+          cfg->follow_left_pwm_percent + cfg->follow_boost_pwm_percent <=
+              cfg->maximum_pwm_percent &&
+          cfg->follow_right_pwm_percent + cfg->follow_boost_pwm_percent <=
+              cfg->maximum_pwm_percent &&
+          cfg->follow_inner_pwm_percent <= cfg->maximum_pwm_percent &&
+          cfg->follow_hard_inner_pwm_percent <= cfg->maximum_pwm_percent)) &&
+
+        (cfg->follow_ramp_pwm_per_s >= 0.0f);
+}
+
+/*
+ * #8: soft start for line following, as all_test's apply_line_pwm(): a wheel
+ * speeding up gains at most follow_ramp_pwm_per_s; slowing down is immediate.
+ */
+static float ramp_follow_pwm(
+    const MOTION_CONTROLLER *controller,
+    float current,
+    float target,
+    float dt_s
+)
+{
+    float limited;
+
+    if (controller->cfg.follow_ramp_pwm_per_s <= 0.0f || target <= current) {
+        return target;
+    }
+    limited = current + controller->cfg.follow_ramp_pwm_per_s * dt_s;
+    return limited < target ? limited : target;
 }
 
 /*
@@ -712,6 +749,34 @@ static void run_forward(
 
         complete_motion(controller);
 
+        return;
+    }
+
+    /*
+     * all_test's line following has no stall stop: a wheel deliberately held
+     * at 0-5 % would trip it. Distance moves and pivots keep the check (#8).
+     */
+    if (controller->status.active_command == MOTION_CMD_FOLLOW_LINE &&
+        controller->cfg.follow_left_pwm_percent > 0.0f) {
+        float l_target = controller->cfg.follow_left_pwm_percent;
+        float r_target = controller->cfg.follow_right_pwm_percent;
+        float v = controller->target_value;
+
+        if (v > 0.0f) {              /* steer right: left wheel is outer */
+            l_target += controller->cfg.follow_boost_pwm_percent;
+            r_target = v >= 1.0f ? controller->cfg.follow_hard_inner_pwm_percent :
+                                   controller->cfg.follow_inner_pwm_percent;
+        } else if (v < 0.0f) {       /* steer left: right wheel is outer */
+            r_target += controller->cfg.follow_boost_pwm_percent;
+            l_target = v <= -1.0f ? controller->cfg.follow_hard_inner_pwm_percent :
+                                    controller->cfg.follow_inner_pwm_percent;
+        }
+        controller->status.left_pwm_percent =
+            ramp_follow_pwm(controller, controller->status.left_pwm_percent,
+                            l_target, dt_s);
+        controller->status.right_pwm_percent =
+            ramp_follow_pwm(controller, controller->status.right_pwm_percent,
+                            r_target, dt_s);
         return;
     }
 
