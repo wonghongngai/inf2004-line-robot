@@ -163,6 +163,7 @@ echo
 
 STRICT="-std=c11 -Wall -Wextra -Werror"
 S1=app_program/subsystem1
+S2=app_program/subsystem2
 S3=app_program/subsystem3
 INT=testing/integration
 
@@ -172,7 +173,7 @@ run_c  s1/barcode_queue       $STRICT testing/subsystem1/barcode_queue_test.c $S
 run_py s1/binary_cli          testing/subsystem1/test_binary.py
 
 # ---- Subsystem 2: motors, encoders, motion protocol ------------------------
-run_c  s2/motion_protocol     $STRICT -DS2_PROTOCOL_HOST_TEST=1 app_program/subsystem2/motion_protocol_host_test.c
+run_c  s2/motion_protocol     $STRICT -DS2_PROTOCOL_HOST_TEST=1 -I$S2 testing/subsystem2/motion_protocol_host_test.c
 run_c  s2/motor_pwm           $STRICT -Iinclude $INT/motor_pwm_host_test.c
 
 # ---- Subsystem 3: line following + barcode ---------------------------------

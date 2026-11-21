@@ -27,7 +27,7 @@
 /* ---------------------------------------------------------------------
  * CALIBRATION
  * ---------------------------------------------------------------------
- * Physical measurements supplied on 2026-10-29; see CALIBRATION.md.
+ * Physical measurements supplied on 2026-10-29; see testing/subsystem2/CALIBRATION.md.
  * Distance uses the three measured 100 cm runs, not wheel circumference.
  * Turn scales belong to the MOVING wheel: left wheel for a right pivot,
  * right wheel for a left pivot. Revalidate after encoder/sampling changes.
