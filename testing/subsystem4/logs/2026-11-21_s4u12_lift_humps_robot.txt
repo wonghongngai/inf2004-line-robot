@@ -1,0 +1,266 @@
+# S4-U12 on the robot, 21 Nov 2026, 22:44-22:59 (trimmed from the gitignored raw console logs
+# testing/subsystem5/logs/2026-11-21_224440_console.txt, _225148_console.txt, _225709_console.txt).
+# Firmware: robot-integrated.uf2 built 22:39 from c262c2c + uncommitted feat/53-lift-stop changes (lift check).
+# Lines kept: boot, MQTT connect, START/arm, Buddy4 events, hump entry/timeout, robot stops/pauses, IMU stop data,
+# the first and last motion line per boot, and the first IMU read error. Prefix = raw file : line.
+#
+# Classification (by boot):
+#  lift   22:44:45 22:47:22 22:50:40 22:51:06(START in _225148) 22:52:05 22:53:16 22:53:44 -> 7/7 stopped (robot lifted), PWM 0/0 until reboot
+#  void   22:52:44 line sensor fault x7 at START, robot never drove; 22:49:12, 22:49:54 no START
+#  hump   22:54:42 22:56:12 22:57:18 22:57:48 22:58:14 22:58:40 -> 6 runs, 0 LIFT events, ended by PAUSE
+#  void   22:55:28 accelerometer stopped responding (er=-25 x2033) mid-run; VC then silent, PAUSE x4 not acted on
+#         22:56:42 log ends right after START
+
+2026-11-21_224440:1: === COM5 connected 22:44:41.004 ===
+2026-11-21_224440:26: [MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+2026-11-21_224440:28: === COM5 connected 22:44:45.699 ===
+2026-11-21_224440:51: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_224440:240: mqtt: connected to 172.20.10.2
+2026-11-21_224440:334: mqtt: RX command=5
+2026-11-21_224440:336: [ROBOT] START received
+2026-11-21_224440:337: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_224440:339: [MOTION] state=2 fault=0 ticks L=273 R=300 PWM=12/15
+2026-11-21_224440:349: Buddy4: hump entry confirmed sign=1 peak=204mg
+2026-11-21_224440:357: [ROBOT] junction: no barcode, straight on
+2026-11-21_224440:429: Buddy4: hump timed out; waiting for level ground
+2026-11-21_224440:430: Buddy4 EVENT: TILT roll=0 deg lateral=-25 mg
+2026-11-21_224440:435: Buddy4 EVENT: LIFT z_avg-base=-224mg threshold=200mg acc=(-151,643,775) base_z=998
+2026-11-21_224440:436: [ROBOT] stopped: robot lifted (IMU); reboot to re-arm
+2026-11-21_224440:437: [ROBOT] IMU stop data: age=0 ms samples=6942 ok=1 calibrated=1 motion=3 event=3 errors=0 baseline_errors=0
+2026-11-21_224440:440: Buddy4 EVENT: TILT roll=0 deg lateral=31 mg
+2026-11-21_224440:460: [MOTION] state=5 fault=0 ticks L=6438 R=6723 PWM=0/0
+2026-11-21_224440:461: === COM5 connected 22:47:22.114 ===
+2026-11-21_224440:484: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_224440:499: mqtt: connected to 172.20.10.2
+2026-11-21_224440:675: mqtt: RX command=5
+2026-11-21_224440:677: [ROBOT] START received
+2026-11-21_224440:678: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_224440:682: [MOTION] state=2 fault=0 ticks L=195 R=235 PWM=12/15
+2026-11-21_224440:693: Buddy4: hump entry confirmed sign=1 peak=230mg
+2026-11-21_224440:711: [ROBOT] junction: no barcode, straight on
+2026-11-21_224440:733: Buddy4 EVENT: LIFT z_avg-base=-239mg threshold=200mg acc=(-256,323,776) base_z=1000
+2026-11-21_224440:734: [ROBOT] stopped: robot lifted (IMU); reboot to re-arm
+2026-11-21_224440:735: [ROBOT] IMU stop data: age=0 ms samples=4687 ok=1 calibrated=1 motion=3 event=3 errors=0 baseline_errors=0
+2026-11-21_224440:741: Buddy4 EVENT: TILT roll=-5 deg lateral=-88 mg
+2026-11-21_224440:972: [MOTION] state=5 fault=0 ticks L=2757 R=3094 PWM=0/0
+2026-11-21_224440:974: === COM5 connected 22:49:12.111 ===
+2026-11-21_224440:997: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_224440:1083: [MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+2026-11-21_224440:1084: === COM5 connected 22:49:54.813 ===
+2026-11-21_224440:1107: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_224440:1198: [MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+2026-11-21_224440:1200: === COM5 connected 22:50:40.832 ===
+2026-11-21_224440:1223: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_224440:1237: mqtt: connected to 172.20.10.2
+2026-11-21_224440:1258: mqtt: RX command=5
+2026-11-21_224440:1260: [ROBOT] START received
+2026-11-21_224440:1261: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_224440:1263: [MOTION] state=2 fault=0 ticks L=334 R=360 PWM=12/15
+2026-11-21_224440:1270: Buddy4: hump entry confirmed sign=1 peak=143mg
+2026-11-21_224440:1275: Buddy4 EVENT: HUMP height=1 mm highest=1 mm peak=143 mg
+2026-11-21_224440:1278: Buddy4 EVENT: TILT roll=-20 deg lateral=-345 mg
+2026-11-21_224440:1279: [ROBOT] junction: no barcode, straight on
+2026-11-21_224440:1281: Buddy4 EVENT: LIFT z_avg-base=-217mg threshold=200mg acc=(-122,290,794) base_z=984
+2026-11-21_224440:1282: [ROBOT] stopped: robot lifted (IMU); reboot to re-arm
+2026-11-21_224440:1283: [ROBOT] IMU stop data: age=0 ms samples=858 ok=1 calibrated=1 motion=3 event=3 errors=0 baseline_errors=0
+2026-11-21_224440:1285: Buddy4 EVENT: TILT roll=-5 deg lateral=-75 mg
+2026-11-21_224440:1299: [MOTION] state=1 fault=0 ticks L=2600 R=2873 PWM=0/0
+2026-11-21_224440:1301: === COM5 connected 22:51:06.732 ===
+2026-11-21_224440:1324: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_224440:1368: mqtt: connected to 172.20.10.2
+2026-11-21_224440:1382: [MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+2026-11-21_225148:1: === COM5 connected 22:51:48.872 ===
+2026-11-21_225148:40: mqtt: RX command=5
+2026-11-21_225148:42: [ROBOT] START received
+2026-11-21_225148:43: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225148:44: [MOTION] state=2 fault=0 ticks L=471 R=466 PWM=12/15
+2026-11-21_225148:57: [ROBOT] junction: no barcode, straight on
+2026-11-21_225148:59: Buddy4: hump entry confirmed sign=1 peak=434mg
+2026-11-21_225148:60: Buddy4 EVENT: TILT roll=-20 deg lateral=-363 mg
+2026-11-21_225148:70: Buddy4 EVENT: LIFT z_avg-base=-344mg threshold=200mg acc=(-166,188,637) base_z=1007
+2026-11-21_225148:71: [ROBOT] stopped: robot lifted (IMU); reboot to re-arm
+2026-11-21_225148:72: [ROBOT] IMU stop data: age=0 ms samples=2272 ok=1 calibrated=1 motion=3 event=3 errors=0 baseline_errors=0
+2026-11-21_225148:78: Buddy4 EVENT: TILT roll=-10 deg lateral=-147 mg
+2026-11-21_225148:261: [MOTION] state=5 fault=0 ticks L=1881 R=1942 PWM=0/0
+2026-11-21_225148:262: === COM5 connected 22:52:05.674 ===
+2026-11-21_225148:285: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_225148:331: mqtt: connected to 172.20.10.2
+2026-11-21_225148:347: mqtt: RX command=5
+2026-11-21_225148:349: [ROBOT] START received
+2026-11-21_225148:350: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225148:353: [MOTION] state=2 fault=0 ticks L=560 R=531 PWM=12/15
+2026-11-21_225148:364: Buddy4: hump entry confirmed sign=-1 peak=155mg
+2026-11-21_225148:369: Buddy4 EVENT: LIFT z_avg-base=261mg threshold=200mg acc=(-139,343,1194) base_z=995
+2026-11-21_225148:370: [ROBOT] stopped: robot lifted (IMU); reboot to re-arm
+2026-11-21_225148:371: [ROBOT] IMU stop data: age=0 ms samples=1492 ok=1 calibrated=1 motion=3 event=3 errors=0 baseline_errors=0
+2026-11-21_225148:377: Buddy4 EVENT: TILT roll=-5 deg lateral=-114 mg
+2026-11-21_225148:381: Buddy4 EVENT: LIFT z_avg-base=-231mg threshold=200mg acc=(-223,48,863) base_z=995
+2026-11-21_225148:388: Buddy4 EVENT: TILT roll=-10 deg lateral=-131 mg
+2026-11-21_225148:546: [MOTION] state=5 fault=0 ticks L=2158 R=2336 PWM=0/0
+2026-11-21_225148:547: === COM5 connected 22:52:44.087 ===
+2026-11-21_225148:570: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_225148:580: mqtt: connected to 172.20.10.2
+2026-11-21_225148:615: mqtt: RX command=5
+2026-11-21_225148:617: [ROBOT] START received
+2026-11-21_225148:618: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225148:619: [ROBOT] stopped: line sensor fault; re-arms when back on the line
+2026-11-21_225148:625: [ROBOT] stopped: line sensor fault; re-arms when back on the line
+2026-11-21_225148:631: [ROBOT] stopped: line sensor fault; re-arms when back on the line
+2026-11-21_225148:636: [ROBOT] stopped: line sensor fault; re-arms when back on the line
+2026-11-21_225148:639: mqtt: RX command=5
+2026-11-21_225148:641: [ROBOT] START ignored: already started
+2026-11-21_225148:646: [ROBOT] stopped: line sensor fault; re-arms when back on the line
+2026-11-21_225148:652: [ROBOT] stopped: line sensor fault; re-arms when back on the line
+2026-11-21_225148:658: [ROBOT] stopped: line sensor fault; re-arms when back on the line
+2026-11-21_225148:656: [MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+2026-11-21_225148:660: === COM5 connected 22:53:16.081 ===
+2026-11-21_225148:683: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_225148:691: mqtt: connected to 172.20.10.2
+2026-11-21_225148:705: mqtt: RX command=5
+2026-11-21_225148:707: [ROBOT] START received
+2026-11-21_225148:708: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225148:709: [MOTION] state=2 fault=0 ticks L=5 R=1 PWM=12/12
+2026-11-21_225148:720: [ROBOT] junction: no barcode, straight on
+2026-11-21_225148:730: Buddy4: hump entry confirmed sign=-1 peak=154mg
+2026-11-21_225148:749: [ROBOT] junction: no barcode, straight on
+2026-11-21_225148:751: Buddy4 EVENT: TILT roll=-20 deg lateral=-379 mg
+2026-11-21_225148:799: Buddy4 EVENT: TILT roll=-10 deg lateral=-190 mg
+2026-11-21_225148:808: Buddy4 EVENT: TILT roll=-15 deg lateral=-275 mg
+2026-11-21_225148:811: Buddy4: hump timed out; waiting for level ground
+2026-11-21_225148:812: Buddy4 EVENT: TILT roll=-10 deg lateral=-192 mg
+2026-11-21_225148:815: Buddy4 EVENT: TILT roll=-10 deg lateral=-204 mg
+2026-11-21_225148:826: Buddy4 EVENT: LIFT z_avg-base=-266mg threshold=200mg acc=(-81,-620,645) base_z=994
+2026-11-21_225148:827: [ROBOT] stopped: robot lifted (IMU); reboot to re-arm
+2026-11-21_225148:828: [ROBOT] IMU stop data: age=0 ms samples=1069 ok=1 calibrated=1 motion=3 event=3 errors=0 baseline_errors=0
+2026-11-21_225148:840: [MOTION] state=5 fault=0 ticks L=13060 R=13474 PWM=0/0
+2026-11-21_225148:841: === COM5 connected 22:53:44.486 ===
+2026-11-21_225148:864: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_225148:874: mqtt: connected to 172.20.10.2
+2026-11-21_225148:911: mqtt: RX command=5
+2026-11-21_225148:913: [ROBOT] START received
+2026-11-21_225148:914: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225148:916: [MOTION] state=2 fault=0 ticks L=0 R=0 PWM=1/1
+2026-11-21_225148:929: [ROBOT] junction: no barcode, straight on
+2026-11-21_225148:933: Buddy4: hump entry confirmed sign=1 peak=162mg
+2026-11-21_225148:940: Buddy4 EVENT: LIFT z_avg-base=226mg threshold=200mg acc=(-204,635,736) base_z=998
+2026-11-21_225148:941: [ROBOT] stopped: robot lifted (IMU); reboot to re-arm
+2026-11-21_225148:942: [ROBOT] IMU stop data: age=0 ms samples=1226 ok=1 calibrated=1 motion=3 event=3 errors=0 baseline_errors=0
+2026-11-21_225148:946: Buddy4: hump entry confirmed sign=1 peak=575mg
+2026-11-21_225148:949: Buddy4 EVENT: TILT roll=-10 deg lateral=-188 mg
+2026-11-21_225148:953: Buddy4 EVENT: LIFT z_avg-base=-367mg threshold=200mg acc=(-225,-65,700) base_z=998
+2026-11-21_225148:960: Buddy4 EVENT: TILT roll=-10 deg lateral=-133 mg
+2026-11-21_225148:1112: mqtt: RX command=5
+2026-11-21_225148:1114: [ROBOT] START ignored: already started (safety stop: reboot to retry)
+2026-11-21_225148:1123: [MOTION] state=5 fault=0 ticks L=3257 R=3398 PWM=0/0
+2026-11-21_225148:1125: === COM5 connected 22:54:42.861 ===
+2026-11-21_225148:1148: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_225148:1159: mqtt: connected to 172.20.10.2
+2026-11-21_225148:1171: mqtt: RX command=5
+2026-11-21_225148:1173: [ROBOT] START received
+2026-11-21_225148:1174: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225148:1178: [MOTION] state=2 fault=0 ticks L=500 R=518 PWM=12/15
+2026-11-21_225148:1191: Buddy4: hump entry confirmed sign=1 peak=211mg
+2026-11-21_225148:1206: Buddy4 EVENT: HUMP height=1 mm highest=1 mm peak=211 mg
+2026-11-21_225148:1223: [ROBOT] junction: no barcode, straight on
+2026-11-21_225148:1234: mqtt: RX command=1
+2026-11-21_225148:1236: [ROBOT] paused (MQTT); RESUME to continue
+2026-11-21_225148:1266: Buddy4 EVENT: TILT roll=5 deg lateral=82 mg
+2026-11-21_225148:1289: Buddy4 EVENT: TILT roll=5 deg lateral=49 mg
+2026-11-21_225148:1500: [MOTION] state=5 fault=0 ticks L=4906 R=5104 PWM=0/0
+2026-11-21_225148:1502: === COM5 connected 22:55:28.035 ===
+2026-11-21_225148:1525: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_225148:1537: mqtt: connected to 172.20.10.2
+2026-11-21_225148:1552: mqtt: RX command=5
+2026-11-21_225148:1554: [ROBOT] START received
+2026-11-21_225148:1555: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225148:1558: [MOTION] state=2 fault=0 ticks L=457 R=456 PWM=12/15
+2026-11-21_225148:1585: Buddy4: hump entry confirmed sign=1 peak=104mg
+2026-11-21_225148:1658: [ROBOT] junction: no barcode, straight on
+2026-11-21_225148:1661: Buddy4: hump timed out; waiting for level ground
+2026-11-21_225148:1669: Buddy4: accelerometer not responding, er=-25
+2026-11-21_225148:2024: mqtt: RX command=1
+2026-11-21_225148:2396: mqtt: RX command=1
+2026-11-21_225148:3238: mqtt: RX command=1
+2026-11-21_225148:3649: mqtt: RX command=1
+2026-11-21_225148:1663: [MOTION] state=2 fault=0 ticks L=3417 R=3483 PWM=11/13
+2026-11-21_225148:3714: === COM5 connected 22:56:12.432 ===
+2026-11-21_225148:3737: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_225148:3745: mqtt: connected to 172.20.10.2
+2026-11-21_225148:3763: mqtt: RX command=5
+2026-11-21_225148:3765: [ROBOT] START received
+2026-11-21_225148:3766: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225148:3769: [MOTION] state=2 fault=0 ticks L=100 R=76 PWM=12/15
+2026-11-21_225148:3781: Buddy4: hump entry confirmed sign=1 peak=114mg
+2026-11-21_225148:3847: Buddy4: hump timed out; waiting for level ground
+2026-11-21_225148:3850: [ROBOT] junction: no barcode, straight on
+2026-11-21_225148:3860: mqtt: RX command=1
+2026-11-21_225148:3862: [ROBOT] paused (MQTT); RESUME to continue
+2026-11-21_225148:3902: Buddy4 EVENT: TILT roll=5 deg lateral=51 mg
+2026-11-21_225148:3950: [MOTION] state=5 fault=0 ticks L=4732 R=4749 PWM=0/0
+2026-11-21_225148:3952: === COM5 connected 22:56:42.449 ===
+2026-11-21_225148:3975: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_225148:3985: mqtt: connected to 172.20.10.2
+2026-11-21_225148:4003: mqtt: RX command=5
+2026-11-21_225148:4005: [ROBOT] START received
+2026-11-21_225148:4006: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225148:4007: [MOTION] state=2 fault=0 ticks L=37 R=4 PWM=12/15
+2026-11-21_225148:4009: Buddy4: accelerometer not responding, er=-25
+2026-11-21_225148:4007: [MOTION] state=2 fault=0 ticks L=37 R=4 PWM=12/15
+2026-11-21_225709:1: === COM5 connected 22:57:18.102 ===
+2026-11-21_225709:24: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_225709:36: mqtt: connected to 172.20.10.2
+2026-11-21_225709:50: mqtt: RX command=5
+2026-11-21_225709:52: [ROBOT] START received
+2026-11-21_225709:53: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225709:54: [MOTION] state=2 fault=0 ticks L=2 R=2 PWM=3/3
+2026-11-21_225709:76: Buddy4: hump entry confirmed sign=1 peak=106mg
+2026-11-21_225709:158: Buddy4: hump timed out; waiting for level ground
+2026-11-21_225709:159: [ROBOT] junction: no barcode, straight on
+2026-11-21_225709:167: mqtt: RX command=1
+2026-11-21_225709:169: [ROBOT] paused (MQTT); RESUME to continue
+2026-11-21_225709:211: Buddy4 EVENT: TILT roll=0 deg lateral=41 mg
+2026-11-21_225709:247: [MOTION] state=5 fault=0 ticks L=4847 R=4934 PWM=0/0
+2026-11-21_225709:248: === COM5 connected 22:57:48.770 ===
+2026-11-21_225709:271: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_225709:284: mqtt: connected to 172.20.10.2
+2026-11-21_225709:297: mqtt: RX command=5
+2026-11-21_225709:299: [ROBOT] START received
+2026-11-21_225709:300: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225709:301: [MOTION] state=2 fault=0 ticks L=1 R=2 PWM=9/9
+2026-11-21_225709:354: Buddy4: hump entry confirmed sign=1 peak=101mg
+2026-11-21_225709:413: [ROBOT] junction: no barcode, straight on
+2026-11-21_225709:437: Buddy4: hump timed out; waiting for level ground
+2026-11-21_225709:441: mqtt: RX command=1
+2026-11-21_225709:443: [ROBOT] paused (MQTT); RESUME to continue
+2026-11-21_225709:480: Buddy4 EVENT: TILT roll=-10 deg lateral=-167 mg
+2026-11-21_225709:521: [MOTION] state=5 fault=0 ticks L=4516 R=4628 PWM=0/0
+2026-11-21_225709:523: === COM5 connected 22:58:14.729 ===
+2026-11-21_225709:546: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_225709:556: mqtt: connected to 172.20.10.2
+2026-11-21_225709:572: mqtt: RX command=5
+2026-11-21_225709:574: [ROBOT] START received
+2026-11-21_225709:575: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225709:578: [MOTION] state=2 fault=0 ticks L=120 R=128 PWM=12/15
+2026-11-21_225709:587: Buddy4: hump entry confirmed sign=1 peak=104mg
+2026-11-21_225709:592: Buddy4 EVENT: HUMP height=1 mm highest=1 mm peak=104 mg
+2026-11-21_225709:601: [ROBOT] junction: no barcode, straight on
+2026-11-21_225709:613: mqtt: RX command=1
+2026-11-21_225709:615: [ROBOT] paused (MQTT); RESUME to continue
+2026-11-21_225709:620: Buddy4: hump entry confirmed sign=1 peak=123mg
+2026-11-21_225709:622: Buddy4 EVENT: HUMP height=unavailable (no wheel distance) peak=123 mg
+2026-11-21_225709:642: Buddy4 EVENT: TILT roll=10 deg lateral=136 mg
+2026-11-21_225709:661: Buddy4 EVENT: TILT roll=5 deg lateral=108 mg
+2026-11-21_225709:687: [MOTION] state=5 fault=0 ticks L=5045 R=5148 PWM=0/0
+2026-11-21_225709:689: === COM5 connected 22:58:40.980 ===
+2026-11-21_225709:712: [ROBOT] ready: motors off, waiting for START over MQTT
+2026-11-21_225709:722: mqtt: connected to 172.20.10.2
+2026-11-21_225709:744: mqtt: RX command=5
+2026-11-21_225709:746: [ROBOT] START received
+2026-11-21_225709:747: [ROBOT] armed: no letter map yet, straight at junctions
+2026-11-21_225709:754: [MOTION] state=2 fault=0 ticks L=605 R=617 PWM=12/15
+2026-11-21_225709:804: Buddy4: hump entry confirmed sign=1 peak=121mg
+2026-11-21_225709:859: [ROBOT] junction: no barcode, straight on
+2026-11-21_225709:882: Buddy4: hump timed out; waiting for level ground
+2026-11-21_225709:887: mqtt: RX command=1
+2026-11-21_225709:889: [ROBOT] paused (MQTT); RESUME to continue
+2026-11-21_225709:898: [MOTION] state=5 fault=0 ticks L=4557 R=4667 PWM=0/0
