@@ -1,0 +1,35 @@
+# S1-U15 drive step on the robot, 21 Nov 2026, boot at 22:03 (trimmed from the gitignored raw console log testing/subsystem5/logs/2026-11-21_220240_console.txt)
+# Firmware: robot-integrated.uf2 built 22:01, source identical to aa35f21. Map sent from the dashboard Send map button.
+# Lines kept: boot, map, START/arm, barcode, junction, motion and the stop. Line numbers are from the raw file.
+
+415:=== COM5 connected 22:03:49.179 ===
+429:[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+438:[ROBOT] ready: motors off, waiting for START over MQTT
+464:mqtt: RX topic=group17-robot/mapping length=3
+465:[ROBOT] MQTT map applied: W=left A=right D=straight S=U-turn
+476:mqtt: RX command=5
+478:[ROBOT] START received
+479:[ROBOT] armed: letter map from MQTT
+480:[MOTION] state=2 fault=0 ticks L=0 R=1 PWM=4/4
+486:[MOTION] state=2 fault=0 ticks L=638 R=653 PWM=12/15
+490:[MOTION] state=2 fault=0 ticks L=1262 R=1236 PWM=11/13
+492:[MOTION] state=2 fault=0 ticks L=1849 R=1806 PWM=11/14
+494:[MOTION] state=2 fault=0 ticks L=2350 R=2334 PWM=11/13
+498:[MOTION] state=2 fault=0 ticks L=2886 R=2889 PWM=11/13
+500:[MOTION] state=2 fault=0 ticks L=3424 R=3445 PWM=11/13
+501:[MOTION] state=2 fault=0 ticks L=3959 R=3991 PWM=7/17
+503:[MOTION] state=2 fault=0 ticks L=4476 R=4522 PWM=11/13
+505:[BARCODE -> MOTION] decoded=A queued=RIGHT; execute at next C/R junction
+507:[MOTION] state=2 fault=0 ticks L=5050 R=5112 PWM=5/19
+508:[BARCODE FRAME] id=1 runs=29/29 black=15 white=14 result=A skipped=0
+538:[ROBOT] junction: letter 'A' -> RIGHT
+545:[MOTION] state=4 fault=0 ticks L=5558 R=5270 PWM=12/0
+549:[MOTION] state=4 fault=0 ticks L=5944 R=5270 PWM=12/0
+551:[MOTION] state=4 fault=0 ticks L=6349 R=5270 PWM=12/0
+554:[MOTION] state=4 fault=0 ticks L=6740 R=5270 PWM=12/0
+556:[MOTION] state=4 fault=0 ticks L=6969 R=5270 PWM=12/0
+557:[ROBOT] stopped: motion fault / calibration missing; reboot to re-arm
+559:[MOTION] state=6 fault=2 ticks L=6967 R=5270 PWM=0/0
+562:mqtt: RX command=1
+564:[ROBOT] PAUSE ignored: already in a safety stop
+565:[MOTION] state=6 fault=2 ticks L=6967 R=5270 PWM=0/0
