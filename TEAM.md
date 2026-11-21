@@ -232,8 +232,8 @@ shared executor `subsystem5/s5_executor.c` (the IF-10/IF-11 hand-shake).
 
 ### Event bits (#50)
 
-**Checked against the code on `main` (`882f522`, 21 Nov 2026); waiting for
-the team's sign-off.** Every bit or event code that one subsystem raises for
+**Agreed by the team, 21 Nov 2026.** Checked against the code on `main`
+(`882f522`). Change it only by team agreement. Every bit or event code that one subsystem raises for
 another is listed here: who sets it, who clears it, whether it latches, and
 which one wins when several fire at once. The rule: **one producer sets a
 bit. Only the producer or the one named consumer clears it.**
@@ -275,8 +275,6 @@ Notes:
   bits fire is covered by INT-03 (VC, S3 and S4 rows, host) and, for the S5
   rows, by INT-13 (to do: INT-03 stubs the S5 executor as idle) and INT-10
   on the robot.
-- When the team agrees the table, replace the sign-off line at the top with
-  the date.
 
 ### Other open points
 
