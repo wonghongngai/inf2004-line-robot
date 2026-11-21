@@ -59,7 +59,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 | Motion control: distance target, STOP, encoder stall → FAULT | ✅ | ✅ S2-U01–U04 (Pico, simulated encoders) | ⬜ | ⬜ | ⬜ | `testing/subsystem3/logs/2026-11-19_target_test.txt` | Calibrate on the robot (S2-U06, U07), then STOP latency (S2-U11) |
 | Vehicle Controller mode arbitration (safety > avoidance > line) | 🟡 | ✅ INT-03 (simulated) | ⬜ | ⬜ | ⬜ | `testing/subsystem2/logs/2026-11-20_host.txt` (209 checks) | Bench test with real S3/S4/S5 inputs |
 | Integrated MQTT link: telemetry, PAUSE/RESUME/STATUS, letter map (#72) | ✅ | ✅ INT-03 (simulated, 346 checks) | ⬜ | ⬜ | — | `testing/integration/logs/2026-11-21_integrated_mqtt_host.txt` | Bench test: S1-U12, S1-U14, S1-U15 on the integrated image (INT-07) |
-| Ready state + MQTT START (#48) | ✅ | ✅ INT-03 (simulated, 228 checks) | ⬜ | ⬜ | — | `testing/integration/logs/2026-11-21_start_command_host.txt` | Bench test: flash `integrated`, check it waits in Ready, then press Start on the dashboard |
+| Ready state + MQTT START (#48) | ✅ | ✅ INT-03 (simulated, 228 checks) | ✅ 21 Nov | ✅ 21 Nov | — | `testing/integration/logs/2026-11-21_start_command_host.txt`, `testing/integration/logs/2026-11-21_ready_start_robot.txt` | Done (#48) |
 
 ## Subsystem 3: IR line following + barcode (Buddy 3)
 

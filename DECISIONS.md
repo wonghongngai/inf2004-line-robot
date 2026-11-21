@@ -15,7 +15,7 @@ Decided by the team on 20 Nov 2026, from `main` @ `42be6ea`.
 | --- | --- | --- |
 | #5 | S4 keeps the climb height after a hump. The test was changed, not the firmware | — |
 | #6 | Every `[set]` threshold in `TEST_PLAN.md` agreed (table below) | — |
-| #48 | **Add a START command.** The robot waits in Ready until START arrives | Built 21 Nov: `S1_COMMAND_START` (code 5) + VC Ready state; `S2_AUTO_START` fallback. Bench test with the broker pending |
+| #48 | **Add a START command.** The robot waits in Ready until START arrives | Built and merged 21 Nov (`234f2bb`): `S1_COMMAND_START` (code 5) + VC Ready state; `S2_AUTO_START` fallback. Robot test PASS 21 Nov (integration TEST_LOG) |
 | #38 | **No on-robot A–Z print test** (decided 21 Nov, time). A–Z in both directions rests on S3-U07 (all 26 letters, synthetic frames, host + Pico) and S3-U18 (real PDF A/Z); on the robot only A was scanned (large print 3/3 forward, 3/3 reversed; medium print failed reversed) | Use **large prints** on demo day; the medium-print failure is a known risk |
 | #72 | **No built-in letter map; a junction without a mapped barcode goes straight** (decided 21 Nov), before and after an MQTT map arrives, as in `all_test` | Built in `robot_control.c`; host-tested in `int/robot_control` |
 | #54 | Obstacle distance is 9-bit cm on the wire, mm inside S5 | VC converts `mm / 10` when filling IF-05 (#72) |
@@ -85,8 +85,10 @@ conditions for entering Ready.
   auto-start. Builds without MQTT default to 1, since nothing could start them.
 - Host test: `int/robot_control` (Ready waits, other commands don't start
   it, START arms, early START kept, poll budget).
-- Still to do: the bench test with the broker, and the Write-up wording check
-  below.
+- Done 21 Nov: robot test PASS (integration TEST_LOG), and the team confirmed
+  that the Write-up's "without remote control" wording allows a START
+  command (DEVIATIONS P5): START only begins the run; navigation stays
+  autonomous.
 
 **Original plan.**
 - S1: a START command code in the command queue. The command byte has

@@ -1,0 +1,91 @@
+# #48 robot evidence, 21 Nov 2026 (trimmed from the gitignored raw console logs in testing/subsystem5/logs/)
+# Lines kept: boot banners, Ready/START/arm lines, MQTT command reception and the controller's reply. Line numbers are from the raw files.
+
+## 2026-11-21_171451_console.txt
+1:=== COM5 connected 17:14:51.816 ===
+107:=== COM5 connected 17:15:08.122 ===
+121:[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+130:[ROBOT] ready: motors off, waiting for START over MQTT
+136:wifi: link up, ip=172.20.10.3
+138:mqtt: connected to 172.20.10.2
+151:mqtt: RX command=5
+153:[ROBOT] START received
+154:[ROBOT] armed: no letter map yet, straight at junctions
+191:mqtt: RX command=2
+193:[ROBOT] RESUME ignored: not paused
+200:mqtt: RX command=5
+202:[ROBOT] START ignored: already started
+211:mqtt: RX command=1
+213:[ROBOT] paused (MQTT); RESUME to continue
+219:mqtt: RX command=1
+232:mqtt: RX command=5
+234:[ROBOT] START ignored: already started (paused: use RESUME)
+
+## 2026-11-21_172744_console.txt
+1:=== COM5 connected 17:27:44.516 ===
+15:[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+24:[ROBOT] ready: motors off, waiting for START over MQTT
+32:wifi: link up, ip=172.20.10.3
+34:mqtt: connected to 172.20.10.2
+61:mqtt: RX command=5
+63:[ROBOT] START received
+64:[ROBOT] armed: no letter map yet, straight at junctions
+100:mqtt: RX command=5
+102:[ROBOT] START ignored: already started
+136:mqtt: RX command=5
+138:[ROBOT] START ignored: already started
+143:=== COM5 connected 17:28:21.740 ===
+157:[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+166:[ROBOT] ready: motors off, waiting for START over MQTT
+177:wifi: link up, ip=172.20.10.3
+186:mqtt: connected to 172.20.10.2
+199:mqtt: RX command=5
+201:[ROBOT] START received
+202:[ROBOT] armed: no letter map yet, straight at junctions
+
+## 2026-11-21_174031_console.txt
+1:=== COM5 connected 17:40:31.865 ===
+72:=== COM5 connected 17:41:02.583 ===
+86:[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+95:[ROBOT] ready: motors off, waiting for START over MQTT
+101:wifi: link up, ip=172.20.10.3
+105:mqtt: connected to 172.20.10.2
+134:mqtt: RX command=5
+136:[ROBOT] START received
+137:[ROBOT] armed: no letter map yet, straight at junctions
+357:mqtt: RX command=2
+359:[ROBOT] RESUME ignored: not paused
+369:mqtt: RX command=1
+371:[ROBOT] PAUSE ignored: already in a safety stop
+385:=== COM5 connected 17:41:49.313 ===
+399:[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+408:[ROBOT] ready: motors off, waiting for START over MQTT
+414:wifi: link up, ip=172.20.10.3
+419:mqtt: connected to 172.20.10.2
+433:mqtt: RX command=5
+435:[ROBOT] START received
+436:[ROBOT] armed: no letter map yet, straight at junctions
+471:=== COM5 connected 18:19:49.954 ===
+485:[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+494:[ROBOT] ready: motors off, waiting for START over MQTT
+500:wifi: link up, ip=172.20.10.3
+502:mqtt: connected to 172.20.10.2
+527:mqtt: RX command=5
+529:[ROBOT] START received
+530:[ROBOT] armed: no letter map yet, straight at junctions
+2409:=== COM5 connected 18:20:13.276 ===
+2423:[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+2445:[ROBOT] ready: motors off, waiting for START over MQTT
+2466:=== COM5 connected 18:20:19.966 ===
+2480:[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+2489:[ROBOT] ready: motors off, waiting for START over MQTT
+2500:wifi: link up, ip=172.20.10.3
+2502:mqtt: connected to 172.20.10.2
+2520:mqtt: RX command=5
+2522:[ROBOT] START received
+2523:[ROBOT] armed: no letter map yet, straight at junctions
+2595:=== COM5 connected 18:20:46.475 ===
+2609:[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+2619:[ROBOT] ready: motors off, waiting for START over MQTT
+2637:wifi: link up, ip=172.20.10.3
+2641:mqtt: connected to 172.20.10.2
