@@ -267,7 +267,7 @@ static bool imu_healthy(uint32_t now)
     return have_imu && last_imu.sensor_ok && last_imu.calibrated &&
            (!armed || last_imu.read_errors == imu_errors) &&
            (uint32_t)(now - last_imu_sample) <= S2_IMU_STALE_MS &&
-           last_imu.motion_state != IMU_MOTION_COLLISION &&
+           last_imu.motion_state != IMU_MOTION_LIFTED &&
            last_imu.motion_state != IMU_MOTION_FAULT;
 }
 
@@ -723,15 +723,17 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
     }
     /* Tilt is report-only (#67, decided 20 Nov 2026): S4 still logs it and
        S5 ignores ultrasonic readings while tilted, but it never stops the
-       robot. A false tilt would otherwise latch a stop until reboot. */
-    if (!imu.sensor_ok || !imu.calibrated ||
+       robot. A false tilt would otherwise latch a stop until reboot.
+       Lifting the robot (#53, replaces collision) stops it and the stop
+       latches until reboot, like every IMU stop. */
+    bool lifted = imu.motion_state == IMU_MOTION_LIFTED ||
+                  imu.event == IMU_EVENT_LIFT;
+    if (lifted || !imu.sensor_ok || !imu.calibrated ||
         imu.read_errors != imu_errors ||
         (uint32_t)(now - last_imu_sample) > S2_IMU_STALE_MS ||
-        imu.motion_state == IMU_MOTION_COLLISION ||
         imu.motion_state == IMU_MOTION_FAULT ||
-        imu.event == IMU_EVENT_COLLISION ||
         imu.event == IMU_EVENT_FAULT) {
-        halt(ctl, now, l, r, "IMU unsafe or stale");
+        halt(ctl, now, l, r, lifted ? "robot lifted (IMU)" : "IMU unsafe or stale");
         /* all_test: the values that latched the stop, printed once. */
         tm_printf((UB *)"[ROBOT] IMU stop data: age=%lu ms samples=%lu ok=%d calibrated=%d motion=%d event=%d errors=%lu baseline_errors=%lu\n",
                   (unsigned long)(now - last_imu_sample), (unsigned long)imu_count,

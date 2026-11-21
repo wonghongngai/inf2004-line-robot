@@ -36,7 +36,7 @@ queue. Invalid public submissions in queue-enabled mode set the STOP flag.
 Integrated mode runs VC in motion_task at priority 14 on core 1. all_test
 is an alternate motor owner. ISR counts edges without per-edge task wakeups.
 Tilt and normal hump are informational in all_test and integrated modes.
-S4 continues detecting/logging tilt. Collision, faults and stale IMU data
+S4 continues detecting/logging tilt. Lifting the robot (#53, replaced collision), faults and stale IMU data
 retain their existing stop handling.
 ALL_TEST_CONTINUE_ON_SENSOR remains an explicit diagnostic safety bypass.
 
@@ -53,7 +53,7 @@ are not WCET proof or end-to-end stop latency. Use trace/GPIO on hardware.
   core reset/read snapshots still need an explicit policy and verification.
 - Agree request IDs and completion retention before changing that interface.
 - S4 packed-output migration and shared TEAM.md corrections are outside scope.
-- Record MQTT-under-motion timing, collision stop latency and tilt event logging, simultaneous
+- Record MQTT-under-motion timing, lift stop latency and tilt event logging, simultaneous
   events, all navigation actions and repeated physical distance/turn tests.
 
 ## Verification

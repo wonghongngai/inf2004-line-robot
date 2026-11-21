@@ -796,10 +796,9 @@ static const char *imu_status_reason(const ALL_TEST *t, uint32_t now)
     if (!t->imu.sensor_ok) return "IMU sensor reports not OK";
     if (!t->imu.calibrated) return "IMU calibration not ready";
     if (t->imu_count == 0u) return "IMU has no samples";
-#if ALL_TEST_STOP_ON_COLLISION
-    if (t->imu.motion_state == IMU_MOTION_COLLISION || t->imu.event == IMU_EVENT_COLLISION)
-        return "IMU collision detected";
-#endif
+    /* #53: lifting the robot stops it (replaces collision detection). */
+    if (t->imu.motion_state == IMU_MOTION_LIFTED || t->imu.event == IMU_EVENT_LIFT)
+        return "robot lifted (IMU)";
     if (t->imu.motion_state == IMU_MOTION_FAULT || t->imu.event == IMU_EVENT_FAULT)
         return "IMU processing fault";
     if ((uint32_t)(now - t->imu_updated) > ALL_IMU_STALE_MS)

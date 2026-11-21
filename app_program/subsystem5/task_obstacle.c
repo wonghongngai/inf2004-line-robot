@@ -767,8 +767,8 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
     (void)exinf;
 
     /* Start-up hold: the VC won't arm while S5 asks for HOLD.  The servo's
-     * first swing shakes the robot hard enough for S4 to report COLLISION
-     * or TILT, which the VC latches once armed (seen 2026-11-05). */
+     * first swing shakes the robot hard enough for S4 to report TILT (and,
+     * before #53, COLLISION), which the VC latches once armed (seen 2026-11-05). */
     s5_post(S5_REQ_HOLD, S5_MOVE_FWD, 0U, FALSE);
 
     ultrasonic_init();

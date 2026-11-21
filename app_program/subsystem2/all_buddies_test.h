@@ -38,9 +38,6 @@
 #define ALL_TEST_CORNER_TIMEOUT_MS 0u
 #define ALL_TEST_CORNER_CENTRE_MS 60u
 #define ALL_TEST_DIRECTION_HOLD_MS 300u
-#ifndef ALL_TEST_STOP_ON_COLLISION
-#define ALL_TEST_STOP_ON_COLLISION 1
-#endif
 /* Combined hardware test; fixed PWM, no calibrated distance/angle motion. */
 ER all_buddies_test_start(void);
 #endif
