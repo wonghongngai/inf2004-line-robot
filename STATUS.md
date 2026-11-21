@@ -39,7 +39,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 | Feature | Code | Host/Unit | Bench HW | Integrated | Track tuned | Evidence | Next action |
 |---|---|---|---|---|---|---|---|
 | 15-byte telemetry packing (CR1) | ✅ | ✅ host `s1/protocol`; Pico S1-U01–U04 (U01 fixed and re-run 20 Nov) | ⬜ | ⬜ | — | `testing/subsystem1/logs/2026-11-20_host.txt`, `testing/subsystem4/logs/2026-11-20_target_test.txt` | S1-U12: decode real packets on the PC (#15) |
-| Command and map queues (STATUS, REVERSE, reserved bits, 3-byte barcode map) | ✅ | ✅ S1-U05–U10, U18 (Pico) | ⬜ | ⬜ | — | `testing/subsystem3/logs/2026-11-19_target_test.txt` | S1-U14 / U15 from the laptop over MQTT (#15, #38) |
+| Command and map queues (STATUS, REVERSE, reserved bits, 3-byte barcode map) | ✅ | ✅ S1-U05–U10, U18 (Pico) | ✅ 21 Nov | ✅ 21 Nov | — | `testing/subsystem3/logs/2026-11-19_target_test.txt`; robot: `testing/integration/logs/2026-11-21_2129_robot_mqtt_test.txt` (S1-U14), `…_1944/1957/2001_robot_mqtt_test.txt` + `…_s1u15_drive_robot.txt` (S1-U15) | Done: S1-U14 PASS, S1-U15 PASS on the robot (#15, #38) |
 | MQTT connect + reconnect after AP or broker loss | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | — | Define S1-U tests (connect, publish rate, reconnect time); run on the bench with a broker and save logs |
 | Telemetry publish (state, speed, hump, obstacle…) | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | — | Check every field decodes correctly on the subscriber side; record the publish rate |
 | Barcode result events (`<id>/barcode`, QoS 1) | 🟡 | ❌ `s1/barcode_queue` does not compile: code not pushed (#3) | ⬜ | ⬜ | ⬜ | `testing/subsystem1/logs/2026-11-20_host.txt`, `testing/subsystem1/BARCODE_MQTT.md` | Run `barcode_queue_test.c` and log the result; then do a bench test with a real broker |
@@ -59,7 +59,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 | Compact motion protocol v1 (CR1) | ✅ | ✅ `s2/motion_protocol` (host) | ⬜ | ⬜ | — | `testing/subsystem2/logs/2026-11-20_host.txt` | Move the other subsystems onto `subsystem2_send_command` |
 | Motion control: distance target, STOP, encoder stall → FAULT | ✅ | ✅ S2-U01–U04 (Pico, simulated encoders) | ⬜ | ⬜ | ⬜ | `testing/subsystem3/logs/2026-11-19_target_test.txt` | Calibrate on the robot (S2-U06, U07), then STOP latency (S2-U11) |
 | Vehicle Controller mode arbitration (safety > avoidance > line) | 🟡 | ✅ INT-03 (simulated) | ⬜ | ⬜ | ⬜ | `testing/subsystem2/logs/2026-11-20_host.txt` (209 checks) | Bench test with real S3/S4/S5 inputs |
-| Integrated MQTT link: telemetry, PAUSE/RESUME/STATUS, letter map (#72) | ✅ | ✅ INT-03 (simulated, 346 checks) | ⬜ | ⬜ | — | `testing/integration/logs/2026-11-21_integrated_mqtt_host.txt` | Bench test: S1-U12, S1-U14, S1-U15 on the integrated image (INT-07) |
+| Integrated MQTT link: telemetry, PAUSE/RESUME/STATUS, letter map (#72) | ✅ | ✅ INT-03 (simulated, 346 checks) | ✅ 21 Nov | ✅ 21 Nov | — | `testing/integration/logs/2026-11-21_integrated_mqtt_host.txt`; robot: `…_1944_robot_mqtt_test.txt` (S1-U12), `…_2129_robot_mqtt_test.txt` (S1-U14), `…_s1u15_drive_robot.txt` (S1-U15) | Done on the robot: INT-07 PASS (S1-U12 + S1-U14) and S1-U15 PASS (#72). The pivot after a mapped junction stopped ~2° short on a stall fault (#8) |
 | Ready state + MQTT START (#48) | ✅ | ✅ INT-03 (simulated, 228 checks) | ✅ 21 Nov | ✅ 21 Nov | — | `testing/integration/logs/2026-11-21_start_command_host.txt`, `testing/integration/logs/2026-11-21_ready_start_robot.txt` | Done (#48) |
 
 ## Subsystem 3: IR line following + barcode (Buddy 3)
@@ -72,7 +72,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 | Service faults latch until reset (event-queue overflow, sampling gap > 20 ms) | ✅ | ✅ S3-U11, U43–U44 (U43–U44 host only) | ⬜ | ⬜ | — | `testing/subsystem3/logs/2026-11-19_host_s3_int.txt` | Controller stops on a latched fault: integration part of S3-M06 |
 | Code 39 decode A–Z, forward + backward | ✅ | ✅ S3-U07–U13, U36–U42 (host + Pico) | 🟡 only A and Z tested (commit `208188b`, no log) | ⬜ | 🟡 A only: large and medium print, both directions, in `all_test` (not integrated) | `testing/subsystem3/TEST_LOG.md` 19 and 20 Nov hardware rows, `logs/2026-11-19_barcode_hw.txt`, `logs/2026-11-20_barcode_hw.txt` (A forward 3/3 after the GP28 move) | S3-U35: all A–Z both ways (prof, 13 Nov), then the four command letters at driving speed (#23) |
 | Junction detection + barcode → command at next junction | ✅ | ✅ S3-U25–U26 (host + Pico), U45–U46 (host) | ⬜ | ⬜ | 🟡 A → LEFT 29/29 in `all_test` (not integrated) | same | Track test at each junction type in integrated firmware; INT-08 (#33) |
-| Run-time letter mapping (S3-U27) | ✅ | ✅ S3-U23–U24, U27 (host + Pico) | ⬜ | ⬜ | — | `testing/subsystem3/logs/2026-11-19_target_test.txt` | Apply the MQTT map in the integrated firmware (#38), then S1-U15 |
+| Run-time letter mapping (S3-U27) | ✅ | ✅ S3-U23–U24, U27 (host + Pico) | ✅ 21 Nov | ✅ 21 Nov | — | `testing/subsystem3/logs/2026-11-19_target_test.txt`; robot: `testing/integration/logs/2026-11-21_s1u15_drive_robot.txt` | Done (#38): MQTT map applied in integrated; S1-U15 PASS (A mapped to RIGHT, turned right at the next junction) |
 
 ## Subsystem 4: IMU, humps, tilt, lift-stop (Buddy 4)
 
