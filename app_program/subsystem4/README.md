@@ -28,8 +28,13 @@ telemetry.
   before treating them as final (S4-U08, issue #25).
 - The hump height estimator keeps the climb height after the descent; the
   host test `s4/hump_height` expects 0. Decision pending (#5).
-- Collision detection is being **removed** on the instructor's instructions
-  and replaced by a lift-stop (#53).
+- Collision detection was **removed** on the instructor's instructions
+  (13 Nov) and replaced by a lift-stop (#53, 21 Nov). Lift = the 200 ms
+  average of the Z deviation from `baseline_az_mg` (each sample clipped to
+  ±`S4_LIFT_CLIP_MG`) stays at ≥ `S4_LIFT_DELTA_MG` (200 mg) for 3 samples.
+  S4 then reports `IMU_MOTION_LIFTED` every sample and `IMU_EVENT_LIFT` once
+  (code 3, which was COLLISION); the VC and `all_test` stop and stay stopped
+  until reboot. The thresholds are placeholders until S4-U12 on the robot.
 - Still to build (both assessed): motion classification (#42) and turn rate
   from the magnetometer (#43).
 - Minimum-bit (CR1): the packed output is a 4-byte `IMU_PACKED_MSG`

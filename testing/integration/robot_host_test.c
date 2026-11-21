@@ -858,7 +858,9 @@ int main(void)
         robot_control_step(&ctl, 5051, right ? ticks : 1, right ? 1 : ticks);
         EXPECT(!turning && enabled);
     }
-    follow(&ctl); fake_imu.motion_state = IMU_MOTION_COLLISION; stopped(&ctl, 5041);
+    /* #53: lifted (state or the one-sample event) stops and stays stopped. */
+    follow(&ctl); fake_imu.motion_state = IMU_MOTION_LIFTED; stopped(&ctl, 5041);
+    follow(&ctl); fake_imu.event = IMU_EVENT_LIFT; stopped(&ctl, 5041);
     /* Tilt is report-only (#67): the robot keeps following. */
     follow(&ctl); fake_imu.motion_state = IMU_MOTION_TILT;
     fake_imu.event = IMU_EVENT_TILT;

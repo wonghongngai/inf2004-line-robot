@@ -8,7 +8,8 @@
  * - hump/ramp detection
  * - ramp-height estimation
  * - severe tilt detection
- * - collision detection
+ * - lift detection (lifting the robot stops the motors; replaced collision
+ *   detection, removed on the instructor's instructions 13 Nov, #53)
  * - compact minimum-bit output using explicit masks/shifts
  */
 
@@ -29,7 +30,20 @@
  */
 #define S4_TILT_DELTA_MG            180
 #define S4_TILT_CONFIRM_SAMPLES     5U   /* 100 ms */
-#define S4_COLLISION_DELTA_MG       1200  /* 1200 tripped on motor start-up jolt */
+/*
+ * Lift (#53): the average of the last S4_LIFT_FILTER_SAMPLES vertical (Z)
+ * deviations from the calibrated baseline_az_mg is at least
+ * S4_LIFT_DELTA_MG (either sign) for S4_LIFT_CONFIRM_SAMPLES samples in a
+ * row. Single samples swing +-500 mg while driving and spike to +-1300 mg
+ * (the old 1200 mg collision check tripped on them), so a raw sample is
+ * never compared, and each deviation is clipped to S4_LIFT_CLIP_MG first:
+ * a few spikes cannot carry the average, only a sustained offset can.
+ * Placeholders until the S4-U12 bench test (lift 5x, humps 5x).
+ */
+#define S4_LIFT_DELTA_MG            200
+#define S4_LIFT_CLIP_MG             400  /* 2 x threshold: half the window must agree */
+#define S4_LIFT_FILTER_SAMPLES      10U  /* 200 ms moving average */
+#define S4_LIFT_CONFIRM_SAMPLES     3U   /* 60 ms */
 #define S4_HUMP_ENTRY_MG            85
 #define S4_HUMP_OPPOSITE_MG          60
 #define S4_HUMP_SETTLE_MG           40
@@ -43,21 +57,21 @@
  */
 #define S4_MAX_RAMP_HEIGHT_MM       255U
 
-/* Five values need 3 bits. */
+/* Five values need 3 bits. Code 3 was COLLISION until #53 and is now LIFTED. */
 typedef enum {
     IMU_MOTION_NORMAL = 0,
     IMU_MOTION_HUMP = 1,
     IMU_MOTION_TILT = 2,
-    IMU_MOTION_COLLISION = 3,
+    IMU_MOTION_LIFTED = 3,   /* every sample while the lift check holds */
     IMU_MOTION_FAULT = 4
 } IMU_MOTION_STATE;
 
-/* Five values need 3 bits. */
+/* Five values need 3 bits. Code 3 was COLLISION until #53 and is now LIFT. */
 typedef enum {
     IMU_EVENT_NONE = 0,
     IMU_EVENT_HUMP = 1,
     IMU_EVENT_TILT = 2,
-    IMU_EVENT_COLLISION = 3,
+    IMU_EVENT_LIFT = 3,      /* once per lift (lift_reported) */
     IMU_EVENT_FAULT = 4
 } IMU_EVENT;
 

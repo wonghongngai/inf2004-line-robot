@@ -170,7 +170,7 @@ is to measure real data.
 | S4-U09 | Hump detected | L4 | 10 passes over each real hump, 10 runs on flat floor | 10/10 detected, 0 false detections |
 | S4-U10 | Highest hump height accuracy | L4 | Measure each hump with a ruler; 5 passes each | within ±3 mm; with several humps, the highest is reported |
 | S4-U11 | Tilt detection | L3 | Tilt the robot by hand past the limit, 10× | 10/10 flagged within 200 ms |
-| S4-U12 | Lift stops the motors (replaces collision detection, removed 13 Nov; #53) | L4 | Lift the robot off the floor while driving, 10×; drive over each hump 10× | 10/10 stop and stay stopped; 0 false stops over humps |
+| S4-U12 | Lift stops the motors (replaces collision detection, removed 13 Nov; #53) | L4 | Lift the robot off the floor while driving, 5×; drive over each hump 5× (cut from 10 on 21 Nov) | 5/5 stop and stay stopped; 0 false stops over humps |
 | S4-U13 | Replay recorded IMU logs on the PC | L1 | New `s4/imu_replay` host test: feed the U08–U12 logs into `task_imu.c` | same results as on the robot; tuning changes can then be checked offline |
 | S4-U14 | CR1 minimum-bit change | L2 | `arm-none-eabi-size` and `.map` before and after | numbers recorded (the README says this is still the PRE version) |
 

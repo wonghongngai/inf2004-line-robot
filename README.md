@@ -345,7 +345,6 @@ Set in `app_program/subsystem2/all_buddies_test.h` (or with `-D` on the make lin
 | `ALL_TEST_DURATION_MS` | `0` | `0` runs continuously; a positive value stops the run after that time |
 | `ALL_TEST_LINE_LAYOUT` | `LINE_BARCODE_LAYOUT_SIDE` | Line sensor layout |
 | `ALL_TEST_BARCODE_TURNS` | `1` | A stored barcode letter turns the next cross-junction into the mapped move |
-| `ALL_TEST_STOP_ON_COLLISION` | `1` | IMU collision stop; collision detection is being removed (issue #53) |
 
 ---
 

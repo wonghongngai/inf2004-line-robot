@@ -50,7 +50,7 @@ GPIO and filtered transitions also printed as [IR RAW].
 The previous corner-memory/search routine is bypassed in this profile.
 Black-line LOST/SEARCH and junction classifications do not override these
 centre/right rules. Queue errors, stale snapshots, sensor faults, manual
-pause, IMU tilt/collision/faults still stop movement. Straight and outer-wheel
+pause, lifting the robot (#53) and IMU faults still stop movement (tilt is report-only, #67). Straight and outer-wheel
 power use the existing acceleration ramp. No search deadline is enabled.
 Both white can also mean the robot is off the intended track; this two-sensor
 rule alone cannot distinguish that from the desired white area. Switch off

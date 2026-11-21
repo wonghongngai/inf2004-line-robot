@@ -175,8 +175,8 @@ still ignores ultrasonic readings while tilted. The VC no longer stops on
 latches until reboot, so one false tilt (the 20 Nov ramp log has 22, though
 that ramp was under one side and the robot was handled) would end the demo
 run. The real danger, the robot being picked up, is covered by the lift
-check (#53). IMU faults, stale IMU data and (until #53 removes it) collision
-still stop the robot.
+check (#53). IMU faults, stale IMU data and (until #53 removed it on 21 Nov,
+replacing it with the lift check) collision still stop the robot.
 
 ### #68 Line loss
 

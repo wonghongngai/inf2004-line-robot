@@ -30,6 +30,87 @@ UW subsystem4_take_distance_mm(void) { return 0; }
    calibration factor added in 7039135. */
 #define RISE_20_MM ((W)((20000LL * S4_HEIGHT_CAL_NUM / S4_HEIGHT_CAL_DEN) / 1000))
 
+#define BASE_Z 1000
+
+static void settle_flat(void)
+{
+    reset_lift_detector();
+    for (unsigned i = 0; i < 2u * S4_LIFT_FILTER_SAMPLES; ++i)
+        assert(!update_lift(BASE_Z, BASE_Z, NULL));
+}
+
+/* Samples of a step to BASE_Z + step_mg until update_lift() first says
+   lifted, worked out independently: the window average must reach the
+   threshold, then hold it for the confirmation count. */
+static unsigned expected_lift_samples(W step_mg)
+{
+    W mag = step_mg < 0 ? -step_mg : step_mg;
+    unsigned k = 1;
+    if (mag > S4_LIFT_CLIP_MG) mag = S4_LIFT_CLIP_MG;
+    while ((mag * (W)k) / (W)S4_LIFT_FILTER_SAMPLES < S4_LIFT_DELTA_MG) ++k;
+    return k + S4_LIFT_CONFIRM_SAMPLES - 1u;
+}
+
+static void step_detected(W step_mg)
+{
+    unsigned want = expected_lift_samples(step_mg);
+    W delta = 0;
+    settle_flat();
+    for (unsigned i = 1; i < want; ++i)
+        assert(!update_lift(BASE_Z + step_mg, BASE_Z, &delta));
+    assert(update_lift(BASE_Z + step_mg, BASE_Z, &delta));
+    assert((delta < 0 ? -delta : delta) >= S4_LIFT_DELTA_MG);
+    /* Stays lifted while held, as the VC's latch expects. */
+    for (unsigned i = 0; i < 20u; ++i) assert(update_lift(BASE_Z + step_mg, BASE_Z, NULL));
+}
+
+static void lift_checks(void)
+{
+    W delta = 0;
+
+    /* Driving vibration: single samples swing +-500 mg (robot logs). */
+    settle_flat();
+    for (unsigned i = 0; i < 500u; ++i)
+        assert(!update_lift(BASE_Z + ((i & 1u) ? 500 : -500), BASE_Z, &delta));
+    /* Isolated spikes, as the old collision check tripped on (+-1300 mg). */
+    settle_flat();
+    for (unsigned i = 0; i < 500u; ++i)
+        assert(!update_lift(BASE_Z + (i % 25u == 0u ? 1300 : 0), BASE_Z, NULL));
+    /* Spikes in a burst (the logged "collisions" came in pairs): up to four
+       same-sign 1300 mg samples in a row are clipped, so no lift. */
+    for (unsigned burst = 1; burst <= 4u; ++burst) {
+        settle_flat();
+        for (unsigned i = 0; i < burst; ++i)
+            assert(!update_lift(BASE_Z + 1300, BASE_Z, NULL));
+        for (unsigned i = 0; i < 2u * S4_LIFT_FILTER_SAMPLES; ++i)
+            assert(!update_lift(BASE_Z, BASE_Z, NULL));
+    }
+
+    /* Pick-up (Z up) and a tilted hold (Z down) are both lifts; a huge
+       step is clipped but still detected. */
+    step_detected(300);
+    step_detected(-300);
+    step_detected(2 * S4_LIFT_DELTA_MG);
+    step_detected(1500);
+
+    /* Just under the threshold, held for a long time: no lift. */
+    settle_flat();
+    for (unsigned i = 0; i < 500u; ++i)
+        assert(!update_lift(BASE_Z + S4_LIFT_DELTA_MG - 1, BASE_Z, NULL));
+
+    /* Warm-up: no decision until the window is full, even at a huge offset. */
+    reset_lift_detector();
+    for (unsigned i = 1; i < S4_LIFT_FILTER_SAMPLES + S4_LIFT_CONFIRM_SAMPLES - 1u; ++i)
+        assert(!update_lift(BASE_Z + 800, BASE_Z, NULL));
+    assert(update_lift(BASE_Z + 800, BASE_Z, NULL));
+
+    /* Put down again: the condition clears and lift_reported re-arms. */
+    lift_reported = TRUE;
+    for (unsigned i = 0; i < 2u * S4_LIFT_FILTER_SAMPLES; ++i)
+        (void)update_lift(BASE_Z, BASE_Z, NULL);
+    assert(!update_lift(BASE_Z, BASE_Z, NULL) && !lift_reported && lift_confirm == 0u);
+}
+
 int main(void)
 {
     reset_hump_detector(); reset_height_tracker();
@@ -78,16 +159,8 @@ int main(void)
     publish_snapshot(&sample, 0, 0, 1000, 300, 10, 20, TRUE,
                      IMU_MOTION_HUMP, IMU_EVENT_HUMP, TRUE, TRUE, 1, FALSE);
     assert(s4_imu_data.ramp_height_valid && s4_imu_data.ramp_height_mm == 20);
-    /* Startup ramp must not weaken the actual single-sample impact test. */
-    LSM303_SAMPLE resting = {.az_mg = 1000};
-    LSM303_SAMPLE vibration = {.ax_mg = 200, .ay_mg = 100, .az_mg = 900};
-    LSM303_SAMPLE impact = {.ax_mg = S4_COLLISION_DELTA_MG, .az_mg = 1000};
-    W delta;
-    assert(!detect_collision(&vibration, &resting, &delta) && delta == 200);
-    assert(detect_collision(&impact, &resting, &delta) && delta == S4_COLLISION_DELTA_MG);
-    impact.ax_mg = -S4_COLLISION_DELTA_MG;
-    assert(detect_collision(&impact, &resting, &delta) && delta == S4_COLLISION_DELTA_MG);
+    lift_checks();
     puts("Hump height/odometry: fractional rise, descent, sign, bounds, missing calibration and validity PASS");
-    puts("IMU collision: positive/negative single-sample impact threshold and measured delta PASS");
+    puts("IMU lift (#53): vibration and single spikes ignored; pick-up and tilted hold detected after the filter and confirmation delay; window warm-up; release re-arms PASS");
     return 0;
 }
