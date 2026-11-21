@@ -43,7 +43,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 | MQTT connect + reconnect after AP or broker loss | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | — | Define S1-U tests (connect, publish rate, reconnect time); run on the bench with a broker and save logs |
 | Telemetry publish (state, speed, hump, obstacle…) | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | — | Check every field decodes correctly on the subscriber side; record the publish rate |
 | Barcode result events (`<id>/barcode`, QoS 1) | 🟡 | ❌ `s1/barcode_queue` does not compile: code not pushed (#3) | ⬜ | ⬜ | ⬜ | `testing/subsystem1/logs/2026-11-20_host.txt`, `testing/subsystem1/BARCODE_MQTT.md` | Run `barcode_queue_test.c` and log the result; then do a bench test with a real broker |
-| Letter-to-movement map received over MQTT and **applied** | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | Both builds hard-code the map today; all_test ignores MQTT maps | #38: apply the MQTT map (go straight until one arrives), then S1-U15 and S3-U27 |
+| Letter-to-movement map received over MQTT and **applied** | ✅ | ✅ INT-03 (integrated, simulated) | ⬜ | ⬜ | ⬜ | No built-in map in either build; straight until a map arrives; telemetry bit 86 + dashboard "Letter map" (21 Nov, `testing/integration/logs/2026-11-21_map_flag_host.txt`) | On the robot: S1-U15 and S3-U27. No A–Z print test (decided 21 Nov, `DECISIONS.md`): use large prints |
 
 ## Subsystem 2: Motors, encoders, PID, Vehicle Controller (Buddy 2)
 
@@ -56,6 +56,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 | Compact motion protocol v1 (CR1) | ✅ | ✅ `s2/motion_protocol` (host) | ⬜ | ⬜ | — | `testing/subsystem2/logs/2026-11-20_host.txt` | Move the other subsystems onto `subsystem2_send_command` |
 | Motion control: distance target, STOP, encoder stall → FAULT | ✅ | ✅ S2-U01–U04 (Pico, simulated encoders) | ⬜ | ⬜ | ⬜ | `testing/subsystem3/logs/2026-11-19_target_test.txt` | Calibrate on the robot (S2-U06, U07), then STOP latency (S2-U11) |
 | Vehicle Controller mode arbitration (safety > avoidance > line) | 🟡 | ✅ INT-03 (simulated) | ⬜ | ⬜ | ⬜ | `testing/subsystem2/logs/2026-11-20_host.txt` (209 checks) | Bench test with real S3/S4/S5 inputs |
+| Integrated MQTT link: telemetry, PAUSE/RESUME/STATUS, letter map (#72) | ✅ | ✅ INT-03 (simulated, 346 checks) | ⬜ | ⬜ | — | `testing/integration/logs/2026-11-21_integrated_mqtt_host.txt` | Bench test: S1-U12, S1-U14, S1-U15 on the integrated image (INT-07) |
 | Ready state + MQTT START (#48) | ✅ | ✅ INT-03 (simulated, 228 checks) | ⬜ | ⬜ | — | `testing/integration/logs/2026-11-21_start_command_host.txt` | Bench test: flash `integrated`, check it waits in Ready, then press Start on the dashboard |
 
 ## Subsystem 3: IR line following + barcode (Buddy 3)

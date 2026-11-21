@@ -19,7 +19,7 @@ from mqtt_binary import (COMMANDS, decode_barcode, decode_telemetry, encode_barc
                          encode_mapping, encode_telemetry)
 
 ASSETS = Path(__file__).with_suffix("")
-EXAMPLE = dict(state=1, speed_cms=28, speed_valid=1, distance_cm=140,
+EXAMPLE = dict(state=1, speed_cms=28, speed_valid=1, distance_cm=140, map_received=1,
                line_sensors=2, barcode=1, barcode_letter=6, barcode_black=15, barcode_white=14, highest_hump_mm=22, obstacle_cm=34,
                scan_deg=90, obstacle_width_cm=16)
 BARCODE_HISTORY = 20

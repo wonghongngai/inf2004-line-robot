@@ -16,7 +16,7 @@ No standalone SDK main, duplicate driver, or second network task is needed.
 
 ## Representation table
 
-Telemetry uses 118 information bits in 15 bytes. Bits 86–87 are reserved and must be zero. Older 10-byte packets end at bit 79 and omit the decoded letter and speed validity. Older 11-byte packets omit the barcode counts.
+Telemetry uses 119 information bits in 15 bytes. Bit 86 is the letter-map flag (#38); bit 87 is reserved and must be zero. Older 10-byte packets end at bit 79 and omit the decoded letter and speed validity. Older 11-byte packets omit the barcode counts.
 Bit 0 is the least significant bit of byte 0. Each field's least significant
 bit is stored at the listed offset. Multi-byte fields follow the same little
 endian bit ordering. No native C bitfield ABI or struct cast is used.
@@ -36,6 +36,7 @@ endian bit ordering. No native C bitfield ABI or struct cast is used.
 | Obstacle width | 0–400 cm | 9 | 71 |
 | Last decoded barcode letter | 0 none, 1–26 A–Z | 5 | 80 |
 | Encoder speed valid | 0 unavailable, 1 valid | 1 | 85 |
+| Letter map received (#38) | 0 waiting for map (straight at junctions), 1 a map has been applied | 1 | 86 |
 | Barcode black bars | 0–65535, saturating session count | 16 | 88 |
 | Barcode internal white gaps | 0–65535, saturating session count | 16 | 104 |
 

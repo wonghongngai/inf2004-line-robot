@@ -23,7 +23,7 @@ The source documents are not in this repo. Each row gives the planned item, what
 
 | # | Deviation | Type | Fix |
 | --- | --- | --- | --- |
-| 1 | Barcode letter-to-movement map is hard-coded in both builds; all_test ignores the MQTT map | Missing (breaks a prof requirement) | #38 |
+| 1 | Barcode letter-to-movement map: no longer hard-coded; both builds apply the MQTT map and go straight until it arrives; telemetry bit 86 reports it (21 Nov, host-tested). A–Z on the robot not tested by decision (21 Nov, `DECISIONS.md`): only A was scanned on the robot | Partial | #38 |
 | 2 | IMU collision detection still in the code; prof replaced it with a lift-stop | Mandated | #53 |
 | 3 | Obstacle detection distance is 20 cm, NFR5-1 requires at least 30 cm | Changed, decided 20 Nov: keep 20 cm | #64 (`DECISIONS.md`); S5-U40 in #31 |
 | 4 | All recent tuning lives in `all_test`; the `integrated` firmware (the Week 6 architecture) is untested on the robot | Changed | Decided 13 Nov: integrated is final (#4); port the tuning (#8) |
@@ -68,8 +68,8 @@ The communication stack is built as designed, but none of FR1 or NFR1 has been t
 | ID | Requirement (source) | Current code | Type | Follow-up |
 | --- | --- | --- | --- | --- |
 | B1-1 | FR1-1 Wi-Fi + MQTT connection (W6) | CYW43 + lwIP + MQTT through the kernel Wi-Fi service; PT noted connectivity "not yet tested" | Unverified | #15 (S1-U11, S1-U12) |
-| B1-2 | FR1-2 publish telemetry; WU p5 examples include obstacle scan results, encoder counts, motor speed | 80-bit packet, 1 s period, **but only `all_test` publishes it**: the integrated firmware never calls `subsystem1_publish_telemetry`. Obstacle distance, scan angle and width fields are never set; no encoder counts | Missing in the final firmware | #72, #40, #41 |
-| B1-3 | FR1-3 receive commands (W6) | STATUS, PAUSE, RESUME, RESET_STATS commands and the map topic are received by S1, but **only `all_test` reads them**; the integrated firmware never calls `subsystem1_receive_command` or `subsystem1_receive_mapping` | Missing in the final firmware | #72, #38 |
+| B1-2 | FR1-2 publish telemetry; WU p5 examples include obstacle scan results, encoder counts, motor speed | 15-byte packet, 1 s period, published by both `all_test` and `integrated` (VC, #72, 21 Nov; host-tested). Obstacle distance, scan angle and width fields are still 0; no encoder counts | Partial | #40, #41 |
+| B1-3 | FR1-3 receive commands (W6) | The integrated VC handles STATUS, PAUSE, RESUME and START and applies the MQTT letter map (#72, #48, 21 Nov; host-tested, not yet on the robot). RESET_STATS and REVERSE are logged as unsupported | Partial | #38, #39 |
 | B1-4 | FR1-4 / NFR1-2 reconnect without restart (W6) | Recovery logic in `mqtt_manager.c`; never exercised | Unverified | #15 (S1-U13) |
 | B1-5 | FR1-5 periodic status (W6) | 1-byte heartbeat every 5 s (`MQTT_UTK_HEARTBEAT_MS`) | Unverified | #15 |
 | B1-6 | NFR1-3 telemetry must not disturb control; W6 gave comms **medium** priority | Wi-Fi service task priority 4, above motion (14) and line (16) | Changed, decided 20 Nov: keep | #66 (`DECISIONS.md`); measure control-loop lateness with Wi-Fi on (S1-U17, S2-U12) |

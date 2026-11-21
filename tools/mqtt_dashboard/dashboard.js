@@ -54,6 +54,10 @@ function render(snapshot) {
   put("barcode-letter", !data ? empty : letter == null ? "Not published" :
       letter === 0 ? "None yet" : String.fromCharCode(64 + letter));
   put("barcode", directions[data?.barcode] ?? empty);
+  const map = data?.map_received;   /* #38: telemetry bit 86 */
+  put("map-status", !data ? empty : map == null ? "Not published" :
+      map ? "Received" : "Waiting for map (straight at junctions)").dataset.state =
+      map == null ? "" : map ? "received" : "waiting";
   put("hump", data?.highest_hump_mm > 0 ? measure(data.highest_hump_mm, "mm") :
       hasFault(2) ? "Unreliable" : data ? "No measurement yet" : empty);
   put("obstacle", optionalMeasure(data?.obstacle_cm, "cm"));

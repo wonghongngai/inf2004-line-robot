@@ -16,10 +16,13 @@
 #define BARCODE_LETTER_BITS 5U
 #define SPEED_VALID_BITS 1U
 #define BARCODE_COUNT_BITS 16U
+#define MAP_RECEIVED_BITS 1U
+#define RESERVED_BITS 1U /* bit 87 */
 _Static_assert(STATE_BITS + FAULT_BITS + BATTERY_BITS + SPEED_BITS +
                DISTANCE_BITS + LINE_BITS + BARCODE_BITS + HUMP_BITS +
                OBSTACLE_BITS + SCAN_BITS + WIDTH_BITS + BARCODE_LETTER_BITS +
-               SPEED_VALID_BITS + 2U + 2U * BARCODE_COUNT_BITS == S1_TELEMETRY_BYTES * 8U,
+               SPEED_VALID_BITS + MAP_RECEIVED_BITS + RESERVED_BITS +
+               2U * BARCODE_COUNT_BITS == S1_TELEMETRY_BYTES * 8U,
                "Update packet size and protocol layout together");
 _Static_assert(sizeof(S1_TELEMETRY) == S1_TELEMETRY_BYTES, "Telemetry must have no padding");
 _Static_assert(sizeof(S1_COMMAND) == 1, "Command must have no padding");
@@ -85,7 +88,8 @@ static const FIELD_LAYOUT fields[S1_FIELD_COUNT] = {
     {80, BARCODE_LETTER_BITS, 0, S1_BARCODE_LETTER_MAX},
     {85, SPEED_VALID_BITS, 0, 1},
     {88, BARCODE_COUNT_BITS, 0, S1_BARCODE_COUNT_MAX},
-    {104, BARCODE_COUNT_BITS, 0, S1_BARCODE_COUNT_MAX}
+    {104, BARCODE_COUNT_BITS, 0, S1_BARCODE_COUNT_MAX},
+    {86, MAP_RECEIVED_BITS, 0, 1}
 };
 
 int s1_telemetry_set(S1_TELEMETRY *packet, S1_FIELD field, int value)
@@ -146,7 +150,8 @@ int s1_telemetry_valid(const S1_TELEMETRY *packet)
 {
     unsigned int i;
     int value;
-    if (packet == 0 || (packet->bytes[10] & 0xc0U) != 0U) return 0;
+    /* Bit 87 (byte 10, bit 7) is reserved; bit 86 is the map flag (#38). */
+    if (packet == 0 || (packet->bytes[10] & 0x80U) != 0U) return 0;
     for (i = 0; i < S1_FIELD_COUNT; ++i) {
         if (!s1_telemetry_get(packet, (S1_FIELD)i, &value)) {
             return 0;
