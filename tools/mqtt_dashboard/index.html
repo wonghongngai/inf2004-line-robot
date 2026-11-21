@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Line Robot | MQTT Dashboard</title>
-  <link rel="stylesheet" href="dashboard.css?v=map-status">
-  <script src="dashboard.js?v=map-status" defer></script>
+  <link rel="stylesheet" href="dashboard.css?v=send-map">
+  <script src="dashboard.js?v=send-map" defer></script>
 </head>
 <body>
 <main>
@@ -28,13 +28,14 @@
   </section>
   <section class="card barcode-actions" aria-labelledby="barcode-actions-title">
     <h2 id="barcode-actions-title">Barcode actions</h2>
-    <p>Enter a different letter for each action. Valid changes are sent when you leave a field or press Enter.</p>
+    <p>Enter a different letter for each action, then press Send map (changed letters are also sent when you leave a field or press Enter).</p>
     <form id="barcode-actions">
       <fieldset id="barcode-fields" disabled>
         <label>Turn left<input name="left" value="A" maxlength="1" pattern="[A-Za-z]" required></label>
         <label>Turn right<input name="right" value="F" maxlength="1" pattern="[A-Za-z]" required></label>
         <label>Go straight<input name="straight" value="Z" maxlength="1" pattern="[A-Za-z]" required></label>
         <label>U-turn<input name="uturn" value="W" maxlength="1" pattern="[A-Za-z]" required></label>
+        <button type="submit" id="send-map">Send map</button>
       </fieldset>
     </form>
     <p id="barcode-action-status" role="status">Not sent from this page yet. The robot has no built-in map.</p>

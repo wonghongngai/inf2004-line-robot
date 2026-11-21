@@ -65,6 +65,46 @@
 #define S2_FOLLOW_HARD_INNER_PWM_PERCENT     0.0f   /* inner wheel, hard correction */
 #define S2_FOLLOW_RAMP_PWM_PER_S             80.0f  /* speed-ups only */
 
+/* Straight stretches (C/R both white) are held straight by the encoders, as
+   all_test's white_straight_step(): the wheel that is behind since the
+   stretch began gets a boost (never a cut) of KP per cm, capped, ramped. */
+#define S2_FOLLOW_STRAIGHT_KP                2.0f   /* PWM points per cm */
+#define S2_FOLLOW_STRAIGHT_MAX_TRIM          2.5f
+#define S2_FOLLOW_STRAIGHT_TRIM_RATE         5.0f   /* PWM points per second */
+#define S2_FOLLOW_STRAIGHT_DEADBAND_CM       0.10f
+/* While GP28 is on a bar or a barcode capture is open, line following runs
+   at this fraction of its PWM, and a left correction keeps the left
+   (scanner-side) wheel at the scan inner PWM instead of pivoting on it. */
+#define S2_FOLLOW_SCAN_SCALE                 0.9f
+#define S2_FOLLOW_SCAN_LEFT_INNER_PWM_PERCENT 8.0f
+
+/* Interrupt-encoder calibration, from three 100 cm hand pushes (2026-11-06;
+   right trimmed 2026-11-08 for drift). S2_*_TICKS_PER_CM above predate the
+   interrupt encoder; all_test's S5 moves, odometry and height use these. */
+#define S2_ENC_LEFT_TICKS_PER_CM             117.8f
+#define S2_ENC_RIGHT_TICKS_PER_CM            118.3f
+
+/* all_test's drive numbers for distance moves and pivots. Both builds read
+   these. Moves ramp 100 PWM points/s each way; a stopped wheel stops at once. */
+#define S2_MOVE_LEFT_PWM_PERCENT             12.5f
+#define S2_MOVE_RIGHT_PWM_PERCENT            15.0f
+#define S2_MOVE_RAMP_PWM_PER_S               100.0f
+/* Junction pivots (S2 turn calibration): right pivot drives the left wheel,
+   left pivot drives the right wheel. The U-turn counter-rotates the wheels
+   and counts half the right wheel's pivot arc. */
+#define S2_JUNCTION_RIGHT_PIVOT_PWM_PERCENT  12.5f
+#define S2_JUNCTION_LEFT_PIVOT_PWM_PERCENT   15.0f
+#define S2_UTURN_LEFT_PWM_PERCENT            (-12.5f)
+#define S2_UTURN_RIGHT_PWM_PERCENT           15.0f
+/* S5 avoidance: forward legs hold the heading by cutting the leading wheel
+   by KP per cm ahead; pivots drive one wheel at 20 % around the other, on
+   an effective radius of S2_AVOID_PIVOT_TRACK_CM. */
+#define S2_AVOID_HEADING_KP                  15.0f  /* PWM points per cm */
+#define S2_AVOID_PIVOT_PWM_PERCENT           20.0f
+#define S2_AVOID_PIVOT_TRACK_CM              11.25f
+#define S2_AVOID_TURN_TICKS_PER_DEGREE(ticks_per_cm) \
+    (3.14159265f / 180.0f * S2_AVOID_PIVOT_TRACK_CM * (ticks_per_cm))
+
 /* Receiver-owned command message buffer: Vehicle Controller -> Buddy 2. */
 IMPORT ID mbf_motion_cmd;
 IMPORT ID flg_motion_stop;

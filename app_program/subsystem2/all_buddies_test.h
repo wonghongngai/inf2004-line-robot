@@ -26,7 +26,7 @@
 /* Integrated driving waits for healthy sensors and stops on faults. */
 #define ALL_TEST_CONTINUE_ON_SENSOR 0
 #endif
-#define ALL_TEST_PWM_RAMP_PER_SECOND 100.0f
+#define ALL_TEST_PWM_RAMP_PER_SECOND S2_MOVE_RAMP_PWM_PER_S
 #ifndef ALL_TEST_WHITE_FOLLOW
 /* Centre/right bound the white track; left input is diagnostic only. */
 #define ALL_TEST_WHITE_FOLLOW 1

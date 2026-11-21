@@ -27,7 +27,12 @@
 #define S2_IMU_STALE_MS 100u
 #define S2_LINE_UNSAFE_MS 200u
 #define S2_LINE_REARM_MS 1000u
-#define S2_ROBOT_TURN_TIMEOUT_MS 10000u
+#define S2_ROBOT_TURN_TIMEOUT_MS 8000u    /* all_test's junction movement limit */
+/* S5 avoidance (all_test): HOLD is answered once the robot has had this long
+   to stop, and each leg or pivot may take this long (an 80 cm leg at
+   12.5/15 % takes about 10 s). */
+#define S2_AVOID_HOLD_SETTLE_MS 150u
+#define S2_AVOID_MOVE_TIMEOUT_MS 20000u
 #define S2_DEMO_TIMEOUT_MS 15000u
 
 /* #8 (21 Nov): line model ported from all_test's tuned white-track mode.
@@ -41,7 +46,10 @@
 #define S2_LINE_CONFIRM_MS 5u        /* a left<->right reversal must persist */
 #define S2_WHITE_CLEAR_MS 30u        /* hold a correction this long after white */
 #define S2_LINE_HARD_MS 150u         /* soft correction becomes hard (inner wheel stops) */
-#define S2_TURN_ADVANCE_CM 5.0f      /* drive onto the crossing before pivoting */
+/* Drive onto the crossing before pivoting. all_test's "5 cm" counts 5 x
+   S2_RIGHT_TICKS_PER_CM = 94 right-wheel ticks, which is 0.8 cm with the
+   interrupt encoder: keep that tuned distance. */
+#define S2_TURN_ADVANCE_CM (5.0f * S2_RIGHT_TICKS_PER_CM / S2_ENC_RIGHT_TICKS_PER_CM)
 #define S2_JUNCTION_SETTLE_MS 500u   /* ignore the crossing just handled */
 
 /* Called only by the motor-owning task; no second writer to motor GPIO. */

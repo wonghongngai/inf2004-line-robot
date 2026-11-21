@@ -21,6 +21,7 @@ static uint8_t pending_letter;           /* bit 7 = waiting, bits 4..0 = A..Z */
 #define TURN_ADVANCE 1u
 #define TURN_PIVOT 2u
 static unsigned turn_stage, turn_cmd;
+static int32_t uturn_r0;                 /* right ticks when the U-turn began */
 /* #48 Ready state: arm only once START has arrived (or auto_start is set).
    A START that arrives while still initialising is kept until Ready. */
 static bool auto_start = S2_AUTO_START, start_requested, ready_reported;
@@ -147,6 +148,9 @@ static BOOL vc_start_move(void *p, const S5_REQUEST *req)
                req->move == S5_MOVE_TURN_L ? MOTION_CMD_TURN_LEFT_DEG :
                MOTION_CMD_TURN_RIGHT_DEG;
     cmd.value = (float)req->value;
+    /* all_test's S5 moves: heading-held 12.5/15 % legs, 20 % pivots. */
+    motion_control_set_profile(c->ctl, MOTION_PROFILE_AVOID);
+
     return motion_control_command(c->ctl, &cmd, c->now, c->l, c->r) == MOTION_RESULT_OK;
 }
 
@@ -181,6 +185,7 @@ static BOOL vc_take_control(void *p)
 {
     VC_CTX *c = p;
     turning = false; /* obstacle wins over a barcode turn */
+    turn_stage = 0u;
     if (line_service_enable(false) < E_OK) {
         halt(c->ctl, c->now, c->l, c->r, "line pause failed");
         return false;
@@ -199,6 +204,12 @@ static BOOL vc_give_back(void *p)
     }
     resumed_at = c->now;
     line_unsafe_active = false;
+    /* Rejoining at an angle can put C and R both on the line for a moment;
+       as all_test, treat it like the crossing just left by a turn. */
+    leaving_junction = straddle;
+    junction_done = c->now;
+    steer_action = steer_candidate = 0u;
+    clear_pending = false;
     tm_printf((UB *)"[ROBOT] obstacle handled, line following\n");
     return true;
 }
@@ -218,8 +229,8 @@ static BOOL vc_may_follow(void *p)
 static const S5_EXEC_OPS vc_s5_ops = {
     vc_stop, vc_start_move, vc_run_move, vc_is_stopped,
     vc_line_sensors, vc_take_control, vc_give_back, vc_safe_stop, vc_may_follow,
-    0u, /* HOLD replies as soon as the controller is IDLE */
-    S2_ROBOT_TURN_TIMEOUT_MS, /* 10 s per move, as for barcode turns */
+    S2_AVOID_HOLD_SETTLE_MS,  /* all_test: let the robot coast to a stop */
+    S2_AVOID_MOVE_TIMEOUT_MS, /* all_test: 20 s per leg or pivot */
     VC_LINE_MASK
 };
 
@@ -408,6 +419,30 @@ static unsigned robot_state(void)
     return turning ? S1_STATE_TURNING : S1_STATE_FOLLOWING;
 }
 
+/* all_test's barcode tuning log: each new S3 frame's element widths, at
+   most every 500 ms, so a misread can be diagnosed from the serial log. */
+static uint32_t frame_report_ms, frame_sequence;
+
+static void report_barcode_frame(uint32_t now)
+{
+    line_service_barcode_frame_t frame = {0};
+
+    if ((uint32_t)(now - frame_report_ms) < 500u) return;
+    frame_report_ms = now;
+    line_service_barcode_frame(&frame);
+    if (frame.sequence == frame_sequence) return;
+    tm_printf((UB *)"[BARCODE FRAME] id=%lu runs=%u/29 black=%u white=%u result=%c skipped=%lu\n",
+              (unsigned long)frame.sequence, (unsigned)frame.count,
+              (unsigned)((frame.count + 1u) / 2u), (unsigned)(frame.count / 2u),
+              frame.letter < 26u ? 'A' + frame.letter : '?',
+              (unsigned long)(frame.sequence - frame_sequence - 1u));
+    for (unsigned i = 0; i < frame.count; ++i)
+        tm_printf((UB *)"[BARCODE WIDTH] frame=%lu run=%u %s width_ms=%u\n",
+                  (unsigned long)frame.sequence, i + 1u,
+                  (i & 1u) ? "WHITE" : "BLACK", (unsigned)frame.widths[i]);
+    frame_sequence = frame.sequence;
+}
+
 /* IF-05 telemetry, once a second (or at once after STATUS). Nonblocking. */
 static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now)
 {
@@ -490,8 +525,13 @@ static bool straddle_junction(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, i
         halt(ctl, now, l, r, "line pause failed");
         return true;
     }
-    vc_stop_motors(ctl, now, l, r);
-    motion_control_step(ctl, now, l, r); /* STOPPING -> IDLE */
+    /* all_test drives straight on from line following (JUNCTION profile);
+       without profiles, stop first as the base moves need IDLE. */
+    motion_control_set_profile(ctl, MOTION_PROFILE_JUNCTION);
+    if (ctl->cfg.move_left_pwm_percent <= 0.0f) {
+        vc_stop_motors(ctl, now, l, r);
+        motion_control_step(ctl, now, l, r); /* STOPPING -> IDLE */
+    }
     cmd = (MOTION_COMMAND){MOTION_CMD_FORWARD_CM, S2_TURN_ADVANCE_CM};
     if (motion_control_command(ctl, &cmd, now, l, r) != MOTION_RESULT_OK) {
         halt(ctl, now, l, r, "junction advance rejected");
@@ -531,6 +571,10 @@ static void straddle_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32
         return;
     }
     line_unsafe_active = false;
+    /* all_test slows down while GP28 is on a bar or a capture is open. */
+    motion_control_set_scanning(ctl, S2_LINE_LAYOUT == LINE_BARCODE_LAYOUT_SIDE &&
+                                ((msg.data[0] & LINE_BARCODE_LEFT) != 0u ||
+                                 (msg.data[1] & LINE_BARCODE_CAPTURE_ACTIVE) != 0u));
 
     /* Barcodes: remember the newest letter until the next junction. */
     for (unsigned i = 0; i < 24u; ++i) {
@@ -546,9 +590,19 @@ static void straddle_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32
             halt_line(ctl, now, l, r, "line sensor fault");
             return;
         }
+        if (event == LINE_BARCODE_EVT_INVALID)
+            tm_printf((UB *)"[BARCODE REJECT] invalid frame: check start/stop, narrow/wide widths and white margins\n");
         if (event == LINE_BARCODE_EVT_BARCODE) {
-            pending_letter = (uint8_t)(0x80u | (ev.data[2] & LINE_BARCODE_LETTER_MASK));
-            last_letter = (ev.data[2] & LINE_BARCODE_LETTER_MASK) + 1u;
+            unsigned letter = ev.data[2] & LINE_BARCODE_LETTER_MASK;
+            uint8_t command;
+            pending_letter = (uint8_t)(0x80u | letter);
+            last_letter = letter + 1u;
+            tm_printf((UB *)"[BARCODE -> MOTION] decoded=%c queued=%s; execute at next C/R junction\n",
+                      'A' + letter,
+                      line_service_lookup((uint8_t)letter, &command) != E_OK ? "no mapping" :
+                      command == LINE_BARCODE_CMD_LEFT ? "LEFT" :
+                      command == LINE_BARCODE_CMD_RIGHT ? "RIGHT" :
+                      command == LINE_BARCODE_CMD_STRAIGHT ? "STRAIGHT" : "U-TURN");
         }
     }
 
@@ -678,6 +732,12 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
         imu.event == IMU_EVENT_COLLISION ||
         imu.event == IMU_EVENT_FAULT) {
         halt(ctl, now, l, r, "IMU unsafe or stale");
+        /* all_test: the values that latched the stop, printed once. */
+        tm_printf((UB *)"[ROBOT] IMU stop data: age=%lu ms samples=%lu ok=%d calibrated=%d motion=%d event=%d errors=%lu baseline_errors=%lu\n",
+                  (unsigned long)(now - last_imu_sample), (unsigned long)imu_count,
+                  (int)imu.sensor_ok, (int)imu.calibrated, (int)imu.motion_state,
+                  (int)imu.event, (unsigned long)imu.read_errors,
+                  (unsigned long)imu_errors);
         return;
     }
     /* S5 obstacle avoidance takes control while it has a request. */
@@ -686,6 +746,22 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
     /* Hump is terrain information; keep following, without inventing speed
        compensation before physical tuning. */
     if (turning) {
+        bool uturn = ctl->cfg.move_left_pwm_percent > 0.0f &&
+                     turn_stage == TURN_PIVOT && turn_cmd == LINE_BARCODE_CMD_UTURN;
+
+        if (uturn) {
+            /* all_test: the counter-rotating U-turn ends once the right wheel
+               has covered half its 180-degree pivot arc AND the centre
+               sensor is back on black. */
+            int32_t moved = r - uturn_r0;
+            float target = 180.0f * ctl->cfg.right_turn_ticks_per_degree * 0.5f;
+            if (moved < 0) moved = -moved;
+            if ((float)moved >= target && line_service_snapshot(&msg) >= E_OK &&
+                (msg.data[0] & LINE_BARCODE_CENTRE) != 0u) {
+                vc_stop_motors(ctl, now, l, r);
+                motion_control_step(ctl, now, l, r); /* STOPPING -> IDLE */
+            }
+        }
         if ((uint32_t)(now - turn_started) > S2_ROBOT_TURN_TIMEOUT_MS) {
             halt(ctl, now, l, r, "turn timeout");
         } else if (ctl->status.state == MOTION_STATE_IDLE && ctl->status.motion_complete) {
@@ -694,7 +770,10 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
                 cmd.type = turn_cmd == LINE_BARCODE_CMD_RIGHT ?
                            MOTION_CMD_TURN_RIGHT_DEG : MOTION_CMD_TURN_LEFT_DEG;
                 cmd.value = turn_cmd == LINE_BARCODE_CMD_UTURN ? 180.0f : 90.0f;
+                motion_control_set_profile(ctl, turn_cmd == LINE_BARCODE_CMD_UTURN ?
+                                           MOTION_PROFILE_UTURN : MOTION_PROFILE_JUNCTION);
                 turn_stage = TURN_PIVOT;
+                uturn_r0 = r;
                 if (motion_control_command(ctl, &cmd, now, l, r) != MOTION_RESULT_OK)
                     halt(ctl, now, l, r, "turn rejected");
                 return;
@@ -759,6 +838,7 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
             cmd.type = action == LINE_BARCODE_CMD_RIGHT ?
                        MOTION_CMD_TURN_RIGHT_DEG : MOTION_CMD_TURN_LEFT_DEG;
             cmd.value = action == LINE_BARCODE_CMD_UTURN ? 180.0f : 90.0f;
+            motion_control_set_profile(ctl, MOTION_PROFILE_BASE); /* S3 model */
             if (motion_control_command(ctl, &cmd, now, l, r) != MOTION_RESULT_OK) {
                 halt(ctl, now, l, r, "turn rejected");
                 return;
@@ -795,6 +875,7 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
     control_step(ctl, now, l, r);
     update_distance(ctl, l, r);
     report_telemetry(ctl, now);
+    report_barcode_frame(now);
 }
 
 #elif S2_MOTION_DEMO && !APP_TEST

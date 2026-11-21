@@ -1,0 +1,56 @@
+19:44:25.241  robot_mqtt_test.py broker=172.20.10.2:1883 client=group17-robot
+19:44:25.284  repo commit 0c77284 (record the firmware's commit in TEST_LOG)
+19:44:25.289  == S1-U12 telemetry for 5.0 min ==
+19:49:26.083  packets=301 rate=1.00/s max_gap=2.27s invalid=0 not_15_bytes=0
+19:49:26.083  S1-U12 PASS (expect ~1/s, all 15 bytes and valid, no gap > 3 s)
+
+19:49:26.083  == S1-U14 PAUSE / RESUME / STATUS x10 ==
+19:50:37.928  OPERATOR: done: Wheels raised (or robot on the line), robot STARTed and following.
+19:50:39.447  [1] STATUS -> no packet
+19:50:41.085  [1] PAUSE  -> not paused within 1.5 s
+19:50:43.131  [1] RESUME -> not resumed within 1.5 s
+19:50:45.156  [2] STATUS -> no packet
+19:50:46.693  [2] PAUSE  -> not paused within 1.5 s
+19:50:48.724  [2] RESUME -> not resumed within 1.5 s
+19:50:50.750  [3] STATUS -> no packet
+19:50:52.286  [3] PAUSE  -> not paused within 1.5 s
+19:50:54.328  [3] RESUME -> not resumed within 1.5 s
+19:50:56.355  [4] STATUS -> no packet
+19:50:57.893  [4] PAUSE  -> not paused within 1.5 s
+19:50:59.936  [4] RESUME -> not resumed within 1.5 s
+19:51:01.951  [5] STATUS -> no packet
+19:51:03.488  [5] PAUSE  -> not paused within 1.5 s
+19:51:05.533  [5] RESUME -> not resumed within 1.5 s
+19:51:07.555  [6] STATUS -> no packet
+19:51:09.093  [6] PAUSE  -> not paused within 1.5 s
+19:51:11.151  [6] RESUME -> not resumed within 1.5 s
+19:51:13.186  [7] STATUS -> no packet
+19:51:14.730  [7] PAUSE  -> not paused within 1.5 s
+19:51:16.774  [7] RESUME -> not resumed within 1.5 s
+19:51:18.909  [8] STATUS -> no packet
+19:51:20.451  [8] PAUSE  -> not paused within 1.5 s
+19:51:22.487  [8] RESUME -> not resumed within 1.5 s
+19:51:24.516  [9] STATUS -> no packet
+19:51:26.062  [9] PAUSE  -> not paused within 1.5 s
+19:51:28.104  [9] RESUME -> not resumed within 1.5 s
+19:51:30.129  [10] STATUS -> no packet
+19:51:31.668  [10] PAUSE  -> not paused within 1.5 s
+19:51:33.705  [10] RESUME -> not resumed within 1.5 s
+19:51:34.206  broker side: STATUS 0/10, PAUSE 0/10, RESUME 0/10
+19:51:40.027  OPERATOR: Did the wheels stop at every PAUSE (within ~0.5 s) and restart at every RESUME? -> no
+19:51:40.028  S1-U14 FAIL (expect 10/10 each; PAUSE stops within 500 ms)
+
+19:51:40.028  == S1-U15 letter map over MQTT ==
+19:52:14.395  OPERATOR: done: Reboot the robot (no map), wait for Wi-Fi + MQTT, and keep the serial console open.
+19:52:14.541  map flag after reboot = 0
+19:52:15.211  sent duplicate letters A/A/A/A (000000) -> map flag 0
+19:52:15.879  sent reserved bit set (A/B/C/Z + bit 20) (20881c) -> map flag 0
+19:53:04.742  OPERATOR: Did the console print 'Buddy 1: invalid barcode map rejected' twice? -> yes
+19:53:05.598  sent valid map L=F R=A S=Z U=W -> map flag 1
+19:54:21.089  OPERATOR: Did the console print '[ROBOT] MQTT map applied: ...' with those letters? -> yes
+19:54:21.104  sent the duplicate-letter map again: the valid map must be kept
+19:55:42.412  OPERATOR: Drive over barcode 'A' then a junction: did the robot turn RIGHT (the old map kept, not changed by the bad one)? -> no
+19:55:42.412  S1-U15 FAIL (expect both invalid maps rejected, valid map applied and kept)
+
+19:55:42.413  SUMMARY: S1-U12 PASS, S1-U14 FAIL, S1-U15 FAIL
+19:55:42.413  log saved to testing/integration/logs/2026-11-21_1944_robot_mqtt_test.txt

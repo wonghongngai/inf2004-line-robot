@@ -52,14 +52,15 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 | Motor PWM driver | ✅ | ✅ INT-05 | 🟡 | ⬜ | — | `testing/integration/logs/2026-10-28_pwm_fix.txt`, `testing/subsystem2/logs/2026-11-20_host.txt` | Flash `motor_test` with the wheels raised, follow `HARDWARE_TEST.md`, log the result |
 | Encoders + odometry | ✅ | ⬜ | 🟡 | ⬜ | ⬜ | `CALIBRATION.md`: old calibration not validated for IRQ counts | Recalibrate counts per cm and per degree; log them |
 | Speed PID | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | `CALIBRATION.md`: gains still 0 | Tune the gains on the robot; record step response / logs |
-| Straight driving + turning | 🟡 | ⬜ | 🟡 in all_test only | ⬜ | ⬜ | Commits `ab62be5`, `1d78677` (no test log) | **Port the all_test tuning into `robot_control.c` / `task_motion.c`**, then retest in integrated |
+| Straight driving + turning | ✅ | ✅ INT-03 (simulated, 837 checks) | 🟡 in all_test only | ⬜ | ⬜ | Commits `ab62be5`, `1d78677`; port: `testing/integration/logs/2026-11-21_alltest_port_host.txt` | Ported 21 Nov (#8, row below). Flash `integrated` and retest on the track |
+| Rest of all_test ported to integrated (#8): encoder straight trim; barcode-scan slow-down (×0.9, left inner 8 %); inner wheel back to cruise when a correction ends; junction advance straight from following (no stop) for all_test's 94 ticks (0.8 cm), pivots at 12.5 / 15 % with the S2 turn calibration and no tolerance; counter-rotating U-turn (−12.5 / 15 %) that ends on half the arc **and** centre black; S5 legs heading-held at 12.5 / 15 %, pivots at 20 % with S5's pivot radius, 150 ms hold settle, 20 s move timeout, junction grace after hand-back; interrupt-encoder ticks/cm (117.8 / 118.3) for speed, distance, S4 hump input and S5 legs; `[BARCODE FRAME/WIDTH/REJECT]` and IMU-stop logs. One set of constants in `subsystem2.h` for both builds | ✅ | ✅ INT-03 (simulated, 837 checks; 12 mutations caught) | ⬜ | ⬜ | ⬜ | `testing/integration/logs/2026-11-21_alltest_port_host.txt` | Track run in `integrated`: junctions (all four commands), an obstacle, hump height. Not ported on purpose: the incomplete-barcode stop (conflicts with #72), and test-harness-only modes (continue-on-sensor, run limit, TRACK layout corner search, hand-push encoder calibration) |
 | Integrated line following uses all_test's motor numbers: 12.5/15 % cruise, +4 outer, inner 5 % then 0 % after 150 ms, 80 %/s ramp, no floor and no stall stop while following; all_test reads the same `S2_FOLLOW_*` constants (#8) | ✅ | ✅ INT-03 (simulated, 727 checks) | ⬜ | ⬜ | ⬜ | `testing/integration/logs/2026-11-21_motor_tuning_host.txt` | On the track: compare with all_test; the 21 Nov 17:41 run (20 % cruise) followed ~2.5 m, then a right-wheel stall fault in a hard correction |
-| Integrated line model = all_test's straddle steering (C/R either side of the line), junctions from C/R 1/1 with a 5 cm advance before pivots (#8) | ✅ | ✅ INT-03 (simulated, 725 checks) | ⬜ | ⬜ | ⬜ | `testing/integration/logs/2026-11-21_straddle_host.txt` | On the track: follows the line, turns at a mapped junction. Not ported yet: barcode-scan slow-down, encoder straight trim, incomplete-barcode stop; turns still at 55 % |
+| Integrated line model = all_test's straddle steering (C/R either side of the line), junctions from C/R 1/1 with a 5 cm advance before pivots (#8) | ✅ | ✅ INT-03 (simulated, 725 checks) | ⬜ | ⬜ | ⬜ | `testing/integration/logs/2026-11-21_straddle_host.txt` | On the track: follows the line, turns at a mapped junction. The rest of all_test is now ported (row above); the advance is all_test's real 0.8 cm, not 5 cm |
 | Compact motion protocol v1 (CR1) | ✅ | ✅ `s2/motion_protocol` (host) | ⬜ | ⬜ | — | `testing/subsystem2/logs/2026-11-20_host.txt` | Move the other subsystems onto `subsystem2_send_command` |
 | Motion control: distance target, STOP, encoder stall → FAULT | ✅ | ✅ S2-U01–U04 (Pico, simulated encoders) | ⬜ | ⬜ | ⬜ | `testing/subsystem3/logs/2026-11-19_target_test.txt` | Calibrate on the robot (S2-U06, U07), then STOP latency (S2-U11) |
 | Vehicle Controller mode arbitration (safety > avoidance > line) | 🟡 | ✅ INT-03 (simulated) | ⬜ | ⬜ | ⬜ | `testing/subsystem2/logs/2026-11-20_host.txt` (209 checks) | Bench test with real S3/S4/S5 inputs |
 | Integrated MQTT link: telemetry, PAUSE/RESUME/STATUS, letter map (#72) | ✅ | ✅ INT-03 (simulated, 346 checks) | ⬜ | ⬜ | — | `testing/integration/logs/2026-11-21_integrated_mqtt_host.txt` | Bench test: S1-U12, S1-U14, S1-U15 on the integrated image (INT-07) |
-| Ready state + MQTT START (#48) | ✅ | ✅ INT-03 (simulated, 228 checks) | ⬜ | ⬜ | — | `testing/integration/logs/2026-11-21_start_command_host.txt` | Bench test: flash `integrated`, check it waits in Ready, then press Start on the dashboard |
+| Ready state + MQTT START (#48) | ✅ | ✅ INT-03 (simulated, 228 checks) | ✅ 21 Nov | ✅ 21 Nov | — | `testing/integration/logs/2026-11-21_start_command_host.txt`, `testing/integration/logs/2026-11-21_ready_start_robot.txt` | Done (#48) |
 
 ## Subsystem 3: IR line following + barcode (Buddy 3)
 
@@ -98,7 +99,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 | Coarse scan ≤ 600 ms (NFR5-2) | ✅ | — | ✅ S5-U05 (570 ms, no sensor load) | ⬜ | — | S5 TEST_LOG 2026-10-28 | Retest with the sensor on the horn |
 | Detection → action ≤ 2 s (NFR5-3) | ✅ | ⬜ | ❌ S5-U06 2299 ms (before the fix) | ⬜ | — | S5 TEST_LOG 2026-11-01 | **Re-run S5-U06** after the `FINE_BUDGET_POINTS` fix |
 | Profiling + planning (S5-U28, U31–U38) | ✅ | ✅ S5-U28, U31–U38 (Pico) | 🟡 | ⬜ | ⬜ | `testing/subsystem3/logs/2026-11-19_target_test.txt`; fixture scans in `testing/subsystem5/logs/2026-11-06_135413_S5_avoidance.txt` | Bench check with the sensor on the horn (S5-U17, U25) |
-| Avoid obstacle + reacquire line (FR5-4/5, NFR5-4) | ✅ | ⬜ | 🟡 in all_test only | ⬜ | ⬜ | S5 TEST_LOG INT-S5-01 rows 5–11 Nov (all_test, console only: 29 of 81 obstacles rejoined the line), `testing/subsystem5/logs/*_S5_avoidance.txt` | Port to the integrated path; record a video; measure the reacquire distance |
+| Avoid obstacle + reacquire line (FR5-4/5, NFR5-4) | ✅ | ⬜ | 🟡 in all_test only | ⬜ | ⬜ | S5 TEST_LOG INT-S5-01 rows 5–11 Nov (all_test, console only: 29 of 81 obstacles rejoined the line), `testing/subsystem5/logs/*_S5_avoidance.txt` | Ported to integrated 21 Nov with all_test's drive numbers (#8; host-tested only). Run it in `integrated`; record a video; measure the reacquire distance |
 
 ---
 
@@ -121,11 +122,11 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 
 ## Top priorities (update weekly)
 
-1. **Make `integrated` the real robot.** Move the all_test tuning (turning,
-   driving straight, avoidance handover) out of `all_buddies_test.c` into
-   `robot_control.c` / `task_motion.c`. Rebuild, flash, and log the result
-   (#8). Keep the tuning numbers in one place both builds use, so they can't
-   drift apart again.
+1. **Make `integrated` the real robot.** The all_test tuning (turning,
+   driving straight, avoidance handover) is ported into `robot_control.c` /
+   `motion_control.c` / `task_motion.c` and host-tested (#8, 21 Nov), with
+   the numbers in `subsystem2.h` for both builds. Next: flash `integrated`
+   and log a track run.
 2. **MQTT**: write the S1 tests and get a bench run with a real broker.
 3. **Barcode**: test all four commands at driving speed.
 4. **S4 thresholds** from real hump logs.

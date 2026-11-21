@@ -23,10 +23,10 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
  * alicia values: the 20% slower trial (10/5/11/10) stalled S5's forward
  * legs (2026-11-11: 10.0/8.3 PWM, encoders frozen, "leg timed out").
  * Line following uses ALL_CRUISE_* below and is unaffected. */
-#define ALL_BASE_PWM       12.5f
+#define ALL_BASE_PWM       S2_MOVE_LEFT_PWM_PERCENT
 #define ALL_INNER_PWM      6.25f
-#define ALL_RIGHT_BASE_PWM 15.0f
-#define ALL_RIGHT_TURN_LEFT_PWM 12.5f
+#define ALL_RIGHT_BASE_PWM S2_MOVE_RIGHT_PWM_PERCENT
+#define ALL_RIGHT_TURN_LEFT_PWM S2_JUNCTION_RIGHT_PIVOT_PWM_PERCENT
 /* Normal line-following cruise; legacy values above remain for S5 moves
  * and existing turn profiles. Hardware trial: 12.5/15 instead of 10/11. */
 #define ALL_CRUISE_LEFT_PWM         S2_FOLLOW_LEFT_PWM_PERCENT  /* shared, #8 */
@@ -35,11 +35,11 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
  * slowly that a wide space took ~750 ms and a lost narrow bar pushed the
  * merged white past LINE_BARCODE_RUN_MAX_MS (1000 ms), aborting the frame
  * (19 Nov). 0.9 scans about 20% faster. */
-#define ALL_BARCODE_SCAN_PWM_SCALE   0.9f
-#define ALL_STRAIGHT_KP              2.0f
-#define ALL_STRAIGHT_MAX_TRIM        2.5f
-#define ALL_STRAIGHT_TRIM_RATE       5.0f
-#define ALL_STRAIGHT_DEADBAND_CM     0.10f
+#define ALL_BARCODE_SCAN_PWM_SCALE   S2_FOLLOW_SCAN_SCALE
+#define ALL_STRAIGHT_KP              S2_FOLLOW_STRAIGHT_KP
+#define ALL_STRAIGHT_MAX_TRIM        S2_FOLLOW_STRAIGHT_MAX_TRIM
+#define ALL_STRAIGHT_TRIM_RATE       S2_FOLLOW_STRAIGHT_TRIM_RATE
+#define ALL_STRAIGHT_DEADBAND_CM     S2_FOLLOW_STRAIGHT_DEADBAND_CM
 #define ALL_LINE_STEER_BOOST        S2_FOLLOW_BOOST_PWM_PERCENT  /* outer wheel */
 #define ALL_LINE_INNER_PWM          S2_FOLLOW_INNER_PWM_PERCENT  /* 0 = full pivot */
 /* A correction still needed after this long is a tight bend: stop the inner
@@ -51,7 +51,7 @@ enum { TURN_NONE, TURN_ADVANCE, TURN_PIVOT };
  * nearly stopped the scanner and stretched one element mid-character
  * (19 Nov: a 165 ms narrow space read 391 ms during six LEFT corrections,
  * frame rejected). 6.25 stalled from rest; scaled by the scan factor. */
-#define ALL_LINE_SCAN_INNER_PWM     8.0f
+#define ALL_LINE_SCAN_INNER_PWM     S2_FOLLOW_SCAN_LEFT_INNER_PWM_PERCENT
 #define ALL_LINE_PWM_RATE          S2_FOLLOW_RAMP_PWM_PER_S /* speed-ups only */
 #define ALL_LINE_CONFIRM_MS         5u   /* only when reversing direction */
 /* Scanner edges older than this (GP28 white since) are not a barcode in
@@ -125,18 +125,18 @@ typedef struct {
 /* 12 (a guess) overshot; 10 cm (measured) turned about 10 deg short of
  * 90 (2026-11-07), so 10 x 90 / 80 = 11.25.  It is the effective pivot
  * radius, not the ruler distance: the stopped wheel also slips. */
-#define S5_PIVOT_TRACK_CM 11.25f
+#define S5_PIVOT_TRACK_CM S2_AVOID_PIVOT_TRACK_CM
 /* ... at this PWM on the moving wheel.  12.5-15 % stalled mid-turn (the
  * stopped wheel drags sideways): step 3 stopped dead after 2137 ticks and
  * step 1 sat still for about 8 s (2026-11-06).  The 15 % cap only guarded
  * against the old polled encoder miscounting; interrupts count at any
  * speed.  [Tune] */
-#define S5_PIVOT_PWM 20.0f
+#define S5_PIVOT_PWM S2_AVOID_PIVOT_PWM_PERCENT
 #define S5_PI 3.14159265f
 /* Straight legs: the leading wheel's PWM is cut by this much per cm it is
  * ahead.  0.13 % per tick held the heading well before the encoder fix
  * (3 %/cm x 3.3 at 76 ticks/cm); at 117.8 ticks/cm that is 15 %/cm. */
-#define S5_HEADING_KP 15.0f
+#define S5_HEADING_KP S2_AVOID_HEADING_KP
 /* Ticks per real cm for S5's moves, from the hand-push calibration
  * (S5_ENCODER_CAL) with the interrupt-driven encoder, 2026-11-06: three
  * 100 cm pushes gave left 117.9 / 119.4 / 116.2 and right 118.6 / 122.5 /
@@ -144,13 +144,13 @@ typedef struct {
  * S5_RIGHT_RATIO guesses, which only made up for counts the 1 ms polled
  * encoder lost.  S2_*_TICKS_PER_CM (23.10 / 18.83) were also measured with
  * the polled encoder; Buddy 2 should re-measure them. */
-#define S5_LEFT_TICKS_PER_CM  117.8f
+#define S5_LEFT_TICKS_PER_CM  S2_ENC_LEFT_TICKS_PER_CM
 /* 120.3 (the push average) still drifted about 2 cm left per 50 cm
  * (2026-11-08): the right wheel goes about 1.7 % further per tick, since
  * drift = L^2 x error / (2 x track) gives error = 2 x 2 x 11.25 / 50^2.
  * 120.3 x (1 - 0.017) = 118.3, near the first push (118.6).
  * [Tune: still drifts left -> lower it; drifts right -> raise it] */
-#define S5_RIGHT_TICKS_PER_CM 118.3f
+#define S5_RIGHT_TICKS_PER_CM S2_ENC_RIGHT_TICKS_PER_CM
 /* 1 = build the hand-push encoder calibration instead of the normal run
  * (see encoder_cal_task).  Keep 0 for normal all_test images. */
 #ifndef S5_ENCODER_CAL

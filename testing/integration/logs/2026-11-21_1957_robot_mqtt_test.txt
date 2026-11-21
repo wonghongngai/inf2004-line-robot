@@ -1,0 +1,16 @@
+19:57:21.939  robot_mqtt_test.py broker=172.20.10.2:1883 client=group17-robot
+19:57:21.971  repo commit 0c77284 (record the firmware's commit in TEST_LOG)
+19:57:21.976  == S1-U15 letter map over MQTT ==
+19:57:51.310  OPERATOR: done: Reboot the robot (no map), wait for Wi-Fi + MQTT, and keep the serial console open.
+19:57:51.504  map flag after reboot = 0
+19:57:52.250  sent duplicate letters A/A/A/A (000000) -> map flag 0
+19:57:52.857  sent reserved bit set (A/B/C/Z + bit 20) (20881c) -> map flag 0
+19:58:12.651  OPERATOR: Did the console print 'Buddy 1: invalid barcode map rejected' twice? -> yes
+19:58:13.314  sent valid map L=X R=A S=Z U=W -> map flag 1
+19:58:51.331  OPERATOR: Did the console print '[ROBOT] MQTT map applied: ...' with those letters? -> yes
+19:58:51.459  sent the duplicate-letter map again: the valid map must be kept
+20:00:11.791  OPERATOR: Drive over barcode 'A' then a junction: did the robot turn RIGHT (the old map kept, not changed by the bad one)? -> no
+20:00:11.791  S1-U15 FAIL (expect both invalid maps rejected, valid map applied and kept)
+
+20:00:11.792  SUMMARY: S1-U15 FAIL
+20:00:11.792  log saved to testing/integration/logs/2026-11-21_1957_robot_mqtt_test.txt

@@ -144,6 +144,24 @@ dd { margin: 0; text-align: right; overflow-wrap: anywhere; font-size: .875rem; 
   font-weight: 700;
   text-transform: uppercase;
 }
+#send-map {
+  grid-column: 1 / -1;
+  justify-self: start;
+  appearance: none;
+  min-height: 44px;
+  min-width: 140px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 8px 18px;
+  background: #8cc8ff;
+  color: #0b2238;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+#send-map:hover:enabled { filter: brightness(1.12); }
+#send-map:focus-visible { outline: 2px solid #eaf2fa; outline-offset: 3px; }
+#send-map:disabled { opacity: .65; cursor: not-allowed; }
 #barcode-action-status { font-size: .875rem; }
 
 @media (max-width: 620px) {
