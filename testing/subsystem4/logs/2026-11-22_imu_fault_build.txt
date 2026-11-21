@@ -1,0 +1,13 @@
+# make ROBOT_MODE=integrated NET=lwip MQTT=1 (SMP=1 default), PICO_SDK_PATH=<Pico SDK 2.3.1>, build_make/, 22 Nov 2026
+# c262c2c + uncommitted S4 fault-path changes. Full make output (302 lines) trimmed to the S4 objects and the result.
+# compiler warnings in the full output: 0
+compiled: "../app_program/subsystem4/drv_lsm303dlhc.c"
+compiled: "../app_program/subsystem4/subsystem4.c"
+compiled: "../app_program/subsystem4/subsystem4_test.c"
+compiled: "../app_program/subsystem4/task_imu.c"
+   text	   data	    bss	    dec	    hex	filename
+ 385560	    116	  83840	 469516	  72a0c	robot-integrated.elf
+tools/elf2uf2 robot-integrated.elf robot-integrated.uf2
+ 
+exit=0
+100186d8 T drv_motor_stop
