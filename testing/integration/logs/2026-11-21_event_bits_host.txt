@@ -1,0 +1,71 @@
+INT-14 event-bit table vs code (#50)
+commit: 882f522 + uncommitted changes (TEAM.md table, this check)
+
+== unmodified sources ==
+ok   flg_motion_stop set (producer: subsystem2_send_command): ['subsystem2/subsystem2.c']
+ok   flg_motion_stop cleared with tk_clr_flg (nobody: consumed by TWF_CLR): none
+ok   flg_motion_stop waited on (consumer: motion_task): ['subsystem2/task_motion.c']
+ok   flg_s5_evt set (producer: VC executor): ['subsystem5/s5_executor.c']
+ok   flg_s5_evt cleared (VC: FOLLOWING; S5: its reply bits): ['subsystem5/s5_executor.c', 'subsystem5/task_obstacle.c']
+ok   flg_s5_evt waited on (consumer: S5 obstacle task): ['subsystem5/task_obstacle.c']
+ok   g_h_line_nav_q sent to (producer: line_service_task): ['subsystem3/line_service.c']
+ok   g_h_line_nav_q read directly (only through line_service_receive/enable): ['subsystem3/line_service.c']
+ok   line events read (one consumer per image): ['subsystem2/all_buddies_test.c', 'subsystem2/line_follow_test.c', 'subsystem2/robot_control.c', 'subsystem3/line_demo.c']
+ok   S1_FAULT_* set outside S1: ['subsystem2/all_buddies_test.c', 'subsystem2/robot_control.c']
+
+event-bit table vs code: PASS
+exit=0
+
+== mutations (each on a fresh copy of app_program in a scratch directory) ==
+mutation: S5 sets its own reply bit -> exit 1 (caught)
+  flg_s5_evt set (producer: VC executor): not allowed in ['subsystem5/task_obstacle.c'] (table allows ['subsystem5/s5_executor.c'])
+mutation: S5 waits with TWF_CLR -> exit 1 (caught)
+  subsystem5/task_obstacle.c: S5 must not wait with TWF_CLR (it would clear the VC's FOLLOWING bit)
+mutation: S5 reply mask includes FOLLOWING -> exit 1 (caught)
+  task_obstacle.c: a reply mask includes S5_EVT_FOLLOWING: S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED | S5_EVT_FOLLOWING
+mutation: VC clears a reply bit -> exit 1 (caught)
+  subsystem5/s5_executor.c: the VC may clear only S5_EVT_FOLLOWING, got tk_clr_flg(..., ~(S5_EVT_FOLLOWING | S5_EVT_STOPPED)
+mutation: motion_task waits without TWF_CLR -> exit 1 (caught)
+  flg_motion_stop: the consumer must clear on read (TWF_CLR)
+mutation: VC sends to the S3 line queue -> exit 1 (caught)
+  g_h_line_nav_q sent to (producer: line_service_task): not allowed in ['subsystem2/robot_control.c'] (table allows ['subsystem3/line_service.c'])
+mutation: S5 sets a telemetry fault bit -> exit 1 (caught)
+  S1_FAULT_* bits set by ['subsystem5/s5_executor.c']: the table names only the VC and all_test
+mutation: S3 reads its line queue from another file -> exit 1 (caught)
+  g_h_line_nav_q read directly (only through line_service_receive/enable): not allowed in ['subsystem3/line_demo.c'] (table allows ['subsystem3/line_service.c'])
+
+== full host suite ==
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: 882f522 + uncommitted changes
+
+s1/protocol                  PASS
+s1/barcode_queue             PASS
+s1/binary_cli                PASS
+s2/motion_protocol           PASS
+s2/motor_pwm                 PASS
+s3/line_barcode              PASS
+s3/pptx_samples              PASS
+s3/line_service              PASS
+s4/hump_height               PASS
+int/robot_control            PASS
+int/line_service             PASS
+int/steering_ramp            PASS
+int/event_bits               PASS
+
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/line_service              
+PASS   s4/hump_height               
+PASS   int/robot_control            
+PASS   int/line_service             
+PASS   int/steering_ramp            
+PASS   int/event_bits               
+-----------------------------------------
+13 passed, 0 failed, 0 known failures, 0 skipped
+exit=0
