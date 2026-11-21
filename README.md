@@ -27,7 +27,7 @@ The same code builds into several firmware images, chosen with
 | | `ROBOT_MODE=all_test` | `ROBOT_MODE=integrated` |
 | --- | --- | --- |
 | Purpose | **Try things out**: check a sensor, tune a number, watch what the robot does | **The robot**: what you demo, and where every requirement is proven |
-| How it runs | One test loop (`app_program/subsystem2/all_buddies_test.c`) drives the motors itself, with lots of `[ALL TEST]` console output. Safety stops can be made report-only (`ALL_TEST_CONTINUE_ON_SENSOR=1`) | Each buddy's task runs normally; the Vehicle Controller (`robot_control.c`, inside `motion_task`) coordinates them. Safety stops are always on |
+| How it runs | One test loop (`app_program/all_test/all_buddies_test.c`) drives the motors itself, with lots of `[ALL TEST]` console output. Safety stops can be made report-only (`ALL_TEST_CONTINUE_ON_SENSOR=1`) | Each buddy's task runs normally; the Vehicle Controller (`robot_control.c`, inside `motion_task`) coordinates them. Safety stops are always on |
 | Counts as evidence? | **No** | **Yes**: L4 tests and TEST_LOG results come from this build |
 
 **Decided 13 Nov 2026 (issue #4):** `integrated` is the final firmware.
@@ -337,7 +337,7 @@ Run them before every pull request. See [testing/README.md](testing/README.md).
 
 ### 3.4 `all_test` switches
 
-Set in `app_program/subsystem2/all_buddies_test.h` (or with `-D` on the make line):
+Set in `app_program/all_test/all_buddies_test.h` (or with `-D` on the make line):
 
 | Switch | Default | Effect |
 | --- | --- | --- |

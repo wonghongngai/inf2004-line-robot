@@ -35,7 +35,7 @@
 
 #include "app.h"
 #if APP_ALL_TEST
-#include "subsystem2/all_buddies_test.h"
+#include "all_test/all_buddies_test.h"
 #endif
 #if APP_LINE_FOLLOW_TEST
 #include "subsystem2/line_follow_test.h"

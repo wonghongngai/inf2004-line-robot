@@ -94,7 +94,7 @@ receivers = re.compile(r'\bline_service_receive\s*\(')
 readers = sorted(n for n, t in sources.items()
                  if receivers.search(t) and n != 'subsystem3/line_service.c')
 allowed_readers = {'subsystem2/robot_control.c',      # the VC (integrated)
-                   'subsystem2/all_buddies_test.c',   # all_test image
+                   'all_test/all_buddies_test.c',     # all_test image
                    'subsystem2/line_follow_test.c',   # line_follow_test image
                    'subsystem3/line_demo.c'}          # barcode_test image
 extra = [n for n in readers if n not in allowed_readers]
@@ -106,7 +106,7 @@ if extra:
 fault_writers = sorted(n for n, t in sources.items()
                        if re.search(r'\bS1_FAULT_\w+', t) and not n.startswith('subsystem1/'))
 extra = [n for n in fault_writers
-         if n not in {'subsystem2/robot_control.c', 'subsystem2/all_buddies_test.c'}]
+         if n not in {'subsystem2/robot_control.c', 'all_test/all_buddies_test.c'}]
 print(f'{"FAIL" if extra else "ok  "} S1_FAULT_* set outside S1: {fault_writers}')
 if extra:
     failures.append(f'S1_FAULT_* bits set by {extra}: the table names only the VC and all_test')
