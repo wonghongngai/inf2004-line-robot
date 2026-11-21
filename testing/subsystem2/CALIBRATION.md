@@ -1,10 +1,13 @@
 # Physical calibration — 2026-10-29
 
-Values supplied by the user and entered in `subsystem2.h`. Motion calibration
-is enabled. PID gains remain zero pending physical tuning. The combined
-`all_test` profile retains its 30% base / 15% inner-wheel PWM; normal motion
-retains its existing 55% base PWM. The shared minimum effective PWM is now
-15%, covering the reported right-wheel reliable starting range of 10–15%.
+> **Measurement record.** The live values are in
+> `app_program/subsystem2/subsystem2.h`. The ticks/cm below are the
+> 29 Oct polling-decoder figures; `subsystem2.h` now uses re-measured values
+> (23.10 left, 18.83 right). The pivot ticks/degree are still the ones below.
+
+Values supplied by the user and entered in `subsystem2.h`. PID gains remain
+zero pending physical tuning. The shared minimum effective PWM is 15%,
+covering the reported right-wheel reliable starting range of 10–15%.
 These are PWM duty cycles, not calibrated speeds.
 
 ## Distance
@@ -69,5 +72,4 @@ tilting the IMU while stationary provides no wheel distance.
 
 Motor calibration does not enable line calibration or change the normal
 integrated profile's sensor layout. Those remain separate configuration
-choices. `all_test` still uses the three-sensor TRACK layout and stops at
-junctions rather than executing barcode turns.
+choices.

@@ -8,7 +8,7 @@ To check all three subsystems together, build `ROBOT_MODE=integrated_motor_test`
 This runs the same timed wheel pulses with S3 IR and S4 IMU tasks active and
 prints sensor snapshots between stages. Keep wheels raised; IR decisions and
 automatic IMU stops are not used for these timed diagnostic pulses. See
-[INTEGRATION.md](INTEGRATION.md) for expected diagnostic lines.
+[the S2 README](../../app_program/subsystem2/README.md) for expected diagnostic lines.
 
 The PWM reset-release bug has been fixed: PWM is now released from reset even
 with the project's `USE_PTMR=0`. Rebuild and reflash; older UF2s do not contain

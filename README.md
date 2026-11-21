@@ -126,7 +126,7 @@ other mode is a test or bench build.
 | `sh build.sh all_test` | `robot-all_test.uf2` | Whole-robot test harness (section 1) |
 | `sh build.sh all_test_offline` | `robot-all_test-offline.uf2` | `all_test` without Wi-Fi (`ROBOT_MODE=all_test ALL_TEST_OFFLINE=1`) |
 | `sh build.sh integrated_motor_test` | `robot-integrated_motor_test.uf2` | Wheels raised: S2 motor pulses with S3 IR and S4 IMU sampling, prints PWM/sensor diagnostics |
-| `sh build.sh motor_test` | `robot-motor_test.uf2` | Wheels raised: S2 motors only (see `app_program/subsystem2/HARDWARE_TEST.md`) |
+| `sh build.sh motor_test` | `robot-motor_test.uf2` | Wheels raised: S2 motors only (see `testing/subsystem2/HARDWARE_TEST.md`) |
 | `sh build.sh motion` | `robot-motion.uf2` | S2 motion controller on its own |
 | `sh build.sh line_follow_test` | `robot-line_follow_test.uf2` | S2 + S3 open-loop line following, no IMU, encoders or barcodes (`app_program/subsystem2/line_follow_test.c`) |
 | `sh build.sh barcode_test` | `robot-barcode_test.uf2` | S3 barcode bench, motors off (`app_program/subsystem3/line_demo.c`) |
@@ -167,9 +167,9 @@ not touch shows up before review. Without `config/wifi_secrets.h` the three
 Wi-Fi builds are skipped, not failed. Options after `all` are added to every
 build, e.g. `sh build.sh all SMP=0`.
 
-Wiring, calibration and motor checks: [app_program/subsystem2/INTEGRATION.md](app_program/subsystem2/INTEGRATION.md),
-[HARDWARE_TEST.md](app_program/subsystem2/HARDWARE_TEST.md) and
-[CALIBRATION.md](app_program/subsystem2/CALIBRATION.md).
+Wiring, calibration and motor checks: [app_program/subsystem2/README.md](app_program/subsystem2/README.md),
+[HARDWARE_TEST.md](testing/subsystem2/HARDWARE_TEST.md) and
+[CALIBRATION.md](testing/subsystem2/CALIBRATION.md).
 
 ---
 

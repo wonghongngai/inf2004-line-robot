@@ -1,4 +1,29 @@
-# Motion control with line sensing and IMU
+# Buddy 2: motors, encoders, motion control (subsystem 2)
+
+The motion task owns the motor PWM outputs and the wheel encoders. It turns
+movement commands (forward N cm, pivot N degrees, stop) into wheel output,
+and in the `integrated` image it also runs the Vehicle Controller
+(`robot_control.c`), which coordinates every buddy.
+
+| File | What it does |
+|---|---|
+| `drv_motor.c/.h` | Robo Pico motor driver (PWM on GP8 to GP11) |
+| `drv_encoder.c/.h` | Wheel encoder input driver |
+| `wheel_odometry.h` | Ticks to millimetres, shared by the motor-owning tasks |
+| `motion_control.c/.h` | Hardware-independent motion logic (moves, pivots, PID, stall checks) |
+| `motion_protocol.h` | S2 interface v1: packed command/status bytes |
+| `task_motion.c` | The motion RTOS task: motor writes, encoder reads, command queue |
+| `robot_control.c/.h` | Vehicle Controller for the `integrated` image |
+| `subsystem2.c/.h` | Kernel objects, public API (`subsystem2_send_command()`), calibration constants |
+| `subsystem2_test.c` | On-Pico software tests (`TEST=1`) |
+| `subsystem2_hw_test.c/.h` | Raised-wheel motor pulses (`motor_test`, `integrated_motor_test`) |
+
+Elsewhere:
+
+- `app_program/all_test/`: the `all_test` and `line_follow_test` images, which drive the motors from their own loop.
+- `testing/subsystem2/`: host test, [HARDWARE_TEST.md](../../testing/subsystem2/HARDWARE_TEST.md) (motor bench procedure), [CALIBRATION.md](../../testing/subsystem2/CALIBRATION.md) (measurement record), `TRIBUNAL_STATUS.md` (PreTri 1 history) and `TEST_LOG.md`.
+
+## Build modes
 
 Run commands from the repo root with `build.sh` (README section 1.1). Every
 mode includes the real motor and encoder drivers. Standalone images
@@ -84,7 +109,7 @@ required for distance commands, turns, and integrated driving; the timed motor
 bench test bypasses those calculations so wiring can be checked first.
 
 1. Flash `motor_test`, raise the wheels, and verify direction, sides, and
-   changing encoder counts as described in [HARDWARE_TEST.md](HARDWARE_TEST.md).
+   changing encoder counts as described in [HARDWARE_TEST.md](../../testing/subsystem2/HARDWARE_TEST.md).
 2. Flash plain `motion` with calibration still disabled. The motors stay off,
    but the `[MOTION]` serial line reports raw ticks every second. Manually turn
    each wheel through several measured revolutions. Divide absolute tick change
