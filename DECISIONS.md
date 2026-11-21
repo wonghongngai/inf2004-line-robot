@@ -15,7 +15,7 @@ Decided by the team on 20 Nov 2026, from `main` @ `42be6ea`.
 | --- | --- | --- |
 | #5 | S4 keeps the climb height after a hump. The test was changed, not the firmware | — |
 | #6 | Every `[set]` threshold in `TEST_PLAN.md` agreed (table below) | — |
-| #48 | **Add a START command.** The robot waits in Ready until START arrives | Code: S1 command + VC Ready state (#48 stays open), after #72 |
+| #48 | **Add a START command.** The robot waits in Ready until START arrives | Built 21 Nov: `S1_COMMAND_START` (code 5) + VC Ready state; `S2_AUTO_START` fallback. Bench test with the broker pending |
 | #54 | Obstacle distance is 9-bit cm on the wire, mm inside S5 | VC converts `mm / 10` when filling IF-05 (#72) |
 | #64 | Keep 20 cm detection | Buddy 5 records the reason; S5-U40 (#31) must show the robot rests ≥ 10 cm away |
 | #65 | Keep the 50–130° scan. FR5-1 changed to 50, 70, 90, 110, 130° | Re-measure NFR5-2 with the sensor mounted (#29) |
@@ -70,7 +70,23 @@ system statechart: Initialising → Idle/Ready → (start command) → Navigatin
 the IMU is calibrated and S5 has released its start-up HOLD. These become the
 conditions for entering Ready.
 
-**To build (#48 stays open).**
+**Built 21 Nov 2026.**
+- S1: `S1_COMMAND_START` = 5, the first reserved code. `tools/mqtt_binary.py
+  command start`; the dashboard's Start button now sends START, and
+  `all_test` treats START like RESUME.
+- VC: `robot_control.c` polls S1 commands each step (non-blocking, at most
+  `S1_QUEUE_DEPTH` per step). Once the old auto-arm conditions hold it prints
+  `[ROBOT] ready: motors off, waiting for START over MQTT` and arms only after
+  START. A START sent during initialisation is kept until Ready. Other
+  commands are logged and ignored until #72.
+- Demo-day fallback: `S2_AUTO_START` (`robot_control.h`) set to 1 restores
+  auto-start. Builds without MQTT default to 1, since nothing could start them.
+- Host test: `int/robot_control` (Ready waits, other commands don't start
+  it, START arms, early START kept, poll budget).
+- Still to do: the bench test with the broker, and the Write-up wording check
+  below.
+
+**Original plan.**
 - S1: a START command code in the command queue. The command byte has
   reserved values free (`subsystem1/README.md`).
 - VC: a Ready state in `robot_control.c` that arms only on START. This needs

@@ -7,8 +7,33 @@
 #include "../subsystem4/subsystem4.h"
 #include "../subsystem5/subsystem5.h"
 #include "../subsystem5/s5_executor.h"
+#include "../subsystem1/subsystem1.h"
 
 static bool armed, halted, line_halt, turning, configured;
+/* #48 Ready state: arm only once START has arrived (or auto_start is set).
+   A START that arrives while still initialising is kept until Ready. */
+static bool auto_start = S2_AUTO_START, start_requested, ready_reported;
+
+/* Drain up to one queue's worth of MQTT commands without blocking. Only
+   START is handled here; PAUSE/RESUME/STATUS wait for #72. */
+static void poll_commands(void)
+{
+    for (unsigned i = 0u; i < S1_QUEUE_DEPTH; ++i) {
+        S1_COMMAND command;
+        if (subsystem1_receive_command(&command, TMO_POL) < E_OK) return;
+        if (command.bytes[0] != S1_COMMAND_START) {
+            tm_printf((UB *)"[ROBOT] command %u ignored: not handled by the integrated VC yet (#72)\n",
+                      (unsigned)command.bytes[0]);
+        } else if (armed) {
+            tm_printf((UB *)"[ROBOT] START ignored: already started%s\n",
+                      halted && !line_halt ? " (safety stop: reboot to retry)" : "");
+        } else if (!start_requested) {
+            start_requested = true;
+            tm_printf((UB *)"[ROBOT] START received%s\n",
+                      ready_reported ? "" : "; starts once initialisation finishes");
+        }
+    }
+}
 static uint32_t last_imu_sample, imu_count, imu_errors, resumed_at, turn_started;
 static uint32_t rearm_since;
 static int32_t rearm_l, rearm_r;
@@ -217,6 +242,7 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
     MOTION_COMMAND cmd;
     ER er;
 
+    poll_commands();
     if (halted) {
         if (!line_halt || !line_rearm_ready(now, l, r)) {
             cmd = (MOTION_COMMAND){MOTION_CMD_STOP, 0.0f};
@@ -256,6 +282,14 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         if (!S2_LINE_CALIBRATION_READY || now < S2_ROBOT_START_MS ||
             !imu.sensor_ok || !imu.calibrated || imu_count == 0 ||
             (uint32_t)(now - last_imu_sample) > S2_IMU_STALE_MS) return;
+        /* Ready (#48): initialised, motors off, waiting for START. */
+        if (!auto_start && !start_requested) {
+            if (!ready_reported) {
+                ready_reported = true;
+                tm_printf((UB *)"[ROBOT] ready: motors off, waiting for START over MQTT\n");
+            }
+            return;
+        }
         if (!configured) {
             er = line_service_calibrate(S2_LINE_BLACK_RAW, S2_LINE_WHITE_RAW);
             if (er == E_OK) er = line_service_set_layout(S2_LINE_LAYOUT);

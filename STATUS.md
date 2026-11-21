@@ -56,6 +56,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 | Compact motion protocol v1 (CR1) | ✅ | ✅ `s2/motion_protocol` (host) | ⬜ | ⬜ | — | `testing/subsystem2/logs/2026-11-20_host.txt` | Move the other subsystems onto `subsystem2_send_command` |
 | Motion control: distance target, STOP, encoder stall → FAULT | ✅ | ✅ S2-U01–U04 (Pico, simulated encoders) | ⬜ | ⬜ | ⬜ | `testing/subsystem3/logs/2026-11-19_target_test.txt` | Calibrate on the robot (S2-U06, U07), then STOP latency (S2-U11) |
 | Vehicle Controller mode arbitration (safety > avoidance > line) | 🟡 | ✅ INT-03 (simulated) | ⬜ | ⬜ | ⬜ | `testing/subsystem2/logs/2026-11-20_host.txt` (209 checks) | Bench test with real S3/S4/S5 inputs |
+| Ready state + MQTT START (#48) | ✅ | ✅ INT-03 (simulated, 228 checks) | ⬜ | ⬜ | — | `testing/integration/logs/2026-11-21_start_command_host.txt` | Bench test: flash `integrated`, check it waits in Ready, then press Start on the dashboard |
 
 ## Subsystem 3: IR line following + barcode (Buddy 3)
 
@@ -134,7 +135,7 @@ Last updated: 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump t
 - [x] Delete the duplicate copies with " 2" in the name (done 2026-11-13: 8 files removed, all identical to or older than the originals).
 - [x] Stop committing build output: test `.exe` files and build `.log` files are untracked and gitignored (2026-11-13).
 - [x] One host-test runner: `sh testing/run_host_tests.sh` (2026-11-13).
-- [ ] Host tests: 10 of 12 pass (20 Nov). The 6 `int/all_buddies*` tests were retired (#9) now that `integrated` is final. The rest need their owners:
+- [x] Host tests: 12 of 12 pass (21 Nov). The 6 `int/all_buddies*` tests were retired (#9) now that `integrated` is final. The rest need their owners:
   - ~~**zhi xian:** push the missing local code~~. Resolved 20 Nov (#3 closed): the code was lost. `s1/barcode_queue` passes against a reimplementation on branch `s1/barcode-queue`; `int/steering_ramp` no longer checks terrain boost or barcode slow-down (not requirements) and passes.
 - [x] S1 barcode-over-MQTT code: reimplemented 20 Nov on branch `s1/barcode-queue`, with a binary payload (#3).
 - [ ] Choose one integration branch (`alicia` or `double11`), merge into it, and delete the dead branches (`zhixin`, `integration`, `master`, …).

@@ -215,7 +215,7 @@ first, then S5 avoidance, then line following.
 | ID | From → To | Mechanism | Object ID / function | Data / meaning | Agreed by | Issue |
 | --- | --- | --- | --- | --- | --- | --- |
 | IF-05 | VC → S1 | message buffer, nonblocking send (owned by S1) | `subsystem1_publish_telemetry()` | 80-bit telemetry packet once a second: state, faults, speed, distance, line sensors, barcode, highest hump, encoder counts, obstacle scan results (layout in `subsystem1/README.md`) | Buddy 1; VC side pending | #72, #40, #41 |
-| IF-06 | S1 → VC | message buffer, polled with `TMO_POL` (owned by S1) | `subsystem1_receive_command()` | PC commands STATUS, PAUSE, RESUME, RESET_STATS | Buddy 1; VC side pending | #72, #49 |
+| IF-06 | S1 → VC | message buffer, polled with `TMO_POL` (owned by S1) | `subsystem1_receive_command()` | PC commands STATUS, PAUSE, RESUME, RESET_STATS, START | Buddy 1; VC handles START (#48), the rest pending | #72, #49 |
 | IF-07 | S3 → VC | S3 message buffer and snapshot API | `g_h_line_nav_q` | line positions; barcode letter and junction command; one consumer | integrated build | #38, #68 |
 | IF-08 | S4 → VC, S5 | snapshot under S4 mutex | `subsystem4_get_latest()` | IMU calibrated, terrain (hump, tilt, highest-hump height), lift-stop, motion class, turn rate. S5 ignores readings while tilted or on a hump (A5-2) | integrated build | #53, #42, #43, #44, #67 |
 | IF-09 | Application → S2 | message buffer, separate STOP flag | `mbf_motion_cmd`, `flg_motion_stop` | `MOTION_COMMAND` (forward, reverse, turn, stop); autonomous profiles reject external moves | motion build | #39 |
@@ -270,7 +270,7 @@ What still has to be done before this table is final:
 ### Other open points
 
 Decided 20 Nov ([DECISIONS.md](DECISIONS.md)): add a START command and a
-Ready state (#48, to build after #72); tilt is report-only (#67); on line
+Ready state (#48, built 21 Nov; bench test pending); tilt is report-only (#67); on line
 loss the robot stops and waits (#68).
 
 Still to define (TBD): command handling when Wi-Fi drops (#49).

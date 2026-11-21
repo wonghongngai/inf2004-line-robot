@@ -48,6 +48,12 @@ class ProtocolTests(unittest.TestCase):
                                 check=True, capture_output=True)
         self.assertEqual(result.stdout, b'\x00')
 
+    def test_raw_start_command(self):
+        # START (#48) is code 5, the first formerly reserved value.
+        result = subprocess.run([sys.executable, str(TOOL), 'command', 'start'],
+                                check=True, capture_output=True)
+        self.assertEqual(result.stdout, b'\x05')
+
     def test_raw_barcode_mapping(self):
         result = subprocess.run(
             [sys.executable, str(TOOL), 'mapping', '--left', 'A', '--right', 'B',

@@ -92,7 +92,9 @@ the one you meant.
    Monitor also work.
 
 Keep the robot still for the first second after boot: the IMU calibrates its
-baseline then. Both builds wait 5 s before driving.
+baseline then. Neither build drives until you press **Start** on the
+dashboard (an MQTT START command, #48). `integrated` prints
+`[ROBOT] ready: motors off, waiting for START over MQTT` once it is ready.
 
 ### 1.3 The workflow for any change
 
@@ -200,7 +202,7 @@ Topics are prefixed with `MQTT_CLIENT_ID` from `config/wifi_secrets.h`:
 | Topic | Direction | Payload |
 | --- | --- | --- |
 | `<id>/telemetry` | car → PC | 15-byte binary packet once a second (layout in `app_program/subsystem1/README.md`) |
-| `<id>/command` | PC → car | 1 raw byte: STATUS, PAUSE, RESUME. RESET_STATS and REVERSE are defined by the protocol and currently unsupported in `all_test`. |
+| `<id>/command` | PC → car | 1 raw byte: STATUS, PAUSE, RESUME, START. RESET_STATS and REVERSE are defined by the protocol and currently unsupported in `all_test`. `integrated` acts on START only; the others wait for #72 |
 | `<id>/mapping` | PC → car | 3-byte letter-to-movement map (left, right, straight, U-turn) |
 | `<id>/barcode` | car → PC | 4-byte result per finished scan: frame, letter (or rejected), runs ([BARCODE_MQTT.md](testing/subsystem1/BARCODE_MQTT.md)) |
 
@@ -237,10 +239,14 @@ steps once per computer, then repeat step 3 onwards each session.
    `New client connected ... as <id>` followed by `Received PUBLISH` lines.
 6. **Start the dashboard** (below) with `--broker` set to the **same LAN
    address** as `MQTT_BROKER_IP`, not `127.0.0.1`.
-7. **Press Start.** With MQTT enabled, `all_test` waits for a Start (RESUME)
-   command instead of driving after 5 s. The console prints
-   `[ALL TEST] MQTT start requested`. An S5 "no path" safe stop needs a reset
-   of the Pico. Pause and Start do not re-arm it.
+7. **Press Start.** With MQTT enabled, both `all_test` and `integrated` wait
+   for a START command instead of driving after 5 s (#48). The console
+   prints `[ALL TEST] MQTT start requested` or `[ROBOT] START received`. A
+   START sent while the robot is still initialising is kept, and it starts
+   as soon as it is ready. An S5 "no path" safe stop needs a reset of the
+   Pico. Pause and Start do not re-arm it. **No Wi-Fi on demo day?** Set
+   `S2_AUTO_START` to 1 in `app_program/subsystem2/robot_control.h` and
+   rebuild: `integrated` then starts by itself 5 s after boot, as before #48.
 
 Troubleshooting: if the dashboard says **Waiting for telemetry**, check that
 the dashboard and robot use the same broker (step 2 and step 6). **Telemetry

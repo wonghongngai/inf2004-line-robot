@@ -120,7 +120,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         command = path[len(prefix):]
         args = self.feed.args
         mapping = path == "/api/mapping"
-        if not mapping and not (path.startswith(prefix) and command in ("pause", "resume")):
+        if not mapping and not (path.startswith(prefix) and command in ("pause", "resume", "start")):
             self.send_error(404)
             return
         if self.headers.get("X-Dashboard-Command") != "1":

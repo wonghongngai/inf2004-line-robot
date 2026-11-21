@@ -15,7 +15,7 @@ FIELDS = (
     ("barcode_letter", 80, 5, 0, 26), ("speed_valid", 85, 1, 0, 1),
     ("barcode_black", 88, 16, 0, 65535), ("barcode_white", 104, 16, 0, 65535),
 )
-COMMANDS = {"status": 0, "pause": 1, "resume": 2, "reset-stats": 3, "reverse": 4}
+COMMANDS = {"status": 0, "pause": 1, "resume": 2, "reset-stats": 3, "reverse": 4, "start": 5}
 
 
 def encode_mapping(letters):

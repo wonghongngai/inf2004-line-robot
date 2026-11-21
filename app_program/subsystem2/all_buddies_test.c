@@ -888,6 +888,7 @@ static void commands(ALL_TEST *t, uint32_t now)
             }
             t->force_status = true;
             break;
+        case S1_COMMAND_START:  /* #48: same as RESUME in this test loop */
         case S1_COMMAND_RESUME:
             if (t->phase == WAITING) {
                 t->start_requested = true;

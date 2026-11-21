@@ -12,6 +12,18 @@
 #define S2_LINE_WHITE_RAW 0u
 #define S2_LINE_LAYOUT LINE_BARCODE_LAYOUT_SIDE
 #define S2_ROBOT_START_MS 5000u
+/* #48 (decided 20 Nov 2026): after S2_ROBOT_START_MS, a calibrated IMU and
+   S5's start-up hold, the robot waits in Ready, motors off, until an MQTT
+   START command (S1_COMMAND_START) arrives. 1 restores the old auto-start:
+   the demo-day fallback if Wi-Fi is unavailable. Builds without MQTT always
+   auto-start, since nothing could ever send START to them. */
+#ifndef S2_AUTO_START
+#if defined(TM_MQTT) && TM_MQTT
+#define S2_AUTO_START 0
+#else
+#define S2_AUTO_START 1
+#endif
+#endif
 #define S2_IMU_STALE_MS 100u
 #define S2_LINE_UNSAFE_MS 200u
 #define S2_LINE_REARM_MS 1000u
