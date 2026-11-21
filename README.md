@@ -128,7 +128,7 @@ other mode is a test or bench build.
 | `sh build.sh integrated_motor_test` | `robot-integrated_motor_test.uf2` | Wheels raised: S2 motor pulses with S3 IR and S4 IMU sampling, prints PWM/sensor diagnostics |
 | `sh build.sh motor_test` | `robot-motor_test.uf2` | Wheels raised: S2 motors only (see `testing/subsystem2/HARDWARE_TEST.md`) |
 | `sh build.sh motion` | `robot-motion.uf2` | S2 motion controller on its own |
-| `sh build.sh line_follow_test` | `robot-line_follow_test.uf2` | S2 + S3 open-loop line following, no IMU, encoders or barcodes (`app_program/subsystem2/line_follow_test.c`) |
+| `sh build.sh line_follow_test` | `robot-line_follow_test.uf2` | S2 + S3 open-loop line following, no IMU, encoders or barcodes (`app_program/all_test/line_follow_test.c`) |
 | `sh build.sh barcode_test` | `robot-barcode_test.uf2` | S3 barcode bench, motors off (`app_program/subsystem3/line_demo.c`) |
 
 ### 2.1 Test variants

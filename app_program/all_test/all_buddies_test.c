@@ -5,7 +5,7 @@
 #include "../subsystem2/drv_encoder.h"
 #include "../subsystem2/subsystem2.h"
 #include "../subsystem2/wheel_odometry.h"
-#include "../subsystem2/line_follow_output.h"
+#include "line_follow_output.h"
 #include "../subsystem1/subsystem1.h"
 #include "../subsystem3/line_service.h"
 #include "../subsystem4/subsystem4.h"

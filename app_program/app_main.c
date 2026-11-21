@@ -38,7 +38,7 @@
 #include "all_test/all_buddies_test.h"
 #endif
 #if APP_LINE_FOLLOW_TEST
-#include "subsystem2/line_follow_test.h"
+#include "all_test/line_follow_test.h"
 #endif
 #if APP_BARCODE_BENCH
 #include "subsystem3/line_service.h"

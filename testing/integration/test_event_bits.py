@@ -95,7 +95,7 @@ readers = sorted(n for n, t in sources.items()
                  if receivers.search(t) and n != 'subsystem3/line_service.c')
 allowed_readers = {'subsystem2/robot_control.c',      # the VC (integrated)
                    'all_test/all_buddies_test.c',     # all_test image
-                   'subsystem2/line_follow_test.c',   # line_follow_test image
+                   'all_test/line_follow_test.c',     # line_follow_test image
                    'subsystem3/line_demo.c'}          # barcode_test image
 extra = [n for n in readers if n not in allowed_readers]
 print(f'{"FAIL" if extra else "ok  "} line events read (one consumer per image): {readers}')
