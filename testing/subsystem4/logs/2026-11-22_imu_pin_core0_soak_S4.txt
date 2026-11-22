@@ -1,0 +1,137 @@
+# Excerpt of the gitignored raw log testing/subsystem5/logs/2026-11-22_141418_console.txt (main checkout), boot at raw line 4290 (COM5 connected 14:37:58), read to line 5975 (14:51:15). Wi-Fi network name redacted.
+# Image: worktree claude/s4-imu-er25-422be3 build_make/robot-integrated.uf2 (built 14:33): b540f2d + uncommitted S4-U17 back-off/bus recovery, FATAL diagnostics, imu_task pinned to core 0 (S4_IMU_PRC = TP_PRC1).
+# Robot on a stand, wheels free. START over MQTT 14:38:55 (printf '\x05' | mosquitto_pub ... group17-robot/command). Hotspot off ~14:42 to ~14:44 (operator).
+# Counts in lines 4291-5975: ERR/FATAL/er=-25 = 0; 'wifi: joining' = 13; [S2:MOTION] lines not state=2 after START = 0.
+--- boot, raw lines 4290-4340
+=== COM5 connected 14:37:58.325 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "<SSID redacted>" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] calibration complete base=(-15,91,925) mg
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=100 acc=(-16,91,930)mg delta=(x:-1,y:0)mg mag=(370,-315,-119) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=150 acc=(-15,91,926)mg delta=(x:0,y:0)mg mag=(371,-316,-118) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+wifi: link up, ip=172.20.10.3
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S1:MQTT] connected to 172.20.10.2
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S4:IMU] n=200 acc=(-17,90,931)mg delta=(x:-2,y:-1)mg mag=(371,-314,-118) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=250 acc=(-17,95,927)mg delta=(x:-2,y:4)mg mag=(371,-315,-117) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=300 acc=(-18,93,927)mg delta=(x:-3,y:2)mg mag=(373,-315,-118) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=350 acc=(-21,93,926)mg delta=(x:-6,y:2)mg mag=(372,-316,-115) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=400 acc=(-13,91,916)mg delta=(x:2,y:0)mg mag=(372,-315,-118) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=450 acc=(-16,89,924)mg delta=(x:-1,y:-2)mg mag=(369,-315,-115) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+--- START, raw lines 4405-4420
+[S4:IMU] n=2050 acc=(-17,88,923)mg delta=(x:-2,y:-3)mg mag=(372,-315,-118) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=2100 acc=(-14,86,930)mg delta=(x:1,y:-5)mg mag=(373,-315,-118) pitch=0 height=0mm height_valid=0 state=0
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S1:CMD] command queued=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:MOTION] state=2 fault=0 ticks L=1 R=0 PWM=5/5
+[S4:IMU] n=2150 acc=(-23,99,946)mg delta=(x:-8,y:8)mg mag=(372,-313,-120) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=1140 R=1262 PWM=14/15
+[S4:IMU] n=2200 acc=(-15,104,933)mg delta=(x:0,y:13)mg mag=(370,-314,-118) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=2538 R=2689 PWM=14/15
+[S4:IMU] n=2250 acc=(-2,71,919)mg delta=(x:13,y:-20)mg mag=(370,-311,-115) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=3960 R=4121 PWM=14/15
+[S4:IMU] n=2300 acc=(-17,93,900)mg delta=(x:-2,y:2)mg mag=(369,-310,-112) pitch=0 height=0mm height_valid=0 state=0
+--- every line after START that is not a periodic [S2:MOTION] / [S4:IMU] n= line (raw line numbers)
+4412: [S2:ROBOT] armed: no letter map yet, straight at junctions
+4817: [S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+4824: wifi: link status -> joined AP, waiting for IP (1)
+4825: [S1:MQTT] WARN Wi-Fi unavailable; waiting for IP
+4914: wifi: reconnecting (association/IP timeout)
+4915: wifi: joining "<SSID redacted>" ...
+4916: wifi: link status -> joined AP, waiting for IP (1)
+4919: wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+4930: wifi: reconnecting (link down or join failed)
+4931: wifi: joining "<SSID redacted>" ...
+4932: wifi: link status -> joined AP, waiting for IP (1)
+4934: wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+4945: wifi: reconnecting (link down or join failed)
+4946: wifi: joining "<SSID redacted>" ...
+4947: wifi: link status -> joined AP, waiting for IP (1)
+4950: wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+4960: wifi: reconnecting (link down or join failed)
+4961: wifi: joining "<SSID redacted>" ...
+4963: wifi: link status -> joined AP, waiting for IP (1)
+4964: wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+4975: wifi: reconnecting (link down or join failed)
+4977: wifi: joining "<SSID redacted>" ...
+4978: wifi: link status -> joined AP, waiting for IP (1)
+4980: wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+4990: wifi: reconnecting (link down or join failed)
+4991: wifi: joining "<SSID redacted>" ...
+4993: wifi: link status -> joined AP, waiting for IP (1)
+4995: wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+5006: wifi: reconnecting (link down or join failed)
+5007: wifi: joining "<SSID redacted>" ...
+5008: wifi: link status -> joined AP, waiting for IP (1)
+5011: wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+5021: wifi: reconnecting (link down or join failed)
+5022: wifi: joining "<SSID redacted>" ...
+5023: wifi: link status -> joined AP, waiting for IP (1)
+5026: wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+5037: wifi: reconnecting (link down or join failed)
+5038: wifi: joining "<SSID redacted>" ...
+5039: wifi: link status -> joined AP, waiting for IP (1)
+5041: wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+5051: wifi: reconnecting (link down or join failed)
+5052: wifi: joining "<SSID redacted>" ...
+5053: wifi: link status -> joined AP, waiting for IP (1)
+5056: wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+5067: wifi: reconnecting (link down or join failed)
+5068: wifi: joining "<SSID redacted>" ...
+5069: wifi: link status -> joined AP, waiting for IP (1)
+5072: wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+5082: wifi: reconnecting (link down or join failed)
+5083: wifi: joining "<SSID redacted>" ...
+5084: wifi: link status -> joined AP, waiting for IP (1)
+5091: wifi: link up, ip=172.20.10.3
+5092: [S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+5105: [S1:MQTT] connected to 172.20.10.2
+5106: [S1:MQTT] subscribed to group17-robot/command
+5107: [S1:MQTT] subscribed to group17-robot/mapping
+5109: [S2:ROBOT] telemetry queue accepting packets again (0)
+--- last lines
+[S2:MOTION] state=2 fault=0 ticks L=1100510 R=1105333 PWM=14/15
+[S4:IMU] n=38800 acc=(0,89,939)mg delta=(x:15,y:-2)mg mag=(369,-315,-115) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=1101945 R=1106775 PWM=14/15
+[S4:IMU] n=38850 acc=(2,123,963)mg delta=(x:17,y:32)mg mag=(368,-315,-121) pitch=0 height=0mm height_valid=0 state=0
+--- broker check 14:51 (mosquitto_sub -W 6 on group17-robot/#): telemetry and status packets received

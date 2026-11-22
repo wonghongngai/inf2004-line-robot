@@ -84,6 +84,8 @@ EXPORT ID app_start_task(FP entry, PRI pri, UW prc, const char *name)
 		(void)tk_del_tsk(tid);
 		return er;
 	}
+	/* Maps the task IDs in kernel diagnostics (e.g. S4's FATAL line run=/sched=) to names. */
+	LOG_INFO(TAG_APP, "task %s id=%d pri=%d prc=%u", name, (INT)tid, (INT)pri, (UINT)prc);
 	return tid;
 }
 
