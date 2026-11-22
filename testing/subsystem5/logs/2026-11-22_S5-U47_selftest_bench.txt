@@ -1,0 +1,82 @@
+# S5-U47 / #47 start-up self-test on the robot, 2026-11-22 22:41-22:49.
+# Image: sh build.sh integrated (robot-integrated.uf2) built from 24bb28e + uncommitted feat/s5-startup-selftest changes; flashed by Claude.
+# Robot: user (wiring, power, START); Claude (build, flash, capture with serial_monitor.ps1 on COM5, log check).
+# Trimmed from the gitignored raw capture 2026-11-22_224133_console.txt: kept "=== COM5" session headers, the kernel banner,
+# every [S5:...] and [S2:ROBOT] line, and in boot 8 the [S2:MOTION] lines after START. Wi-Fi lines dropped.
+# Boots: 1-3 sensor wired (a); 4 sensor wired, target moved; 5 open space (b, confirmed by the user);
+#        6-8 sensor unplugged (c), START sent in boot 8; 9 sensor replugged (d).
+
+=== COM5 connected 22:41:34.035 ===
+microT-Kernel Version 3.00
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 386 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+=== COM5 connected 22:42:06.560 ===
+microT-Kernel Version 3.00
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 386 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:ROBOT] telemetry queue accepting packets again (0)
+=== COM5 connected 22:43:32.227 ===
+microT-Kernel Version 3.00
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 386 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+=== COM5 connected 22:44:21.530 ===
+microT-Kernel Version 3.00
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 427 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+=== COM5 connected 22:44:46.349 ===
+microT-Kernel Version 3.00
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 2, 0 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:ROBOT] telemetry queue accepting packets again (0)
+=== COM5 connected 22:46:33.560 ===
+microT-Kernel Version 3.00
+[S5:OBS] ERR SELF-TEST FAIL (CAL_FAIL): echo 0/5 pings, need 2: check the HC-SR04P wiring (GP16 TRIG, GP17 ECHO, 3V3)
+[S5:OBS] WARN SAFE STOP (reboot to re-arm)
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+=== COM5 connected 22:47:02.444 ===
+microT-Kernel Version 3.00
+[S5:OBS] ERR SELF-TEST FAIL (CAL_FAIL): echo 0/5 pings, need 2: check the HC-SR04P wiring (GP16 TRIG, GP17 ECHO, 3V3)
+[S5:OBS] WARN SAFE STOP (reboot to re-arm)
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+=== COM5 connected 22:47:34.125 ===
+microT-Kernel Version 3.00
+[S5:OBS] ERR SELF-TEST FAIL (CAL_FAIL): echo 0/5 pings, need 2: check the HC-SR04P wiring (GP16 TRIG, GP17 ECHO, 3V3)
+[S5:OBS] WARN SAFE STOP (reboot to re-arm)
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:ROBOT] WARN stopped: obstacle: no path, line lost or bad S5 request; reboot to re-arm
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=0 R=0 PWM=0/0
+=== COM5 connected 22:48:21.749 ===
+microT-Kernel Version 3.00
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 2, 0 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:ROBOT] telemetry queue accepting packets again (0)

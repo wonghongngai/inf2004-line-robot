@@ -201,6 +201,7 @@ is to measure real data.
 | S5-U41 | Avoids a box | L4 | Box centred, offset left and offset right, 5 runs each | 15/15 pass without touching it |
 | S5-U42 | Reacquires the line within 50 cm (NFR5-4) | L4 | Same runs as U41; mark where the line is reacquired | 15/15 within 50 cm |
 | S5-U43 | Ignores invalid readings (NFR5-5) | L3 | Point at open space, a soft target, and very close (< 2 cm) | never the only basis of a decision; logged as invalid |
+| S5-U46 / U47 | Start-up self-test (#47, W6 CALIBRATE → CAL_FAIL → SAFE_STOP): decision logic, then 9 boots on the robot (wired, open space, unplugged, replugged) | L1 + L3 | `run_host_tests.sh s5/`; bench with `integrated` | unplugged sensor → SAFE STOP and no wheel motion after START. **PASS 22 Nov** |
 | S5-U44 | Hump is not treated as an obstacle (A5-2) | L4 | 10 hump passes with S5 active | 0 false obstacle stops. **Dropped 22 Nov (#44):** the hump is too small to matter and the ultrasonic sits above its height |
 
 **Done when:** U01–U44 pass, and avoidance works in integrated mode (INT-10).

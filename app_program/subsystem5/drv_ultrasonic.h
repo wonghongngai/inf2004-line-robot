@@ -61,4 +61,13 @@ IMPORT BOOL ultrasonic_ping_start(void);
  * @return What happened (NO_ECHO if no ping was started).
  */
 IMPORT ultrasonic_status_t ultrasonic_ping_finish(UW * p_distance_mm);
+
+/**
+ * Raw echo time of the last ultrasonic_ping_finish() (and so of the last
+ * ultrasonic_measure_mm()), in us, whatever its status: > 0 whenever
+ * ECHO went high, even if the status is NO_ECHO because ECHO was still
+ * high at the end of the window.  0 if ECHO never went high or no ping
+ * was fired (BUSY).  For the start-up self-test only (#47).
+ */
+IMPORT UW ultrasonic_last_echo_us(void);
 #endif /* DRV_ULTRASONIC_H */
