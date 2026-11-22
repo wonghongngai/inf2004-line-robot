@@ -1,0 +1,1206 @@
+# S4-U16 bench test, 22 Nov 2026, robot on a stand. Firmware: robot-integrated.uf2 built from 9d96fca (fix/imu-ectx-vc-stop).
+# Full console log (raw file 2026-11-22_131536_console.txt, gitignored). 5 boots = 5 runs.
+# Each run: START sent over MQTT (mosquitto_pub, 1 byte 0x05) -> wheels turning -> operator pulls IMU SDA (GP4) -> PAUSE (0x01) then RESUME (0x02) sent.
+# Run 1 also got a START without a reset (refused: latched). Operator saw the wheels stop at once in all 5 runs.
+=== COM5 connected 13:15:43.649 ===
+
+
+microT-Kernel Version 3.00
+
+
+=== micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003) ===
+dual-core (SMP) build, usermain on core 0
+[MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=20 ms
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: calibration complete base=(-31,95,955) mg
+S5: MONITORING
+[ROBOT] ready: motors off, waiting for START over MQTT
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=100 acc=(-61,107,968)mg delta=(x:-30,y:12)mg mag=(360,-315,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=150 acc=(-34,88,969)mg delta=(x:-3,y:-7)mg mag=(357,-313,-123) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3
+mqtt: connecting to 172.20.10.2:1883 as group17-robot
+[ROBOT] telemetry queue full; waiting for MQTT (-50)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+mqtt: connected to 172.20.10.2
+mqtt: subscribed to group17-robot/command
+mqtt: subscribed to group17-robot/mapping
+Buddy4: n=200 acc=(-56,135,951)mg delta=(x:-25,y:40)mg mag=(357,-313,-127) pitch=0 height=0mm height_valid=0 state=0
+[ROBOT] telemetry queue accepting packets again (0)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=250 acc=(-41,52,942)mg delta=(x:-10,y:-43)mg mag=(353,-313,-132) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=300 acc=(-30,91,943)mg delta=(x:1,y:-4)mg mag=(356,-315,-124) pitch=0 height=0mm height_valid=0 state=0
+HUMP DEBUG: raw=-72 filtered=-61 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-24 filtered=-69 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-43 filtered=-65 moving=0 dist=0 entry=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=350 acc=(-24,96,934)mg delta=(x:7,y:1)mg mag=(358,-317,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=400 acc=(-24,93,934)mg delta=(x:7,y:-2)mg mag=(361,-315,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=450 acc=(-33,96,929)mg delta=(x:-2,y:1)mg mag=(359,-317,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=500 acc=(-25,90,929)mg delta=(x:6,y:-5)mg mag=(360,-316,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=550 acc=(-34,92,928)mg delta=(x:-3,y:-3)mg mag=(357,-317,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=600 acc=(-24,89,931)mg delta=(x:7,y:-6)mg mag=(356,-314,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=650 acc=(-20,87,938)mg delta=(x:11,y:-8)mg mag=(357,-315,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=700 acc=(-20,92,927)mg delta=(x:11,y:-3)mg mag=(359,-315,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=750 acc=(-23,89,929)mg delta=(x:8,y:-6)mg mag=(357,-316,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=800 acc=(-23,88,928)mg delta=(x:8,y:-7)mg mag=(356,-314,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=850 acc=(-20,87,927)mg delta=(x:11,y:-8)mg mag=(357,-314,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=900 acc=(-23,88,932)mg delta=(x:8,y:-7)mg mag=(357,-312,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=950 acc=(-16,87,930)mg delta=(x:15,y:-8)mg mag=(358,-314,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1000 acc=(-21,90,930)mg delta=(x:10,y:-5)mg mag=(357,-312,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1050 acc=(-23,87,928)mg delta=(x:8,y:-8)mg mag=(358,-317,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1100 acc=(-18,91,926)mg delta=(x:13,y:-4)mg mag=(357,-314,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1150 acc=(-19,84,928)mg delta=(x:12,y:-11)mg mag=(356,-313,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1200 acc=(-21,91,928)mg delta=(x:10,y:-4)mg mag=(360,-315,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1250 acc=(-20,89,934)mg delta=(x:11,y:-6)mg mag=(356,-314,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1300 acc=(-20,88,931)mg delta=(x:11,y:-7)mg mag=(355,-313,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1350 acc=(-20,91,928)mg delta=(x:11,y:-4)mg mag=(359,-316,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1400 acc=(-29,92,928)mg delta=(x:2,y:-3)mg mag=(358,-315,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1450 acc=(-21,90,925)mg delta=(x:10,y:-5)mg mag=(358,-315,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1500 acc=(-22,90,926)mg delta=(x:9,y:-5)mg mag=(357,-314,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1550 acc=(-23,90,928)mg delta=(x:8,y:-5)mg mag=(360,-313,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1600 acc=(-27,90,929)mg delta=(x:4,y:-5)mg mag=(360,-316,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1650 acc=(-20,85,930)mg delta=(x:11,y:-10)mg mag=(359,-317,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1700 acc=(-24,87,930)mg delta=(x:7,y:-8)mg mag=(356,-314,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1750 acc=(-21,90,925)mg delta=(x:10,y:-5)mg mag=(360,-316,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1800 acc=(-22,86,929)mg delta=(x:9,y:-9)mg mag=(359,-313,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1850 acc=(-20,95,925)mg delta=(x:11,y:0)mg mag=(357,-312,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1900 acc=(-22,90,929)mg delta=(x:9,y:-5)mg mag=(357,-311,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=1950 acc=(-21,88,928)mg delta=(x:10,y:-7)mg mag=(355,-314,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2000 acc=(-21,89,929)mg delta=(x:10,y:-6)mg mag=(358,-315,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2050 acc=(-25,90,931)mg delta=(x:6,y:-5)mg mag=(357,-316,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2100 acc=(-17,87,928)mg delta=(x:14,y:-8)mg mag=(357,-319,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2150 acc=(-17,95,924)mg delta=(x:14,y:0)mg mag=(358,-315,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2200 acc=(16,140,919)mg delta=(x:47,y:45)mg mag=(360,-315,-119) pitch=5 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2250 acc=(-12,83,933)mg delta=(x:19,y:-12)mg mag=(373,-313,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2300 acc=(-10,96,925)mg delta=(x:21,y:1)mg mag=(374,-309,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2350 acc=(-26,91,957)mg delta=(x:5,y:-4)mg mag=(372,-310,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2400 acc=(-34,94,954)mg delta=(x:-3,y:-1)mg mag=(373,-311,-127) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2450 acc=(-30,92,941)mg delta=(x:1,y:-3)mg mag=(373,-314,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2500 acc=(-29,95,937)mg delta=(x:2,y:0)mg mag=(370,-309,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2550 acc=(-27,98,932)mg delta=(x:4,y:3)mg mag=(369,-306,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2600 acc=(-25,91,938)mg delta=(x:6,y:-4)mg mag=(370,-313,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2650 acc=(-24,93,930)mg delta=(x:7,y:-2)mg mag=(370,-309,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2700 acc=(-27,91,937)mg delta=(x:4,y:-4)mg mag=(371,-311,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2750 acc=(-23,93,928)mg delta=(x:8,y:-2)mg mag=(373,-310,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2800 acc=(-20,94,932)mg delta=(x:11,y:-1)mg mag=(370,-311,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2850 acc=(-24,92,929)mg delta=(x:7,y:-3)mg mag=(370,-312,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2900 acc=(-21,93,931)mg delta=(x:10,y:-2)mg mag=(371,-311,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=2950 acc=(-22,93,922)mg delta=(x:9,y:-2)mg mag=(370,-310,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=3000 acc=(-23,94,929)mg delta=(x:8,y:-1)mg mag=(371,-307,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=3050 acc=(-26,95,928)mg delta=(x:5,y:0)mg mag=(374,-310,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=3100 acc=(-26,90,929)mg delta=(x:5,y:-5)mg mag=(371,-311,-121) pitch=0 height=0mm height_valid=0 state=0
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=5
+Buddy 1: command queued=5
+[ROBOT] START received
+[ROBOT] armed: no letter map yet, straight at junctions
+[MOTION] state=2 fault=0 ticks L=273 R=288 PWM=12/15
+Buddy4: n=3150 acc=(-19,119,966)mg delta=(x:12,y:24)mg mag=(369,-309,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=1553 R=1687 PWM=14/15
+Buddy4: n=3200 acc=(-2,101,963)mg delta=(x:29,y:6)mg mag=(366,-312,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=2931 R=3089 PWM=14/15
+Buddy4: n=3250 acc=(-6,94,953)mg delta=(x:25,y:-1)mg mag=(368,-313,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=4332 R=4495 PWM=14/15
+Buddy4: n=3300 acc=(-29,100,917)mg delta=(x:2,y:5)mg mag=(373,-312,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=5737 R=5910 PWM=14/15
+Buddy4: n=3350 acc=(-41,81,933)mg delta=(x:-10,y:-14)mg mag=(371,-311,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=7145 R=7320 PWM=14/15
+Buddy4: n=3400 acc=(-24,103,949)mg delta=(x:7,y:8)mg mag=(368,-309,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=8556 R=8740 PWM=14/15
+Buddy4: n=3450 acc=(-20,95,943)mg delta=(x:11,y:0)mg mag=(368,-314,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=9961 R=10152 PWM=14/15
+Buddy4: n=3500 acc=(-20,58,911)mg delta=(x:11,y:-37)mg mag=(367,-309,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=11374 R=11574 PWM=14/15
+Buddy4: n=3550 acc=(-16,105,919)mg delta=(x:15,y:10)mg mag=(365,-314,-126) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=12786 R=12990 PWM=14/15
+Buddy4: n=3600 acc=(-54,89,914)mg delta=(x:-23,y:-6)mg mag=(368,-315,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=14202 R=14411 PWM=14/15
+Buddy4: n=3650 acc=(-28,85,938)mg delta=(x:3,y:-10)mg mag=(368,-312,-120) pitch=0 height=0mm height_valid=0 state=0
+HUMP DEBUG: raw=-170 filtered=-68 moving=1 dist=2 entry=0
+HUMP DEBUG: raw=-103 filtered=-118 moving=1 dist=3 entry=0
+HUMP DEBUG: raw=-2 filtered=-91 moving=1 dist=3 entry=1
+[MOTION] state=2 fault=0 ticks L=15609 R=15824 PWM=14/15
+Buddy4: n=3700 acc=(-3,83,943)mg delta=(x:28,y:-12)mg mag=(369,-313,-121) pitch=0 height=0mm height_valid=0 state=0
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+[ROBOT] stopped: IMU unsafe or stale; reboot to re-arm
+[ROBOT] IMU stop data: age=12 ms samples=3700 ok=0 calibrated=1 motion=4 event=4 errors=1 baseline_errors=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: LSM303DLHC initialized
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: calibration complete base=(-22,91,932) mg
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=3800 acc=(-30,93,928)mg delta=(x:-8,y:2)mg mag=(369,-311,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=3850 acc=(-29,94,934)mg delta=(x:-7,y:3)mg mag=(372,-313,-125) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=3900 acc=(-22,98,928)mg delta=(x:0,y:7)mg mag=(372,-312,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=3950 acc=(-23,92,934)mg delta=(x:-1,y:1)mg mag=(374,-315,-126) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4000 acc=(-24,94,930)mg delta=(x:-2,y:3)mg mag=(372,-311,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4050 acc=(-19,95,932)mg delta=(x:3,y:4)mg mag=(371,-312,-126) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4100 acc=(-20,90,925)mg delta=(x:2,y:-1)mg mag=(371,-311,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4150 acc=(-23,95,931)mg delta=(x:-1,y:4)mg mag=(373,-308,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4200 acc=(-23,94,929)mg delta=(x:-1,y:3)mg mag=(372,-313,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4250 acc=(-24,90,927)mg delta=(x:-2,y:-1)mg mag=(366,-308,-125) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4300 acc=(-20,94,930)mg delta=(x:2,y:3)mg mag=(372,-310,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4350 acc=(-25,94,927)mg delta=(x:-3,y:3)mg mag=(371,-311,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4400 acc=(-26,91,930)mg delta=(x:-4,y:0)mg mag=(370,-312,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4450 acc=(-24,94,930)mg delta=(x:-2,y:3)mg mag=(371,-311,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4500 acc=(-25,94,927)mg delta=(x:-3,y:3)mg mag=(371,-312,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4550 acc=(-21,92,926)mg delta=(x:1,y:1)mg mag=(370,-312,-125) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4600 acc=(-22,93,925)mg delta=(x:0,y:2)mg mag=(373,-313,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4650 acc=(-20,95,924)mg delta=(x:2,y:4)mg mag=(371,-309,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4700 acc=(-20,96,926)mg delta=(x:2,y:5)mg mag=(373,-314,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4750 acc=(-21,91,928)mg delta=(x:1,y:0)mg mag=(369,-314,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4800 acc=(-20,94,930)mg delta=(x:2,y:3)mg mag=(373,-310,-121) pitch=0 height=0mm height_valid=0 state=0
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=1
+Buddy 1: command queued=1
+[ROBOT] PAUSE ignored: already in a safety stop
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4850 acc=(-20,97,928)mg delta=(x:2,y:6)mg mag=(374,-315,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4900 acc=(-22,95,927)mg delta=(x:0,y:4)mg mag=(373,-311,-122) pitch=0 height=0mm height_valid=0 state=0
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=2
+Buddy 1: command queued=2
+[ROBOT] RESUME ignored: not paused
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=4950 acc=(-21,88,931)mg delta=(x:1,y:-3)mg mag=(371,-311,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5000 acc=(-17,87,924)mg delta=(x:5,y:-4)mg mag=(371,-314,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5050 acc=(-21,93,930)mg delta=(x:1,y:2)mg mag=(370,-311,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5100 acc=(-23,94,925)mg delta=(x:-1,y:3)mg mag=(373,-311,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5150 acc=(-21,92,931)mg delta=(x:1,y:1)mg mag=(371,-313,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5200 acc=(-24,90,926)mg delta=(x:-2,y:-1)mg mag=(371,-315,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5250 acc=(-27,96,930)mg delta=(x:-5,y:5)mg mag=(374,-311,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5300 acc=(-19,95,922)mg delta=(x:3,y:4)mg mag=(372,-310,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5350 acc=(-24,90,923)mg delta=(x:-2,y:-1)mg mag=(371,-310,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5400 acc=(-21,93,923)mg delta=(x:1,y:2)mg mag=(372,-311,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5450 acc=(-19,92,925)mg delta=(x:3,y:1)mg mag=(372,-309,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5500 acc=(-23,90,927)mg delta=(x:-1,y:-1)mg mag=(372,-311,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5550 acc=(-20,92,924)mg delta=(x:2,y:1)mg mag=(372,-312,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5600 acc=(-23,91,920)mg delta=(x:-1,y:0)mg mag=(369,-309,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5650 acc=(-23,96,927)mg delta=(x:-1,y:5)mg mag=(369,-311,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5700 acc=(-21,95,926)mg delta=(x:1,y:4)mg mag=(369,-313,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5750 acc=(-24,94,926)mg delta=(x:-2,y:3)mg mag=(370,-310,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5800 acc=(-18,94,922)mg delta=(x:4,y:3)mg mag=(373,-313,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5850 acc=(-23,91,928)mg delta=(x:-1,y:0)mg mag=(370,-314,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5900 acc=(-25,96,924)mg delta=(x:-3,y:5)mg mag=(373,-312,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=5950 acc=(-21,94,926)mg delta=(x:1,y:3)mg mag=(373,-314,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6000 acc=(-38,69,952)mg delta=(x:-16,y:-22)mg mag=(370,-314,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6050 acc=(-16,77,935)mg delta=(x:6,y:-14)mg mag=(369,-311,-122) pitch=0 height=0mm height_valid=0 state=0
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+Buddy4: LSM303DLHC initialized
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+Buddy4: LSM303DLHC initialized
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (2 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+Buddy4: LSM303DLHC initialized
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: calibration complete base=(-26,75,912) mg
+HUMP DEBUG: raw=-75 filtered=-60 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-78 filtered=-68 moving=0 dist=0 entry=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+HUMP DEBUG: raw=23 filtered=73 moving=0 dist=0 entry=0
+Buddy4: n=6250 acc=(-16,87,924)mg delta=(x:10,y:12)mg mag=(373,-316,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6300 acc=(-22,89,929)mg delta=(x:4,y:14)mg mag=(370,-314,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6350 acc=(-23,85,925)mg delta=(x:3,y:10)mg mag=(368,-312,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6400 acc=(-18,87,923)mg delta=(x:8,y:12)mg mag=(372,-310,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6450 acc=(-18,88,925)mg delta=(x:8,y:13)mg mag=(372,-313,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6500 acc=(-21,88,923)mg delta=(x:5,y:13)mg mag=(370,-308,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6550 acc=(-20,88,922)mg delta=(x:6,y:13)mg mag=(370,-312,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6600 acc=(-22,90,926)mg delta=(x:4,y:15)mg mag=(372,-316,-126) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6650 acc=(-20,85,919)mg delta=(x:6,y:10)mg mag=(368,-311,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6700 acc=(-22,87,929)mg delta=(x:4,y:12)mg mag=(370,-316,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6750 acc=(-23,92,928)mg delta=(x:3,y:17)mg mag=(370,-312,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6800 acc=(-23,90,927)mg delta=(x:3,y:15)mg mag=(368,-313,-126) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6850 acc=(-18,88,925)mg delta=(x:8,y:13)mg mag=(371,-312,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6900 acc=(-25,89,922)mg delta=(x:1,y:14)mg mag=(369,-314,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=6950 acc=(-19,89,921)mg delta=(x:7,y:14)mg mag=(371,-314,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7000 acc=(-25,91,925)mg delta=(x:1,y:16)mg mag=(369,-312,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7050 acc=(-23,92,927)mg delta=(x:3,y:17)mg mag=(372,-312,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7100 acc=(-22,86,923)mg delta=(x:4,y:11)mg mag=(370,-311,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7150 acc=(-21,88,921)mg delta=(x:5,y:13)mg mag=(370,-312,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7200 acc=(-20,86,924)mg delta=(x:6,y:11)mg mag=(371,-312,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7250 acc=(-23,91,929)mg delta=(x:3,y:16)mg mag=(370,-309,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7300 acc=(-20,88,924)mg delta=(x:6,y:13)mg mag=(370,-312,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7350 acc=(-23,95,924)mg delta=(x:3,y:20)mg mag=(370,-312,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7400 acc=(-20,88,927)mg delta=(x:6,y:13)mg mag=(369,-313,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7450 acc=(-23,88,927)mg delta=(x:3,y:13)mg mag=(369,-313,-125) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7500 acc=(-24,90,922)mg delta=(x:2,y:15)mg mag=(370,-309,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7550 acc=(-21,91,926)mg delta=(x:5,y:16)mg mag=(370,-312,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7600 acc=(-19,91,930)mg delta=(x:7,y:16)mg mag=(369,-309,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7650 acc=(-21,90,915)mg delta=(x:5,y:15)mg mag=(369,-314,-125) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7700 acc=(-19,89,923)mg delta=(x:7,y:14)mg mag=(370,-315,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7750 acc=(-21,89,923)mg delta=(x:5,y:14)mg mag=(370,-314,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7800 acc=(-21,89,927)mg delta=(x:5,y:14)mg mag=(369,-313,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7850 acc=(-23,86,924)mg delta=(x:3,y:11)mg mag=(370,-315,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7900 acc=(-19,87,928)mg delta=(x:7,y:12)mg mag=(372,-312,-125) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=7950 acc=(-21,89,927)mg delta=(x:5,y:14)mg mag=(373,-313,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=8000 acc=(-18,87,924)mg delta=(x:8,y:12)mg mag=(370,-311,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=5
+Buddy 1: command queued=5
+[ROBOT] START ignored: already started (safety stop: reboot to retry)
+Buddy4: n=8050 acc=(-20,85,928)mg delta=(x:6,y:10)mg mag=(373,-313,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=8100 acc=(-17,87,925)mg delta=(x:9,y:12)mg mag=(372,-313,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=8150 acc=(-23,91,925)mg delta=(x:3,y:16)mg mag=(374,-309,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=8200 acc=(-24,85,925)mg delta=(x:2,y:10)mg mag=(372,-313,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=8250 acc=(-23,88,925)mg delta=(x:3,y:13)mg mag=(374,-314,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=8300 acc=(-24,88,921)mg delta=(x:2,y:13)mg mag=(371,-311,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=8350 acc=(-24,83,927)mg delta=(x:2,y:8)mg mag=(372,-314,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=8400 acc=(-28,79,933)mg delta=(x:-2,y:4)mg mag=(371,-310,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=8450 acc=(-21,87,922)mg delta=(x:5,y:12)mg mag=(372,-314,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=8500 acc=(-19,91,922)mg delta=(x:7,y:16)mg mag=(370,-312,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+Buddy4: n=8550 acc=(-48,107,928)mg delta=(x:-22,y:32)mg mag=(372,-313,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=16616 R=16842 PWM=0/0
+=== COM5 connected 13:19:33.193 ===
+
+
+microT-Kernel Version 3.00
+
+
+=== micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003) ===
+dual-core (SMP) build, usermain on core 0
+[MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=20 ms
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: calibration complete base=(-22,90,929) mg
+S5: MONITORING
+[ROBOT] ready: motors off, waiting for START over MQTT
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=100 acc=(-22,90,924)mg delta=(x:0,y:0)mg mag=(374,-314,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=150 acc=(-23,88,923)mg delta=(x:-1,y:-2)mg mag=(372,-312,-124) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3
+mqtt: connecting to 172.20.10.2:1883 as group17-robot
+mqtt: connected to 172.20.10.2
+mqtt: subscribed to group17-robot/command
+mqtt: subscribed to group17-robot/mapping
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=200 acc=(-20,94,927)mg delta=(x:2,y:4)mg mag=(370,-312,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=250 acc=(-22,90,926)mg delta=(x:0,y:0)mg mag=(372,-315,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=300 acc=(-26,89,929)mg delta=(x:-4,y:-1)mg mag=(370,-312,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=350 acc=(-20,89,926)mg delta=(x:2,y:-1)mg mag=(373,-314,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=400 acc=(-20,91,928)mg delta=(x:2,y:1)mg mag=(369,-311,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=450 acc=(-19,87,928)mg delta=(x:3,y:-3)mg mag=(371,-311,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=500 acc=(-19,89,923)mg delta=(x:3,y:-1)mg mag=(371,-312,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=550 acc=(-19,87,928)mg delta=(x:3,y:-3)mg mag=(369,-314,-125) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=600 acc=(-20,88,926)mg delta=(x:2,y:-2)mg mag=(369,-310,-124) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=650 acc=(-17,88,923)mg delta=(x:5,y:-2)mg mag=(370,-311,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=700 acc=(-24,89,926)mg delta=(x:-2,y:-1)mg mag=(370,-313,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=5
+Buddy 1: command queued=5
+[ROBOT] START received
+[ROBOT] armed: no letter map yet, straight at junctions
+Buddy4: n=750 acc=(-4,98,915)mg delta=(x:18,y:8)mg mag=(365,-312,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=680 R=787 PWM=14/15
+Buddy4: n=800 acc=(-13,74,916)mg delta=(x:9,y:-16)mg mag=(367,-313,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=2051 R=2206 PWM=14/15
+Buddy4: n=850 acc=(-31,79,940)mg delta=(x:-9,y:-11)mg mag=(366,-311,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=3457 R=3622 PWM=14/15
+Buddy4: n=900 acc=(7,98,941)mg delta=(x:29,y:8)mg mag=(370,-309,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=4873 R=5045 PWM=14/15
+Buddy4: n=950 acc=(-34,121,927)mg delta=(x:-12,y:31)mg mag=(370,-308,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=6287 R=6463 PWM=14/15
+Buddy4: n=1000 acc=(-28,88,913)mg delta=(x:-6,y:-2)mg mag=(371,-311,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=7704 R=7884 PWM=14/15
+[MOTION] state=2 fault=0 ticks L=9116 R=9306 PWM=14/15
+Buddy4: n=1050 acc=(-74,66,934)mg delta=(x:-52,y:-24)mg mag=(370,-312,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=10531 R=10725 PWM=14/15
+Buddy4: n=1100 acc=(-22,108,938)mg delta=(x:0,y:18)mg mag=(370,-312,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=11946 R=12150 PWM=14/15
+Buddy4: n=1150 acc=(-62,81,897)mg delta=(x:-40,y:-9)mg mag=(372,-316,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=13364 R=13568 PWM=14/15
+Buddy4: n=1200 acc=(-23,82,894)mg delta=(x:-1,y:-8)mg mag=(367,-312,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=14783 R=14994 PWM=14/15
+Buddy4: n=1250 acc=(-11,72,900)mg delta=(x:11,y:-18)mg mag=(367,-312,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=16195 R=16413 PWM=14/15
+Buddy4: n=1300 acc=(-26,94,933)mg delta=(x:-4,y:4)mg mag=(369,-312,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=17616 R=17839 PWM=14/15
+Buddy4: n=1350 acc=(-42,75,938)mg delta=(x:-20,y:-15)mg mag=(366,-310,-123) pitch=0 height=0mm height_valid=0 state=0
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+[ROBOT] stopped: IMU unsafe or stale; reboot to re-arm
+[ROBOT] IMU stop data: age=12 ms samples=1350 ok=0 calibrated=1 motion=4 event=4 errors=1 baseline_errors=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+Buddy4: LSM303DLHC initialized
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: calibration complete base=(-21,93,923) mg
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=1450 acc=(-22,92,922)mg delta=(x:-1,y:-1)mg mag=(370,-307,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=1500 acc=(-22,93,927)mg delta=(x:-1,y:0)mg mag=(369,-308,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=1550 acc=(-23,94,919)mg delta=(x:-2,y:1)mg mag=(369,-309,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=1600 acc=(-19,94,928)mg delta=(x:2,y:1)mg mag=(370,-307,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=1650 acc=(-21,94,927)mg delta=(x:0,y:1)mg mag=(370,-312,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=1700 acc=(-22,91,931)mg delta=(x:-1,y:-2)mg mag=(367,-309,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=1
+Buddy 1: command queued=1
+[ROBOT] PAUSE ignored: already in a safety stop
+Buddy4: n=1750 acc=(-18,96,924)mg delta=(x:3,y:3)mg mag=(370,-309,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=1800 acc=(-18,89,930)mg delta=(x:3,y:-4)mg mag=(369,-309,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=1850 acc=(-18,95,924)mg delta=(x:3,y:2)mg mag=(369,-309,-121) pitch=0 height=0mm height_valid=0 state=0
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=2
+Buddy 1: command queued=2
+[ROBOT] RESUME ignored: not paused
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=1900 acc=(-13,91,924)mg delta=(x:8,y:-2)mg mag=(372,-311,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=1950 acc=(-20,98,926)mg delta=(x:1,y:5)mg mag=(370,-311,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2000 acc=(-24,93,924)mg delta=(x:-3,y:0)mg mag=(368,-307,-115) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2050 acc=(-18,94,924)mg delta=(x:3,y:1)mg mag=(371,-309,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2100 acc=(-17,93,926)mg delta=(x:4,y:0)mg mag=(368,-307,-116) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2150 acc=(-21,91,923)mg delta=(x:0,y:-2)mg mag=(370,-309,-116) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2200 acc=(-19,94,925)mg delta=(x:2,y:1)mg mag=(371,-307,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2250 acc=(-23,92,923)mg delta=(x:-2,y:-1)mg mag=(369,-309,-116) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2300 acc=(-18,93,933)mg delta=(x:3,y:0)mg mag=(367,-310,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2350 acc=(-21,90,923)mg delta=(x:0,y:-3)mg mag=(370,-308,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2400 acc=(-23,93,925)mg delta=(x:-2,y:0)mg mag=(369,-310,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2450 acc=(-19,96,919)mg delta=(x:2,y:3)mg mag=(370,-305,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2500 acc=(-20,90,928)mg delta=(x:1,y:-3)mg mag=(367,-307,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2550 acc=(-15,90,919)mg delta=(x:6,y:-3)mg mag=(369,-307,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2600 acc=(-19,95,930)mg delta=(x:2,y:2)mg mag=(371,-310,-116) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2650 acc=(-20,92,926)mg delta=(x:1,y:-1)mg mag=(369,-310,-117) pitch=0 height=0mm height_valid=0 state=0
+HUMP DEBUG: raw=26 filtered=62 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-15 filtered=61 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-57 filtered=-65 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-86 filtered=-66 moving=0 dist=0 entry=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2700 acc=(-8,50,924)mg delta=(x:13,y:-43)mg mag=(368,-307,-122) pitch=0 height=0mm height_valid=0 state=0
+HUMP DEBUG: raw=-113 filtered=-65 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-135 filtered=-102 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=62 filtered=-62 moving=0 dist=0 entry=0
+[MOTION] state=5 fault=0 ticks L=18159 R=18389 PWM=0/0
+Buddy4: n=2750 acc=(24,64,927)mg delta=(x:45,y:-29)mg mag=(370,-309,-117) pitch=0 height=0mm height_valid=0 state=0
+=== COM5 connected 13:20:35.142 ===
+
+
+microT-Kernel Version 3.00
+
+
+=== micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003) ===
+dual-core (SMP) build, usermain on core 0
+[MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=20 ms
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: calibration complete base=(-21,89,921) mg
+S5: MONITORING
+[ROBOT] ready: motors off, waiting for START over MQTT
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=100 acc=(-21,99,924)mg delta=(x:0,y:10)mg mag=(370,-310,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=150 acc=(-15,87,919)mg delta=(x:6,y:-2)mg mag=(368,-309,-119) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3
+mqtt: connecting to 172.20.10.2:1883 as group17-robot
+[ROBOT] telemetry queue full; waiting for MQTT (-50)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+mqtt: connected to 172.20.10.2
+mqtt: subscribed to group17-robot/command
+mqtt: subscribed to group17-robot/mapping
+Buddy4: n=200 acc=(-23,92,923)mg delta=(x:-2,y:3)mg mag=(371,-312,-119) pitch=0 height=0mm height_valid=0 state=0
+[ROBOT] telemetry queue accepting packets again (0)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=250 acc=(-21,91,921)mg delta=(x:0,y:2)mg mag=(370,-309,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=300 acc=(-21,94,923)mg delta=(x:0,y:5)mg mag=(369,-310,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=350 acc=(-18,93,926)mg delta=(x:3,y:4)mg mag=(369,-312,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=400 acc=(-21,92,920)mg delta=(x:0,y:3)mg mag=(367,-308,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=450 acc=(-20,92,927)mg delta=(x:1,y:3)mg mag=(369,-307,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=500 acc=(-17,91,929)mg delta=(x:4,y:2)mg mag=(367,-310,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=550 acc=(-20,91,921)mg delta=(x:1,y:2)mg mag=(368,-310,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=600 acc=(-18,92,922)mg delta=(x:3,y:3)mg mag=(369,-311,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=650 acc=(-19,93,926)mg delta=(x:2,y:4)mg mag=(366,-307,-116) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=700 acc=(-18,93,929)mg delta=(x:3,y:4)mg mag=(367,-309,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=5
+Buddy 1: command queued=5
+[ROBOT] START received
+[ROBOT] armed: no letter map yet, straight at junctions
+Buddy4: n=750 acc=(39,88,926)mg delta=(x:60,y:-1)mg mag=(368,-314,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=626 R=706 PWM=13/15
+Buddy4: n=800 acc=(-26,118,917)mg delta=(x:-5,y:29)mg mag=(370,-315,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=1979 R=2124 PWM=14/15
+Buddy4: n=850 acc=(-17,80,898)mg delta=(x:4,y:-9)mg mag=(368,-312,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=3382 R=3545 PWM=14/15
+Buddy4: n=900 acc=(-4,111,946)mg delta=(x:17,y:22)mg mag=(365,-310,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=4797 R=4963 PWM=14/15
+Buddy4: n=950 acc=(-34,111,928)mg delta=(x:-13,y:22)mg mag=(366,-313,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=6213 R=6388 PWM=14/15
+Buddy4: n=1000 acc=(-22,80,945)mg delta=(x:-1,y:-9)mg mag=(368,-309,-116) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=7628 R=7809 PWM=14/15
+[MOTION] state=2 fault=0 ticks L=9043 R=9236 PWM=14/15
+Buddy4: n=1050 acc=(12,86,920)mg delta=(x:33,y:-3)mg mag=(368,-312,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=10462 R=10656 PWM=14/15
+Buddy4: n=1100 acc=(-16,99,939)mg delta=(x:5,y:10)mg mag=(367,-316,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=11877 R=12079 PWM=14/15
+Buddy4: n=1150 acc=(-13,88,941)mg delta=(x:8,y:-1)mg mag=(368,-315,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=13294 R=13499 PWM=14/15
+Buddy4: n=1200 acc=(-1,86,920)mg delta=(x:20,y:-3)mg mag=(366,-313,-116) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=14713 R=14922 PWM=14/15
+Buddy4: n=1250 acc=(-10,82,914)mg delta=(x:11,y:-7)mg mag=(366,-310,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=16126 R=16345 PWM=14/15
+Buddy4: n=1300 acc=(16,111,939)mg delta=(x:37,y:22)mg mag=(368,-309,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=17543 R=17764 PWM=14/15
+Buddy4: n=1350 acc=(-7,90,925)mg delta=(x:14,y:1)mg mag=(365,-314,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=18956 R=19187 PWM=14/15
+Buddy4: n=1400 acc=(-19,72,906)mg delta=(x:2,y:-17)mg mag=(366,-316,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=20373 R=20609 PWM=14/15
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+[ROBOT] stopped: IMU unsafe or stale; reboot to re-arm
+[ROBOT] IMU stop data: age=11 ms samples=1431 ok=0 calibrated=1 motion=4 event=4 errors=1 baseline_errors=0
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=1
+Buddy 1: command queued=1
+[ROBOT] PAUSE ignored: already in a safety stop
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=2
+Buddy 1: command queued=2
+[ROBOT] RESUME ignored: not paused
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+Buddy4: LSM303DLHC initialized
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+Buddy4: calibration complete base=(-18,69,926) mg
+HUMP DEBUG: raw=-75 filtered=-67 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-97 filtered=-88 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=-75 filtered=-82 moving=0 dist=0 entry=1
+Buddy4: n=1500 acc=(-16,82,924)mg delta=(x:2,y:13)mg mag=(368,-311,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=20482 R=20726 PWM=0/0
+HUMP DEBUG: raw=164 filtered=81 moving=0 dist=0 entry=0
+HUMP DEBUG: raw=-13 filtered=66 moving=0 dist=0 entry=0
+Buddy4: n=1550 acc=(-80,114,912)mg delta=(x:-62,y:45)mg mag=(364,-311,-120) pitch=5 height=0mm height_valid=0 state=0
+=== COM5 connected 13:21:35.023 ===
+
+
+microT-Kernel Version 3.00
+
+
+=== micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003) ===
+dual-core (SMP) build, usermain on core 0
+[MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=20 ms
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: calibration complete base=(-20,90,926) mg
+S5: MONITORING
+[ROBOT] ready: motors off, waiting for START over MQTT
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=100 acc=(-21,96,923)mg delta=(x:-1,y:6)mg mag=(369,-313,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=150 acc=(-20,90,924)mg delta=(x:0,y:0)mg mag=(366,-312,-123) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3
+mqtt: connecting to 172.20.10.2:1883 as group17-robot
+mqtt: connected to 172.20.10.2
+mqtt: subscribed to group17-robot/command
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+mqtt: subscribed to group17-robot/mapping
+Buddy4: n=200 acc=(-16,92,930)mg delta=(x:4,y:2)mg mag=(368,-314,-125) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=250 acc=(-19,91,922)mg delta=(x:1,y:1)mg mag=(367,-313,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=300 acc=(-20,93,932)mg delta=(x:0,y:3)mg mag=(366,-315,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=350 acc=(-22,88,922)mg delta=(x:-2,y:-2)mg mag=(366,-314,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=400 acc=(-21,91,929)mg delta=(x:-1,y:1)mg mag=(366,-311,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=450 acc=(-21,90,928)mg delta=(x:-1,y:0)mg mag=(366,-309,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=500 acc=(-20,92,926)mg delta=(x:0,y:2)mg mag=(366,-314,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=550 acc=(-16,90,925)mg delta=(x:4,y:0)mg mag=(367,-315,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=600 acc=(-20,91,921)mg delta=(x:0,y:1)mg mag=(364,-315,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=5
+Buddy 1: command queued=5
+[ROBOT] START received
+[ROBOT] armed: no letter map yet, straight at junctions
+Buddy4: n=650 acc=(-9,75,937)mg delta=(x:11,y:-15)mg mag=(372,-314,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=973 R=1086 PWM=14/15
+Buddy4: n=700 acc=(-49,91,903)mg delta=(x:-29,y:1)mg mag=(368,-316,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=2345 R=2499 PWM=14/15
+Buddy4: n=750 acc=(5,74,904)mg delta=(x:25,y:-16)mg mag=(366,-314,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=3752 R=3918 PWM=14/15
+Buddy4: n=800 acc=(-21,89,948)mg delta=(x:-1,y:-1)mg mag=(367,-313,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=5160 R=5332 PWM=14/15
+Buddy4: n=850 acc=(-25,89,913)mg delta=(x:-5,y:-1)mg mag=(369,-312,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=6571 R=6751 PWM=14/15
+Buddy4: n=900 acc=(-47,88,912)mg delta=(x:-27,y:-2)mg mag=(368,-309,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=7980 R=8170 PWM=14/15
+Buddy4: n=950 acc=(-20,111,956)mg delta=(x:0,y:21)mg mag=(365,-312,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=9395 R=9585 PWM=14/15
+Buddy4: n=1000 acc=(-29,100,929)mg delta=(x:-9,y:10)mg mag=(371,-309,-115) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=10807 R=11007 PWM=14/15
+[MOTION] state=2 fault=0 ticks L=12222 R=12423 PWM=14/15
+Buddy4: n=1050 acc=(-10,85,912)mg delta=(x:10,y:-5)mg mag=(368,-309,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=13634 R=13846 PWM=14/15
+Buddy4: n=1100 acc=(13,85,935)mg delta=(x:33,y:-5)mg mag=(369,-311,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=15047 R=15261 PWM=14/15
+Buddy4: n=1150 acc=(-21,71,933)mg delta=(x:-1,y:-19)mg mag=(368,-313,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=16459 R=16683 PWM=14/15
+Buddy4: n=1200 acc=(-23,94,891)mg delta=(x:-3,y:4)mg mag=(369,-310,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=17869 R=18098 PWM=14/15
+Buddy4: n=1250 acc=(-6,95,931)mg delta=(x:14,y:5)mg mag=(367,-315,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=19282 R=19516 PWM=14/15
+Buddy4: n=1300 acc=(-12,75,964)mg delta=(x:8,y:-15)mg mag=(368,-312,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=20690 R=20933 PWM=14/15
+HUMP DEBUG: raw=69 filtered=67 moving=1 dist=2 entry=0
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+[ROBOT] stopped: IMU unsafe or stale; reboot to re-arm
+[ROBOT] IMU stop data: age=14 ms samples=1336 ok=0 calibrated=1 motion=4 event=4 errors=1 baseline_errors=0
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=1
+Buddy 1: command queued=1
+[ROBOT] PAUSE ignored: already in a safety stop
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=2
+Buddy 1: command queued=2
+[ROBOT] RESUME ignored: not paused
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+Buddy4: LSM303DLHC initialized
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+Buddy4: calibration complete base=(-16,78,911) mg
+HUMP DEBUG: raw=74 filtered=74 moving=1 dist=2 entry=0
+Buddy4: n=1400 acc=(-33,94,924)mg delta=(x:-17,y:16)mg mag=(369,-317,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=5 fault=0 ticks L=20806 R=21056 PWM=0/0
+=== COM5 connected 13:22:37.977 ===
+
+
+microT-Kernel Version 3.00
+
+
+=== micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003) ===
+dual-core (SMP) build, usermain on core 0
+[MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=20 ms
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: calibration complete base=(-21,92,926) mg
+S5: MONITORING
+[ROBOT] ready: motors off, waiting for START over MQTT
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=100 acc=(-20,91,925)mg delta=(x:1,y:-1)mg mag=(371,-311,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=150 acc=(-20,91,923)mg delta=(x:1,y:-1)mg mag=(373,-312,-121) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3
+mqtt: connecting to 172.20.10.2:1883 as group17-robot
+mqtt: connected to 172.20.10.2
+mqtt: subscribed to group17-robot/command
+mqtt: subscribed to group17-robot/mapping
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=200 acc=(-18,95,926)mg delta=(x:3,y:3)mg mag=(370,-315,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=250 acc=(-18,99,923)mg delta=(x:3,y:7)mg mag=(368,-316,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=300 acc=(-14,97,923)mg delta=(x:7,y:5)mg mag=(371,-318,-121) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=350 acc=(-21,92,921)mg delta=(x:0,y:0)mg mag=(370,-314,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=400 acc=(-21,93,920)mg delta=(x:0,y:1)mg mag=(370,-317,-122) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=450 acc=(-21,93,925)mg delta=(x:0,y:1)mg mag=(367,-315,-123) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=500 acc=(-20,90,924)mg delta=(x:1,y:-2)mg mag=(367,-313,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=5
+Buddy 1: command queued=5
+[ROBOT] START received
+[ROBOT] armed: no letter map yet, straight at junctions
+Buddy4: n=550 acc=(-32,78,922)mg delta=(x:-11,y:-14)mg mag=(363,-310,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=581 R=655 PWM=13/15
+Buddy4: n=600 acc=(-7,96,936)mg delta=(x:14,y:4)mg mag=(368,-311,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=1917 R=2062 PWM=14/15
+Buddy4: n=650 acc=(-9,85,930)mg delta=(x:12,y:-7)mg mag=(369,-312,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=3309 R=3470 PWM=14/15
+Buddy4: n=700 acc=(-12,100,933)mg delta=(x:9,y:8)mg mag=(368,-311,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=4711 R=4879 PWM=14/15
+Buddy4: n=750 acc=(-5,103,940)mg delta=(x:16,y:11)mg mag=(370,-312,-116) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=6114 R=6286 PWM=14/15
+Buddy4: n=800 acc=(-22,81,919)mg delta=(x:-1,y:-11)mg mag=(370,-311,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=7515 R=7698 PWM=14/15
+Buddy4: n=850 acc=(-23,96,912)mg delta=(x:-2,y:4)mg mag=(369,-314,-118) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=8919 R=9106 PWM=14/15
+Buddy4: n=900 acc=(-24,79,915)mg delta=(x:-3,y:-13)mg mag=(368,-312,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=10325 R=10522 PWM=14/15
+Buddy4: n=950 acc=(-1,102,943)mg delta=(x:20,y:10)mg mag=(364,-311,-116) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=11733 R=11931 PWM=14/15
+Buddy4: n=1000 acc=(-12,105,954)mg delta=(x:9,y:13)mg mag=(371,-310,-116) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=13135 R=13345 PWM=14/15
+[MOTION] state=2 fault=0 ticks L=14537 R=14750 PWM=14/15
+Buddy4: n=1050 acc=(-14,98,925)mg delta=(x:7,y:6)mg mag=(367,-313,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=15945 R=16165 PWM=14/15
+Buddy4: n=1100 acc=(-39,108,927)mg delta=(x:-18,y:16)mg mag=(370,-314,-117) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=17351 R=17578 PWM=14/15
+Buddy4: n=1150 acc=(-14,80,923)mg delta=(x:7,y:-12)mg mag=(369,-314,-120) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=18757 R=18986 PWM=14/15
+Buddy4: n=1200 acc=(-35,75,899)mg delta=(x:-14,y:-17)mg mag=(370,-314,-119) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=20161 R=20399 PWM=14/15
+HUMP DEBUG: raw=470 filtered=165 moving=1 dist=2 entry=0
+HUMP DEBUG: raw=268 filtered=256 moving=1 dist=3 entry=1
+HUMP DEBUG: raw=46 filtered=261 moving=1 dist=2 entry=2
+Buddy4: hump entry confirmed sign=1 peak=261mg
+HUMP ACTIVE: forward=105 abs=105 dist=3 height=3
+HUMP ACTIVE: forward=18 abs=18 dist=2 height=4
+Buddy4: n=1250 acc=(-2,97,928)mg delta=(x:19,y:5)mg mag=(357,-310,-118) pitch=0 height=0mm height_valid=0 state=1
+Buddy4 EVENT: HUMP height=4 mm highest=4 mm peak=261 mg
+Buddy4: IMU read failed, er=-57 (1 failures since last report)
+[ROBOT] stopped: IMU unsafe or stale; reboot to re-arm
+[ROBOT] IMU stop data: age=12 ms samples=1255 ok=0 calibrated=1 motion=4 event=4 errors=1 baseline_errors=0
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=1
+Buddy 1: command queued=1
+[ROBOT] PAUSE ignored: already in a safety stop
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=2
+Buddy 1: command queued=2
+[ROBOT] RESUME ignored: not paused
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: IMU init failed, er=-57 (5 failures since last report)
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: LSM303DLHC initialized
+[MOTION] state=5 fault=0 ticks L=20696 R=20942 PWM=0/0
+Buddy4: calibration complete base=(-28,81,923) mg

@@ -1,0 +1,187 @@
+# Excerpt of the raw console log testing/subsystem5/logs/2026-11-21_225148_console.txt (gitignored),
+# boot '=== COM5 connected 22:55:28 ===' (raw lines 1502-3713), integrated firmware, robot line-following.
+# The repeated 'accelerometer not responding' line is collapsed: raw lines 1669-3713 hold it
+# 2033 times; every other line of that range is kept below in order.
+# Operator (22 Nov): the wheels kept turning for the whole storm, until the reset.
+=== COM5 connected 22:55:28.035 ===
+
+
+microT-Kernel Version 3.00
+
+
+=== micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003) ===
+dual-core (SMP) build, usermain on core 0
+[MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+Buddy4: LSM303DLHC initialized
+Buddy4: IMU task started, period=20 ms
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: calibration complete base=(-81,11,980) mg
+S5: MONITORING
+[ROBOT] ready: motors off, waiting for START over MQTT
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=100 acc=(-84,12,983)mg delta=(x:-3,y:1)mg mag=(-201,131,97) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=150 acc=(-80,10,981)mg delta=(x:1,y:-1)mg mag=(-198,132,98) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3
+mqtt: connecting to 172.20.10.2:1883 as group17-robot
+[ROBOT] telemetry queue full; waiting for MQTT (-50)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=200 acc=(-82,10,977)mg delta=(x:-1,y:-1)mg mag=(-202,131,96) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+mqtt: connected to 172.20.10.2
+mqtt: subscribed to group17-robot/command
+mqtt: subscribed to group17-robot/mapping
+Buddy4: n=250 acc=(-81,12,975)mg delta=(x:0,y:1)mg mag=(-202,132,101) pitch=0 height=0mm height_valid=0 state=0
+[ROBOT] telemetry queue accepting packets again (0)
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=300 acc=(-78,12,976)mg delta=(x:3,y:1)mg mag=(-197,135,99) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=350 acc=(-78,13,972)mg delta=(x:3,y:2)mg mag=(-201,134,101) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=400 acc=(-80,7,969)mg delta=(x:1,y:-4)mg mag=(-198,135,100) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+Buddy4: n=450 acc=(-79,8,972)mg delta=(x:2,y:-3)mg mag=(-199,136,98) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=5
+Buddy 1: command queued=5
+[ROBOT] START received
+[ROBOT] armed: no letter map yet, straight at junctions
+HUMP DEBUG: raw=-131 filtered=-83 moving=1 dist=1 entry=0
+Buddy4: n=500 acc=(-52,27,928)mg delta=(x:29,y:16)mg mag=(-204,131,100) pitch=0 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=457 R=456 PWM=12/15
+Buddy4: n=550 acc=(-59,36,958)mg delta=(x:22,y:25)mg mag=(-193,122,113) pitch=0 height=0mm height_valid=0 state=0
+HUMP DEBUG: raw=134 filtered=73 moving=1 dist=1 entry=0
+[MOTION] state=2 fault=0 ticks L=1194 R=1138 PWM=12/15
+Buddy4: n=600 acc=(-65,-25,1051)mg delta=(x:16,y:-36)mg mag=(-190,117,129) pitch=0 height=0mm height_valid=0 state=0
+HUMP DEBUG: raw=125 filtered=64 moving=1 dist=2 entry=0
+[MOTION] state=2 fault=0 ticks L=1842 R=1790 PWM=12/15
+HUMP DEBUG: raw=181 filtered=73 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=77 filtered=137 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=29 filtered=95 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=82 filtered=62 moving=1 dist=0 entry=2
+HUMP DEBUG: raw=167 filtered=75 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=9 filtered=77 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=64 filtered=80 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=129 filtered=67 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=96 filtered=65 moving=1 dist=1 entry=0
+Buddy4: n=650 acc=(-159,74,976)mg delta=(x:-78,y:63)mg mag=(-179,117,119) pitch=5 height=0mm height_valid=0 state=0
+HUMP DEBUG: raw=150 filtered=74 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=59 filtered=72 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-24 filtered=61 moving=1 dist=0 entry=0
+HUMP DEBUG: raw=113 filtered=74 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=-20 filtered=75 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=80 filtered=64 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=79 filtered=67 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=200 filtered=93 moving=1 dist=1 entry=0
+HUMP DEBUG: raw=81 filtered=94 moving=1 dist=1 entry=1
+HUMP DEBUG: raw=31 filtered=104 moving=1 dist=1 entry=2
+Buddy4: hump entry confirmed sign=1 peak=104mg
+HUMP ACTIVE: forward=53 abs=53 dist=1 height=0
+HUMP ACTIVE: forward=46 abs=46 dist=1 height=0
+[MOTION] state=2 fault=0 ticks L=2356 R=2348 PWM=12/15
+HUMP ACTIVE: forward=61 abs=61 dist=1 height=0
+HUMP ACTIVE: forward=34 abs=34 dist=0 height=1
+HUMP ACTIVE: forward=44 abs=44 dist=2 height=1
+HUMP ACTIVE: forward=79 abs=79 dist=1 height=1
+HUMP ACTIVE: forward=63 abs=63 dist=1 height=1
+HUMP ACTIVE: forward=103 abs=103 dist=1 height=1
+HUMP ACTIVE: forward=117 abs=117 dist=0 height=1
+HUMP ACTIVE: forward=107 abs=107 dist=1 height=1
+HUMP ACTIVE: forward=66 abs=66 dist=1 height=2
+HUMP ACTIVE: forward=65 abs=65 dist=1 height=2
+HUMP ACTIVE: forward=23 abs=23 dist=1 height=2
+HUMP ACTIVE: forward=63 abs=63 dist=1 height=2
+HUMP ACTIVE: forward=56 abs=56 dist=1 height=2
+HUMP ACTIVE: forward=30 abs=30 dist=1 height=2
+HUMP ACTIVE: forward=92 abs=92 dist=1 height=3
+HUMP ACTIVE: forward=81 abs=81 dist=1 height=3
+HUMP ACTIVE: forward=94 abs=94 dist=1 height=3
+HUMP ACTIVE: forward=67 abs=67 dist=1 height=3
+HUMP ACTIVE: forward=83 abs=83 dist=1 height=3
+HUMP ACTIVE: forward=86 abs=86 dist=1 height=4
+HUMP ACTIVE: forward=77 abs=77 dist=1 height=4
+HUMP ACTIVE: forward=85 abs=85 dist=1 height=4
+HUMP ACTIVE: forward=99 abs=99 dist=0 height=4
+HUMP ACTIVE: forward=96 abs=96 dist=1 height=4
+HUMP ACTIVE: forward=88 abs=88 dist=1 height=4
+HUMP ACTIVE: forward=71 abs=71 dist=1 height=5
+HUMP ACTIVE: forward=87 abs=87 dist=1 height=5
+HUMP ACTIVE: forward=84 abs=84 dist=1 height=5
+HUMP ACTIVE: forward=96 abs=96 dist=0 height=5
+Buddy4: n=700 acc=(-182,137,966)mg delta=(x:-101,y:126)mg mag=(-171,122,114) pitch=5 height=0mm height_valid=0 state=1
+HUMP ACTIVE: forward=94 abs=94 dist=1 height=5
+HUMP ACTIVE: forward=94 abs=94 dist=1 height=5
+HUMP ACTIVE: forward=89 abs=89 dist=1 height=6
+HUMP ACTIVE: forward=109 abs=109 dist=0 height=6
+HUMP ACTIVE: forward=111 abs=111 dist=1 height=6
+HUMP ACTIVE: forward=82 abs=82 dist=1 height=6
+HUMP ACTIVE: forward=53 abs=53 dist=0 height=6
+HUMP ACTIVE: forward=51 abs=51 dist=1 height=6
+HUMP ACTIVE: forward=82 abs=82 dist=1 height=6
+HUMP ACTIVE: forward=105 abs=105 dist=0 height=6
+HUMP ACTIVE: forward=117 abs=117 dist=1 height=6
+HUMP ACTIVE: forward=145 abs=145 dist=0 height=7
+HUMP ACTIVE: forward=124 abs=124 dist=1 height=7
+HUMP ACTIVE: forward=96 abs=96 dist=1 height=7
+[MOTION] state=2 fault=0 ticks L=2815 R=2845 PWM=11/13
+HUMP ACTIVE: forward=53 abs=53 dist=0 height=7
+HUMP ACTIVE: forward=54 abs=54 dist=1 height=7
+HUMP ACTIVE: forward=87 abs=87 dist=1 height=7
+HUMP ACTIVE: forward=91 abs=91 dist=1 height=8
+HUMP ACTIVE: forward=83 abs=83 dist=0 height=8
+HUMP ACTIVE: forward=90 abs=90 dist=1 height=8
+HUMP ACTIVE: forward=105 abs=105 dist=1 height=8
+HUMP ACTIVE: forward=91 abs=91 dist=1 height=8
+HUMP ACTIVE: forward=77 abs=77 dist=1 height=8
+HUMP ACTIVE: forward=68 abs=68 dist=1 height=9
+HUMP ACTIVE: forward=80 abs=80 dist=0 height=9
+HUMP ACTIVE: forward=81 abs=81 dist=1 height=9
+HUMP ACTIVE: forward=57 abs=57 dist=2 height=9
+HUMP ACTIVE: forward=89 abs=89 dist=1 height=9
+HUMP ACTIVE: forward=92 abs=92 dist=1 height=9
+HUMP ACTIVE: forward=106 abs=106 dist=1 height=10
+HUMP ACTIVE: forward=93 abs=93 dist=1 height=10
+HUMP ACTIVE: forward=78 abs=78 dist=1 height=10
+HUMP ACTIVE: forward=100 abs=100 dist=1 height=10
+HUMP ACTIVE: forward=74 abs=74 dist=2 height=10
+HUMP ACTIVE: forward=78 abs=78 dist=1 height=11
+HUMP ACTIVE: forward=77 abs=77 dist=1 height=11
+HUMP ACTIVE: forward=88 abs=88 dist=1 height=11
+HUMP ACTIVE: forward=94 abs=94 dist=1 height=11
+[ROBOT] junction: no barcode, straight on
+HUMP ACTIVE: forward=81 abs=81 dist=2 height=12
+HUMP ACTIVE: forward=80 abs=80 dist=1 height=12
+Buddy4: hump timed out; waiting for level ground
+Buddy4: n=750 acc=(-122,104,957)mg delta=(x:-41,y:93)mg mag=(-148,121,128) pitch=5 height=0mm height_valid=0 state=0
+[MOTION] state=2 fault=0 ticks L=3417 R=3483 PWM=11/13
+[BARCODE REJECT] invalid frame: check start/stop, narrow/wide widths and white margins
+[BARCODE MQTT] acked frame=1
+[BARCODE FRAME] id=1 runs=1/29 black=1 white=0 result=? skipped=0
+[BARCODE WIDTH] frame=1 run=1 BLACK width_ms=941
+Buddy4: n=800 acc=(-92,112,978)mg delta=(x:-11,y:101)mg mag=(-126,104,168) pitch=5 height=0mm height_valid=0 state=0
+# ---- from here: raw lines 1669-3713 without the repeated error line ----
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=1
+Buddy 1: command queued=1
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=1
+Buddy 1: command queued=1
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=1
+Buddy 1: command queued=1
+mqtt: RX topic=group17-robot/command length=1
+mqtt: RX command=1
+Buddy 1: command queued=1
+# ---- next boot (raw line 3714) ----
+=== COM5 connected 22:56:12.432 ===

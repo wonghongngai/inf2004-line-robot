@@ -147,7 +147,7 @@ EXPORT ER lsm303dlhc_init(void)
 
     er = read_reg(LSM303_ACC_ADDR, LSM303_WHO_AM_I_A, &who_am_i);
     if (er < E_OK) {
-        LOG_ERR(TAG_S4_IMU, "accelerometer not responding, er=%d", er);
+        /* Reported, rate-limited, by imu_task (report_error). */
         return er;
     }
 

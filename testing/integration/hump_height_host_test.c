@@ -10,6 +10,18 @@ ER tk_loc_mtx(ID id, TMO timeout);
 ER tk_unl_mtx(ID id);
 ER tk_get_tim(SYSTIM *now);
 ER tk_dly_tsk(unsigned ms);
+/* Kernel calls used by the S4 stuck-core guard (S4-U15). */
+#define E_CTX (-25)
+#define TSS_DDSP 0x01U
+#define TSS_DINT 0x02U
+#define TSS_INDP 0x04U
+typedef struct { UINT sysstat; ID runtskid; ID schedtskid; } T_RSYS;
+ER tk_ref_sys(T_RSYS *pk);
+INT tk_get_prc(void);
+ER tk_ena_dsp(void);
+static UW fake_primask;
+static UW get_primask(void) { return fake_primask; }
+static void set_primask(UW pm) { fake_primask = pm; }
 
 /* Exercise the actual IMU algorithm and snapshot code, replacing only I/O. */
 #include "../../app_program/subsystem4/task_imu.c"
@@ -17,11 +29,24 @@ ER tk_dly_tsk(unsigned ms);
 
 ID mtx_imu_data;
 IMU_DATA s4_imu_data;
-int tm_printf(UB *fmt, ...) { (void)fmt; return 0; }
+static unsigned prints, motor_stops, ena_dsp_calls;
+static UINT fake_sysstat;
+static ER dly_result;
+static uint32_t fake_ms;
+int tm_printf(UB *fmt, ...) { (void)fmt; prints++; return 0; }
+void drv_motor_stop(void) { motor_stops++; }
+ER tk_ref_sys(T_RSYS *pk)
+{
+    pk->sysstat = fake_sysstat | (fake_primask ? (TSS_DINT | TSS_DDSP) : 0U);
+    pk->runtskid = pk->schedtskid = 1;
+    return E_OK;
+}
+INT tk_get_prc(void) { return 2; }
+ER tk_ena_dsp(void) { ena_dsp_calls++; fake_sysstat &= ~TSS_DDSP; return E_OK; }
 ER tk_loc_mtx(ID id, TMO timeout) { (void)id; (void)timeout; return E_OK; }
 ER tk_unl_mtx(ID id) { (void)id; return E_OK; }
-ER tk_get_tim(SYSTIM *now) { now->lo = 0; return E_OK; }
-ER tk_dly_tsk(unsigned ms) { (void)ms; return E_OK; }
+ER tk_get_tim(SYSTIM *now) { now->hi = 0; now->lo = fake_ms; return E_OK; }
+ER tk_dly_tsk(unsigned ms) { (void)ms; return dly_result; }
 ER lsm303dlhc_init(void) { return E_OK; }
 ER lsm303dlhc_read(LSM303_SAMPLE *sample) { (void)sample; return E_PAR; }
 UW subsystem4_take_distance_mm(void) { return 0; }
@@ -160,6 +185,38 @@ int main(void)
                      IMU_MOTION_HUMP, IMU_EVENT_HUMP, TRUE, TRUE, 1, FALSE);
     assert(s4_imu_data.ramp_height_valid && s4_imu_data.ramp_height_mm == 20);
     lift_checks();
+    /* S4-U15 (21 Nov 2026 robot log): every failed IMU cycle printed a line,
+       ~100/s once the core could not block. First failure prints at once,
+       then at most one line per S4_ERROR_REPORT_MS. */
+    prints = 0; fake_ms = 5000;
+    for (unsigned i = 0; i < 2033; ++i) { report_error("init", E_CTX); fake_ms += 10; }
+    /* 20.33 s of failures: first line + one per second. */
+    assert(prints >= 20 && prints <= 22);
+    assert(err_unreported < 2033);
+
+    /* A healthy kernel: the retry delay works, motors are not touched. */
+    prints = motor_stops = 0; dly_result = E_OK;
+    s4_delay(S4_RETRY_DELAY_MS);
+    assert(motor_stops == 0 && prints == 0);
+
+    /* Core stuck with interrupts masked: tk_dly_tsk returns E_CTX. The guard
+       stops the motors, prints one FATAL line and unmasks the core. */
+    dly_result = E_CTX; fake_primask = 1U; fake_sysstat = 0U;
+    s4_delay(S4_RETRY_DELAY_MS);
+    assert(motor_stops == 1 && prints == 1 && fake_primask == 0U);
+    assert(ena_dsp_calls == 0);
+    /* Still stuck (dispatch disabled): motors stopped again, no new FATAL
+       line, dispatching re-enabled. */
+    fake_sysstat = TSS_DDSP;
+    s4_delay(1);
+    assert(motor_stops == 2 && prints == 1 && ena_dsp_calls == 1);
+    /* Task-independent state cannot be repaired from a task: no tk_ena_dsp. */
+    fake_sysstat = TSS_DDSP | TSS_INDP;
+    s4_delay(1);
+    assert(motor_stops == 3 && ena_dsp_calls == 1);
+    dly_result = E_OK;
+    puts("IMU fault path: rate-limited errors, stuck-core motor stop, unmask and re-enable dispatch PASS");
+
     puts("Hump height/odometry: fractional rise, descent, sign, bounds, missing calibration and validity PASS");
     puts("IMU lift (#53): vibration and single spikes ignored; pick-up and tilted hold detected after the filter and confirmation delay; window warm-up; release re-arms PASS");
     return 0;
