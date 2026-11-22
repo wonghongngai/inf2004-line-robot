@@ -1,0 +1,110 @@
+S1-U17 command flood (16:04), 22 Nov 2026: PASS.
+Image: integrated built 14:57 from 0a2ca0d, same boot as run 5 (up since 14:58).
+Trimmed from the gitignored raw capture testing/subsystem5/logs/2026-11-22_160210_console.txt (serial_monitor.ps1, COM5). Left column = line number in the raw file; '...' = lines left out (none in this range).
+100 STATUS sent at 16:04:35-36. Flood window: lines 497-503.
+
+   441: [S2:MOTION] ctrl late=0/394838 gap_max=12 loop_max=3 ms
+   442: [S4:IMU] n=188800 acc=(-8,93,923)mg delta=(x:8,y:3)mg mag=(370,-315,-119) pitch=0 height=0mm height_valid=0 state=0
+   443: [S2:MOTION] state=2 fault=0 ticks L=560172 R=563725 PWM=15/15
+   444: [S2:MOTION] ctrl late=0/394933 gap_max=12 loop_max=3 ms
+   445: [S4:IMU] n=188850 acc=(-16,85,925)mg delta=(x:0,y:-5)mg mag=(370,-313,-115) pitch=0 height=0mm height_valid=0 state=0
+   446: [S2:MOTION] state=2 fault=0 ticks L=561594 R=565154 PWM=15/15
+   447: [S2:MOTION] ctrl late=0/395030 gap_max=11 loop_max=3 ms
+   448: [S4:IMU] n=188900 acc=(-37,110,906)mg delta=(x:-21,y:20)mg mag=(369,-314,-118) pitch=0 height=0mm height_valid=0 state=0
+   449: [S2:MOTION] state=2 fault=0 ticks L=563025 R=566593 PWM=15/15
+   450: [S2:MOTION] ctrl late=0/395125 gap_max=11 loop_max=3 ms
+   451: [S4:IMU] n=188950 acc=(-13,84,908)mg delta=(x:3,y:-6)mg mag=(372,-311,-115) pitch=0 height=0mm height_valid=0 state=0
+   452: [S2:MOTION] state=2 fault=0 ticks L=564456 R=568027 PWM=15/15
+   453: [S2:MOTION] ctrl late=0/395222 gap_max=11 loop_max=3 ms
+   454: [S4:IMU] n=189000 acc=(-14,107,948)mg delta=(x:2,y:17)mg mag=(368,-314,-117) pitch=0 height=0mm height_valid=0 state=0
+   455: [S2:MOTION] state=2 fault=0 ticks L=565891 R=569465 PWM=15/15
+   456: [S2:MOTION] ctrl late=0/395318 gap_max=11 loop_max=3 ms
+   457: [S4:IMU] n=189050 acc=(-8,83,930)mg delta=(x:8,y:-7)mg mag=(371,-314,-114) pitch=0 height=0mm height_valid=0 state=0
+   458: [S2:MOTION] state=2 fault=0 ticks L=567323 R=570898 PWM=15/15
+   459: [S2:MOTION] ctrl late=0/395413 gap_max=12 loop_max=4 ms
+   460: [S4:IMU] n=189100 acc=(-22,137,912)mg delta=(x:-6,y:47)mg mag=(371,-316,-117) pitch=5 height=0mm height_valid=0 state=0
+   461: [S2:MOTION] state=2 fault=0 ticks L=568759 R=572334 PWM=15/15
+   462: [S2:MOTION] ctrl late=0/395509 gap_max=12 loop_max=3 ms
+   463: [S4:IMU] n=189150 acc=(-1,86,920)mg delta=(x:15,y:-4)mg mag=(368,-311,-114) pitch=0 height=0mm height_valid=0 state=0
+   464: [S2:MOTION] state=2 fault=0 ticks L=570184 R=573767 PWM=15/15
+   465: [S2:MOTION] ctrl late=0/395605 gap_max=11 loop_max=3 ms
+   466: [S4:IMU] n=189200 acc=(-17,86,901)mg delta=(x:-1,y:-4)mg mag=(370,-318,-118) pitch=0 height=0mm height_valid=0 state=0
+   467: [S2:MOTION] state=2 fault=0 ticks L=571611 R=575200 PWM=15/15
+   468: [S2:MOTION] ctrl late=0/395700 gap_max=12 loop_max=3 ms
+   469: [S4:IMU] n=189250 acc=(-13,91,904)mg delta=(x:3,y:1)mg mag=(369,-317,-120) pitch=0 height=0mm height_valid=0 state=0
+   470: [S2:MOTION] state=2 fault=0 ticks L=573037 R=576637 PWM=15/15
+   471: [S2:MOTION] ctrl late=0/395796 gap_max=11 loop_max=3 ms
+   472: [S4:IMU] n=189300 acc=(-25,87,935)mg delta=(x:-9,y:-3)mg mag=(373,-311,-118) pitch=0 height=0mm height_valid=0 state=0
+   473: [S2:MOTION] state=2 fault=0 ticks L=574465 R=578072 PWM=15/15
+   474: [S2:MOTION] ctrl late=0/395892 gap_max=11 loop_max=3 ms
+   475: [S4:IMU] n=189350 acc=(-21,89,914)mg delta=(x:-5,y:-1)mg mag=(373,-314,-118) pitch=0 height=0mm height_valid=0 state=0
+   476: [S2:MOTION] state=2 fault=0 ticks L=575886 R=579509 PWM=15/15
+   477: [S2:MOTION] ctrl late=0/395987 gap_max=11 loop_max=3 ms
+   478: [S4:IMU] n=189400 acc=(2,93,925)mg delta=(x:18,y:3)mg mag=(369,-313,-115) pitch=0 height=0mm height_valid=0 state=0
+   479: [S2:MOTION] state=2 fault=0 ticks L=577307 R=580942 PWM=15/15
+   480: [S2:MOTION] ctrl late=0/396083 gap_max=12 loop_max=3 ms
+   481: [S4:IMU] n=189450 acc=(-24,84,896)mg delta=(x:-8,y:-6)mg mag=(372,-316,-119) pitch=0 height=0mm height_valid=0 state=0
+   482: [S2:MOTION] state=2 fault=0 ticks L=578730 R=582378 PWM=15/15
+   483: [S2:MOTION] ctrl late=0/396178 gap_max=12 loop_max=3 ms
+   484: [S4:IMU] n=189500 acc=(-28,96,921)mg delta=(x:-12,y:6)mg mag=(368,-312,-115) pitch=0 height=0mm height_valid=0 state=0
+   485: [S2:MOTION] state=2 fault=0 ticks L=580151 R=583812 PWM=15/15
+   486: [S2:MOTION] ctrl late=0/396274 gap_max=11 loop_max=3 ms
+   487: [S1:MQTT] RX topic=group17-robot/command length=1
+   488: [S1:MQTT] RX command=0
+   489: [S1:MQTT] RX topic=group17-robot/command length=1
+   490: [S1:MQTT] RX command=0
+   491: [S1:MQTT] RX topic=group17-robot/command length=1
+   492: [S1:MQTT] RX command=0
+   493: [S1:MQTT] RX topic=group17-robot/command length=1
+   494: [S1:MQTT] RX command=0
+   495: [S4:IMU] n=189550 acc=(-17,92,913)mg delta=(x:-1,y:2)mg mag=(370,-313,-118) pitch=0 height=0mm height_valid=0 state=0
+   496: [S2:MOTION] state=2 fault=0 ticks L=581570 R=585241 PWM=15/15
+   497: [S2:MOTION] ctrl late=0/396369 gap_max=13 loop_max=4 ms
+   498: [S1:CMD] ERR command queue full/error -50; counting further drops
+   499: [S2:MOTION] state=2 fault=0 ticks L=582990 R=586671 PWM=15/15
+   500: [S2:MOTION] ctrl late=0/396465 gap_max=12 loop_max=4 ms
+   501: [S4:IMU] n=189600 acc=(-18,96,924)mg delta=(x:-2,y:6)mg mag=(372,-319,-117) pitch=0 height=0mm height_valid=0 state=0
+   502: [S1:CMD] commands rx=102 queued=89 invalid=0 dropped=13 (+91 this window)
+   503: [S1:MQTT] RX topic=group17-robot/command length=1
+   504: [S1:MQTT] RX command=0
+   505: [S1:MQTT] RX topic=group17-robot/command length=1
+   506: [S1:MQTT] RX command=0
+   507: [S1:MQTT] RX topic=group17-robot/command length=1
+   508: [S1:MQTT] RX command=0
+   509: [S1:MQTT] RX topic=group17-robot/command length=1
+   510: [S1:MQTT] RX command=0
+   511: [S2:MOTION] state=2 fault=0 ticks L=584411 R=588100 PWM=15/15
+   512: [S2:MOTION] ctrl late=0/396560 gap_max=13 loop_max=4 ms
+   513: [S4:IMU] n=189650 acc=(-6,86,938)mg delta=(x:10,y:-4)mg mag=(368,-313,-114) pitch=0 height=0mm height_valid=0 state=0
+   514: [S2:MOTION] state=2 fault=0 ticks L=585841 R=589539 PWM=15/15
+   515: [S2:MOTION] ctrl late=0/396656 gap_max=11 loop_max=3 ms
+   516: [S1:CMD] commands rx=111 queued=98 invalid=0 dropped=13 (+9 this window)
+   517: [S4:IMU] n=189700 acc=(-15,102,936)mg delta=(x:1,y:12)mg mag=(369,-314,-117) pitch=0 height=0mm height_valid=0 state=0
+   518: [S2:MOTION] state=2 fault=0 ticks L=587267 R=590970 PWM=15/15
+   519: [S2:MOTION] ctrl late=0/396752 gap_max=12 loop_max=4 ms
+   520: [S4:IMU] n=189750 acc=(-26,93,907)mg delta=(x:-10,y:3)mg mag=(368,-311,-114) pitch=0 height=0mm height_valid=0 state=0
+   521: [S2:MOTION] state=2 fault=0 ticks L=588695 R=592407 PWM=15/15
+   522: [S2:MOTION] ctrl late=0/396848 gap_max=11 loop_max=3 ms
+   523: [S4:IMU] n=189800 acc=(-13,94,935)mg delta=(x:3,y:4)mg mag=(371,-313,-118) pitch=0 height=0mm height_valid=0 state=0
+   524: [S2:MOTION] state=2 fault=0 ticks L=590119 R=593840 PWM=15/15
+   525: [S2:MOTION] ctrl late=0/396944 gap_max=11 loop_max=3 ms
+   526: [S4:IMU] n=189850 acc=(-24,97,927)mg delta=(x:-8,y:7)mg mag=(369,-316,-118) pitch=0 height=0mm height_valid=0 state=0
+   527: [S1:MQTT] RX topic=group17-robot/command length=1
+   528: [S1:MQTT] RX command=1
+   529: [S1:MQTT] RX topic=group17-robot/command length=1
+   530: [S2:ROBOT] paused (MQTT); RESUME to continue
+   531: [S1:MQTT] RX command=0
+   532: [S1:MQTT] RX topic=group17-robot/command length=1
+   533: [S1:MQTT] RX command=2
+   534: [S2:ROBOT] resumed (MQTT)
+   535: [S2:MOTION] state=2 fault=0 ticks L=590911 R=594627 PWM=12/15
+   536: [S2:MOTION] ctrl late=0/397041 gap_max=11 loop_max=3 ms
+   537: [S4:IMU] n=189900 acc=(-13,75,911)mg delta=(x:3,y:-15)mg mag=(369,-317,-118) pitch=0 height=0mm height_valid=0 state=0
+   538: [S2:MOTION] state=2 fault=0 ticks L=592188 R=596058 PWM=14/15
+   539: [S2:MOTION] ctrl late=0/397137 gap_max=12 loop_max=4 ms
+   540: [S4:IMU] n=189950 acc=(5,99,910)mg delta=(x:21,y:9)mg mag=(370,-315,-117) pitch=0 height=0mm height_valid=0 state=0
+   541: [S2:MOTION] state=2 fault=0 ticks L=593595 R=597494 PWM=14/15
+   542: [S2:MOTION] ctrl late=0/397233 gap_max=11 loop_max=3 ms
+   543: [S4:IMU] n=190000 acc=(-23,77,902)mg delta=(x:-7,y:-13)mg mag=(368,-315,-117) pitch=0 height=0mm height_valid=0 state=0
+   544: [S2:MOTION] state=2 fault=0 ticks L=595015 R=598926 PWM=15/15
+   545: [S2:MOTION] ctrl late=0/397328 gap_max=11 loop_max=3 ms
