@@ -74,6 +74,14 @@ static MOTION_CONFIG build_config(void)
 #if S2_PIVOT_BENCH
     cfg.base_pwm_percent = S2_PIVOT_BENCH_PWM; /* S2-U07: slow, like the junction pivots */
 #endif
+#if S2_PID_BENCH
+    /* S2-U10/U11: a slow, safe drive, and the interrupt-encoder ticks per cm.
+       S2_LEFT/RIGHT_TICKS_PER_CM (23.1 / 18.8) are about 5x too small, which
+       would make a commanded 100 cm run about 5 m. */
+    cfg.base_pwm_percent = S2_PID_BENCH_PWM;
+    cfg.left_ticks_per_cm = S2_ENC_LEFT_TICKS_PER_CM;
+    cfg.right_ticks_per_cm = S2_ENC_RIGHT_TICKS_PER_CM;
+#endif
 
     cfg.minimum_effective_pwm_percent =
         S2_MIN_EFFECTIVE_PWM_PERCENT;

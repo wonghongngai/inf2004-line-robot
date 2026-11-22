@@ -14,6 +14,7 @@
 #define S2_PID_BENCH 0
 #endif
 #define S2_BENCH_STOP_AFTER_MS 1000U
+#define S2_PID_BENCH_PWM         25.0f   /* 55 % default is too fast; 15 % stalls on the floor */
 
 /* Floor bench for S2-U07: motor-driven pivots, see robot_control.c. Build with
    `sh build.sh motion MOTION_DEMO=1 PIVOT_BENCH=1`. Not with PID_BENCH. */

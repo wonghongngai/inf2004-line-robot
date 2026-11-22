@@ -48,10 +48,11 @@
 #define S2_ANGLE_TOLERANCE_DEG               2.0f
 #define S2_ENCODER_STALL_TIMEOUT_MS          500U
 
-/* PID gains are deliberately not guessed.  Tune these on the real vehicle.
-   KP stays 0 until the left encoder's counting direction is confirmed. */
-#define S2_PID_KP                            0.0f
-#define S2_PID_KI                            0.0f
+/* Straight-line PID (left-minus-right travel, in cm, to a PWM trim). Tuned 22 Nov
+   (S2-U10) on the floor at 25 % PWM: 0 / 0 / 0 drifted 94-126 mm over 100 cm,
+   6.0 / 0.5 / 0 held it to 3 mm. Not yet checked at the 12.5 / 15 % track speeds. */
+#define S2_PID_KP                            6.0f
+#define S2_PID_KI                            0.5f
 #define S2_PID_KD                            0.0f
 #define S2_PID_INTEGRAL_LIMIT                100.0f
 #define S2_PID_CORRECTION_LIMIT              30.0f
