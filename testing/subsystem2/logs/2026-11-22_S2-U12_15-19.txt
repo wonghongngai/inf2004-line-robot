@@ -1,0 +1,809 @@
+=== COM5 connected 19:52:46.644 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-31,51,915) mg
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3 t=4003 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+[S1:MQTT] connected to 172.20.10.2 t=4083 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1000 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1100 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/mapping length=3
+[S2:ROBOT] MQTT map applied: W=left A=right D=straight S=U-turn
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1199 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1299 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1399 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1499 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1599 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1699 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1799 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1899 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1999 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2099 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2199 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2299 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2399 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2499 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: letter map from MQTT
+[S2:MOTION] state=2 fault=0 ticks L=499 R=586 PWM=15/19
+[S2:MOTION] ctrl late=0/2597 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=2186 R=2460 PWM=17/19
+[S2:MOTION] ctrl late=0/2694 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=3908 R=4335 PWM=17/19
+[S2:MOTION] ctrl late=0/2790 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=5628 R=6208 PWM=17/19
+[S2:MOTION] ctrl late=0/2886 gap_max=11 loop_max=5 ms
+[S2:MOTION] state=2 fault=0 ticks L=7349 R=8076 PWM=17/19
+[S2:MOTION] ctrl late=0/2982 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=9070 R=9948 PWM=17/19
+[S2:MOTION] ctrl late=0/3078 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=10791 R=11825 PWM=17/19
+[S2:MOTION] ctrl late=0/3175 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=12513 R=13699 PWM=17/19
+[S2:MOTION] ctrl late=0/3271 gap_max=11 loop_max=5 ms
+[S2:MOTION] state=2 fault=0 ticks L=14234 R=15570 PWM=17/19
+[S2:MOTION] ctrl late=0/3368 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=15952 R=17440 PWM=17/19
+[S2:MOTION] ctrl late=0/3463 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=17672 R=19318 PWM=17/19
+[S2:MOTION] ctrl late=0/3560 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=19391 R=21190 PWM=17/19
+[S2:MOTION] ctrl late=0/3656 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=21110 R=23063 PWM=17/19
+[S2:MOTION] ctrl late=0/3752 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=22824 R=24935 PWM=17/19
+[S2:MOTION] ctrl late=0/3848 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=24544 R=26811 PWM=17/19
+[S2:MOTION] ctrl late=0/3944 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=26267 R=28682 PWM=17/19
+[S2:MOTION] ctrl late=0/4040 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=27993 R=30554 PWM=17/19
+[S2:MOTION] ctrl late=0/4137 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=29718 R=32426 PWM=17/19
+[S2:MOTION] ctrl late=0/4233 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=31440 R=34299 PWM=17/19
+[S2:MOTION] ctrl late=0/4330 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=33164 R=36171 PWM=17/19
+[S2:MOTION] ctrl late=0/4426 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=34887 R=38043 PWM=17/19
+[S2:MOTION] ctrl late=0/4523 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=36611 R=39917 PWM=17/19
+[S2:MOTION] ctrl late=0/4619 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=38331 R=41793 PWM=17/19
+[S2:MOTION] ctrl late=0/4716 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=40051 R=43665 PWM=17/19
+[S2:MOTION] ctrl late=0/4813 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=41774 R=45537 PWM=17/19
+[S2:MOTION] ctrl late=0/4908 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=43492 R=47410 PWM=17/19
+[S2:MOTION] ctrl late=0/5004 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=45212 R=49285 PWM=17/19
+[S2:MOTION] ctrl late=0/5100 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=46932 R=51157 PWM=17/19
+[S2:MOTION] ctrl late=0/5196 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=48653 R=53026 PWM=17/19
+[S2:MOTION] ctrl late=0/5291 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=50372 R=54897 PWM=17/19
+[S2:MOTION] ctrl late=0/5386 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=52091 R=56772 PWM=17/19
+[S2:MOTION] ctrl late=0/5482 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=53812 R=58645 PWM=17/19
+[S2:MOTION] ctrl late=0/5578 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=55531 R=60511 PWM=17/19
+[S2:MOTION] ctrl late=0/5674 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=57251 R=62385 PWM=17/19
+[S2:MOTION] ctrl late=0/5769 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=58973 R=64259 PWM=17/19
+[S2:MOTION] ctrl late=0/5866 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=60694 R=66131 PWM=17/19
+[S2:MOTION] ctrl late=0/5962 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=62412 R=68000 PWM=17/19
+[S2:MOTION] ctrl late=0/6058 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=64129 R=69874 PWM=17/19
+[S2:MOTION] ctrl late=0/6154 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=65847 R=71743 PWM=17/19
+[S2:MOTION] ctrl late=0/6250 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=67561 R=73614 PWM=17/19
+[S2:MOTION] ctrl late=0/6346 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=69276 R=75484 PWM=17/19
+[S2:MOTION] ctrl late=0/6442 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=70989 R=77355 PWM=17/19
+[S2:MOTION] ctrl late=0/6538 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=72702 R=79225 PWM=17/19
+[S2:MOTION] ctrl late=0/6635 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=74419 R=81094 PWM=17/19
+[S2:MOTION] ctrl late=0/6731 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=76140 R=82971 PWM=17/19
+[S2:MOTION] ctrl late=0/6828 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=77857 R=84845 PWM=17/19
+[S2:MOTION] ctrl late=0/6925 gap_max=11 loop_max=5 ms
+[S2:MOTION] state=2 fault=0 ticks L=79571 R=86714 PWM=17/19
+[S2:MOTION] ctrl late=0/7020 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=81292 R=88584 PWM=17/19
+[S2:MOTION] ctrl late=0/7117 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=83012 R=90460 PWM=17/19
+[S2:MOTION] ctrl late=0/7213 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=84730 R=92332 PWM=17/19
+[S2:MOTION] ctrl late=0/7309 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=86452 R=94204 PWM=17/19
+[S2:MOTION] ctrl late=0/7406 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=88174 R=96075 PWM=17/19
+[S2:MOTION] ctrl late=0/7501 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=89894 R=97949 PWM=17/19
+[S2:MOTION] ctrl late=0/7596 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=91613 R=99821 PWM=17/19
+[S2:MOTION] ctrl late=0/7693 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=93334 R=101692 PWM=17/19
+[S2:MOTION] ctrl late=0/7790 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=95051 R=103559 PWM=17/19
+[S2:MOTION] ctrl late=0/7886 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=96773 R=105435 PWM=17/19
+[S2:MOTION] ctrl late=0/7981 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=98497 R=107308 PWM=17/19
+[S2:MOTION] ctrl late=0/8077 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=100223 R=109181 PWM=17/19
+[S2:MOTION] ctrl late=0/8174 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=101950 R=111054 PWM=17/19
+[S2:MOTION] ctrl late=0/8270 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=103677 R=112930 PWM=17/19
+[S2:MOTION] ctrl late=0/8366 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=105402 R=114802 PWM=17/19
+[S2:MOTION] ctrl late=0/8462 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=107129 R=116674 PWM=17/19
+[S2:MOTION] ctrl late=0/8559 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=108858 R=118548 PWM=17/19
+[S2:MOTION] ctrl late=0/8656 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=110581 R=120424 PWM=17/19
+[S2:MOTION] ctrl late=0/8752 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=112301 R=122294 PWM=17/19
+[S2:MOTION] ctrl late=0/8848 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=114026 R=124168 PWM=17/19
+[S2:MOTION] ctrl late=0/8944 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=115750 R=126042 PWM=17/19
+[S2:MOTION] ctrl late=0/9041 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=117474 R=127919 PWM=17/19
+[S2:MOTION] ctrl late=0/9137 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=119201 R=129791 PWM=17/19
+[S2:MOTION] ctrl late=0/9234 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=120925 R=131662 PWM=17/19
+[S2:MOTION] ctrl late=0/9330 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=122652 R=133535 PWM=17/19
+[S2:MOTION] ctrl late=0/9425 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=124380 R=135406 PWM=17/19
+[S2:MOTION] ctrl late=0/9521 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=126109 R=137279 PWM=17/19
+[S2:MOTION] ctrl late=0/9618 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=127837 R=139150 PWM=17/19
+[S2:MOTION] ctrl late=0/9713 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=129568 R=141025 PWM=17/19
+[S2:MOTION] ctrl late=0/9809 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=131300 R=142898 PWM=17/19
+[S2:MOTION] ctrl late=0/9905 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=133031 R=144771 PWM=17/19
+[S2:MOTION] ctrl late=0/10001 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=134763 R=146643 PWM=17/19
+[S2:MOTION] ctrl late=0/10097 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=136493 R=148515 PWM=17/19
+[S2:MOTION] ctrl late=0/10193 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=138223 R=150390 PWM=17/19
+[S2:MOTION] ctrl late=0/10288 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=139957 R=152265 PWM=17/19
+[S2:MOTION] ctrl late=0/10385 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=141689 R=154137 PWM=17/19
+[S2:MOTION] ctrl late=0/10481 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=143417 R=156013 PWM=17/19
+[S2:MOTION] ctrl late=0/10577 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=145150 R=157886 PWM=17/19
+[S2:MOTION] ctrl late=0/10672 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=146883 R=159759 PWM=17/19
+[S2:MOTION] ctrl late=0/10768 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=148614 R=161631 PWM=17/19
+[S2:MOTION] ctrl late=0/10864 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=150345 R=163507 PWM=17/19
+[S2:MOTION] ctrl late=0/10960 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=152075 R=165379 PWM=17/19
+[S2:MOTION] ctrl late=0/11057 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=153807 R=167251 PWM=17/19
+[S2:MOTION] ctrl late=0/11153 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=155539 R=169127 PWM=17/19
+[S2:MOTION] ctrl late=0/11249 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=157268 R=171000 PWM=17/19
+[S2:MOTION] ctrl late=0/11345 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=158999 R=172873 PWM=17/19
+[S2:MOTION] ctrl late=0/11441 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=160725 R=174745 PWM=17/19
+[S2:MOTION] ctrl late=0/11537 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=162451 R=176619 PWM=17/19
+[S2:MOTION] ctrl late=0/11634 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=164178 R=178491 PWM=17/19
+[S2:MOTION] ctrl late=0/11730 gap_max=11 loop_max=5 ms
+[S2:MOTION] state=2 fault=0 ticks L=165904 R=180363 PWM=17/19
+[S2:MOTION] ctrl late=0/11826 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=167631 R=182234 PWM=17/19
+[S2:MOTION] ctrl late=0/11922 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=169359 R=184111 PWM=17/19
+[S2:MOTION] ctrl late=0/12018 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=171086 R=185985 PWM=17/19
+[S2:MOTION] ctrl late=0/12114 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=172806 R=187854 PWM=17/19
+[S2:MOTION] ctrl late=0/12210 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=174526 R=189725 PWM=17/19
+[S2:MOTION] ctrl late=0/12306 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=176245 R=191600 PWM=17/19
+[S2:MOTION] ctrl late=0/12402 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=177972 R=193471 PWM=17/19
+[S2:MOTION] ctrl late=0/12497 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=179697 R=195342 PWM=17/19
+[S2:MOTION] ctrl late=0/12593 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=181417 R=197211 PWM=17/19
+[S2:MOTION] ctrl late=0/12690 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=183145 R=199090 PWM=17/19
+[S2:MOTION] ctrl late=0/12786 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=184875 R=200964 PWM=17/19
+[S2:MOTION] ctrl late=0/12882 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=186602 R=202837 PWM=17/19
+[S2:MOTION] ctrl late=0/12979 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=188329 R=204713 PWM=17/19
+[S2:MOTION] ctrl late=0/13075 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=190054 R=206587 PWM=17/19
+[S2:MOTION] ctrl late=0/13171 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=191780 R=208461 PWM=17/19
+[S2:MOTION] ctrl late=0/13268 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=193509 R=210336 PWM=17/19
+[S2:MOTION] ctrl late=0/13364 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=195238 R=212209 PWM=17/19
+[S2:MOTION] ctrl late=0/13460 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=196970 R=214087 PWM=17/19
+[S2:MOTION] ctrl late=0/13557 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=198697 R=215958 PWM=17/19
+[S2:MOTION] ctrl late=0/13653 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=200427 R=217830 PWM=17/19
+[S2:MOTION] ctrl late=0/13751 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=202158 R=219703 PWM=17/19
+[S2:MOTION] ctrl late=0/13847 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=203891 R=221581 PWM=17/19
+[S2:MOTION] ctrl late=0/13944 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=205628 R=223458 PWM=17/19
+[S2:MOTION] ctrl late=0/14040 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=207362 R=225331 PWM=17/19
+[S2:MOTION] ctrl late=0/14136 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=209092 R=227207 PWM=17/19
+[S2:MOTION] ctrl late=0/14232 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=210824 R=229080 PWM=17/19
+[S2:MOTION] ctrl late=0/14328 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=212556 R=230957 PWM=17/19
+[S2:MOTION] ctrl late=0/14424 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=214277 R=232824 PWM=17/19
+[S2:MOTION] ctrl late=0/14520 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=216003 R=234699 PWM=17/19
+[S2:MOTION] ctrl late=0/14615 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=217730 R=236572 PWM=17/19
+[S2:MOTION] ctrl late=0/14711 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=219459 R=238447 PWM=17/19
+[S2:MOTION] ctrl late=0/14807 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=221190 R=240322 PWM=17/19
+[S2:MOTION] ctrl late=0/14903 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=222923 R=242201 PWM=17/19
+[S2:MOTION] ctrl late=0/15000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=224656 R=244077 PWM=17/19
+[S2:MOTION] ctrl late=0/15096 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=226390 R=245952 PWM=17/19
+[S2:MOTION] ctrl late=0/15193 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=228122 R=247824 PWM=17/19
+[S2:MOTION] ctrl late=0/15289 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=229858 R=249704 PWM=17/19
+[S2:MOTION] ctrl late=0/15385 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=231588 R=251578 PWM=17/19
+[S2:MOTION] ctrl late=0/15482 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=233320 R=253450 PWM=17/19
+[S2:MOTION] ctrl late=0/15578 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=235051 R=255325 PWM=17/19
+[S2:MOTION] ctrl late=0/15674 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=236778 R=257201 PWM=17/19
+[S2:MOTION] ctrl late=0/15770 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=238504 R=259073 PWM=17/19
+[S2:MOTION] ctrl late=0/15866 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=240233 R=260949 PWM=17/19
+[S2:MOTION] ctrl late=0/15962 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=241960 R=262825 PWM=17/19
+[S2:MOTION] ctrl late=0/16059 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=243689 R=264701 PWM=17/19
+[S2:MOTION] ctrl late=0/16155 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=245417 R=266574 PWM=17/19
+[S2:MOTION] ctrl late=0/16252 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=247145 R=268447 PWM=17/19
+[S2:MOTION] ctrl late=0/16348 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=248876 R=270324 PWM=17/19
+[S2:MOTION] ctrl late=0/16444 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=250612 R=272202 PWM=17/19
+[S2:MOTION] ctrl late=0/16540 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=252343 R=274075 PWM=17/19
+[S2:MOTION] ctrl late=0/16635 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=254071 R=275946 PWM=17/19
+[S2:MOTION] ctrl late=0/16731 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=255804 R=277825 PWM=17/19
+[S2:MOTION] ctrl late=0/16826 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=257533 R=279700 PWM=17/19
+[S2:MOTION] ctrl late=0/16922 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=259263 R=281574 PWM=17/19
+[S2:MOTION] ctrl late=0/17019 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=260996 R=283450 PWM=17/19
+[S2:MOTION] ctrl late=0/17115 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=262727 R=285330 PWM=17/19
+[S2:MOTION] ctrl late=0/17212 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=264456 R=287207 PWM=17/19
+[S2:MOTION] ctrl late=0/17309 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=266190 R=289084 PWM=17/19
+[S2:MOTION] ctrl late=0/17405 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=267916 R=290957 PWM=17/19
+[S2:MOTION] ctrl late=0/17501 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=269643 R=292834 PWM=17/19
+[S2:MOTION] ctrl late=0/17597 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=271375 R=294710 PWM=17/19
+[S2:MOTION] ctrl late=0/17694 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=273109 R=296587 PWM=17/19
+[S2:MOTION] ctrl late=0/17790 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=274836 R=298462 PWM=17/19
+[S2:MOTION] ctrl late=0/17887 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=276568 R=300343 PWM=17/19
+[S2:MOTION] ctrl late=0/17984 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=278293 R=302213 PWM=17/19
+[S2:MOTION] ctrl late=0/18079 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=280022 R=304085 PWM=17/19
+[S2:MOTION] ctrl late=0/18175 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=281748 R=305958 PWM=17/19
+[S2:MOTION] ctrl late=0/18271 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=283475 R=307833 PWM=17/19
+[S2:MOTION] ctrl late=0/18367 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=285202 R=309709 PWM=17/19
+[S2:MOTION] ctrl late=0/18462 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=286932 R=311583 PWM=17/19
+[S2:MOTION] ctrl late=0/18557 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=288658 R=313456 PWM=17/19
+[S2:MOTION] ctrl late=0/18653 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=290390 R=315333 PWM=17/19
+[S2:MOTION] ctrl late=0/18749 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=292119 R=317207 PWM=17/19
+[S2:MOTION] ctrl late=0/18845 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=293847 R=319079 PWM=17/19
+[S2:MOTION] ctrl late=0/18941 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=295573 R=320955 PWM=17/19
+[S2:MOTION] ctrl late=0/19038 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=297302 R=322830 PWM=17/19
+[S2:MOTION] ctrl late=0/19134 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=299032 R=324705 PWM=17/19
+[S2:MOTION] ctrl late=0/19230 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=300763 R=326580 PWM=17/19
+[S2:MOTION] ctrl late=0/19326 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=302492 R=328457 PWM=17/19
+[S2:MOTION] ctrl late=0/19421 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=304225 R=330334 PWM=17/19
+[S2:MOTION] ctrl late=0/19517 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=305961 R=332211 PWM=17/19
+[S2:MOTION] ctrl late=0/19613 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=307696 R=334091 PWM=17/19
+[S2:MOTION] ctrl late=0/19710 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=309429 R=335968 PWM=17/19
+[S2:MOTION] ctrl late=0/19807 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=311164 R=337845 PWM=17/19
+[S2:MOTION] ctrl late=0/19903 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=312895 R=339718 PWM=17/19
+[S2:MOTION] ctrl late=0/20000 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=314626 R=341593 PWM=17/19
+[S2:MOTION] ctrl late=0/20095 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=316358 R=343473 PWM=17/19
+[S2:MOTION] ctrl late=0/20191 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=318084 R=345347 PWM=17/19
+[S2:MOTION] ctrl late=0/20287 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=319812 R=347218 PWM=17/19
+[S2:MOTION] ctrl late=0/20383 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=321543 R=349092 PWM=17/19
+[S2:MOTION] ctrl late=0/20480 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=323275 R=350972 PWM=17/19
+[S2:MOTION] ctrl late=0/20576 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=325007 R=352849 PWM=17/19
+[S2:MOTION] ctrl late=0/20672 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=326738 R=354723 PWM=17/19
+[S2:MOTION] ctrl late=0/20768 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=328471 R=356601 PWM=17/19
+[S2:MOTION] ctrl late=0/20864 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=330204 R=358479 PWM=17/19
+[S2:MOTION] ctrl late=0/20960 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=331935 R=360352 PWM=17/19
+[S2:MOTION] ctrl late=0/21057 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=333661 R=362220 PWM=17/19
+[S2:MOTION] ctrl late=0/21153 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=335394 R=364099 PWM=17/19
+[S2:MOTION] ctrl late=0/21249 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=337124 R=365972 PWM=17/19
+[S2:MOTION] ctrl late=0/21345 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=338856 R=367849 PWM=17/19
+[S2:MOTION] ctrl late=0/21441 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=340584 R=369721 PWM=17/19
+[S2:MOTION] ctrl late=0/21537 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=342317 R=371600 PWM=17/19
+[S2:MOTION] ctrl late=0/21634 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=344042 R=373475 PWM=17/19
+[S2:MOTION] ctrl late=0/21729 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=345771 R=375352 PWM=17/19
+[S2:MOTION] ctrl late=0/21825 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=347501 R=377230 PWM=17/19
+[S2:MOTION] ctrl late=0/21921 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=349232 R=379111 PWM=17/19
+[S2:MOTION] ctrl late=0/22017 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=350962 R=380987 PWM=17/19
+[S2:MOTION] ctrl late=0/22114 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=352695 R=382864 PWM=17/19
+[S2:MOTION] ctrl late=0/22210 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=354427 R=384743 PWM=17/19
+[S2:MOTION] ctrl late=0/22307 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=356157 R=386623 PWM=17/19
+[S2:MOTION] ctrl late=0/22403 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=357885 R=388500 PWM=17/19
+[S2:MOTION] ctrl late=0/22499 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=359616 R=390375 PWM=17/19
+[S2:MOTION] ctrl late=0/22595 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=361344 R=392249 PWM=17/19
+[S2:MOTION] ctrl late=0/22692 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=363077 R=394130 PWM=17/19
+[S2:MOTION] ctrl late=0/22788 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=364805 R=396005 PWM=17/19
+[S2:MOTION] ctrl late=0/22884 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=366532 R=397883 PWM=17/19
+[S2:MOTION] ctrl late=0/22980 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=368258 R=399759 PWM=17/19
+[S2:MOTION] ctrl late=0/23076 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=369989 R=401641 PWM=17/19
+[S2:MOTION] ctrl late=0/23173 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=371715 R=403513 PWM=17/19
+[S2:MOTION] ctrl late=0/23270 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=373449 R=405391 PWM=17/19
+[S2:MOTION] ctrl late=0/23366 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=375179 R=407268 PWM=17/19
+[S2:MOTION] ctrl late=0/23463 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=376910 R=409144 PWM=17/19
+[S2:MOTION] ctrl late=0/23559 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=378639 R=411020 PWM=17/19
+[S2:MOTION] ctrl late=0/23655 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=380368 R=412894 PWM=17/19
+[S2:MOTION] ctrl late=0/23751 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=382095 R=414767 PWM=17/19
+[S2:MOTION] ctrl late=0/23848 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=383825 R=416642 PWM=17/19
+[S2:MOTION] ctrl late=0/23944 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=385554 R=418517 PWM=17/19
+[S2:MOTION] ctrl late=0/24039 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=387282 R=420391 PWM=17/19
+[S2:MOTION] ctrl late=0/24135 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=389009 R=422270 PWM=17/19
+[S2:MOTION] ctrl late=0/24232 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=390737 R=424139 PWM=17/19
+[S2:MOTION] ctrl late=0/24328 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=392463 R=426012 PWM=17/19
+[S2:MOTION] ctrl late=0/24423 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=394190 R=427889 PWM=17/19
+[S2:MOTION] ctrl late=0/24519 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=395918 R=429765 PWM=17/19
+[S2:MOTION] ctrl late=0/24615 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=397647 R=431639 PWM=17/19
+[S2:MOTION] ctrl late=0/24711 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=399375 R=433513 PWM=17/19
+[S2:MOTION] ctrl late=0/24807 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=401104 R=435387 PWM=17/19
+[S2:MOTION] ctrl late=0/24904 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=402831 R=437261 PWM=17/19
+[S2:MOTION] ctrl late=0/25001 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=404562 R=439138 PWM=17/19
+[S2:MOTION] ctrl late=0/25098 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=406293 R=441013 PWM=17/19
+[S2:MOTION] ctrl late=0/25194 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=408025 R=442885 PWM=17/19
+[S2:MOTION] ctrl late=0/25290 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=409758 R=444761 PWM=17/19
+[S2:MOTION] ctrl late=0/25386 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=411489 R=446636 PWM=17/19
+[S2:MOTION] ctrl late=0/25482 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=413224 R=448515 PWM=17/19
+[S2:MOTION] ctrl late=0/25578 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=414954 R=450391 PWM=17/19
+[S2:MOTION] ctrl late=0/25674 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=416685 R=452269 PWM=17/19
+[S2:MOTION] ctrl late=0/25771 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=418419 R=454147 PWM=17/19
+[S2:MOTION] ctrl late=0/25867 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=420151 R=456023 PWM=17/19
+[S2:MOTION] ctrl late=0/25963 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=421882 R=457901 PWM=17/19
+[S2:MOTION] ctrl late=0/26059 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=423616 R=459780 PWM=17/19
+[S2:MOTION] ctrl late=0/26155 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=425350 R=461654 PWM=17/19
+[S2:MOTION] ctrl late=0/26250 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=427081 R=463527 PWM=17/19
+[S2:MOTION] ctrl late=0/26347 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=428810 R=465402 PWM=17/19
+[S2:MOTION] ctrl late=0/26443 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=430538 R=467277 PWM=17/19
+[S2:MOTION] ctrl late=0/26538 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=432267 R=469150 PWM=17/19
+[S2:MOTION] ctrl late=0/26634 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=433995 R=471026 PWM=17/19
+[S2:MOTION] ctrl late=0/26730 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=435723 R=472905 PWM=17/19
+[S2:MOTION] ctrl late=0/26826 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=437446 R=474777 PWM=17/19
+[S2:MOTION] ctrl late=0/26922 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=439176 R=476653 PWM=17/19
+[S2:MOTION] ctrl late=0/27019 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=440906 R=478529 PWM=17/19
+[S2:MOTION] ctrl late=0/27115 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=442633 R=480406 PWM=17/19
+[S2:MOTION] ctrl late=0/27211 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=444359 R=482279 PWM=17/19
+[S2:MOTION] ctrl late=0/27307 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=446082 R=484145 PWM=17/19
+[S2:MOTION] ctrl late=0/27403 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=447810 R=486020 PWM=17/19
+[S2:MOTION] ctrl late=0/27500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=449539 R=487899 PWM=17/19
+[S2:MOTION] ctrl late=0/27595 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=451268 R=489772 PWM=17/19
+[S2:MOTION] ctrl late=0/27692 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=452998 R=491647 PWM=17/19
+[S2:MOTION] ctrl late=0/27787 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=454725 R=493523 PWM=17/19
+[S2:MOTION] ctrl late=0/27884 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=456453 R=495397 PWM=17/19
+[S2:MOTION] ctrl late=0/27979 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=458179 R=497271 PWM=17/19
+[S2:MOTION] ctrl late=0/28076 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=459904 R=499142 PWM=17/19
+[S2:MOTION] ctrl late=0/28172 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=461631 R=501017 PWM=17/19
+[S2:MOTION] ctrl late=0/28268 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=463358 R=502893 PWM=17/19
+[S2:MOTION] ctrl late=0/28363 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=465083 R=504766 PWM=17/19
+[S2:MOTION] ctrl late=0/28459 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=466807 R=506636 PWM=17/19
+[S2:MOTION] ctrl late=0/28556 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=468531 R=508510 PWM=17/19
+[S2:MOTION] ctrl late=0/28652 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=470257 R=510385 PWM=17/19
+[S2:MOTION] ctrl late=0/28747 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=471983 R=512258 PWM=17/19
+[S2:MOTION] ctrl late=0/28843 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=473712 R=514132 PWM=17/19
+[S2:MOTION] ctrl late=0/28939 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=475439 R=516009 PWM=17/19
+[S2:MOTION] ctrl late=0/29036 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=477168 R=517885 PWM=17/19
+[S2:MOTION] ctrl late=0/29131 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=478896 R=519759 PWM=17/19
+[S2:MOTION] ctrl late=0/29227 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=480623 R=521635 PWM=17/19
+[S2:MOTION] ctrl late=0/29324 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=482350 R=523511 PWM=17/19
+[S2:MOTION] ctrl late=0/29420 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=484079 R=525387 PWM=17/19
+[S2:MOTION] ctrl late=0/29516 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=485806 R=527260 PWM=17/19
+[S2:MOTION] ctrl late=0/29612 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=487531 R=529131 PWM=17/19
+[S2:MOTION] ctrl late=0/29708 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=489260 R=531010 PWM=17/19
+[S2:MOTION] ctrl late=0/29804 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=490989 R=532885 PWM=17/19
+[S2:MOTION] ctrl late=0/29899 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=492711 R=534754 PWM=17/19
+[S2:MOTION] ctrl late=0/29995 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=494439 R=536629 PWM=17/19
+[S2:MOTION] ctrl late=0/30091 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=496164 R=538507 PWM=17/19
+[S2:MOTION] ctrl late=0/30188 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=497891 R=540383 PWM=17/19
+[S2:MOTION] ctrl late=0/30284 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=499612 R=542254 PWM=17/19
+[S2:MOTION] ctrl late=0/30380 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=501338 R=544130 PWM=17/19
+[S2:MOTION] ctrl late=0/30476 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=503065 R=546007 PWM=17/19
+[S2:MOTION] ctrl late=0/30572 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=504794 R=547882 PWM=17/19
+[S2:MOTION] ctrl late=0/30669 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=506524 R=549758 PWM=17/19
+[S2:MOTION] ctrl late=0/30764 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=508252 R=551637 PWM=17/19
+[S2:MOTION] ctrl late=0/30860 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=509978 R=553510 PWM=17/19
+[S2:MOTION] ctrl late=0/30957 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=511706 R=555385 PWM=17/19
+[S2:MOTION] ctrl late=0/31053 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=513433 R=557260 PWM=17/19
+[S2:MOTION] ctrl late=0/31150 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=515160 R=559137 PWM=17/19
+[S2:MOTION] ctrl late=0/31247 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=516888 R=561010 PWM=17/19
+[S2:MOTION] ctrl late=0/31343 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=518613 R=562885 PWM=17/19
+[S2:MOTION] ctrl late=0/31440 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=520341 R=564763 PWM=17/19
+[S2:MOTION] ctrl late=0/31535 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=522069 R=566641 PWM=17/19
+[S2:MOTION] ctrl late=0/31632 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=523793 R=568510 PWM=17/19
+[S2:MOTION] ctrl late=0/31727 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=525521 R=570384 PWM=17/19
+[S2:MOTION] ctrl late=0/31823 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=527248 R=572254 PWM=17/19
+[S2:MOTION] ctrl late=0/31918 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=528977 R=574132 PWM=17/19
+[S2:MOTION] ctrl late=0/32014 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=530705 R=576006 PWM=17/19
+[S2:MOTION] ctrl late=0/32110 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=532435 R=577880 PWM=17/19
+[S2:MOTION] ctrl late=0/32206 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=534166 R=579758 PWM=17/19
+[S2:MOTION] ctrl late=0/32302 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=535892 R=581633 PWM=17/19
+[S2:MOTION] ctrl late=0/32398 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=537622 R=583508 PWM=17/19
+[S2:MOTION] ctrl late=0/32495 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=539347 R=585380 PWM=17/19
+[S2:MOTION] ctrl late=0/32591 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=541071 R=587254 PWM=17/19
+[S2:MOTION] ctrl late=0/32687 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=542800 R=589127 PWM=17/19
+[S2:MOTION] ctrl late=0/32783 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=544527 R=591001 PWM=17/19
+[S2:MOTION] ctrl late=0/32879 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=546255 R=592874 PWM=17/19
+[S2:MOTION] ctrl late=0/32974 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=547979 R=594747 PWM=17/19
+[S2:MOTION] ctrl late=0/33070 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=549707 R=596620 PWM=17/19
+[S2:MOTION] ctrl late=0/33166 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=551433 R=598494 PWM=17/19
+[S2:MOTION] ctrl late=0/33263 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=553158 R=600365 PWM=17/19
+[S2:MOTION] ctrl late=0/33360 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=554887 R=602240 PWM=17/19
+[S2:MOTION] ctrl late=0/33455 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=556614 R=604116 PWM=17/19
+[S2:MOTION] ctrl late=0/33552 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=558341 R=605986 PWM=17/19
+[S2:MOTION] ctrl late=0/33649 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=560070 R=607859 PWM=17/19
+[S2:MOTION] ctrl late=0/33745 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=561801 R=609738 PWM=17/19
+[S2:MOTION] ctrl late=0/33842 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=563527 R=611609 PWM=17/19
+[S2:MOTION] ctrl late=0/33937 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=565259 R=613480 PWM=17/19
+[S2:MOTION] ctrl late=0/34033 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=566983 R=615348 PWM=17/19
+[S2:MOTION] ctrl late=0/34130 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=568711 R=617223 PWM=17/19
+[S2:MOTION] ctrl late=0/34226 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=570441 R=619095 PWM=17/19
+[S2:MOTION] ctrl late=0/34322 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=572172 R=620970 PWM=17/19
+[S2:MOTION] ctrl late=0/34419 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=573902 R=622846 PWM=17/19
+[S2:MOTION] ctrl late=0/34515 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=575633 R=624722 PWM=17/19
+[S2:MOTION] ctrl late=0/34611 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=577363 R=626597 PWM=17/19
+[S2:MOTION] ctrl late=0/34707 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=579089 R=628467 PWM=17/19
+[S2:MOTION] ctrl late=0/34803 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=580814 R=630338 PWM=17/19
+[S2:MOTION] ctrl late=0/34899 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=582544 R=632214 PWM=17/19
+[S2:MOTION] ctrl late=0/34996 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=584270 R=634087 PWM=17/19
+[S2:MOTION] ctrl late=0/35091 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=586001 R=635960 PWM=17/19
+[S2:MOTION] ctrl late=0/35186 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=587734 R=637840 PWM=17/19
+[S2:MOTION] ctrl late=0/35282 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=589465 R=639718 PWM=17/19
+[S2:MOTION] ctrl late=0/35378 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=591197 R=641595 PWM=17/19
+[S2:MOTION] ctrl late=0/35475 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=592930 R=643471 PWM=17/19
+[S2:MOTION] ctrl late=0/35571 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=594660 R=645350 PWM=17/19
+[S2:MOTION] ctrl late=0/35666 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=596397 R=647233 PWM=17/19
+[S2:MOTION] ctrl late=0/35763 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=598130 R=649111 PWM=17/19
+[S2:MOTION] ctrl late=0/35858 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=599859 R=650985 PWM=17/19
+[S2:MOTION] ctrl late=0/35955 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=601587 R=652863 PWM=17/19
+[S2:MOTION] ctrl late=0/36051 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=603319 R=654739 PWM=17/19
+[S2:MOTION] ctrl late=0/36148 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=605046 R=656613 PWM=17/19
+[S2:MOTION] ctrl late=0/36244 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=606777 R=658489 PWM=17/19
+[S2:MOTION] ctrl late=0/36340 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=608505 R=660363 PWM=17/19
+[S2:MOTION] ctrl late=0/36435 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=610236 R=662238 PWM=17/19
+[S2:MOTION] ctrl late=0/36531 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=611963 R=664111 PWM=17/19
+[S2:MOTION] ctrl late=0/36628 gap_max=11 loop_max=4 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=613556 R=665845 PWM=0/0
+[S2:MOTION] ctrl late=0/36724 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=613556 R=665845 PWM=0/0
+[S2:MOTION] ctrl late=0/36824 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=613556 R=665845 PWM=0/0
+[S2:MOTION] ctrl late=0/36924 gap_max=11 loop_max=3 ms

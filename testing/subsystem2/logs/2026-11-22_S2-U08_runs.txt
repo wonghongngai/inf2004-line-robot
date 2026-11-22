@@ -1,0 +1,1320 @@
+=== COM5 connected 19:46:15.945 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-35,32,918) mg
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3 t=4006 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S1:MQTT] connected to 172.20.10.2 t=6134 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1000 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] HUMP DEBUG: raw=-148 filtered=-78 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-97 filtered=-84 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-69 filtered=-104 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-194 filtered=-120 moving=1 dist=1 entry=1
+[S2:MOTION] state=2 fault=0 ticks L=224 R=256 PWM=15/19
+[S2:MOTION] ctrl late=0/1098 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=287 filtered=75 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-19 filtered=95 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=9 filtered=92 moving=1 dist=1 entry=1
+[S2:MOTION] state=2 fault=0 ticks L=1168 R=1257 PWM=16/19
+[S2:MOTION] ctrl late=0/1194 gap_max=11 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=-60 filtered=-66 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=2169 R=2273 PWM=16/19
+[S2:MOTION] ctrl late=0/1290 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-164 filtered=-63 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-84 filtered=-82 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-110 filtered=-62 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-167 filtered=-60 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=3166 R=3264 PWM=16/19
+[S2:MOTION] ctrl late=0/1385 gap_max=12 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-66 filtered=-60 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=4181 R=4296 PWM=16/19
+[S2:MOTION] ctrl late=0/1481 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=5157 R=5268 PWM=16/19
+[S2:MOTION] ctrl late=0/1577 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=6148 R=6285 PWM=16/19
+[S2:MOTION] ctrl late=0/1673 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=7168 R=7304 PWM=16/19
+[S2:MOTION] ctrl late=0/1769 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-177 filtered=-61 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-98 filtered=-61 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-60 filtered=-61 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=249 filtered=61 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-126 filtered=-94 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=17 filtered=-81 moving=1 dist=2 entry=1
+[S2:MOTION] state=2 fault=0 ticks L=8175 R=8307 PWM=16/19
+[S2:MOTION] ctrl late=0/1865 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-72 filtered=-65 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=9193 R=9331 PWM=16/19
+[S2:MOTION] ctrl late=0/1960 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-80 filtered=-72 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-117 filtered=-60 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=10216 R=10361 PWM=16/19
+[S2:MOTION] ctrl late=0/2056 gap_max=12 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-233 filtered=-61 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=79 filtered=64 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=11267 R=11424 PWM=16/19
+[S2:MOTION] ctrl late=0/2152 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=12308 R=12476 PWM=16/19
+[S2:MOTION] ctrl late=0/2248 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-168 filtered=-72 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-137 filtered=-112 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=32 filtered=-91 moving=1 dist=2 entry=1
+[S2:MOTION] state=2 fault=0 ticks L=13295 R=13458 PWM=14/17
+[S2:MOTION] ctrl late=0/2344 gap_max=12 loop_max=4 ms
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S2:MOTION] state=2 fault=0 ticks L=14156 R=14302 PWM=16/19
+[S2:MOTION] ctrl late=0/2440 gap_max=11 loop_max=3 ms
+[S2:BARCODE] frame id=1 runs=1/29 black=1 white=0 result=? skipped=0
+[S2:BARCODE] width frame=1 run=1 BLACK width_ms=244
+[S1:MQTT] barcode acked frame=1
+[S4:IMU] HUMP DEBUG: raw=264 filtered=84 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-3 filtered=88 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-8 filtered=84 moving=1 dist=1 entry=1
+[S2:MOTION] state=2 fault=0 ticks L=15134 R=15284 PWM=16/19
+[S2:MOTION] ctrl late=0/2535 gap_max=12 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-81 filtered=-63 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-53 filtered=-61 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-118 filtered=-84 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-149 filtered=-85 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-47 filtered=-79 moving=1 dist=2 entry=1
+[S4:IMU] HUMP DEBUG: raw=2 filtered=-61 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-13 filtered=-64 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=16151 R=16385 PWM=17/19
+[S2:MOTION] ctrl late=0/2631 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=17220 R=17426 PWM=17/19
+[S2:MOTION] ctrl late=0/2727 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-44 filtered=-76 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-54 filtered=-85 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-43 filtered=-62 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-118 filtered=-70 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-87 filtered=-64 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-65 filtered=-69 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=18231 R=18419 PWM=16/19
+[S2:MOTION] ctrl late=0/2823 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=19252 R=19457 PWM=16/19
+[S2:MOTION] ctrl late=0/2919 gap_max=12 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-155 filtered=-60 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-60 filtered=-66 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=20201 R=20489 PWM=15/17
+[S2:MOTION] ctrl late=0/3015 gap_max=11 loop_max=4 ms
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S1:MQTT] barcode acked frame=2
+[S2:BARCODE] frame id=2 runs=1/29 black=1 white=0 result=? skipped=0
+[S2:BARCODE] width frame=2 run=1 BLACK width_ms=77
+[S2:MOTION] state=2 fault=0 ticks L=21199 R=21504 PWM=17/19
+[S2:MOTION] ctrl late=0/3111 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-32 filtered=-70 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-98 filtered=-83 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=22005 R=22378 PWM=15/17
+[S2:MOTION] ctrl late=0/3207 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-166 filtered=-83 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-60 filtered=-96 moving=1 dist=0 entry=0
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S4:IMU] HUMP DEBUG: raw=13 filtered=70 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-41 filtered=-61 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-87 filtered=-78 moving=1 dist=2 entry=0
+[S1:MQTT] barcode acked frame=3
+[S2:BARCODE] frame id=3 runs=1/29 black=1 white=0 result=? skipped=0
+[S2:BARCODE] width frame=3 run=1 BLACK width_ms=13
+[S2:MOTION] state=2 fault=0 ticks L=22656 R=23122 PWM=15/17
+[S2:MOTION] ctrl late=0/3303 gap_max=11 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=82 filtered=68 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=46 filtered=67 moving=1 dist=1 entry=0
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S4:IMU] HUMP DEBUG: raw=152 filtered=74 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-22 filtered=87 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22687 R=23282 PWM=0/0
+[S2:MOTION] ctrl late=0/3403 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=5 fault=0 ticks L=22687 R=23282 PWM=0/0
+[S2:MOTION] ctrl late=0/3503 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=-145 filtered=-64 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-110 filtered=-91 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=1 filtered=-84 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=62 filtered=73 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-6 filtered=71 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=206 filtered=87 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=50 filtered=83 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=70 filtered=-81 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=33 filtered=86 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=92 filtered=93 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-329 filtered=-145 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=134 filtered=-131 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23288 PWM=0/0
+[S2:MOTION] ctrl late=0/3603 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=327 filtered=150 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=394 filtered=257 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=211 filtered=310 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=113 filtered=239 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-12 filtered=104 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-132 filtered=-65 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-198 filtered=-128 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-105 filtered=-145 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-161 filtered=-154 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-218 filtered=-161 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-174 filtered=-184 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-270 filtered=-220 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-317 filtered=-253 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=15 deg lateral=254 mg
+[S4:IMU] HUMP DEBUG: raw=-280 filtered=-289 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-247 filtered=-281 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-250 filtered=-259 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-280 filtered=-259 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-298 filtered=-276 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-350 filtered=-309 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-334 filtered=-327 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-389 filtered=-357 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-446 filtered=-389 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-470 filtered=-435 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-463 filtered=-459 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-400 filtered=-444 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-316 filtered=-393 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-309 filtered=-341 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-314 filtered=-313 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-401 filtered=-341 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-322 filtered=-345 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-125 filtered=-282 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=16 filtered=-143 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-189 filtered=-67 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-358 filtered=-187 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/3703 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=-382 filtered=-309 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-493 filtered=-411 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-633 filtered=-502 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-810 filtered=-645 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-902 filtered=-781 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-981 filtered=-897 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-1000 filtered=-961 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-314mg threshold=200mg acc=(-296,-851,371) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-610 filtered=-610 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-553 filtered=-581 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-616 filtered=-593 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-554 filtered=-574 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-436 filtered=-535 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-347 filtered=-445 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-242 filtered=-341 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-50 filtered=-213 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-26 filtered=-106 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-111 filtered=-62 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-130 filtered=-89 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-233 filtered=-158 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-419 filtered=-260 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-412 filtered=-354 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-415 filtered=-415 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-426 filtered=-417 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-443 filtered=-428 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-437 filtered=-435 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-371 filtered=-417 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-410 filtered=-406 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-494 filtered=-425 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-551 filtered=-485 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-569 filtered=-538 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-613 filtered=-577 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-288mg threshold=200mg acc=(-636,-645,431) base_z=918
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/3803 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-735 filtered=-735 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-751 filtered=-743 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-745 filtered=-743 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-720 filtered=-738 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-704 filtered=-723 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-650 filtered=-691 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-651 filtered=-668 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-209mg threshold=200mg acc=(-153,-588,671) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-476 filtered=-476 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-403 filtered=-439 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-418 filtered=-432 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-477 filtered=-432 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-410 filtered=-435 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-374 filtered=-420 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-427 filtered=-403 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-624 filtered=-475 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-874 filtered=-641 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-1101 filtered=-866 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-1258 filtered=-1077 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-1044 filtered=-1134 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-937 filtered=-1079 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-683 filtered=-888 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/3903 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT LIFT z_avg-base=-306mg threshold=200mg acc=(-399,-523,655) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-364 filtered=-364 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-299 filtered=-331 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-230 filtered=-297 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-100 filtered=-209 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-132 filtered=-154 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-180 filtered=-137 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-148 filtered=-153 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-200 filtered=-176 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-196 filtered=-181 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-220 filtered=-205 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-151 filtered=-189 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-82 filtered=-151 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-141 filtered=-124 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-181 filtered=-134 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-228 filtered=-183 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-296 filtered=-235 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-400 filtered=-308 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=-15 deg lateral=-297 mg
+[S4:IMU] HUMP DEBUG: raw=-505 filtered=-400 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-603 filtered=-502 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-587 filtered=-565 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-624 filtered=-604 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-657 filtered=-622 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-613 filtered=-631 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-589 filtered=-619 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-588 filtered=-596 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-569 filtered=-582 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-610 filtered=-589 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-760 filtered=-646 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-878 filtered=-749 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-959 filtered=-865 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-755 filtered=-864 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-595 filtered=-769 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-510 filtered=-620 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-430 filtered=-511 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-342 filtered=-427 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-348 filtered=-373 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-407 filtered=-365 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-432 filtered=-395 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-446 filtered=-428 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-495 filtered=-457 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-464 filtered=-468 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/4003 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=-436 filtered=-465 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-411 filtered=-437 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-457 filtered=-434 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-270mg threshold=200mg acc=(-205,-447,628) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-820 filtered=-820 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-939 filtered=-879 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-997 filtered=-918 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-901 filtered=-945 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-714 filtered=-870 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-402 filtered=-672 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-181 filtered=-432 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-281 filtered=-288 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-382 filtered=-281 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-577 filtered=-413 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-714 filtered=-557 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-881 filtered=-724 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-795 filtered=-796 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-822 filtered=-832 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-329mg threshold=200mg acc=(97,-740,596) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-93 filtered=-93 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-85 filtered=-89 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-177 filtered=-118 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-230 filtered=-164 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-304 filtered=-237 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-334 filtered=-289 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-396 filtered=-344 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=5 deg lateral=86 mg
+[S4:IMU] HUMP DEBUG: raw=-420 filtered=-383 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-483 filtered=-433 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-458 filtered=-453 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-311 filtered=-417 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-136 filtered=-301 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=3 filtered=-148 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/4103 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-206 filtered=-102 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-171 filtered=-154 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=25 deg lateral=416 mg
+[S4:IMU] EVENT LIFT z_avg-base=220mg threshold=200mg acc=(357,-86,925) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-188 filtered=-188 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-347 filtered=-267 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-365 filtered=-300 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-305 filtered=-339 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-392 filtered=-354 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-438 filtered=-378 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-416 filtered=-415 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-450 filtered=-434 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-458 filtered=-441 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-475 filtered=-461 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-256mg threshold=200mg acc=(415,-392,767) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-292 filtered=-292 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-229 filtered=-260 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-198 filtered=-239 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-295 filtered=-240 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-317 filtered=-270 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-177 filtered=-263 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-134 filtered=-209 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-157 filtered=-156 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-157 filtered=-149 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-202 filtered=-172 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-209 filtered=-189 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-92 filtered=-167 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=43 filtered=-86 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=221 filtered=144 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=232 filtered=207 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=121 filtered=191 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=56 filtered=136 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-134 filtered=-103 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-167 filtered=-142 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-93 filtered=-131 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-39 filtered=-99 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-169 filtered=-100 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-156 filtered=-121 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-101 filtered=-142 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/4203 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-54 filtered=-103 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=61 filtered=60 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-71 filtered=-71 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-129 filtered=-106 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=14 filtered=-62 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-144 filtered=-61 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-161 filtered=-116 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-107 filtered=-137 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-65 filtered=71 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-96 filtered=75 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-81 filtered=-80 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-54 filtered=-77 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=126 filtered=82 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=42 filtered=81 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=56 filtered=74 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=25 filtered=-66 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/4303 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=193 filtered=61 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-48 filtered=-75 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-145 filtered=-87 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-74 filtered=-86 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-17 filtered=-78 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/4403 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/4503 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-193 filtered=-71 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-91 filtered=-97 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=97 filtered=-62 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=54 filtered=98 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=202 filtered=102 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-72 filtered=80 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=24 filtered=-104 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22689 R=23288 PWM=0/0
+[S2:MOTION] ctrl late=0/4603 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=324 filtered=133 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=155 filtered=196 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-116 filtered=121 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-309 filtered=-90 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-386 filtered=-270 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-169 filtered=-288 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-137 filtered=-230 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-152 filtered=-152 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-175 filtered=-154 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-231 filtered=-186 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-254 filtered=-220 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-145 filtered=-210 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-158 filtered=-185 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-232 filtered=-178 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-419 filtered=-269 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-514 filtered=-388 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-512 filtered=-481 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-312 filtered=-446 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=15 deg lateral=269 mg
+[S4:IMU] HUMP DEBUG: raw=-324 filtered=-382 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-263 filtered=-299 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-244mg threshold=200mg acc=(-139,-117,676) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-338 filtered=-338 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-344 filtered=-341 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-386 filtered=-356 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-400 filtered=-376 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-401 filtered=-395 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-372 filtered=-391 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-167 filtered=-313 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-173 filtered=-237 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-259 filtered=-199 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-252 filtered=-228 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-241 filtered=-250 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-221 filtered=-238 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-89 filtered=-183 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=25 deg lateral=390 mg
+[S4:IMU] HUMP DEBUG: raw=-60 filtered=-123 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22689 R=23288 PWM=0/0
+[S2:MOTION] ctrl late=0/4703 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-185 filtered=-95 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-194 filtered=-162 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-135 filtered=-171 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-100 filtered=-143 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-87 filtered=-107 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-70 filtered=-85 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=263 filtered=78 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=117 filtered=141 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=45 filtered=141 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-79 filtered=-87 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=5 filtered=69 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=48 filtered=79 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22689 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/4803 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=6 filtered=65 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-127 filtered=-105 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=283 filtered=79 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=67 filtered=143 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-28 filtered=107 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22689 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/4903 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=-30 filtered=-60 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-28 filtered=-63 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/5003 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-69 filtered=-70 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-134 filtered=-96 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-61 filtered=-88 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-56 filtered=-83 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/5103 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=-106 filtered=-61 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-48 filtered=-75 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-59 filtered=-63 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-72 filtered=-85 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/5203 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/5303 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=22688 R=23287 PWM=0/0
+[S2:MOTION] ctrl late=0/5403 gap_max=10 loop_max=2 ms
+=== COM5 connected 19:47:09.505 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-30,18,920) mg
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3 t=4087 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+[S1:MQTT] connected to 172.20.10.2 t=4126 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] HUMP DEBUG: raw=-165 filtered=-67 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-26 filtered=-78 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-15 filtered=-68 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=196 R=239 PWM=15/19
+[S2:MOTION] ctrl late=0/798 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=85 filtered=88 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=1192 R=1270 PWM=16/19
+[S2:MOTION] ctrl late=0/895 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=75 filtered=67 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-107 filtered=-63 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=2169 R=2266 PWM=16/19
+[S2:MOTION] ctrl late=0/991 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=3179 R=3260 PWM=15/19
+[S2:MOTION] ctrl late=0/1087 gap_max=12 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=109 filtered=89 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-5 filtered=78 moving=1 dist=2 entry=1
+[S2:MOTION] state=2 fault=0 ticks L=4144 R=4209 PWM=15/19
+[S2:MOTION] ctrl late=0/1182 gap_max=11 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=-101 filtered=-77 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-5 filtered=-65 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=5081 R=5152 PWM=15/19
+[S2:MOTION] ctrl late=0/1279 gap_max=12 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-94 filtered=-63 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=6056 R=6140 PWM=15/19
+[S2:MOTION] ctrl late=0/1375 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=7050 R=7114 PWM=15/19
+[S2:MOTION] ctrl late=0/1471 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=8030 R=8100 PWM=15/19
+[S2:MOTION] ctrl late=0/1567 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-60 filtered=-65 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=8991 R=9047 PWM=15/19
+[S2:MOTION] ctrl late=0/1663 gap_max=12 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=163 filtered=89 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-56 filtered=-86 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=9926 R=10000 PWM=15/19
+[S2:MOTION] ctrl late=0/1758 gap_max=12 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=121 filtered=64 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=43 filtered=98 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=10907 R=11020 PWM=15/19
+[S2:MOTION] ctrl late=0/1854 gap_max=12 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-61 filtered=60 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=11858 R=11958 PWM=15/19
+[S2:MOTION] ctrl late=0/1950 gap_max=11 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=-111 filtered=-63 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-212 filtered=-80 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=149 filtered=100 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-36 filtered=67 moving=1 dist=2 entry=1
+[S4:IMU] HUMP DEBUG: raw=-9 filtered=65 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-50 filtered=61 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=12808 R=12891 PWM=15/19
+[S2:MOTION] ctrl late=0/2047 gap_max=11 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=104 filtered=67 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-11 filtered=72 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-285 filtered=-64 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-111 filtered=-135 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=122 filtered=-91 moving=1 dist=2 entry=1
+[S2:MOTION] state=2 fault=0 ticks L=13685 R=13760 PWM=13/17
+[S2:MOTION] ctrl late=0/2143 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=28 filtered=64 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=14455 R=14566 PWM=13/17
+[S2:MOTION] ctrl late=0/2239 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=34 filtered=69 moving=1 dist=1 entry=0
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S1:MQTT] barcode acked frame=1
+[S4:IMU] HUMP DEBUG: raw=54 filtered=72 moving=1 dist=2 entry=0
+[S2:BARCODE] frame id=1 runs=1/29 black=1 white=0 result=? skipped=0
+[S2:BARCODE] width frame=1 run=1 BLACK width_ms=266
+[S4:IMU] HUMP DEBUG: raw=-159 filtered=-62 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-132 filtered=-68 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=15345 R=15490 PWM=15/19
+[S2:MOTION] ctrl late=0/2335 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=16309 R=16436 PWM=15/19
+[S2:MOTION] ctrl late=0/2432 gap_max=12 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=59 filtered=64 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=17231 R=17363 PWM=15/19
+[S2:MOTION] ctrl late=0/2527 gap_max=11 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=-75 filtered=-68 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=18193 R=18379 PWM=16/19
+[S2:MOTION] ctrl late=0/2623 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=19194 R=19397 PWM=16/19
+[S2:MOTION] ctrl late=0/2720 gap_max=12 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=59 filtered=63 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=20124 R=20330 PWM=16/19
+[S2:MOTION] ctrl late=0/2816 gap_max=12 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-137 filtered=-102 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=30 filtered=-72 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=20938 R=21180 PWM=15/17
+[S2:MOTION] ctrl late=0/2912 gap_max=12 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=-100 filtered=-72 moving=1 dist=1 entry=0
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S4:IMU] HUMP DEBUG: raw=-54 filtered=-61 moving=1 dist=2 entry=0
+[S2:BARCODE] frame id=2 runs=3/29 black=2 white=1 result=? skipped=0
+[S2:BARCODE] width frame=2 run=1 BLACK width_ms=166
+[S2:BARCODE] width frame=2 run=2 WHITE width_ms=7
+[S2:BARCODE] width frame=2 run=3 BLACK width_ms=12
+[S4:IMU] HUMP DEBUG: raw=31 filtered=65 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=21847 R=22075 PWM=16/19
+[S2:MOTION] ctrl late=0/3008 gap_max=11 loop_max=4 ms
+[S1:MQTT] barcode acked frame=2
+[S4:IMU] HUMP DEBUG: raw=228 filtered=88 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-50 filtered=68 moving=1 dist=1 entry=1
+[S4:IMU] HUMP DEBUG: raw=-168 filtered=-81 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=136 filtered=128 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=119 filtered=121 moving=1 dist=1 entry=1
+[S4:IMU] HUMP DEBUG: raw=51 filtered=102 moving=1 dist=0 entry=2
+[S4:IMU] hump entry confirmed sign=1 peak=128mg
+[S4:IMU] HUMP ACTIVE: forward=38 abs=38 dist=0 height=0
+[S4:IMU] EVENT HUMP height=0 mm highest=0 mm peak=128 mg
+[S2:MOTION] state=2 fault=0 ticks L=22276 R=22609 PWM=15/19
+[S2:MOTION] ctrl late=0/3103 gap_max=12 loop_max=3 ms
+[S4:IMU] hump detector re-armed
+[S2:MOTION] state=2 fault=0 ticks L=22277 R=22609 PWM=15/19
+[S2:MOTION] ctrl late=0/3201 gap_max=11 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=121 filtered=91 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=271 filtered=193 moving=1 dist=2 entry=1
+[S4:IMU] HUMP DEBUG: raw=608 filtered=333 moving=1 dist=2 entry=2
+[S4:IMU] hump entry confirmed sign=1 peak=333mg
+[S4:IMU] HUMP ACTIVE: forward=438 abs=438 dist=3 height=2
+[S2:ROBOT] junction: no barcode, straight on
+[S4:IMU] HUMP ACTIVE: forward=437 abs=437 dist=2 height=5
+[S4:IMU] HUMP ACTIVE: forward=231 abs=231 dist=3 height=7
+[S4:IMU] HUMP ACTIVE: forward=29 abs=29 dist=2 height=9
+[S4:IMU] HUMP ACTIVE: forward=-221 abs=221 dist=3 height=9
+[S4:IMU] HUMP ACTIVE: forward=-204 abs=204 dist=2 height=9
+[S2:MOTION] state=2 fault=0 ticks L=22575 R=22974 PWM=13/17
+[S2:MOTION] ctrl late=0/3298 gap_max=11 loop_max=4 ms
+[S4:IMU] HUMP ACTIVE: forward=-153 abs=153 dist=3 height=9
+[S4:IMU] HUMP ACTIVE: forward=-101 abs=101 dist=2 height=9
+[S4:IMU] HUMP ACTIVE: forward=-80 abs=80 dist=3 height=9
+[S4:IMU] HUMP ACTIVE: forward=-42 abs=42 dist=3 height=9
+[S4:IMU] HUMP ACTIVE: forward=-20 abs=20 dist=3 height=9
+[S4:IMU] EVENT HUMP height=9 mm highest=9 mm peak=438 mg
+[S4:IMU] EVENT TILT roll=20 deg lateral=348 mg
+[S4:IMU] EVENT LIFT z_avg-base=-327mg threshold=200mg acc=(-645,727,277) base_z=920
+[S2:ROBOT] WARN stopped: robot lifted (IMU); reboot to re-arm
+[S2:ROBOT] IMU stop data: age=0 ms samples=1636 ok=1 calibrated=1 motion=3 event=3 errors=0 baseline_errors=0
+[S2:MOTION] state=5 fault=0 ticks L=23328 R=23875 PWM=0/0
+[S2:MOTION] ctrl late=0/3396 gap_max=11 loop_max=4 ms
+[S4:IMU] EVENT TILT roll=-20 deg lateral=-316 mg
+[S4:IMU] EVENT TILT roll=-20 deg lateral=-328 mg
+[S4:IMU] EVENT LIFT z_avg-base=-241mg threshold=200mg acc=(-155,-211,655) base_z=920
+[S4:IMU] EVENT TILT roll=-20 deg lateral=-332 mg
+[S2:MOTION] state=5 fault=0 ticks L=23328 R=23875 PWM=0/0
+[S2:MOTION] ctrl late=0/3496 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=5 deg lateral=56 mg
+[S4:IMU] EVENT TILT roll=-25 deg lateral=-403 mg
+[S2:MOTION] state=5 fault=0 ticks L=23328 R=23875 PWM=0/0
+[S2:MOTION] ctrl late=0/3596 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT LIFT z_avg-base=-293mg threshold=200mg acc=(-326,-281,550) base_z=920
+[S2:MOTION] state=5 fault=0 ticks L=23328 R=23875 PWM=0/0
+[S2:MOTION] ctrl late=0/3696 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=-5 deg lateral=-82 mg
+[S4:IMU] EVENT LIFT z_avg-base=-313mg threshold=200mg acc=(-29,-234,610) base_z=920
+[S4:IMU] EVENT TILT roll=5 deg lateral=112 mg
+[S4:IMU] EVENT TILT roll=15 deg lateral=253 mg
+[S2:MOTION] state=5 fault=0 ticks L=23328 R=23875 PWM=0/0
+[S2:MOTION] ctrl late=0/3796 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=23328 R=23875 PWM=0/0
+[S2:MOTION] ctrl late=0/3896 gap_max=10 loop_max=2 ms
+[S4:IMU] EVENT TILT roll=15 deg lateral=254 mg
+[S2:MOTION] state=5 fault=0 ticks L=23332 R=23876 PWM=0/0
+[S2:MOTION] ctrl late=0/3996 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=23396 R=23923 PWM=0/0
+[S2:MOTION] ctrl late=0/4096 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=23436 R=23927 PWM=0/0
+[S2:MOTION] ctrl late=0/4196 gap_max=10 loop_max=2 ms
+[S4:IMU] hump detector re-armed
+[S2:MOTION] state=5 fault=0 ticks L=23436 R=23927 PWM=0/0
+[S2:MOTION] ctrl late=0/4296 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=23436 R=23927 PWM=0/0
+[S2:MOTION] ctrl late=0/4396 gap_max=11 loop_max=3 ms
+=== COM5 connected 19:47:55.002 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-32,22,918) mg
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3 t=4091 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+[S1:MQTT] connected to 172.20.10.2 t=4128 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] HUMP DEBUG: raw=-74 filtered=-96 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=419 R=435 PWM=15/19
+[S2:MOTION] ctrl late=0/897 gap_max=11 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=88 filtered=61 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=1344 R=1381 PWM=15/19
+[S2:MOTION] ctrl late=0/993 gap_max=12 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=240 filtered=135 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-83 filtered=-100 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=2324 R=2403 PWM=15/19
+[S2:MOTION] ctrl late=0/1089 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=3311 R=3397 PWM=16/19
+[S2:MOTION] ctrl late=0/1185 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=4312 R=4394 PWM=15/19
+[S2:MOTION] ctrl late=0/1282 gap_max=11 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=-105 filtered=-72 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=5307 R=5410 PWM=16/19
+[S2:MOTION] ctrl late=0/1378 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=6286 R=6366 PWM=15/19
+[S2:MOTION] ctrl late=0/1474 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-70 filtered=-65 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=7267 R=7358 PWM=15/19
+[S2:MOTION] ctrl late=0/1569 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=8221 R=8318 PWM=15/19
+[S2:MOTION] ctrl late=0/1665 gap_max=12 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=66 filtered=62 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=51 filtered=91 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-56 filtered=-83 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=9183 R=9267 PWM=15/19
+[S2:MOTION] ctrl late=0/1761 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=10170 R=10280 PWM=15/19
+[S2:MOTION] ctrl late=0/1856 gap_max=12 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=50 filtered=98 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=89 filtered=108 moving=1 dist=2 entry=1
+[S4:IMU] HUMP DEBUG: raw=79 filtered=72 moving=1 dist=2 entry=2
+[S4:IMU] HUMP DEBUG: raw=30 filtered=66 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=11178 R=11309 PWM=16/19
+[S2:MOTION] ctrl late=0/1952 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=12216 R=12361 PWM=16/19
+[S2:MOTION] ctrl late=0/2048 gap_max=12 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=-68 filtered=-67 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=13239 R=13390 PWM=16/19
+[S2:MOTION] ctrl late=0/2144 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=14220 R=14365 PWM=14/17
+[S2:MOTION] ctrl late=0/2240 gap_max=11 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=-100 filtered=-65 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-84 filtered=-71 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-47 filtered=-77 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-96 filtered=-75 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-37 filtered=-60 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=15076 R=15204 PWM=14/17
+[S2:MOTION] ctrl late=0/2336 gap_max=11 loop_max=4 ms
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S4:IMU] HUMP DEBUG: raw=84 filtered=70 moving=1 dist=2 entry=0
+[S2:BARCODE] frame id=1 runs=1/29 black=1 white=0 result=? skipped=0
+[S2:BARCODE] width frame=1 run=1 BLACK width_ms=253
+[S1:MQTT] barcode acked frame=1
+[S2:MOTION] state=2 fault=0 ticks L=16017 R=16147 PWM=15/19
+[S4:IMU] HUMP DEBUG: raw=52 filtered=64 moving=1 dist=2 entry=0
+[S2:MOTION] ctrl late=0/2432 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=16965 R=17098 PWM=15/19
+[S2:MOTION] ctrl late=0/2527 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=17946 R=18115 PWM=16/19
+[S2:MOTION] ctrl late=0/2622 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=18933 R=19091 PWM=16/19
+[S2:MOTION] ctrl late=0/2719 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=126 filtered=67 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=7 filtered=67 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=19919 R=20092 PWM=16/19
+[S2:MOTION] ctrl late=0/2815 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=20872 R=21036 PWM=14/17
+[S2:MOTION] ctrl late=0/2911 gap_max=11 loop_max=3 ms
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S4:IMU] HUMP DEBUG: raw=-97 filtered=-65 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=21632 R=21823 PWM=16/19
+[S2:MOTION] ctrl late=0/3007 gap_max=11 loop_max=4 ms
+[S2:BARCODE] frame id=2 runs=1/29 black=1 white=0 result=? skipped=0
+[S2:BARCODE] width frame=2 run=1 BLACK width_ms=114
+[S1:MQTT] barcode acked frame=2
+[S2:MOTION] state=2 fault=0 ticks L=22624 R=22788 PWM=15/19
+[S2:MOTION] ctrl late=0/3103 gap_max=11 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=8 filtered=-64 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=22 filtered=75 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=150 filtered=67 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=11 filtered=98 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-24 filtered=-79 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-93 filtered=-114 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-147 filtered=-88 moving=1 dist=1 entry=1
+[S4:IMU] HUMP DEBUG: raw=-7 filtered=-82 moving=1 dist=1 entry=2
+[S2:MOTION] state=2 fault=0 ticks L=23390 R=23564 PWM=14/17
+[S2:MOTION] ctrl late=0/3200 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=23539 R=24193 PWM=15/17
+[S2:MOTION] ctrl late=0/3297 gap_max=12 loop_max=4 ms
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=1 fault=0 ticks L=23554 R=24500 PWM=0/0
+[S2:MOTION] ctrl late=0/3395 gap_max=11 loop_max=3 ms
+[S2:BARCODE] frame id=3 runs=2/29 black=1 white=1 result=? skipped=0
+[S2:BARCODE] width frame=3 run=1 BLACK width_ms=418
+[S2:BARCODE] width frame=3 run=2 WHITE width_ms=655
+[S4:IMU] HUMP DEBUG: raw=195 filtered=105 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=79 filtered=130 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-109 filtered=-60 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=140 filtered=70 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=26 filtered=62 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-62 filtered=-75 moving=0 dist=0 entry=0
+[S1:MQTT] barcode acked frame=3
+[S4:IMU] HUMP DEBUG: raw=-126 filtered=-64 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-65 filtered=-95 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=23544 R=24500 PWM=0/0
+[S2:MOTION] ctrl late=0/3495 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-56 filtered=-82 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-68 filtered=-63 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=207 filtered=87 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=126 filtered=131 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-8 filtered=108 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=15 deg lateral=234 mg
+[S4:IMU] HUMP DEBUG: raw=-58 filtered=-69 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-57 filtered=-67 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-99 filtered=-71 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-83 filtered=-79 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-63 filtered=-81 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=691 filtered=248 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=477 filtered=409 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=4 filtered=390 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=6 filtered=162 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-297 filtered=-76 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=58 filtered=-65 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=11 filtered=-76 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-118 filtered=-90 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=47 filtered=97 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=30 filtered=74 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-46 filtered=-76 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=23547 R=24500 PWM=0/0
+[S2:MOTION] ctrl late=0/3595 gap_max=10 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=161 filtered=86 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=222 filtered=130 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=507 filtered=296 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=592 filtered=440 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=370 filtered=489 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=190 filtered=384 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=10 deg lateral=139 mg
+[S4:IMU] HUMP DEBUG: raw=-59 filtered=167 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-221 filtered=-110 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-227 filtered=-185 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=0 deg lateral=36 mg
+[S4:IMU] HUMP DEBUG: raw=-109 filtered=-185 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=8 filtered=-109 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-209 filtered=-96 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-196 filtered=-158 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-240 filtered=-215 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-233 filtered=-223 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-349 filtered=-274 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=10 deg lateral=194 mg
+[S4:IMU] HUMP DEBUG: raw=-294 filtered=-292 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-294 filtered=-312 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-277 filtered=-288 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-252 filtered=-274 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-286 filtered=-271 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-272 filtered=-270 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-298 filtered=-285 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-297 filtered=-289 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-295 filtered=-296 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-312 filtered=-301 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=224 filtered=-127 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=380 filtered=97 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-288 filtered=105 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-498 filtered=-135 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=503 filtered=-94 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=193 filtered=279 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=103 filtered=146 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=1 filtered=99 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24501 PWM=0/0
+[S2:MOTION] ctrl late=0/3695 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24501 PWM=0/0
+[S2:MOTION] ctrl late=0/3795 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24501 PWM=0/0
+[S2:MOTION] ctrl late=0/3895 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24501 PWM=0/0
+[S2:MOTION] ctrl late=0/3995 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24501 PWM=0/0
+[S2:MOTION] ctrl late=0/4095 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24501 PWM=0/0
+[S2:MOTION] ctrl late=0/4195 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24501 PWM=0/0
+[S2:MOTION] ctrl late=0/4295 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24501 PWM=0/0
+[S2:MOTION] ctrl late=0/4395 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=267 filtered=142 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=83 filtered=70 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=14 filtered=122 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-119 filtered=-71 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24501 PWM=0/0
+[S2:MOTION] ctrl late=0/4495 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=435 filtered=137 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=631 filtered=372 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=410 filtered=492 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=368 filtered=469 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=124 filtered=300 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-56 filtered=145 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=343mg threshold=200mg acc=(-16,125,1268) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-138 filtered=-63 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-254 filtered=-126 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-285 filtered=-225 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-406 filtered=-315 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-412 filtered=-367 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-333 filtered=-383 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=0 deg lateral=40 mg
+[S4:IMU] HUMP DEBUG: raw=-303 filtered=-349 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-383 filtered=-339 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-292mg threshold=200mg acc=(28,-359,580) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-407 filtered=-407 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-314 filtered=-360 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-297 filtered=-339 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-291 filtered=-300 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-267 filtered=-285 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-262 filtered=-273 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24500 PWM=0/0
+[S2:MOTION] ctrl late=0/4595 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-287 filtered=-272 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-399 filtered=-316 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-478 filtered=-388 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-567 filtered=-481 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-592 filtered=-545 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-661 filtered=-606 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-595 filtered=-616 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-482 filtered=-579 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-551 filtered=-542 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-502 filtered=-511 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-349 filtered=-467 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-274 filtered=-375 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-329 filtered=-317 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-480 filtered=-361 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-461 filtered=-423 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-423 filtered=-454 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-419 filtered=-434 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-462 filtered=-434 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-552 filtered=-477 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-634 filtered=-549 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-640 filtered=-608 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-566 filtered=-613 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-499 filtered=-568 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-514 filtered=-526 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-550 filtered=-521 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-554 filtered=-539 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-265mg threshold=200mg acc=(-311,-534,487) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-897 filtered=-897 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-851 filtered=-874 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-769 filtered=-839 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-649 filtered=-756 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-432 filtered=-616 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24500 PWM=0/0
+[S2:MOTION] ctrl late=0/4695 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-331 filtered=-470 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-392 filtered=-385 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-720 filtered=-481 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-1174 filtered=-762 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-1245 filtered=-1046 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-1254 filtered=-1224 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-984 filtered=-1161 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-756 filtered=-998 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-292mg threshold=200mg acc=(-44,-650,674) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-359 filtered=-359 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-499 filtered=-429 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-500 filtered=-452 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-501 filtered=-500 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-522 filtered=-507 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-607 filtered=-543 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-620 filtered=-583 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-573 filtered=-600 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-591 filtered=-594 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-644 filtered=-602 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-600 filtered=-611 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-568 filtered=-604 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-567 filtered=-578 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-564 filtered=-566 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-545 filtered=-558 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-494 filtered=-534 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-448 filtered=-495 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-419 filtered=-453 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-467 filtered=-444 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-504 filtered=-463 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-541 filtered=-504 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-444 filtered=-496 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-385 filtered=-456 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-459 filtered=-429 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-563 filtered=-469 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-650 filtered=-557 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-723 filtered=-645 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-814 filtered=-729 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24500 PWM=0/0
+[S2:MOTION] ctrl late=0/4795 gap_max=10 loop_max=2 ms
+[S4:IMU] EVENT LIFT z_avg-base=-268mg threshold=200mg acc=(31,-822,577) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-559 filtered=-559 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-643 filtered=-601 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-569 filtered=-590 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-511 filtered=-574 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-470 filtered=-516 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-403 filtered=-461 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-328 filtered=-400 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-507 filtered=-412 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-682 filtered=-505 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-675 filtered=-621 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-650 filtered=-669 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-714 filtered=-679 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-709 filtered=-691 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-761 filtered=-728 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-864 filtered=-778 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-964 filtered=-863 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-1052 filtered=-960 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-1036 filtered=-1017 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24500 PWM=0/0
+[S2:MOTION] ctrl late=0/4895 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-947 filtered=-1011 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-814 filtered=-932 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-747 filtered=-836 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-612 filtered=-724 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-257mg threshold=200mg acc=(-378,-537,476) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-478 filtered=-478 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-360 filtered=-419 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-403 filtered=-413 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-525 filtered=-429 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-398 filtered=-442 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-402 filtered=-441 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-387 filtered=-395 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-368 filtered=-385 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-367 filtered=-374 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-525 filtered=-420 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-606 filtered=-499 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-587 filtered=-572 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-503 filtered=-565 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-355 filtered=-481 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-325 filtered=-394 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-327 filtered=-335 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-354 filtered=-335 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-374 filtered=-351 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-491 filtered=-406 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-472 filtered=-445 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-438 filtered=-467 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-480 filtered=-463 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-397 filtered=-438 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-400 filtered=-425 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-345 filtered=-380 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-422 filtered=-389 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-537 filtered=-434 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-567 filtered=-508 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-619 filtered=-574 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-639 filtered=-608 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24500 PWM=0/0
+[S2:MOTION] ctrl late=0/4995 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-549 filtered=-602 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-474 filtered=-554 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-525 filtered=-516 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-541 filtered=-513 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-518 filtered=-528 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-498 filtered=-519 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-601 filtered=-539 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-287mg threshold=200mg acc=(-200,-568,511) base_z=918
+[S4:IMU] HUMP DEBUG: raw=-152 filtered=-152 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-100 filtered=-126 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-155 filtered=-135 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-187 filtered=-147 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-182 filtered=-174 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-207 filtered=-192 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-144 filtered=-177 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-160 filtered=-170 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=15 deg lateral=274 mg
+[S4:IMU] HUMP DEBUG: raw=-180 filtered=-161 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-214 filtered=-184 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-147 filtered=-180 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-106 filtered=-155 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-77 filtered=-110 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-191 filtered=-124 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-242 filtered=-170 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-248 filtered=-227 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-159 filtered=-216 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-241 filtered=-216 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-188 filtered=-196 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-171 filtered=-200 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-211 filtered=-190 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-239 filtered=-207 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=0 deg lateral=-20 mg
+[S4:IMU] HUMP DEBUG: raw=130 filtered=-106 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24500 PWM=0/0
+[S2:MOTION] ctrl late=0/5095 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=-150 filtered=-92 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=33 filtered=66 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-58 filtered=96 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-304 filtered=-168 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-282 filtered=-242 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=36 filtered=-183 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=382 filtered=191 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=190 filtered=243 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-2 filtered=190 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=26 filtered=83 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=100 filtered=80 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-190 filtered=-117 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-6 filtered=-109 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/5195 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/5295 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-99 filtered=-77 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-27 filtered=-63 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/5395 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/5495 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/5595 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/5695 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/5795 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/5895 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/5995 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/6095 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/6195 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/6295 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/6395 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/6495 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/6595 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/6695 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/6795 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/6895 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/6995 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/7095 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/7195 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/7295 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/7395 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/7495 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/7595 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/7695 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/7795 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/7895 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/7995 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/8095 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/8195 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/8295 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/8395 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/8495 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/8595 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/8695 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/8795 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/8895 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/8995 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/9095 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/9195 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/9295 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/9395 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/9495 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/9595 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/9695 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/9795 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/9895 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/9995 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/10095 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/10195 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/10295 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/10395 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/10495 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/10595 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/10695 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=23546 R=24514 PWM=0/0
+[S2:MOTION] ctrl late=0/10795 gap_max=11 loop_max=3 ms

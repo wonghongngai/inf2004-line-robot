@@ -61,8 +61,8 @@
    by BOTH builds (all_test's ALL_CRUISE_* / ALL_LINE_* read these), so they
    cannot drift apart again. Following uses no moving floor and no stall
    stop, as all_test always did. */
-#define S2_FOLLOW_LEFT_PWM_PERCENT           12.5f
-#define S2_FOLLOW_RIGHT_PWM_PERCENT          15.0f  /* right motor is weaker */
+#define S2_FOLLOW_LEFT_PWM_PERCENT           15.0f  /* was 12.5, raised 22 Nov for the S2-U08 track test */
+#define S2_FOLLOW_RIGHT_PWM_PERCENT          19.0f  /* right motor is weaker; was 15.0, 18.0 drifted right 22 Nov */
 #define S2_FOLLOW_BOOST_PWM_PERCENT          4.0f   /* outer wheel while steering */
 #define S2_FOLLOW_INNER_PWM_PERCENT          5.0f   /* inner wheel, soft correction */
 #define S2_FOLLOW_HARD_INNER_PWM_PERCENT     0.0f   /* inner wheel, hard correction */
