@@ -778,6 +778,34 @@ EXPORT void subsystem5_test(void)
         obstacle_plan(&prof, 0U, NULL);
     }
 
+    /* S5-U46: start-up self-test decision (#47) */
+    {
+        static const UW none[SELFTEST_PINGS]  = {0U, 0U, 0U, 0U, 0U};
+        static const UW one[SELFTEST_PINGS]   = {0U, 0U, 1748U, 0U, 0U};
+        static const UW two[SELFTEST_PINGS]   = {0U, 1748U, 0U, 30000U, 0U};
+        static const UW all[SELFTEST_PINGS]   = {1748U, 1750U, 1747U,
+                                                 1749U, 1748U};
+        static const UW open_[SELFTEST_PINGS] = {30000U, 0U, 30000U,
+                                                 0U, 30000U};
+
+        TEST_CHECK("S5-U46", !s5_selftest_echo_ok(none, SELFTEST_PINGS),
+                   "ECHO never high (unplugged / dead): FAIL");
+        TEST_CHECK("S5-U46", !s5_selftest_echo_ok(one, SELFTEST_PINGS),
+                   "one echo in 5 (a glitch): FAIL");
+        TEST_CHECK("S5-U46", s5_selftest_echo_ok(two, SELFTEST_PINGS),
+                   "two echoes in 5: PASS (SELFTEST_MIN_ECHOES = 2)");
+        TEST_CHECK("S5-U46", s5_selftest_echo_ok(all, SELFTEST_PINGS),
+                   "every ping answered (box at 30 cm): PASS");
+        TEST_CHECK("S5-U46", s5_selftest_echo_ok(open_, SELFTEST_PINGS),
+                   "open space: ECHO high to the window end, every other "
+                   "ping BUSY: PASS");
+        TEST_CHECK("S5-U46",
+                   (!s5_selftest_echo_ok(NULL, SELFTEST_PINGS) &&
+                    !s5_selftest_echo_ok(all, 0U) &&
+                    !s5_selftest_echo_ok(all, 1U)),
+                   "NULL, 0 pings or 1 ping: FAIL");
+    }
+
     /* S5-U39: obstacle telemetry word (#40) */
     {
         obstacle_profile_t profile = {0};

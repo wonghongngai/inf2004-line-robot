@@ -813,6 +813,30 @@ EXPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req)
     return TRUE;
 }
 
+/* ---- Start-up self-test (#47) ---- */
+
+/* Did enough pings see the ECHO line go high? */
+EXPORT BOOL s5_selftest_echo_ok(const UW * p_echo_us, UW count)
+{
+    UW index;
+    UW echoes = 0U;
+
+    if (NULL == p_echo_us)
+    {
+        return FALSE;
+    }
+
+    for (index = 0U; index < count; index++)
+    {
+        if (0U != p_echo_us[index])
+        {
+            echoes++;
+        }
+    }
+
+    return (echoes >= SELFTEST_MIN_ECHOES) ? TRUE : FALSE;
+}
+
 /* ---- S5 -> telemetry obstacle word (#40) ---- */
 
 /* Obstacle word layout (see subsystem5.h) */
