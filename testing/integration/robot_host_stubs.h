@@ -23,4 +23,8 @@ typedef struct { void *next; } T_MSG;
 #define E_TMOUT (-50)
 #define TMO_POL 0
 int tm_printf(UB *format, ...);
+/* APP_H above skips app.h, which is what brings in the LOG_xxx macros and
+ * TAG_xxx names (#98); take them from the real header instead. */
+#define APP_LOG_HOST_TEST 1
+#include "../../app_program/app_log.h"
 #endif

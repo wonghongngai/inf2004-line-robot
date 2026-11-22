@@ -31,7 +31,7 @@ EXPORT void subsystem1_test(void)
     TEST_CHECK("S1-U18", subsystem1_receive_command(&command, TMO_POL) == 1
                && command.bytes[0] == S1_COMMAND_REVERSE,
                "reverse command survives queue");
-    malformed[0] = 5;
+    malformed[0] = S1_COMMAND_MAX + 1U;  /* 5 became START on 21 Nov */
     s1_deliver_command(malformed, 1);
     s1_deliver_command(malformed, 2);
     TEST_CHECK("S1-U07", subsystem1_receive_command(&command, TMO_POL) == E_TMOUT,

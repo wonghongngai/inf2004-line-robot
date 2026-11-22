@@ -298,9 +298,12 @@ void cyw43_utk_task(int32_t stacd, void *exinf)
             prev_link_status = radio_status.link_status;
             if(radio_status.link_status == CYW43_LINK_UP) {
                 uint32_t ip = radio_status.ip_addr;
-                tm_printf((UB*)"wifi: link up, ip=%d.%d.%d.%d\n",
+                /* t= is ms since boot, so S1-U11 reads the join time off
+                 * the log and S1-U13 the time back after a hotspot loss. */
+                tm_printf((UB*)"wifi: link up, ip=%d.%d.%d.%d t=%d ms\n",
                           (int)(ip & 0xff), (int)((ip >> 8) & 0xff),
-                          (int)((ip >> 16) & 0xff), (int)((ip >> 24) & 0xff));
+                          (int)((ip >> 16) & 0xff), (int)((ip >> 24) & 0xff),
+                          (int)(time_us_64() / 1000u));
                 wifi_utk_link_up();
             } else {
                 tm_printf((UB*)"wifi: link status -> %s (%d)\n",

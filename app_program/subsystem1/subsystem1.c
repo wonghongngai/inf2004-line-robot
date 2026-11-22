@@ -134,22 +134,70 @@ int s1_take_barcode(S1_BARCODE_RESULT *result)
     return tk_rcv_mbf(barcode_queue, result, TMO_POL);
 }
 
+/* Command messages that print their own lines per report window. */
+#define S1_COMMAND_LOG_BURST 4U
+
+LOCAL S1_COMMAND_STATS command_stats;
+LOCAL S1_COMMAND_STATS command_stats_reported;
+LOCAL unsigned int command_log_budget = S1_COMMAND_LOG_BURST;
+
+void s1_command_stats_get(S1_COMMAND_STATS *out)
+{
+    if (out != NULL) {
+        *out = command_stats;
+    }
+}
+
+int s1_command_log_ok(void)
+{
+    if (command_log_budget == 0U) {
+        return 0;
+    }
+    --command_log_budget;
+    return 1;
+}
+
+void s1_command_stats_report(void)
+{
+    const S1_COMMAND_STATS *now = &command_stats;
+    const S1_COMMAND_STATS *last = &command_stats_reported;
+    if (now->received - last->received > S1_COMMAND_LOG_BURST ||
+        now->invalid != last->invalid || now->dropped != last->dropped) {
+        LOG_INFO(TAG_S1_CMD, "commands rx=%u queued=%u invalid=%u dropped=%u (+%u this window)",
+                 now->received, now->queued, now->invalid, now->dropped,
+                 now->received - last->received);
+    }
+    command_stats_reported = command_stats;
+    command_log_budget = S1_COMMAND_LOG_BURST;
+}
+
 void s1_deliver_command(const unsigned char *payload, unsigned int length)
 {
     S1_COMMAND command;
     ER result;
-    if (payload == NULL || length != S1_COMMAND_BYTES || command_queue <= 0) {
+    if (payload == NULL || command_queue <= 0) {
+        return;
+    }
+    ++command_stats.received;
+    if (length != S1_COMMAND_BYTES) {
+        ++command_stats.invalid;
         return;
     }
     command.bytes[0] = payload[0];
     if (!s1_command_valid(&command)) {
+        ++command_stats.invalid;
         return;
     }
+    /* TMO_POL: a full queue drops the command instead of blocking the
+     * Wi-Fi task (S1-U17). Only the first drop of a window prints. */
     result = tk_snd_mbf(command_queue, command.bytes, S1_COMMAND_BYTES, TMO_POL);
     if (result < E_OK) {
-        LOG_ERR(TAG_S1_CMD, "command queue full/error %d", result);
+        if (command_stats.dropped == command_stats_reported.dropped) {
+            LOG_ERR(TAG_S1_CMD, "command queue full/error %d; counting further drops", result);
+        }
+        ++command_stats.dropped;
     } else {
-        LOG_INFO(TAG_S1_CMD, "command queued=%u", (unsigned int)command.bytes[0]);
+        ++command_stats.queued;
     }
 }
 
