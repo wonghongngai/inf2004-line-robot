@@ -37,8 +37,10 @@
 // #define S2_RIGHT_TICKS_PER_CM                118.5634f
 #define S2_LEFT_TICKS_PER_CM   23.10f //updated calibration value
 #define S2_RIGHT_TICKS_PER_CM  18.83f
-#define S2_LEFT_TURN_TICKS_PER_DEGREE         20.3556f  /* right turn: 1832 / 90 */
-#define S2_RIGHT_TURN_TICKS_PER_DEGREE        22.9074f  /* left turn: 2061.6667 / 90 */
+/* 22 Nov (S2-U07): from hand-pivoted 360-degree turns, 8287 / 360 and 8343 / 360.
+   Was 20.3556 (right turn) and 22.9074 (left turn), from 29 Oct 90-degree pivots. */
+#define S2_LEFT_TURN_TICKS_PER_DEGREE         24.2f     /* right turn, driven: see CALIBRATION.md */
+#define S2_RIGHT_TURN_TICKS_PER_DEGREE        25.0f     /* left turn, driven: see CALIBRATION.md */
 #define S2_BASE_PWM_PERCENT                  55.0f
 #define S2_MIN_EFFECTIVE_PWM_PERCENT         15.0f    /* shared floor covers right motor */
 #define S2_MAX_PWM_PERCENT                   100.0f
@@ -46,10 +48,11 @@
 #define S2_ANGLE_TOLERANCE_DEG               2.0f
 #define S2_ENCODER_STALL_TIMEOUT_MS          500U
 
-/* PID gains are deliberately not guessed.  Tune these on the real vehicle.
-   KP stays 0 until the left encoder's counting direction is confirmed. */
-#define S2_PID_KP                            0.0f
-#define S2_PID_KI                            0.0f
+/* Straight-line PID (left-minus-right travel, in cm, to a PWM trim). Tuned 22 Nov
+   (S2-U10) on the floor at 25 % PWM: 0 / 0 / 0 drifted 94-126 mm over 100 cm,
+   6.0 / 0.5 / 0 held it to 3 mm. Not yet checked at the 12.5 / 15 % track speeds. */
+#define S2_PID_KP                            6.0f
+#define S2_PID_KI                            0.5f
 #define S2_PID_KD                            0.0f
 #define S2_PID_INTEGRAL_LIMIT                100.0f
 #define S2_PID_CORRECTION_LIMIT              30.0f

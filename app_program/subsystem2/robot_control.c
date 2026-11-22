@@ -890,6 +890,150 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
 
 #elif S2_MOTION_DEMO && !APP_TEST
 
+#if S2_PID_BENCH
+volatile uint32_t s2_bench_stop_ms;   /* set when run 2 sends STOP */
+/*
+ * S2-U10 / S2-U11 floor bench (#18). Two 100 cm forward runs, 5 s apart.
+ *   run 1 (U10): logs left-minus-right travel and PWM every 20 ms, so the
+ *                straight-line PID's response can be read from the console.
+ *   run 2 (U11): sends STOP through subsystem2_send_command() (the same path
+ *                as the real STOP) S2_BENCH_STOP_AFTER_MS into the run.
+ *                task_motion.c times the motors-off and wheels-still points.
+ * Needs 1.2 m of clear floor ahead. Not part of any normal build.
+ */
+void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    static const MOTION_COMMAND fwd = {MOTION_CMD_FORWARD_CM, 100.0f};
+    static unsigned run;                 /* 0, 1: finished runs */
+    static bool active, stop_sent, done;
+    static uint32_t started, next_start, step_no;
+    static bool first = true;
+    MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
+
+    if (first) {   /* the kernel clock does not start at 0: count from here */
+        first = false;
+        next_start = now + S2_ROBOT_START_MS;
+    }
+    if (done || ctl->status.state == MOTION_STATE_FAULT) {
+        return;
+    }
+    if (!active) {
+        if ((int32_t)(now - next_start) >= 0 &&
+            motion_control_command(ctl, &fwd, now, l, r) == MOTION_RESULT_OK) {
+            active = true;
+            stop_sent = false;
+            started = now;
+            step_no = 0u;
+            LOG_INFO(TAG_S2_BENCH, "run %u (%s) start; cols: ms L R err_mm pwmL pwmR",
+                      run + 1u, run == 0u ? "U10 PID" : "U11 STOP");
+        }
+        return;
+    }
+    {
+        uint32_t t = now - started;
+        if ((step_no++ & 1u) == 0u) {
+            /* err > 0: the left wheel is ahead of the right. */
+            float el = (float)(l - ctl->command_start_left_ticks) / ctl->cfg.left_ticks_per_cm;
+            float er = (float)(r - ctl->command_start_right_ticks) / ctl->cfg.right_ticks_per_cm;
+            LOG_INFO(TAG_S2_BENCH, "%lu %ld %ld %ld %d %d", (unsigned long)t,
+                      (long)l, (long)r, (long)((el - er) * 10.0f),
+                      (int)ctl->status.left_pwm_percent,
+                      (int)ctl->status.right_pwm_percent);
+        }
+        if (run == 1u && !stop_sent && t >= S2_BENCH_STOP_AFTER_MS) {
+            stop_sent = true;
+            LOG_INFO(TAG_S2_BENCH, "STOP sent at %lu ms", (unsigned long)t);
+            s2_bench_stop_ms = now ? now : 1u;
+            (void)subsystem2_send_command(&stop);
+        }
+        if (ctl->status.state == MOTION_STATE_IDLE || t > S2_DEMO_TIMEOUT_MS ||
+            (stop_sent && t > S2_BENCH_STOP_AFTER_MS + 500u)) {
+            LOG_INFO(TAG_S2_BENCH, "run %u end at %lu ms, state=%d", run + 1u,
+                      (unsigned long)t, (int)ctl->status.state);
+            active = false;
+            next_start = now + 5000u;
+            if (++run == 2u) {
+                done = true;
+                (void)motion_control_command(ctl, &stop, now, l, r);
+                LOG_INFO(TAG_S2_BENCH, "finished; motors OFF");
+            }
+        }
+    }
+}
+#elif S2_PIVOT_BENCH
+/*
+ * S2-U07 floor bench (#18): motor-driven one-wheel pivots at S2_PIVOT_BENCH_PWM,
+ * 8 s apart so the real heading can be marked on the floor each time. Order:
+ * right 90, right 90, left 90, left 90, right 360, left 360. After each turn it
+ * logs the encoder ticks since the turn began; ticks/degree is then
+ * (moving wheel ticks) / (measured degrees).
+ */
+void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    static const MOTION_COMMAND seq[] = {
+        {MOTION_CMD_TURN_RIGHT_DEG, 90.0f},  {MOTION_CMD_TURN_RIGHT_DEG, 90.0f},
+        {MOTION_CMD_TURN_LEFT_DEG, 90.0f},   {MOTION_CMD_TURN_LEFT_DEG, 90.0f},
+        {MOTION_CMD_TURN_RIGHT_DEG, 360.0f}, {MOTION_CMD_TURN_LEFT_DEG, 360.0f}
+    };
+    static unsigned stage;
+    static bool waiting, done;
+    static uint32_t started, pause_until, last_warn, last_beat;
+    static bool banner;
+    MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
+
+    if (!banner) {
+        banner = true;
+        /* tk_get_tim() does not start at 0 at boot (it read 3.35e9 ms), so
+           the start delay counts from the first call, not from time 0. */
+        pause_until = now + S2_ROBOT_START_MS;
+        LOG_INFO(TAG_S2_BENCH, "pivot bench: first turn in %u ms, state=%d",
+                  (UINT)S2_ROBOT_START_MS, (int)ctl->status.state);
+    }
+    if ((uint32_t)(now - last_beat) >= 3000u) {
+        last_beat = now;
+        LOG_INFO(TAG_S2_BENCH, "beat now=%lu next=%lu waiting=%d done=%d stage=%u state=%d",
+                  (unsigned long)now, (unsigned long)pause_until, (int)waiting,
+                  (int)done, stage, (int)ctl->status.state);
+    }
+    if (done) {
+        (void)motion_control_command(ctl, &stop, now, l, r);
+        return;
+    }
+    if (ctl->status.state == MOTION_STATE_FAULT) return;
+    if (waiting) {
+        if (ctl->status.state == MOTION_STATE_IDLE && ctl->status.motion_complete) {
+            LOG_INFO(TAG_S2_BENCH, "turn %u (%s %d) done; ticks since start dL=%ld dR=%ld. Mark the heading now",
+                      stage + 1u,
+                      seq[stage].type == MOTION_CMD_TURN_RIGHT_DEG ? "right" : "left",
+                      (int)seq[stage].value,
+                      (long)(l - ctl->command_start_left_ticks),
+                      (long)(r - ctl->command_start_right_ticks));
+            waiting = false;
+            pause_until = now + 8000u;
+            if (++stage == sizeof(seq) / sizeof(seq[0])) {
+                done = true;
+                LOG_INFO(TAG_S2_BENCH, "finished; motors OFF");
+            }
+        } else if ((uint32_t)(now - started) > S2_DEMO_TIMEOUT_MS) {
+            (void)motion_control_command(ctl, &stop, now, l, r);
+            done = true;
+            LOG_WARN(TAG_S2_BENCH, "timeout; motors OFF");
+        }
+    } else if ((int32_t)(now - pause_until) >= 0) {
+        MOTION_RESULT res = motion_control_command(ctl, &seq[stage], now, l, r);
+        if (res == MOTION_RESULT_OK) {
+            waiting = true;
+            started = now;
+            LOG_INFO(TAG_S2_BENCH, "turn %u starting", stage + 1u);
+        } else if ((uint32_t)(now - last_warn) >= 2000u) {
+            last_warn = now;
+            LOG_WARN(TAG_S2_BENCH, "turn %u rejected: result=%d state=%d", stage + 1u,
+                      (int)res, (int)ctl->status.state);
+        }
+    }
+}
+#else
+
 /* Standalone closed-loop sequence uses the same motor task and encoders. */
 void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
 {
@@ -929,6 +1073,7 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         }
     }
 }
+#endif /* S2_PID_BENCH / S2_PIVOT_BENCH */
 #else
 void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
 {

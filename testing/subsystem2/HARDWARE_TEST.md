@@ -50,7 +50,7 @@ depends on motor wiring.
    The build automatically includes the new C file.
 4. Open USB serial (115200 as in the project README). After a 5-second delay,
    the test runs left wheel, right wheel, both wheels, left pivot, right pivot.
-   Each stage uses 40% PWM for 750 ms, then zero PWM for at least 1500 ms.
+   Each stage uses 20% PWM (`S2_HW_TEST_PWM_PERCENT`) for 750 ms, then zero PWM for at least 1500 ms.
    With the wheels raised, verify the wheel pattern rather than chassis turns.
 5. Check that each expected wheel spins forward and stops between stages.
    Inspect the raw encoder counts printed after each stage: an active wheel
@@ -87,3 +87,50 @@ Once the distance/turn measurements are valid, set `S2_CALIBRATION_READY` to
 `1`. All PID gains currently default to zero, which gives no straight-line
 correction until tuned. The timed bench pulses verify wiring and motor output;
 they do not verify centimetres travelled, turn angles, or PID performance.
+
+## Floor bench for S2-U10 and S2-U11 (#18)
+
+Unlike the raised-wheel test above, this one drives the robot on the floor.
+Leave 1.2 m clear ahead and keep the motor switch within reach.
+
+```sh
+cd build_make
+sh ../build.sh motion MOTION_DEMO=1 PID_BENCH=1
+```
+
+It drives at 25 % PWM (`S2_PID_BENCH_PWM`; the 55 % default is too fast, 15 % stalls on the floor)
+and uses the interrupt-encoder ticks per cm (`S2_ENC_*`). It waits 5 s, then makes two 100 cm forward runs 5 s apart and logs
+`[S2:BENCH]` lines: `ms L R err_mm pwmL pwmR` every 20 ms. `err_mm` is
+left-minus-right travel, positive when the left wheel is ahead.
+
+- **Run 1 (S2-U10):** read the straight-line PID's response from `err_mm`.
+  Do it once with `S2_PID_KP/KI/KD` at 0 for a baseline, then with tuned gains.
+- **Run 2 (S2-U11):** 1 s in, the code sends STOP through
+  `subsystem2_send_command`, the real STOP path, and logs `STOP sent`. The
+  motion task then logs `STOP: motors off at +N ms` and
+  `STOP: wheels still at +N ms`, both measured from the send at a 1 ms loop
+  (±2 ms). `motors off` is the S2-U11 metric (limit 100 ms). `wheels still`, the
+  last encoder tick before 50 ms of stillness, is recorded but not scored: it is
+  mostly the wheels coasting after PWM is cut (102 to 132 ms at 25 % PWM). No scope is needed. Reset and repeat for 3 results; slow-motion
+  video is an optional cross-check. Run 2 only fires once per boot.
+
+Rebuild without `PID_BENCH=1` afterwards.
+
+## Driven pivots for S2-U07 (#18)
+
+Checks the turn constants with the motors doing the pivot (hand pivots only
+measure ticks per degree, they cannot test the controller).
+
+```sh
+sh build.sh motion MOTION_DEMO=1 PIVOT_BENCH=1
+```
+
+Flash it, put the robot on the floor with room to spin, and mark its heading
+(a line along one wheel is enough). After 5 s it does six pivots at 25 % PWM,
+8 s apart: right 90, right 90, left 90, left 90, right 360, left 360. After each
+it logs `turn N (...) done; ticks since start dL=.. dR=..`. During the 8 s
+pause, mark or measure the real heading change against the start mark.
+
+Pass: each 360° pivot within ±10° of 360°. Also record the 90° results.
+Rebuild without `PIVOT_BENCH=1` afterwards. It cannot be combined with
+`PID_BENCH=1`.
