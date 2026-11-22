@@ -95,8 +95,8 @@
 /* Junction pivots (S2 turn calibration): right pivot drives the left wheel,
    left pivot drives the right wheel. The U-turn counter-rotates the wheels
    and counts half the right wheel's pivot arc. */
-#define S2_JUNCTION_RIGHT_PIVOT_PWM_PERCENT  12.5f
-#define S2_JUNCTION_LEFT_PIVOT_PWM_PERCENT   15.0f
+#define S2_JUNCTION_RIGHT_PIVOT_PWM_PERCENT  18.0f  /* was 12.5: near stalling on the track, 22 Nov; left pivot is 20 */
+#define S2_JUNCTION_LEFT_PIVOT_PWM_PERCENT   20.0f  /* was 15.0: right wheel stalled mid left turn on the track, 22 Nov */
 #define S2_UTURN_LEFT_PWM_PERCENT            (-12.5f)
 #define S2_UTURN_RIGHT_PWM_PERCENT           15.0f
 /* S5 avoidance: forward legs hold the heading by cutting the leading wheel

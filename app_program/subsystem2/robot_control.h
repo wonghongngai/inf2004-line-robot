@@ -49,7 +49,18 @@
 /* Drive onto the crossing before pivoting. all_test's "5 cm" counts 5 x
    S2_RIGHT_TICKS_PER_CM = 94 right-wheel ticks, which is 0.8 cm with the
    interrupt encoder: keep that tuned distance. */
-#define S2_TURN_ADVANCE_CM (5.0f * S2_RIGHT_TICKS_PER_CM / S2_ENC_RIGHT_TICKS_PER_CM)
+/* 22 Nov (S2-U09). Pivots swing the sensors about the stationary wheel, and
+   the right IR sensor sits about 2 cm right of the centre one, so the line is
+   held about 1 cm right of the robot's centreline. That puts the sensors
+   about 2 cm further along after a left pivot than after a right pivot, so
+   the two turns get separate advances. Left: 0.8 cm all_test distance plus
+   3.5 cm (+2.0 closed only 1 of 2 cm short). Right: 2.0 cm more, from the
+   right turn ending about 1 cm short at the left's 4.3 cm. */
+#define S2_TURN_ADVANCE_BASE_CM (5.0f * S2_RIGHT_TICKS_PER_CM / S2_ENC_RIGHT_TICKS_PER_CM)
+#define S2_TURN_ADVANCE_LEFT_CM  (3.5f + S2_TURN_ADVANCE_BASE_CM)
+#define S2_TURN_ADVANCE_RIGHT_CM (5.5f + S2_TURN_ADVANCE_BASE_CM)
+/* U-turn and straight-on keep the left value */
+#define S2_TURN_ADVANCE_CM S2_TURN_ADVANCE_LEFT_CM
 #define S2_JUNCTION_SETTLE_MS 500u   /* ignore the crossing just handled */
 
 /* Called only by the motor-owning task; no second writer to motor GPIO. */

@@ -540,7 +540,9 @@ static bool straddle_junction(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, i
         vc_stop_motors(ctl, now, l, r);
         motion_control_step(ctl, now, l, r); /* STOPPING -> IDLE */
     }
-    cmd = (MOTION_COMMAND){MOTION_CMD_FORWARD_CM, S2_TURN_ADVANCE_CM};
+    cmd = (MOTION_COMMAND){MOTION_CMD_FORWARD_CM,
+                           (command & 3u) == LINE_BARCODE_CMD_RIGHT ?
+                           S2_TURN_ADVANCE_RIGHT_CM : S2_TURN_ADVANCE_LEFT_CM};
     if (motion_control_command(ctl, &cmd, now, l, r) != MOTION_RESULT_OK) {
         halt(ctl, now, l, r, "junction advance rejected");
         return true;
@@ -644,6 +646,27 @@ static void straddle_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32
         }
     }
     if (sensors == 0u) steer_candidate = 0u;
+
+    /* S2-U09 diagnosis (22 Nov): once a second, how many control steps each
+       sensor pattern and each steering action lasted. sensors: 0 neither
+       black, 1 R only (drifting left, steer right), 2 C only (drifting
+       right, steer left), 3 both; act: 0 straight, 1 right, 2 left. */
+    {
+        static uint32_t log_t0, log_n;
+        static uint16_t sens_n[4], act_n[3];
+        if (log_n == 0u) log_t0 = now;
+        log_n++;
+        sens_n[sensors & 3u]++;
+        act_n[steer_action > 2u ? 0u : steer_action]++;
+        if ((uint32_t)(now - log_t0) >= 1000u) {
+            LOG_INFO(TAG_S2_ROBOT, "steer n=%u sens none=%u R=%u C=%u both=%u act straight=%u right=%u left=%u",
+                      (unsigned)log_n, sens_n[0], sens_n[1], sens_n[2], sens_n[3],
+                      act_n[0], act_n[1], act_n[2]);
+            log_n = 0u;
+            for (unsigned i = 0; i < 4u; ++i) sens_n[i] = 0u;
+            for (unsigned i = 0; i < 3u; ++i) act_n[i] = 0u;
+        }
+    }
 
     /* Right sensor black: drifting left, steer right (positive). */
     float strength = (uint32_t)(now - action_since) >= S2_LINE_HARD_MS ? 1.0f : 0.5f;
