@@ -161,7 +161,10 @@ echo "Host tests  (compiler: $CC, sanitizers: ${SAN:-none}, python: ${PYTHON:-no
 echo "commit: $(git rev-parse --short HEAD 2>/dev/null || echo unknown)$(git diff --quiet HEAD 2>/dev/null || echo ' + uncommitted changes')"
 echo
 
-STRICT="-std=c11 -Wall -Wextra -Werror"
+# -idirafter include: app_log.h (#98) includes <tm/tmonitor.h>; the host stubs
+# define its guard, so only the file must be found. Searched last, so it never
+# hides a system header.
+STRICT="-std=c11 -Wall -Wextra -Werror -idirafter include"
 S1=app_program/subsystem1
 S2=app_program/subsystem2
 S3=app_program/subsystem3

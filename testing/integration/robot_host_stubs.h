@@ -23,4 +23,9 @@ typedef struct { void *next; } T_MSG;
 #define E_TMOUT (-50)
 #define TMO_POL 0
 int tm_printf(UB *format, ...);
+/* app.h is replaced above, so pull in the real LOG_* macros and TAG_*
+   names (#98) here; they expand to tm_printf(). The kernel console
+   header is blocked: tm_printf is declared above. */
+#define __TM_TMONITOR_H__
+#include "../../app_program/app_log.h"
 #endif
