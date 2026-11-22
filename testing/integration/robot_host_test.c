@@ -144,6 +144,9 @@ ER subsystem5_get_obstacle(S5_OBSTACLE_INFO *p_info)
     if (fake_obstacle_er != E_OK) { memset(p_info, 0, sizeof(*p_info)); return fake_obstacle_er; }
     *p_info = fake_obstacle; return E_OK;
 }
+/* #46: S5's safe-stop fault bits, as subsystem5_get_faults() returns them. */
+static UW fake_s5_faults;
+UW subsystem5_get_faults(void) { return fake_s5_faults; }
 #if !S5_REAL_EXECUTOR
 BOOL s5_exec_step(S5_EXEC *p_x, const S5_EXEC_OPS *p_ops, void *p_ctx, UW now_ms)
 { (void)p_x; (void)p_ops; (void)p_ctx; (void)now_ms; ++s5_steps; return FALSE; }
@@ -1451,6 +1454,29 @@ int main(void)
     EXPECT(field(S1_FIELD_OBSTACLE_CM) == 0 && field(S1_FIELD_SCAN_DEG) == 0 &&
            field(S1_FIELD_OBSTACLE_WIDTH_CM) == 0);
     fake_obstacle_er = E_OK; fake_obstacle = (S5_OBSTACLE_INFO){0u, 0u, 0u};
+    /* #46: S5's CAL_FAIL / NO_PATH / LINE_LOST reach telemetry, each alone and
+       together, without touching the S1 fault field; none -> 0. */
+    EXPECT(field(S1_FIELD_S5_FAULTS) == 0);
+    {
+        static const UW cases[] = {S5_FAULT_CAL_FAIL, S5_FAULT_NO_PATH,
+                                   S5_FAULT_LINE_LOST, S5_FAULT_MASK};
+        unsigned c;
+        for (c = 0u; c < sizeof(cases) / sizeof(cases[0]); ++c) {
+            fake_s5_faults = cases[c];
+            send_command(S1_COMMAND_STATUS);
+            robot_control_step(&ctl, 6001, 100, 100);
+            EXPECT(field(S1_FIELD_S5_FAULTS) == (int)cases[c]);
+            EXPECT(field(S1_FIELD_FAULTS) == 0);
+        }
+        fake_s5_faults = 0u;
+        send_command(S1_COMMAND_STATUS);
+        robot_control_step(&ctl, 6001, 100, 100);
+        EXPECT(field(S1_FIELD_S5_FAULTS) == 0);
+    }
+    _Static_assert(S5_FAULT_CAL_FAIL == S1_S5_FAULT_CAL_FAIL &&
+                   S5_FAULT_NO_PATH == S1_S5_FAULT_NO_PATH &&
+                   S5_FAULT_LINE_LOST == S1_S5_FAULT_LINE_LOST &&
+                   S5_FAULT_MASK == S1_S5_FAULTS_MAX, "S5 and S1 fault bits must match");
     send_command(S1_COMMAND_PAUSE);
     send_command(S1_COMMAND_STATUS);
     robot_control_step(&ctl, 6002, 100, 100);

@@ -13,8 +13,9 @@ FIELDS = (
     ("obstacle_cm", 54, 9, 0, 400), ("scan_deg", 63, 8, 0, 180),
     ("obstacle_width_cm", 71, 9, 0, 400),
     ("barcode_letter", 80, 5, 0, 26), ("speed_valid", 85, 1, 0, 1),
-    ("barcode_black", 88, 16, 0, 65535), ("barcode_white", 104, 16, 0, 65535),
+    ("barcode_black", 90, 15, 0, 32767), ("barcode_white", 105, 15, 0, 32767),
     ("map_received", 86, 1, 0, 1),  # #38: a letter map has been applied
+    ("s5_faults", 87, 3, 0, 7),  # #46: bit 0 CAL_FAIL, 1 NO_PATH, 2 LINE_LOST
 )
 COMMANDS = {"status": 0, "pause": 1, "resume": 2, "reset-stats": 3, "reverse": 4, "start": 5}
 
@@ -33,8 +34,6 @@ def encode_mapping(letters):
 def decode_telemetry(payload):
     if len(payload) not in (10, 11, 15):
         raise ValueError("telemetry must be 10, 11, or 15 bytes")
-    if len(payload) >= 11 and payload[10] & 0x80:  # bit 87 reserved; 86 = map
-        raise ValueError("reserved telemetry bits must be zero")
     packed = int.from_bytes(payload, "little")
     result = {}
     for name, offset, width, minimum, maximum in FIELDS:

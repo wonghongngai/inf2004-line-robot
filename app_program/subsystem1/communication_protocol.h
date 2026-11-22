@@ -16,6 +16,7 @@ typedef enum {
     S1_FIELD_SCAN_DEG, S1_FIELD_OBSTACLE_WIDTH_CM, S1_FIELD_BARCODE_LETTER,
     S1_FIELD_SPEED_VALID, S1_FIELD_BARCODE_BLACK, S1_FIELD_BARCODE_WHITE,
     S1_FIELD_MAP_RECEIVED, /* #38: 1 once a letter map has been applied */
+    S1_FIELD_S5_FAULTS,    /* #46: S5 safe-stop causes, 3 bits (S1_S5_FAULT_*) */
     S1_FIELD_COUNT
 } S1_FIELD;
 
@@ -35,7 +36,9 @@ typedef enum {
 #define S1_BARCODE_MAX 4
 /* 0 = no decode yet, 1..26 = A..Z. */
 #define S1_BARCODE_LETTER_MAX 26
-#define S1_BARCODE_COUNT_MAX 65535U
+#define S1_BARCODE_COUNT_MAX 32767U /* 15 bits since #46 */
+#define S1_S5_FAULTS_MIN 0
+#define S1_S5_FAULTS_MAX 7
 #define S1_HUMP_MIN 0
 #define S1_HUMP_MAX 255
 #define S1_OBSTACLE_MIN 0
@@ -58,6 +61,10 @@ typedef enum {
 #define S1_FAULT_IMU (1U << 2)
 #define S1_FAULT_NO_ECHO (1U << 3)
 #define S1_FAULT_WIFI_LOSS (1U << 4)
+/* #46: bits of S1_FIELD_S5_FAULTS (same values as S5_FAULT_* in subsystem5.h) */
+#define S1_S5_FAULT_CAL_FAIL (1U << 0)
+#define S1_S5_FAULT_NO_PATH (1U << 1)
+#define S1_S5_FAULT_LINE_LOST (1U << 2)
 #define S1_BARCODE_NONE 0
 #define S1_BARCODE_LEFT 1
 #define S1_BARCODE_RIGHT 2

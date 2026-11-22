@@ -482,6 +482,8 @@ static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now)
     (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE, (int)letter_direction());
     (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_LETTER, (int)last_letter);
     (void)s1_telemetry_set(&packet, S1_FIELD_MAP_RECEIVED, map_received ? 1 : 0);
+    /* #46: S5's safe-stop causes (CAL_FAIL, NO_PATH, LINE_LOST), latched until reboot */
+    (void)s1_telemetry_set(&packet, S1_FIELD_S5_FAULTS, (int)(subsystem5_get_faults() & S5_FAULT_MASK));
     (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_BLACK,
                            black > S1_BARCODE_COUNT_MAX ? (int)S1_BARCODE_COUNT_MAX : (int)black);
     (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_WHITE,

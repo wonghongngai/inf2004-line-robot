@@ -141,7 +141,7 @@ The full scan, profile, plan and bypass pipeline exists, but the detection dista
 | B5-8 | FR5-5 / NFR5-4 reacquire the line within 50 cm and hand back | Recovery implemented; distance never measured; works in all_test only | Unverified | #31 (S5-U42), #8 |
 | B5-9 | W6 A5-1: only objects inside the robot's corridor count | Corridor filter exists, with `ROBOT_WIDTH_MM` 150 and `PASS_MARGIN_MM` 50 left unmeasured: decided 22 Nov by the S5 owner that the track will be open, so there is no corridor to calibrate (#45 closed, not planned) | Accepted (owner) | — |
 | B5-10 | W6 A5-2 and PT next actions: ignore readings while tilted, hold after tilt clears, check distance rate of change | S5 never reads the IMU | Missing | #44 |
-| B5-11 | W6 statechart 5: CALIBRATE self-test; SAFE_STOP faults CAL_FAIL, NO_PATH, LINE_LOST sent to telemetry | Self-test not confirmed; telemetry fault bits have no S5 faults besides NO_ECHO | Missing | #46, #47 |
+| B5-11 | W6 statechart 5: CALIBRATE self-test; SAFE_STOP faults CAL_FAIL, NO_PATH, LINE_LOST sent to telemetry | Self-test done (#47). CAL_FAIL, NO_PATH and LINE_LOST are sent in a new 3-bit telemetry field at bits 87–89 (23 Nov, #46); the two barcode counters shrank from 16 to 15 bits to make room (they stop at 32767). Host-tested only; not yet seen on the robot | Changed, host-tested | #46, #47 |
 | B5-12 | PT gap check: one distance representation (9-bit vs 16-bit in Version B) | Decided 20 Nov: 9-bit cm on the wire (IF-05), mm inside S5; no 16-bit distance exists in the code | Matches | #54 (`DECISIONS.md`) |
 | B5-13 | WU p3: minimise deviation from the route | Detour length never measured | Unverified | #62 |
 

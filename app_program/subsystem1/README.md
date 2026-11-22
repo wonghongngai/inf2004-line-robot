@@ -16,7 +16,7 @@ No standalone SDK main, duplicate driver, or second network task is needed.
 
 ## Representation table
 
-Telemetry uses 119 information bits in 15 bytes. Bit 86 is the letter-map flag (#38); bit 87 is reserved and must be zero. Older 10-byte packets end at bit 79 and omit the decoded letter and speed validity. Older 11-byte packets omit the barcode counts.
+Telemetry uses all 120 bits of the 15 bytes. Bit 86 is the letter-map flag (#38); bits 87–89 are the S5 safe-stop faults (#46: bit 0 CAL_FAIL, bit 1 NO_PATH, bit 2 LINE_LOST); the two barcode counters are 15 bits each (bits 90–104 black, 105–119 white; they stop at 32767 instead of wrapping). Older 10-byte packets end at bit 79 and omit the decoded letter and speed validity. Older 11-byte packets omit the S5 faults and the barcode counts. A robot flashed before #46 and a PC tool after it do not agree on the counter bits: update both together.
 Bit 0 is the least significant bit of byte 0. Each field's least significant
 bit is stored at the listed offset. Multi-byte fields follow the same little
 endian bit ordering. No native C bitfield ABI or struct cast is used.
