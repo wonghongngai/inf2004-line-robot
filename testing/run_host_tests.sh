@@ -168,6 +168,7 @@ STRICT="-std=c11 -Wall -Wextra -Werror -idirafter include"
 S1=app_program/subsystem1
 S2=app_program/subsystem2
 S3=app_program/subsystem3
+S5=app_program/subsystem5
 INT=testing/integration
 
 # ---- Subsystem 1: Wi-Fi / MQTT / telemetry ---------------------------------
@@ -187,6 +188,11 @@ run_c  s3/line_service        $STRICT -pthread -I$INT testing/subsystem3/line_se
 
 # ---- Subsystem 4: IMU / humps ----------------------------------------------
 run_c  s4/hump_height         $STRICT $INT/hump_height_host_test.c
+
+# ---- Subsystem 5: ultrasonic scan, profile, plan ---------------------------
+# The real on-target checks (subsystem5_test.c) against the real
+# obstacle_logic.c and drv_servo.c; only the PWM/kernel calls are stubbed.
+run_c  s5/obstacle_logic      $STRICT -DAPP_TEST=1 -include testing/subsystem5/s5_host_stubs.h                               -Itesting/subsystem5 testing/subsystem5/obstacle_logic_host_test.c                               $S5/subsystem5_test.c $S5/obstacle_logic.c $S5/drv_servo.c
 
 # ---- Integration (two or more subsystems) ----------------------------------
 run_c  int/robot_control      $STRICT -DAPP_ROBOT_INTEGRATED=1 -DAPP_TEST=0 -DS2_MOTION_DEMO=0 \

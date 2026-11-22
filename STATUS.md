@@ -4,7 +4,7 @@
 What to test next, and how, is in [testing/TEST_PLAN.md](testing/TEST_PLAN.md).
 Where the code differs from the Week 6 / PreTri plan, and why, is in [DEVIATIONS.md](DEVIATIONS.md).
 Team decisions and their reasons are in [DECISIONS.md](DECISIONS.md) (latest: the M1 decisions, 20 Nov: #5, #6, #48, #54, #64–#68).
-Last updated: 2026-11-22, S2 track tests (#19: S2-U08, U12 PASS) · 2026-11-22, S2 bench tests on the robot (#18: S2-U05, U06, U07, U10, U11) · 2026-11-22, S1 bench tests on the robot (#15: S1-U11, U13, U17, U20 for #49) · 2026-11-22, humps and the ultrasonic (#34 done; #36, #44 dropped; `DECISIONS.md`) · 2026-11-21, event-bit table checked against the code (#50, INT-14) · 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump test fixed) · subsystems 1, 2, 4 and 5 test results (`chore/m0-housekeeping` from `65ba452`; #14, #17, #24, #28) · subsystem 3 rows 2026-11-19 (`cc239d5`) · other sections as of 2026-11-13 (`double11` @ `1d78677`)
+Last updated: 2026-11-22, S5 logic on the PC (#30: S5-U45; new S5-U08, U11–U13) · 2026-11-22, S2 track tests (#19: S2-U08, U12 PASS) · 2026-11-22, S2 bench tests on the robot (#18: S2-U05, U06, U07, U10, U11) · 2026-11-22, S1 bench tests on the robot (#15: S1-U11, U13, U17, U20 for #49) · 2026-11-22, humps and the ultrasonic (#34 done; #36, #44 dropped; `DECISIONS.md`) · 2026-11-21, event-bit table checked against the code (#50, INT-14) · 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump test fixed) · subsystems 1, 2, 4 and 5 test results (`chore/m0-housekeeping` from `65ba452`; #14, #17, #24, #28) · subsystem 3 rows 2026-11-19 (`cc239d5`) · other sections as of 2026-11-13 (`double11` @ `1d78677`)
 
 ## Rules
 
@@ -100,7 +100,7 @@ Last updated: 2026-11-22, S2 track tests (#19: S2-U08, U12 PASS) · 2026-11-22, 
 | S5 → VC packed request word (IF-10, CR1) | ✅ | ✅ S5-U09 (Pico) | ⬜ | ⬜ | — | `testing/subsystem3/logs/2026-11-19_target_test.txt` | INT-13 host test of the hand-over |
 | Coarse scan ≤ 600 ms (NFR5-2) | ✅ | — | ✅ S5-U05 (570 ms, no sensor load) | ⬜ | — | S5 TEST_LOG 2026-10-28 | Retest with the sensor on the horn |
 | Detection → action ≤ 2 s (NFR5-3) | ✅ | ⬜ | ❌ S5-U06 2299 ms (before the fix) | ⬜ | — | S5 TEST_LOG 2026-11-01 | **Re-run S5-U06** after the `FINE_BUDGET_POINTS` fix |
-| Profiling + planning (S5-U28, U31–U38) | ✅ | ✅ S5-U28, U31–U38 (Pico) | 🟡 | ⬜ | ⬜ | `testing/subsystem3/logs/2026-11-19_target_test.txt`; fixture scans in `testing/subsystem5/logs/2026-11-06_135413_S5_avoidance.txt` | Bench check with the sensor on the horn (S5-U17, U25) |
+| Profiling + planning (S5-U08, U28, U31–U38) | ✅ | ✅ S5-U28, U31–U38 (Pico); ✅ S5-U45 on the PC (22 Nov): all S5 checks + new U08 planner cases | 🟡 | ⬜ | ⬜ | `testing/subsystem3/logs/2026-11-19_target_test.txt`; `testing/subsystem5/logs/2026-11-22_s5u45_obstacle_logic_host.txt`; fixture scans in `testing/subsystem5/logs/2026-11-06_135413_S5_avoidance.txt` | Bench check with the sensor on the horn (S5-U17, U25); run U08, U11–U13 on the Pico (`make TEST=1`) |
 | Avoid obstacle + reacquire line (FR5-4/5, NFR5-4) | ✅ | ⬜ | 🟡 in all_test only | ⬜ | ⬜ | S5 TEST_LOG INT-S5-01 rows 5–11 Nov (all_test, console only: 29 of 81 obstacles rejoined the line), `testing/subsystem5/logs/*_S5_avoidance.txt` | Ported to integrated 21 Nov with all_test's drive numbers (#8; host-tested only). Run it in `integrated`; record a video; measure the reacquire distance |
 
 ---
