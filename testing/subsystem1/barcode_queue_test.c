@@ -30,7 +30,8 @@ static ER tk_snd_mbf(ID id, void *p, int n, TMO timeout)
 static INT tk_rcv_mbf(ID id, void *p, TMO timeout)
 { (void)id; (void)p; (void)timeout; return E_TMOUT; }
 #define tm_printf(...) ((void)0)
-#include "../../app_program/app_log.h"   /* subsystem1.h is stubbed out */
+#define __TM_TMONITOR_H__ /* real LOG_* macros (#98); no kernel console */
+#include "../../app_program/app_log.h"
 #include "../../app_program/subsystem1/subsystem1.c"
 int main(void)
 {
