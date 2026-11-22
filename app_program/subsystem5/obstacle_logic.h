@@ -368,4 +368,25 @@ IMPORT UW s5_request_pack(const S5_REQUEST * p_req);
  */
 IMPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req);
 
+/* ---- S5 -> telemetry obstacle word (#40), layout in subsystem5.h ---- */
+
+/**
+ * Telemetry values from a profile: mm rounded to the nearest cm, each
+ * field clamped to its maximum.
+ * @return FALSE (and *p_info untouched) if the profile is not valid or a
+ *         pointer is NULL: the caller keeps the previous result.
+ */
+IMPORT BOOL s5_obstacle_from_profile(const obstacle_profile_t * p_profile,
+                                     S5_OBSTACLE_INFO *         p_info);
+
+/** Pack; out-of-range fields are clamped.  NULL gives 0 (no obstacle). */
+IMPORT UW s5_obstacle_pack(const S5_OBSTACLE_INFO * p_info);
+
+/**
+ * Unpack an obstacle word.
+ * @return FALSE (and *p_info all zero) if bits 26-31 are set, a field is
+ *         over its maximum, or p_info is NULL.
+ */
+IMPORT BOOL s5_obstacle_unpack(UW word, S5_OBSTACLE_INFO * p_info);
+
 #endif /* OBSTACLE_LOGIC_H */

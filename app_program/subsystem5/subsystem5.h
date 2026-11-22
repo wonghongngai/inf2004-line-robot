@@ -79,6 +79,33 @@ IMPORT ID flg_s5_evt;
  */
 IMPORT ER subsystem5_get_request(S5_REQUEST * p_req);
 
+/* ---- S5 -> telemetry: the last obstacle scan (#40) ----
+ * Packed into one 32-bit word, written only by the S5 task with one
+ * aligned store, so a reader on the other core never sees half a scan.
+ *   bits 0-8    distance_cm  closest point, 0..400
+ *   bits 9-16   angle_deg    servo angle of the closest point, 0..180
+ *   bits 17-25  width_cm     beam-corrected width, 0..400
+ *   bits 26-31  unused, 0
+ * All zero until the first scan that found an obstacle.  A scan that finds
+ * nothing (false alarm) keeps the previous result. */
+#define S5_OBS_DISTANCE_MAX_CM (400U)
+#define S5_OBS_ANGLE_MAX_DEG   (180U)
+#define S5_OBS_WIDTH_MAX_CM    (400U)
+
+typedef struct
+{
+    UH distance_cm; /* 0 = no obstacle scanned yet */
+    UB angle_deg;
+    UH width_cm;
+} S5_OBSTACLE_INFO;
+
+/**
+ * Read the last obstacle scan result.  Any task; never blocks.
+ * @return E_OK, or E_PAR if p_info is NULL or the word is corrupt
+ *         (*p_info is then all zero).
+ */
+IMPORT ER subsystem5_get_obstacle(S5_OBSTACLE_INFO * p_info);
+
 IMPORT void obstacle_task(INT stacd, void * exinf);
 
 #endif /* SUBSYSTEM5_H */

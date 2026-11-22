@@ -1,0 +1,225 @@
+# S5-U40 (#40): obstacle scan reaches the PC. Trimmed from 2026-11-22_124815_console.txt (second boot onward; Wi-Fi network name redacted).
+# Firmware: sh build.sh integrated at 29e1ee3 (feat/s5-obstacle-telemetry), flashed 12:40.
+# Telemetry read from the dashboard server (worktree copy, port 8000) /api/telemetry after the scan: obstacle_cm 20, scan_deg 75, obstacle_width_cm 7, state 0 (paused).
+# User observed on the dashboard: 'No obstacle yet' before the scan, then 20 cm / 75 deg / 7 cm.
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[S4:IMU] IMU task started, period=20 ms
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "<redacted>" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] calibration complete base=(-37,28,934) mg
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=100 acc=(-36,33,933)mg delta=(x:1,y:5)mg mag=(295,-326,-206) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=150 acc=(-35,32,933)mg delta=(x:2,y:4)mg mag=(291,-324,-206) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S1:MQTT] connected to 172.20.10.2
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S4:IMU] n=200 acc=(-39,29,928)mg delta=(x:-2,y:1)mg mag=(293,-325,-206) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=250 acc=(-37,29,931)mg delta=(x:0,y:1)mg mag=(292,-326,-205) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=300 acc=(-35,32,930)mg delta=(x:2,y:4)mg mag=(293,-327,-204) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=350 acc=(-34,31,933)mg delta=(x:3,y:3)mg mag=(291,-326,-205) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=400 acc=(-41,27,934)mg delta=(x:-4,y:-1)mg mag=(293,-326,-205) pitch=0 height=0mm height_valid=0 state=0
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S1:CMD] command queued=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] n=450 acc=(-59,-50,928)mg delta=(x:-22,y:-78)mg mag=(274,-328,-201) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=36 filtered=70 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-81 filtered=-77 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-72 filtered=-81 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=36 filtered=64 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-136 filtered=-103 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=19 filtered=-66 moving=1 dist=1 entry=1
+[S2:MOTION] state=2 fault=0 ticks L=371 R=479 PWM=12/15
+[S4:IMU] HUMP DEBUG: raw=50 filtered=70 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-122 filtered=-72 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-44 filtered=-100 moving=1 dist=1 entry=0
+[S4:IMU] n=500 acc=(-2,-62,993)mg delta=(x:35,y:-90)mg mag=(283,-323,-181) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=201 filtered=85 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=119 filtered=76 moving=1 dist=1 entry=1
+[S4:IMU] HUMP DEBUG: raw=8 filtered=109 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-138 filtered=-63 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=95 filtered=84 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=35 filtered=67 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=761 R=849 PWM=11/13
+[S4:IMU] HUMP DEBUG: raw=157 filtered=71 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-35 filtered=63 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=127 filtered=78 moving=1 dist=1 entry=0
+[S4:IMU] n=550 acc=(-33,-47,952)mg delta=(x:4,y:-75)mg mag=(297,-314,-168) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=-213 filtered=-65 moving=1 dist=1 entry=0
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S1:MQTT] barcode acked frame=1
+[S4:IMU] HUMP DEBUG: raw=102 filtered=60 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=68 filtered=81 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-124 filtered=-76 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-48 filtered=-71 moving=1 dist=1 entry=0
+[S2:BARCODE] frame id=1 runs=1/29 black=1 white=0 result=? skipped=0
+[S2:BARCODE] width frame=1 run=1 BLACK width_ms=620
+[S2:MOTION] state=2 fault=0 ticks L=1184 R=1240 PWM=12/15
+[S4:IMU] HUMP DEBUG: raw=-335 filtered=-81 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=141 filtered=-75 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=91 filtered=115 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-401 filtered=-65 moving=1 dist=1 entry=1
+[S4:IMU] HUMP DEBUG: raw=119 filtered=-63 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-39 filtered=99 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-109 filtered=-66 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-80 filtered=-77 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=60 filtered=77 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=70 filtered=87 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=68 filtered=60 moving=1 dist=1 entry=0
+[S4:IMU] n=600 acc=(-71,96,904)mg delta=(x:-34,y:68)mg mag=(309,-310,-156) pitch=5 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=-178 filtered=-80 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=14 filtered=-75 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-43 filtered=-69 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=114 filtered=74 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=5 filtered=63 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=1702 R=1757 PWM=12/15
+[S4:IMU] HUMP DEBUG: raw=-150 filtered=-107 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-51 filtered=-79 moving=1 dist=1 entry=1
+[S4:IMU] n=650 acc=(-39,64,923)mg delta=(x:-2,y:36)mg mag=(316,-306,-142) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=-136 filtered=-77 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=14 filtered=104 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-64 filtered=-71 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-114 filtered=-114 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-61 filtered=-79 moving=1 dist=0 entry=1
+[S2:MOTION] state=2 fault=0 ticks L=2193 R=2228 PWM=12/15
+[S4:IMU] HUMP DEBUG: raw=113 filtered=65 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=1 filtered=61 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-218 filtered=-62 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-88 filtered=-91 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-1 filtered=-102 moving=1 dist=1 entry=1
+[S4:IMU] HUMP DEBUG: raw=44 filtered=74 moving=1 dist=1 entry=0
+[S4:IMU] n=700 acc=(-59,-55,909)mg delta=(x:-22,y:-83)mg mag=(322,-300,-140) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=-94 filtered=-65 moving=1 dist=1 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=2680 R=2713 PWM=12/15
+[S4:IMU] HUMP DEBUG: raw=-149 filtered=-69 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-45 filtered=-75 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=14 filtered=-60 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=45 filtered=62 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-126 filtered=-84 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-44 filtered=-86 moving=1 dist=0 entry=0
+[S4:IMU] n=750 acc=(-38,-26,908)mg delta=(x:-1,y:-54)mg mag=(325,-297,-138) pitch=-5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=3160 R=3224 PWM=12/15
+[S4:IMU] HUMP DEBUG: raw=113 filtered=67 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-29 filtered=91 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-187 filtered=-116 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-6 filtered=-108 moving=1 dist=1 entry=1
+[S4:IMU] HUMP DEBUG: raw=53 filtered=69 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=103 filtered=78 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=29 filtered=-80 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-129 filtered=-115 moving=1 dist=1 entry=0
+[S4:IMU] n=800 acc=(-23,34,832)mg delta=(x:14,y:6)mg mag=(327,-285,-127) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=3654 R=3709 PWM=16/5
+[S4:IMU] HUMP DEBUG: raw=107 filtered=76 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=25 filtered=-79 moving=1 dist=1 entry=0
+[S5:OBS] OBSTACLE at 193 mm -> HOLD
+[S2:ROBOT] obstacle: S5 has control
+[S4:IMU] HUMP DEBUG: raw=394 filtered=127 moving=1 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=86 filtered=166 moving=1 dist=0 entry=1
+[S4:IMU] HUMP DEBUG: raw=-155 filtered=108 moving=0 dist=0 entry=2
+[S4:IMU] HUMP DEBUG: raw=-9 filtered=71 moving=0 dist=0 entry=0
+[S4:IMU] n=850 acc=(-41,23,931)mg delta=(x:-4,y:-5)mg mag=(329,-279,-125) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=3787 R=3852 PWM=0/0
+[S4:IMU] n=900 acc=(-46,4,929)mg delta=(x:-9,y:-24)mg mag=(326,-280,-123) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=3787 R=3852 PWM=0/0
+[S4:IMU] HUMP DEBUG: raw=-98 filtered=-74 moving=0 dist=0 entry=0
+[S4:IMU] n=950 acc=(-50,23,925)mg delta=(x:-13,y:-5)mg mag=(327,-282,-130) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=3787 R=3852 PWM=0/0
+[S4:IMU] n=1000 acc=(-34,24,926)mg delta=(x:3,y:-4)mg mag=(329,-283,-125) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=3787 R=3852 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=3787 R=3852 PWM=0/0
+[S4:IMU] n=1050 acc=(-28,-2,926)mg delta=(x:9,y:-30)mg mag=(330,-282,-128) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=-119 filtered=-62 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-71 filtered=-98 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-105 filtered=-98 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-72 filtered=-82 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-58 filtered=-78 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-94 filtered=-74 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-50 filtered=-67 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-71 filtered=-71 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=3787 R=3852 PWM=0/0
+[S5:OBS] coarse  50 deg  310  ok
+[S5:OBS] coarse  70 deg  297  ok
+[S5:OBS] coarse  90 deg  209  ok
+[S5:OBS] coarse 110 deg  299  ok
+[S5:OBS] coarse 130 deg    0  no-echo
+[S5:OBS] fine 50..130 deg, 17 points, scan 5651 ms
+[S5:OBS]  50 deg  raw    0  med    0  no-echo
+[S5:OBS]  55 deg  raw    0  med    0  no-echo
+[S5:OBS]  60 deg  raw  322  med  322  ok
+[S5:OBS]  65 deg  raw  304  med  304  ok
+[S5:OBS]  70 deg  raw  206  med  206  ok
+[S5:OBS]  75 deg  raw  196  med  196  ok
+[S5:OBS]  80 deg  raw  196  med  196  ok
+[S5:OBS]  85 deg  raw  209  med  209  ok
+[S5:OBS]  90 deg  raw  209  med  209  ok
+[S5:OBS]  95 deg  raw  209  med  209  ok
+[S5:OBS] 100 deg  raw  320  med  320  ok
+[S5:OBS] 105 deg  raw  753  med  377  ok
+[S5:OBS] 110 deg  raw  377  med  377  ok
+[S5:OBS] 115 deg  raw  377  med  377  ok
+[S5:OBS] 120 deg  raw    0  med    0  no-echo
+[S5:OBS] 125 deg  raw    0  med    0  no-echo
+[S5:OBS] 130 deg  raw    0  med    0  no-echo
+[S5:OBS] closest 196 mm at 75 deg (x 189)
+[S5:OBS] centre y -53 mm, width 74 mm
+[S5:OBS] clear L 42 mm, R 9999 mm (9999 = open, 9998 = not seen: the box runs past the scan)
+[S5:OBS] PLAN PASS RIGHT, shift 215 mm
+[S5:OBS] BYPASS PASS RIGHT
+[S5:OBS] step 1/8: turn R 90 deg
+[S4:IMU] n=1100 acc=(-39,32,933)mg delta=(x:-2,y:4)mg mag=(325,-282,-127) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=-99 filtered=-89 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=60 filtered=-68 moving=0 dist=0 entry=0
+[S2:MOTION] state=4 fault=0 ticks L=4496 R=3852 PWM=20/0
+[S4:IMU] n=1150 acc=(-32,20,919)mg delta=(x:5,y:-8)mg mag=(458,-165,-126) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=4 fault=0 ticks L=5759 R=3852 PWM=20/0
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S1:CMD] command queued=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S4:IMU] HUMP DEBUG: raw=196 filtered=83 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=153 filtered=155 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-29 filtered=106 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-164 filtered=-80 moving=0 dist=0 entry=0
+[S4:IMU] n=1200 acc=(-42,130,897)mg delta=(x:-5,y:102)mg mag=(496,67,-115) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=5801 R=3852 PWM=0/0
+[S4:IMU] n=1250 acc=(-43,25,931)mg delta=(x:-6,y:-3)mg mag=(495,69,-116) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=5801 R=3852 PWM=0/0
+[S4:IMU] n=1300 acc=(-42,24,932)mg delta=(x:-5,y:-4)mg mag=(496,68,-119) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=5801 R=3852 PWM=0/0
+[S4:IMU] n=1350 acc=(-37,27,928)mg delta=(x:0,y:-1)mg mag=(501,66,-117) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=5801 R=3852 PWM=0/0
+[S4:IMU] n=1400 acc=(-42,25,935)mg delta=(x:-5,y:-3)mg mag=(493,70,-116) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=5801 R=3852 PWM=0/0
+[S4:IMU] n=1450 acc=(-44,27,927)mg delta=(x:-7,y:-1)mg mag=(495,68,-116) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=5801 R=3852 PWM=0/0
+[S4:IMU] n=1500 acc=(-44,26,927)mg delta=(x:-7,y:-2)mg mag=(494,68,-116) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=5801 R=3852 PWM=0/0
