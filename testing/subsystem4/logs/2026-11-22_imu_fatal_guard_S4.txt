@@ -1,0 +1,52 @@
+# Excerpt of the gitignored raw log testing/subsystem5/logs/2026-11-22_141418_console.txt (main checkout). Image: integrated from 9564a72 (test/s1-bench-15 = main b540f2d + S1 bench tooling; S4 = main, with the S4-U15 guard).
+# Lines copied unchanged; raw line numbers in the section headers.
+--- lines 1000-1045
+[S2:MOTION] ctrl late=0/30289 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15000 acc=(-23,106,918)mg delta=(x:-3,y:9)mg mag=(368,-313,-110) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=369176 R=371088 PWM=14/15
+[S2:MOTION] ctrl late=0/30384 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=370598 R=372518 PWM=14/15
+[S2:MOTION] ctrl late=0/30480 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15050 acc=(-22,93,935)mg delta=(x:-2,y:-4)mg mag=(369,-317,-114) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] ERR IMU read failed, er=-25 (1 failures since last report)
+[S4:IMU] ERR FATAL core 2 cannot block (er=-25 sysstat=0x3 primask=1 run=5 sched=7); motors stopped
+[S4:IMU] LSM303DLHC initialized
+[S2:ROBOT] WARN stopped: IMU unsafe or stale; reboot to re-arm
+[S2:ROBOT] IMU stop data: age=0 ms samples=15080 ok=1 calibrated=0 motion=0 event=0 errors=0 baseline_errors=0
+[S2:MOTION] state=1 fault=0 ticks L=371582 R=373509 PWM=0/0
+[S2:MOTION] ctrl late=19/30564 gap_max=21 loop_max=13 ms
+[S4:IMU] calibration complete base=(-18,98,926) mg
+[S2:MOTION] state=1 fault=0 ticks L=371582 R=373509 PWM=0/0
+[S2:MOTION] ctrl late=77/30623 gap_max=21 loop_max=12 ms
+[S4:IMU] n=15150 acc=(-22,102,927)mg delta=(x:-4,y:4)mg mag=(370,-311,-113) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=371582 R=373509 PWM=0/0
+[S2:MOTION] ctrl late=134/30683 gap_max=17 loop_max=13 ms
+[S4:IMU] n=15200 acc=(-20,99,926)mg delta=(x:-2,y:1)mg mag=(370,-312,-113) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=371582 R=373509 PWM=0/0
+[S2:MOTION] ctrl late=192/30742 gap_max=21 loop_max=12 ms
+[S4:IMU] n=15250 acc=(-20,100,932)mg delta=(x:-2,y:2)mg mag=(370,-309,-112) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=371582 R=373509 PWM=0/0
+[S2:MOTION] ctrl late=249/30802 gap_max=17 loop_max=13 ms
+[S4:IMU] n=15300 acc=(-17,101,927)mg delta=(x:1,y:3)mg mag=(372,-315,-113) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=371582 R=373509 PWM=0/0
+[S2:MOTION] ctrl late=307/30861 gap_max=21 loop_max=12 ms
+[S4:IMU] n=15350 acc=(-18,97,923)mg delta=(x:0,y:-1)mg mag=(369,-314,-113) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=371582 R=373509 PWM=0/0
+[S2:MOTION] ctrl late=364/30921 gap_max=17 loop_max=13 ms
+[S4:IMU] n=15400 acc=(-21,95,919)mg delta=(x:-3,y:-3)mg mag=(370,-313,-113) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=371582 R=373509 PWM=0/0
+[S2:MOTION] ctrl late=422/30980 gap_max=21 loop_max=12 ms
+[S4:IMU] n=15450 acc=(-24,100,929)mg delta=(x:-6,y:2)mg mag=(371,-312,-115) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=371582 R=373509 PWM=0/0
+[S2:MOTION] ctrl late=479/31040 gap_max=17 loop_max=13 ms
+[S4:IMU] n=15500 acc=(-20,98,927)mg delta=(x:-2,y:0)mg mag=(370,-315,-114) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=371582 R=373509 PWM=0/0
+[S2:MOTION] ctrl late=537/31099 gap_max=21 loop_max=12 ms
+[S4:IMU] n=15550 acc=(-19,98,936)mg delta=(x:-1,y:0)mg mag=(371,-310,-113) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=371582 R=373509 PWM=0/0
+[S2:MOTION] ctrl late=594/31159 gap_max=17 loop_max=13 ms
+[S4:IMU] n=15600 acc=(-18,101,933)mg delta=(x:0,y:3)mg mag=(370,-310,-115) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=371582 R=373509 PWM=0/0
+--- ctrl late lines up to the reboot
+1013:[S2:MOTION] ctrl late=19/30564 gap_max=21 loop_max=13 ms
+2461:[S2:MOTION] ctrl late=5931/23978 gap_max=21 loop_max=12 ms

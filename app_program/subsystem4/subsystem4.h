@@ -20,6 +20,17 @@
 
 /* RTOS configuration. */
 #define S4_PRI_IMU                  18
+/*
+ * Core for imu_task: core 0 (TP_PRC1), where the I2C0 interrupt lives
+ * (dev_init_i2c(0) runs in knl_start_device() on core 0; the NVIC is per
+ * core). Was 0 (any core) until 22 Nov 2026. With no affinity, imu_task ran
+ * on core 1 next to motion_task, and every I2C transfer (~600/s) was woken
+ * across cores by the core-0 I2C ISR. Both FATAL "core 2 cannot block"
+ * reports on the robot (22 Nov, 9564a72) came from that core, in the I2C
+ * read. A/B test of that path; it also keeps a stuck IMU core away from the
+ * VC. Set to 0 to undo.
+ */
+#define S4_IMU_PRC                  TP_PRC1
 #define S4_SAMPLE_PERIOD_MS         20   /* NFR4-1; was 10 from 18 to 20 Nov: cycles take ~12 ms (S4-U05) */
 #define S4_CALIBRATION_SAMPLES      50U  /* 1 s */
 #define S4_PRINT_PERIOD_SAMPLES     50U  /* 1 s */
