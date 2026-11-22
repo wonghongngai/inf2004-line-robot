@@ -198,6 +198,13 @@ run_c  s5/obstacle_logic      $STRICT -DAPP_TEST=1 -include testing/subsystem5/s
 run_c  int/robot_control      $STRICT -DAPP_ROBOT_INTEGRATED=1 -DAPP_TEST=0 -DS2_MOTION_DEMO=0 \
                               -DS2_LINE_CALIBRATION_READY=1 -include $INT/robot_host_stubs.h \
                               $INT/robot_host_test.c app_program/subsystem2/motion_control.c $S1/communication_protocol.c
+# INT-13 (#20): the same VC test, built against the REAL S5 executor
+# (s5_executor.c) with only flg_s5_evt and S5's request word faked.
+run_c  int/robot_avoidance    $STRICT -DAPP_ROBOT_INTEGRATED=1 -DAPP_TEST=0 -DS2_MOTION_DEMO=0 \
+                              -DS2_LINE_CALIBRATION_READY=1 -include $INT/robot_host_stubs.h \
+                              -include $INT/s5_exec_host_stubs.h \
+                              $INT/robot_host_test.c app_program/subsystem2/motion_control.c $S1/communication_protocol.c \
+                              $S5/s5_executor.c $S5/obstacle_logic.c
 run_c  int/line_service       $STRICT $INT/line_service_host_test.c $S3/line_barcode.c $S1/communication_protocol.c
 run_py int/steering_ramp      $INT/test_steering_ramp.py
 run_py int/event_bits         $INT/test_event_bits.py

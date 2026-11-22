@@ -106,7 +106,7 @@ their line-stop re-arm checks now live in `int/robot_control`. Every L4 test run
 | S2-U11 | STOP latency | L3 | STOP command → motor outputs off, timed by the firmware (1 ms loop); wheel stop time recorded alongside | ≤ 100 ms to outputs off (was: to wheels stopped; changed 22 Nov, see `testing/subsystem2/TEST_LOG.md`) |
 | S2-U12 | Control loop timing | L4 | 5 min integrated run; read the late-control count that `motion_task` prints | 0 late cycles; max work time recorded |
 | S2-U13 | Reverse by distance (`moveBackward`, #39) | L3 | Reverse 10 / 20 / 30 cm, 3× each, measure on the floor | within ±2 cm; stops cleanly; works for both encoder polarities |
-| INT-13 | Host test of the S5 avoidance hand-over | L1 | New `int/robot_avoidance`: `robot_control.c` + the real `s5_executor.c`, kernel flags stubbed | VC hands control to S5, takes it back, and safe-stops on failure |
+| INT-13 | Host test of the S5 avoidance hand-over | L1 | New `int/robot_avoidance`: `robot_control.c` + the real `s5_executor.c`, kernel flags stubbed | VC hands control to S5, takes it back, and safe-stops on failure. **PASS 22 Nov (#20)**, 994 checks |
 
 **Done when:** U05–U12 pass with calibration recorded, and the VC passes
 INT-08–INT-10 in integrated mode.
@@ -219,7 +219,7 @@ is to measure real data.
 | INT-10 | S5 takes control, avoids, hands back (IF-10, IF-11) | L4 | S5-U41 passes in the integrated build |
 | INT-11 | Hump vs obstacle timing | — | **Dropped 22 Nov (#36):** the ultrasonic sits above the hump's height, so it cannot see the hump |
 | INT-12 | Host suite clean | L1 | `sh testing/run_host_tests.sh` all PASS before each merge to `main` |
-| INT-13 | VC ↔ S5 hand-over on the PC | L1 | see Buddy 2 |
+| INT-13 | VC ↔ S5 hand-over on the PC | L1 | see Buddy 2. **PASS 22 Nov (#20)**: `int/robot_avoidance` |
 | INT-14 | Event-bit table matches the code (#50) | L1 | `int/event_bits`: no file outside TEAM.md §5's producer/consumer columns sets, clears, waits on, sends to or reads an event object |
 
 ## System (`testing/system/`): the whole robot against the brief

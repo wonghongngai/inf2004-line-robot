@@ -98,13 +98,44 @@ static int field(S1_FIELD f)
     return value;
 }
 
+#if S5_REAL_EXECUTOR
+/* INT-13 (int/robot_avoidance): the REAL S5 executor (s5_executor.c) runs
+ * behind the VC. Only its kernel boundary is faked: the event flag
+ * flg_s5_evt, and the request word S5's task would publish. The word is
+ * packed and unpacked by the real s5_request_pack/unpack (obstacle_logic.c),
+ * exactly as task_obstacle.c's subsystem5_get_request() does. */
+#include "../../app_program/subsystem5/obstacle_logic.h"
+ID flg_s5_evt = 42;
+static UINT s5_flags;   /* bits set in flg_s5_evt */
+static UW s5_word;      /* S5's published request word */
+static UB s5_seq;
+ER tk_set_flg(ID flgid, UINT setptn)
+{ assert(flgid == flg_s5_evt); s5_flags |= setptn; return E_OK; }
+ER tk_clr_flg(ID flgid, UINT clrptn)
+{ assert(flgid == flg_s5_evt); s5_flags &= clrptn; return E_OK; }
+ER subsystem5_get_request(S5_REQUEST *p_req)
+{
+    if (p_req == NULL) return E_PAR;
+    return s5_request_unpack(s5_word, p_req) ? E_OK : E_PAR;
+}
+/* What S5's s5_post_line() does: next seq, one store. */
+static void s5_post(UB kind, UB move, UH value, BOOL stop_on_line)
+{
+    S5_REQUEST req = {kind, move, 0u, stop_on_line, value, FALSE};
+    s5_seq = (UB)((s5_seq + 1u) & S5_REQ_SEQ_MASK);
+    req.seq = s5_seq;
+    s5_word = s5_request_pack(&req);
+}
+#else
 /* S5 executor: modelled as idle (no obstacle, no start-up hold), so these
- * tests exercise the VC's own line/barcode/IMU logic. Avoidance hand-over is
- * not covered here. */
+ * tests exercise the VC's own line/barcode/IMU logic. The avoidance
+ * hand-over runs against the real executor in int/robot_avoidance (INT-13:
+ * this file built with S5_REAL_EXECUTOR=1). */
 static unsigned s5_steps;
 void s5_exec_set_following(S5_EXEC *p_x, BOOL b_following)
 { (void)p_x; (void)b_following; }
 BOOL s5_exec_startup_hold(void) { return FALSE; }
+#endif
 /* #40: S5's last obstacle scan, as subsystem5_get_obstacle() returns it. */
 static S5_OBSTACLE_INFO fake_obstacle;
 static ER fake_obstacle_er = E_OK;
@@ -113,8 +144,10 @@ ER subsystem5_get_obstacle(S5_OBSTACLE_INFO *p_info)
     if (fake_obstacle_er != E_OK) { memset(p_info, 0, sizeof(*p_info)); return fake_obstacle_er; }
     *p_info = fake_obstacle; return E_OK;
 }
+#if !S5_REAL_EXECUTOR
 BOOL s5_exec_step(S5_EXEC *p_x, const S5_EXEC_OPS *p_ops, void *p_ctx, UW now_ms)
 { (void)p_x; (void)p_ops; (void)p_ctx; (void)now_ms; ++s5_steps; return FALSE; }
+#endif
 
 static MOTION_CONFIG config(void)
 {
@@ -879,6 +912,205 @@ static void alltest_robot_tests(void)
     all_numbers = false;
 }
 
+#if S5_REAL_EXECUTOR
+/* ---- INT-13: VC <-> S5 hand-over with the real executor (#20) ----------- */
+
+static unsigned max_pwm_seen;
+
+/* What task_motion does each period: the VC step, then the motion step. */
+static void vstep(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    unsigned pwm;
+    fake_imu.sample_count++;
+    robot_control_step(ctl, now, l, r);
+    motion_control_step(ctl, now, l, r);
+    pwm = (unsigned)(ctl->status.left_pwm_percent + ctl->status.right_pwm_percent);
+    if (pwm > max_pwm_seen) max_pwm_seen = pwm;
+}
+
+static void s5_reset(void)
+{
+    s5_flags = 0u; s5_seq = 0u; s5_word = 0u; /* NONE */
+    max_pwm_seen = 0u;
+}
+
+/* What S5's s5_post_and_wait() does before posting: forget old replies. */
+static void s5_forget(UINT wanted) { s5_flags &= ~wanted; }
+
+static bool motors_off(const MOTION_CONTROLLER *ctl)
+{
+    return ctl->status.left_pwm_percent == 0 && ctl->status.right_pwm_percent == 0;
+}
+
+/* Armed and following, with the real executor reporting FOLLOWING. */
+static void s5_follow(MOTION_CONTROLLER *ctl)
+{
+    reset(ctl);
+    s5_reset();
+    vstep(ctl, 5000, 0, 0);
+    vstep(ctl, 5030, 1, 1);
+    EXPECT(armed && enabled && !halted);
+    EXPECT(ctl->status.active_command == MOTION_CMD_FOLLOW_LINE);
+    EXPECT((s5_flags & S5_EVT_FOLLOWING) != 0u);
+}
+
+/* S5 asks for HOLD at 'now'; step until the VC replies STOPPED. */
+static uint32_t s5_hold(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    uint32_t t;
+    s5_forget(S5_EVT_STOPPED);
+    s5_post(S5_REQ_HOLD, S5_MOVE_FWD, 0u, FALSE);
+    vstep(ctl, now, l, r);
+    EXPECT(in_avoid && !enabled);                   /* S5 has control */
+    EXPECT((s5_flags & S5_EVT_FOLLOWING) == 0u);
+    EXPECT(ctl->status.active_command != MOTION_CMD_FOLLOW_LINE);
+    EXPECT((s5_flags & S5_EVT_STOPPED) == 0u);      /* not before the settle */
+    for (t = now + 10u; t <= now + 1000u && (s5_flags & S5_EVT_STOPPED) == 0u; t += 10u)
+        vstep(ctl, t, l, r);
+    EXPECT((s5_flags & S5_EVT_STOPPED) != 0u);
+    EXPECT(t - now >= S2_AVOID_HOLD_SETTLE_MS);     /* coasted first */
+    EXPECT(motors_off(ctl) && !halted);
+    return t;
+}
+
+static void s5_handover_tests(void)
+{
+    MOTION_CONTROLLER ctl;
+    uint32_t t;
+    int32_t ticks;
+
+    /* (a) Start-up HOLD (servo swing): the VC does not arm until NONE. */
+    reset(&ctl);
+    s5_reset();
+    s5_post(S5_REQ_HOLD, S5_MOVE_FWD, 0u, FALSE);
+    for (t = 5000u; t <= 6000u; t += 10u) vstep(&ctl, t, 0, 0);
+    EXPECT(!armed && !halted && max_pwm_seen == 0u);
+    s5_post(S5_REQ_NONE, S5_MOVE_FWD, 0u, FALSE);
+    vstep(&ctl, 6010, 0, 0);
+    vstep(&ctl, 6040, 1, 1);
+    EXPECT(armed && enabled && (s5_flags & S5_EVT_FOLLOWING) != 0u);
+
+    /* (b) Full hand-over: HOLD -> STOPPED, MOVE -> MOTION_DONE,
+     *     stop-on-line MOVE -> LINE_FOUND, RESUME -> line following. */
+    s5_follow(&ctl);
+    t = s5_hold(&ctl, 6000u, 1, 1);
+
+    s5_forget(S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED);
+    s5_post(S5_REQ_MOVE, S5_MOVE_FWD, 10u, FALSE);
+    vstep(&ctl, t += 10u, 1, 1);
+    EXPECT(in_avoid && ctl.status.active_command == MOTION_CMD_FORWARD_CM &&
+           ctl.next_profile == MOTION_PROFILE_AVOID);  /* applied with all_test numbers */
+    for (ticks = 1; ticks < 400 && (s5_flags & S5_EVT_MOTION_DONE) == 0u; ticks += 2)
+        vstep(&ctl, t += 10u, ticks, ticks);
+    EXPECT((s5_flags & S5_EVT_MOTION_DONE) != 0u);
+    EXPECT((s5_flags & S5_EVT_MOVE_FAILED) == 0u);
+    EXPECT(ticks >= 100);                           /* 10 cm x 10 ticks/cm */
+    EXPECT(motors_off(&ctl) && !halted && !enabled);
+
+    snapshot.data[0] = 0u;                          /* both sensors on white */
+    s5_forget(S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED | S5_EVT_LINE_FOUND);
+    s5_post(S5_REQ_MOVE, S5_MOVE_FWD, 50u, TRUE);
+    vstep(&ctl, t += 10u, ticks, ticks);
+    for (int i = 0; i < 5; ++i) { ticks += 2; vstep(&ctl, t += 10u, ticks, ticks); }
+    EXPECT((s5_flags & (S5_EVT_LINE_FOUND | S5_EVT_MOTION_DONE)) == 0u);
+    snapshot.data[0] = 2u;                          /* C sees the line */
+    ticks += 2;
+    vstep(&ctl, t += 10u, ticks, ticks);
+    EXPECT((s5_flags & S5_EVT_LINE_FOUND) != 0u);
+    EXPECT(motors_off(&ctl) && !halted);
+
+    snapshot = (line_barcode_msg_t){{3u | (2u << 3u), LINE_BARCODE_FOLLOW, 0u}};
+    s5_post(S5_REQ_RESUME, S5_MOVE_FWD, 0u, FALSE);
+    vstep(&ctl, t += 10u, ticks, ticks);
+    EXPECT(enabled && !halted);                     /* line following back */
+    vstep(&ctl, t += 10u, ticks, ticks);
+    EXPECT(!in_avoid && motors_off(&ctl));          /* VC's 30 ms grace */
+    vstep(&ctl, t += 30u, ticks, ticks);
+    EXPECT(!in_avoid && ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+    EXPECT((s5_flags & S5_EVT_FOLLOWING) != 0u);
+
+    /* (c1) Wheels stalled during an S5 move: the motion controller's
+     *      encoder-stall fault makes the VC latch its own safety stop (S5
+     *      gets no reply; its 25 s wait then posts SAFE_STOP). */
+    s5_follow(&ctl);
+    t = s5_hold(&ctl, 6000u, 1, 1);
+    s5_forget(S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED);
+    s5_post(S5_REQ_MOVE, S5_MOVE_FWD, 30u, FALSE);
+    {
+        uint32_t t0 = t;
+        while (!halted && t < t0 + 5000u) vstep(&ctl, t += 10u, 1, 1);
+        EXPECT(halted && !line_halt && motors_off(&ctl));
+        EXPECT(t - t0 <= 2000u);                    /* stall caught quickly */
+        EXPECT((s5_flags & (S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED)) == 0u);
+    }
+    s5_post(S5_REQ_SAFE_STOP, S5_MOVE_FWD, 0u, FALSE);
+    for (int i = 0; i < 100; ++i) vstep(&ctl, t += 10u, 1, 1);
+    EXPECT(halted && motors_off(&ctl));
+
+    /* (c2) A move that keeps going past S2_AVOID_MOVE_TIMEOUT_MS fails with
+     *      S5_EVT_MOVE_FAILED and the motors stop; S5's SAFE_STOP then
+     *      latches until reboot, even if the word changes again. */
+    s5_follow(&ctl);
+    t = s5_hold(&ctl, 6000u, 1, 1);
+    s5_forget(S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED);
+    s5_post(S5_REQ_MOVE, S5_MOVE_FWD, S5_REQ_VALUE_MAX, FALSE); /* 1023 cm */
+    {
+        uint32_t t0 = t;
+        ticks = 1;
+        while ((s5_flags & S5_EVT_MOVE_FAILED) == 0u && !halted &&
+               t < t0 + S2_AVOID_MOVE_TIMEOUT_MS + 1000u) {
+            ++ticks;                                /* creeping: no stall */
+            vstep(&ctl, t += 10u, ticks, ticks);
+        }
+        EXPECT((s5_flags & S5_EVT_MOVE_FAILED) != 0u && !halted);
+        EXPECT(t - t0 > S2_AVOID_MOVE_TIMEOUT_MS);
+        EXPECT((s5_flags & S5_EVT_MOTION_DONE) == 0u && motors_off(&ctl));
+    }
+    s5_post(S5_REQ_SAFE_STOP, S5_MOVE_FWD, 0u, FALSE);
+    vstep(&ctl, t += 10u, ticks, ticks);
+    EXPECT(halted && !line_halt && motors_off(&ctl) && !enabled);
+    s5_post(S5_REQ_NONE, S5_MOVE_FWD, 0u, FALSE);   /* too late: latched */
+    for (int i = 0; i < 300; ++i) vstep(&ctl, t += 10u, ticks, ticks);
+    EXPECT(halted && motors_off(&ctl));
+
+    /* (c3) A move the controller rejects (0 cm) fails at once. */
+    s5_follow(&ctl);
+    t = s5_hold(&ctl, 6000u, 1, 1);
+    s5_forget(S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED);
+    s5_post(S5_REQ_MOVE, S5_MOVE_FWD, 0u, FALSE);
+    vstep(&ctl, t += 10u, 1, 1);
+    EXPECT((s5_flags & S5_EVT_MOVE_FAILED) != 0u && motors_off(&ctl));
+
+    /* (d) A corrupt S5 word while following: safe stop at once, latched. */
+    s5_follow(&ctl);
+    s5_word = 5u;                                   /* reserved kind 5 */
+    vstep(&ctl, 6000, 2, 2);
+    EXPECT(halted && !line_halt && motors_off(&ctl));
+    EXPECT((s5_flags & S5_EVT_FOLLOWING) == 0u);
+    s5_word = 0u;
+    for (int i = 0; i < 300; ++i) vstep(&ctl, 6010u + 10u * (unsigned)i, 2, 2);
+    EXPECT(halted && motors_off(&ctl));
+
+    /* (e) #47 CAL_FAIL: S5 asks for SAFE_STOP before the VC has armed.
+     *     The wheels must never be driven. */
+    reset(&ctl);
+    s5_reset();
+    s5_post(S5_REQ_SAFE_STOP, S5_MOVE_FWD, 0u, FALSE);
+    for (t = 5000u; t <= 8000u; t += 10u) vstep(&ctl, t, 0, 0);
+    EXPECT(halted && !line_halt && max_pwm_seen == 0u);
+    EXPECT(ctl.status.active_command != MOTION_CMD_FOLLOW_LINE);
+
+    /* (f) An obstacle mid barcode turn: S5 takes over and the turn ends. */
+    s5_follow(&ctl);
+    turning = true; turn_stage = TURN_PIVOT;
+    s5_post(S5_REQ_HOLD, S5_MOVE_FWD, 0u, FALSE);
+    vstep(&ctl, 6000, 1, 1);
+    EXPECT(in_avoid && !turning && turn_stage == 0u);
+
+    s5_reset();
+}
+#endif
+
 int main(void)
 {
     MOTION_CONTROLLER ctl;
@@ -1237,6 +1469,9 @@ int main(void)
     straddle_tests();        /* #8 */
     alltest_motion_tests();  /* #8: the rest of all_test */
     alltest_robot_tests();
+#if S5_REAL_EXECUTOR
+    s5_handover_tests();     /* INT-13, #20 */
+#endif
 
     printf("robot host tests: %u checks passed\n", checks);
     return 0;
