@@ -162,6 +162,8 @@ echo "commit: $(git rev-parse --short HEAD 2>/dev/null || echo unknown)$(git dif
 echo
 
 STRICT="-std=c11 -Wall -Wextra -Werror"
+# Empty <tm/tmonitor.h> so app_program/app_log.h compiles on the host.
+HOSTINC=-Itesting/host_include
 S1=app_program/subsystem1
 S2=app_program/subsystem2
 S3=app_program/subsystem3
@@ -169,26 +171,26 @@ INT=testing/integration
 
 # ---- Subsystem 1: Wi-Fi / MQTT / telemetry ---------------------------------
 run_c  s1/protocol            $STRICT -O2 -I$S1 testing/subsystem1/protocol_test.c $S1/communication_protocol.c
-run_c  s1/barcode_queue       $STRICT testing/subsystem1/barcode_queue_test.c $S1/communication_protocol.c
+run_c  s1/barcode_queue       $STRICT $HOSTINC testing/subsystem1/barcode_queue_test.c $S1/communication_protocol.c
 run_py s1/binary_cli          testing/subsystem1/test_binary.py
 
 # ---- Subsystem 2: motors, encoders, motion protocol ------------------------
 run_c  s2/motion_protocol     $STRICT -DS2_PROTOCOL_HOST_TEST=1 -I$S2 testing/subsystem2/motion_protocol_host_test.c
-run_c  s2/motor_pwm           $STRICT -Iinclude $INT/motor_pwm_host_test.c
+run_c  s2/motor_pwm           $STRICT $HOSTINC -Iinclude $INT/motor_pwm_host_test.c
 
 # ---- Subsystem 3: line following + barcode ---------------------------------
 run_c  s3/line_barcode        $STRICT -pedantic -DAPP_TEST=1 -DLINE_BARCODE_HOST_TEST $S3/line_barcode.c $S3/line_barcode_test.c
 run_c  s3/pptx_samples        -std=c11 -DAPP_ALL_TEST=1 -I$S3 testing/subsystem3/pptx_samples_test.c $S3/line_barcode.c
-run_c  s3/line_service        $STRICT -pthread -I$INT testing/subsystem3/line_service_test.c $S3/line_barcode.c $S1/communication_protocol.c
+run_c  s3/line_service        $STRICT $HOSTINC -pthread -I$INT testing/subsystem3/line_service_test.c $S3/line_barcode.c $S1/communication_protocol.c
 
 # ---- Subsystem 4: IMU / humps ----------------------------------------------
-run_c  s4/hump_height         $STRICT $INT/hump_height_host_test.c
+run_c  s4/hump_height         $STRICT $HOSTINC $INT/hump_height_host_test.c
 
 # ---- Integration (two or more subsystems) ----------------------------------
-run_c  int/robot_control      $STRICT -DAPP_ROBOT_INTEGRATED=1 -DAPP_TEST=0 -DS2_MOTION_DEMO=0 \
+run_c  int/robot_control      $STRICT $HOSTINC -DAPP_ROBOT_INTEGRATED=1 -DAPP_TEST=0 -DS2_MOTION_DEMO=0 \
                               -DS2_LINE_CALIBRATION_READY=1 -include $INT/robot_host_stubs.h \
                               $INT/robot_host_test.c app_program/subsystem2/motion_control.c $S1/communication_protocol.c
-run_c  int/line_service       $STRICT $INT/line_service_host_test.c $S3/line_barcode.c $S1/communication_protocol.c
+run_c  int/line_service       $STRICT $HOSTINC $INT/line_service_host_test.c $S3/line_barcode.c $S1/communication_protocol.c
 run_py int/steering_ramp      $INT/test_steering_ramp.py
 run_py int/event_bits         $INT/test_event_bits.py
 

@@ -23,4 +23,6 @@ typedef struct { void *next; } T_MSG;
 #define E_TMOUT (-50)
 #define TMO_POL 0
 int tm_printf(UB *format, ...);
+/* app.h is stubbed out above; app_log.h is what it would have supplied. */
+#include "../../app_program/app_log.h"
 #endif
