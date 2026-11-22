@@ -10,13 +10,13 @@
 
 /* Logical field identifiers, never transmitted as enums or C structs. */
 typedef enum {
-    S1_FIELD_STATE, S1_FIELD_FAULTS, S1_FIELD_BATTERY_PERCENT,
+    S1_FIELD_STATE, S1_FIELD_FAULTS,
+    S1_FIELD_S5_FAULTS, /* #46: S5 safe-stop causes, 3 bits (S1_S5_FAULT_*); took the battery's slot */
     S1_FIELD_SPEED_CMS, S1_FIELD_DISTANCE_CM, S1_FIELD_LINE_SENSORS,
     S1_FIELD_BARCODE, S1_FIELD_HIGHEST_HUMP_MM, S1_FIELD_OBSTACLE_CM,
     S1_FIELD_SCAN_DEG, S1_FIELD_OBSTACLE_WIDTH_CM, S1_FIELD_BARCODE_LETTER,
     S1_FIELD_SPEED_VALID, S1_FIELD_BARCODE_BLACK, S1_FIELD_BARCODE_WHITE,
     S1_FIELD_MAP_RECEIVED, /* #38: 1 once a letter map has been applied */
-    S1_FIELD_S5_FAULTS,    /* #46: S5 safe-stop causes, 3 bits (S1_S5_FAULT_*) */
     S1_FIELD_COUNT
 } S1_FIELD;
 
@@ -24,8 +24,6 @@ typedef enum {
 #define S1_STATE_MAX 7
 #define S1_FAULTS_MIN 0
 #define S1_FAULTS_MAX 31
-#define S1_BATTERY_MIN 0
-#define S1_BATTERY_MAX 100
 #define S1_SPEED_MIN (-200)
 #define S1_SPEED_MAX 200
 #define S1_DISTANCE_MIN 0
@@ -36,7 +34,7 @@ typedef enum {
 #define S1_BARCODE_MAX 4
 /* 0 = no decode yet, 1..26 = A..Z. */
 #define S1_BARCODE_LETTER_MAX 26
-#define S1_BARCODE_COUNT_MAX 32767U /* 15 bits since #46 */
+#define S1_BARCODE_COUNT_MAX 65535U
 #define S1_S5_FAULTS_MIN 0
 #define S1_S5_FAULTS_MAX 7
 #define S1_HUMP_MIN 0

@@ -7,15 +7,14 @@ import sys
 # name, absolute bit offset, width, logical minimum, logical maximum
 FIELDS = (
     ("state", 0, 3, 0, 7), ("faults", 3, 5, 0, 31),
-    ("battery_percent", 8, 7, 0, 100), ("speed_cms", 15, 9, -200, 200),
+    ("s5_faults", 8, 3, 0, 7), ("speed_cms", 15, 9, -200, 200),
     ("distance_cm", 24, 16, 0, 65535), ("line_sensors", 40, 3, 0, 7),
     ("barcode", 43, 3, 0, 4), ("highest_hump_mm", 46, 8, 0, 255),
     ("obstacle_cm", 54, 9, 0, 400), ("scan_deg", 63, 8, 0, 180),
     ("obstacle_width_cm", 71, 9, 0, 400),
     ("barcode_letter", 80, 5, 0, 26), ("speed_valid", 85, 1, 0, 1),
-    ("barcode_black", 90, 15, 0, 32767), ("barcode_white", 105, 15, 0, 32767),
+    ("barcode_black", 88, 16, 0, 65535), ("barcode_white", 104, 16, 0, 65535),
     ("map_received", 86, 1, 0, 1),  # #38: a letter map has been applied
-    ("s5_faults", 87, 3, 0, 7),  # #46: bit 0 CAL_FAIL, 1 NO_PATH, 2 LINE_LOST
 )
 COMMANDS = {"status": 0, "pause": 1, "resume": 2, "reset-stats": 3, "reverse": 4, "start": 5}
 
@@ -34,6 +33,9 @@ def encode_mapping(letters):
 def decode_telemetry(payload):
     if len(payload) not in (10, 11, 15):
         raise ValueError("telemetry must be 10, 11, or 15 bytes")
+    # Reserved: bits 11-14 (old battery bits) and bit 87. s5_faults (bits 8-10): 0 CAL_FAIL, 1 NO_PATH, 2 LINE_LOST (#46)
+    if payload[1] & 0x78 or (len(payload) >= 11 and payload[10] & 0x80):
+        raise ValueError("reserved telemetry bits must be zero")
     packed = int.from_bytes(payload, "little")
     result = {}
     for name, offset, width, minimum, maximum in FIELDS:

@@ -1,5 +1,5 @@
 Host tests  (compiler: cc, sanitizers: none, python: python3)
-commit: fb8d46c + uncommitted changes
+commit: 612774a + uncommitted changes
 
 s1/protocol                  PASS
 s1/barcode_queue             PASS
@@ -41,6 +41,6 @@ PASS   int/event_bits
 == python -m unittest testing/subsystem1/test_binary.py ==
 ..........
 ----------------------------------------------------------------------
-Ran 10 tests in 0.365s
+Ran 10 tests in 0.360s
 
 OK

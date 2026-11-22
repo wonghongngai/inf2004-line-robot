@@ -496,7 +496,7 @@ static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now)
         (void)s1_telemetry_set(&packet, S1_FIELD_SCAN_DEG, (int)obstacle.angle_deg);
         (void)s1_telemetry_set(&packet, S1_FIELD_OBSTACLE_WIDTH_CM, (int)obstacle.width_cm);
     }
-    /* Battery stays a 0 placeholder: nothing measures it. */
+    /* No battery field: nothing measures it (removed from the packet, #46). */
     er = subsystem1_publish_telemetry(&packet);
     if (er != telemetry_error && er != E_NOSPT) {
         LOG_INFO(TAG_S2_ROBOT, "telemetry queue %s (%d)",

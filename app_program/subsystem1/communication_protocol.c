@@ -4,7 +4,7 @@
  * protocol. The wire layout is explicit, independent of C struct bitfields. */
 #define STATE_BITS 3U
 #define FAULT_BITS 5U
-#define BATTERY_BITS 7U
+#define S5_FAULT_BITS 3U /* bits 8-10 (#46); the battery field was removed */
 #define SPEED_BITS 9U
 #define DISTANCE_BITS 16U
 #define LINE_BITS 3U
@@ -15,13 +15,13 @@
 #define WIDTH_BITS 9U
 #define BARCODE_LETTER_BITS 5U
 #define SPEED_VALID_BITS 1U
-#define BARCODE_COUNT_BITS 15U /* was 16; 2 bits went to S5 faults (#46) */
+#define BARCODE_COUNT_BITS 16U
 #define MAP_RECEIVED_BITS 1U
-#define S5_FAULT_BITS 3U /* bits 87-89 (#46); no reserved bits remain */
-_Static_assert(STATE_BITS + FAULT_BITS + BATTERY_BITS + SPEED_BITS +
+#define RESERVED_BITS 5U /* bits 11-14 (old battery bits) and bit 87: must be zero */
+_Static_assert(STATE_BITS + FAULT_BITS + S5_FAULT_BITS + SPEED_BITS +
                DISTANCE_BITS + LINE_BITS + BARCODE_BITS + HUMP_BITS +
                OBSTACLE_BITS + SCAN_BITS + WIDTH_BITS + BARCODE_LETTER_BITS +
-               SPEED_VALID_BITS + MAP_RECEIVED_BITS + S5_FAULT_BITS +
+               SPEED_VALID_BITS + MAP_RECEIVED_BITS + RESERVED_BITS +
                2U * BARCODE_COUNT_BITS == S1_TELEMETRY_BYTES * 8U,
                "Update packet size and protocol layout together");
 _Static_assert(sizeof(S1_TELEMETRY) == S1_TELEMETRY_BYTES, "Telemetry must have no padding");
@@ -50,7 +50,6 @@ _Static_assert(sizeof(S1_BARCODE_PACKET) == S1_BARCODE_BYTES,
                    (high) - (low) >= (1U << ((bits) - 1U)), name)
 CHECK_BITS("state bits", S1_STATE_MIN, S1_STATE_MAX, STATE_BITS);
 CHECK_BITS("fault bits", S1_FAULTS_MIN, S1_FAULTS_MAX, FAULT_BITS);
-CHECK_BITS("battery bits", S1_BATTERY_MIN, S1_BATTERY_MAX, BATTERY_BITS);
 CHECK_BITS("speed bits", S1_SPEED_MIN, S1_SPEED_MAX, SPEED_BITS);
 CHECK_BITS("distance bits", S1_DISTANCE_MIN, S1_DISTANCE_MAX, DISTANCE_BITS);
 CHECK_BITS("line bits", S1_LINE_MIN, S1_LINE_MAX, LINE_BITS);
@@ -77,7 +76,7 @@ typedef struct {
 static const FIELD_LAYOUT fields[S1_FIELD_COUNT] = {
     {0, STATE_BITS, S1_STATE_MIN, S1_STATE_MAX},
     {3, FAULT_BITS, S1_FAULTS_MIN, S1_FAULTS_MAX},
-    {8, BATTERY_BITS, S1_BATTERY_MIN, S1_BATTERY_MAX},
+    {8, S5_FAULT_BITS, S1_S5_FAULTS_MIN, S1_S5_FAULTS_MAX},
     {15, SPEED_BITS, S1_SPEED_MIN, S1_SPEED_MAX},
     {24, DISTANCE_BITS, S1_DISTANCE_MIN, S1_DISTANCE_MAX},
     {40, LINE_BITS, S1_LINE_MIN, S1_LINE_MAX},
@@ -88,10 +87,9 @@ static const FIELD_LAYOUT fields[S1_FIELD_COUNT] = {
     {71, WIDTH_BITS, S1_WIDTH_MIN, S1_WIDTH_MAX},
     {80, BARCODE_LETTER_BITS, 0, S1_BARCODE_LETTER_MAX},
     {85, SPEED_VALID_BITS, 0, 1},
-    {90, BARCODE_COUNT_BITS, 0, S1_BARCODE_COUNT_MAX},
-    {105, BARCODE_COUNT_BITS, 0, S1_BARCODE_COUNT_MAX},
-    {86, MAP_RECEIVED_BITS, 0, 1},
-    {87, S5_FAULT_BITS, S1_S5_FAULTS_MIN, S1_S5_FAULTS_MAX}
+    {88, BARCODE_COUNT_BITS, 0, S1_BARCODE_COUNT_MAX},
+    {104, BARCODE_COUNT_BITS, 0, S1_BARCODE_COUNT_MAX},
+    {86, MAP_RECEIVED_BITS, 0, 1}
 };
 
 int s1_telemetry_set(S1_TELEMETRY *packet, S1_FIELD field, int value)
@@ -152,8 +150,10 @@ int s1_telemetry_valid(const S1_TELEMETRY *packet)
 {
     unsigned int i;
     int value;
-    /* All 120 bits carry data since #46 (S5 faults at 87-89): no reserved bits. */
-    if (packet == 0) return 0;
+    /* Reserved, must be zero: bits 11-14 (byte 1, 0x78) and bit 87 (byte 10, 0x80).
+       Bit 86 is the map flag (#38); bits 8-10 are the S5 faults (#46). */
+    if (packet == 0 || (packet->bytes[1] & 0x78U) != 0U ||
+        (packet->bytes[10] & 0x80U) != 0U) return 0;
     for (i = 0; i < S1_FIELD_COUNT; ++i) {
         if (!s1_telemetry_get(packet, (S1_FIELD)i, &value)) {
             return 0;

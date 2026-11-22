@@ -50,7 +50,7 @@ function render(snapshot) {
   for (const [id, count] of [["barcode-black", data?.barcode_black],
                              ["barcode-white", data?.barcode_white]]) {
     put(id, !data ? empty : count == null ? "Not published" :
-        count === 32767 ? "32,767+" : count);
+        count === 65535 ? "65,535+" : count);
   }
   const letter = data?.barcode_letter;
   put("barcode-letter", !data ? empty : letter == null ? "Not published" :

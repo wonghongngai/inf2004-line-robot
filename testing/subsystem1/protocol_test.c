@@ -3,8 +3,8 @@
 #include <string.h>
 #include "communication_protocol.h"
 
-static const int minima[] = {0,0,0,-200,0,0,0,0,0,0,0,0,0,0,0,0,0};
-static const int maxima[] = {7,31,100,200,65535,7,4,255,400,180,400,26,1,32767,32767,1,7};
+static const int minima[] = {0,0,0,-200,0,0,0,0,0,0,0,0,0,0,0,0};
+static const int maxima[] = {7,31,7,200,65535,7,4,255,400,180,400,26,1,65535,65535,1};
 
 int main(void)
 {
@@ -36,9 +36,9 @@ int main(void)
         assert(memcmp(&packet, &before, sizeof packet) == 0);
     }
     {
-        /* Map received (#38) bit 86; S5 faults (#46) bits 87-89; two 15-bit counters. */
-        static const int values[] = {7,31,100,-123,65535,7,4,255,400,180,400,6,1,32767,32767,1,7};
-        static const unsigned char expected[] = {0xff,0xe4,0x26,0xff,0xff,0xe7,0x3f,0x64,0x5a,0xc8,0xe6,0xff,0xff,0xff,0xff};
+        /* S5 faults (#46) bits 8-10; map received (#38) bit 86; two 16-bit counters. */
+        static const int values[] = {7,31,7,-123,65535,7,4,255,400,180,400,6,1,65535,65535,1};
+        static const unsigned char expected[] = {0xff,0x87,0x26,0xff,0xff,0xe7,0x3f,0x64,0x5a,0xc8,0x66,0xff,0xff,0xff,0xff};
         s1_telemetry_init(&packet);
         for (field = 0; field < S1_FIELD_COUNT; ++field) {
             assert(s1_telemetry_set(&packet, (S1_FIELD)field, values[field]));
@@ -53,27 +53,35 @@ int main(void)
     assert(!s1_telemetry_set(&packet, (S1_FIELD)-1, 0));
     assert(!s1_telemetry_set(0, S1_FIELD_STATE, 0));
     assert(!s1_telemetry_valid(0));
-    /* Battery 127 is an unused wire encoding. */
+    /* Reserved bits 11-14 (the old battery bits) and bit 87 must be zero. */
+    for (value = 11; value <= 14; ++value) {
+        s1_telemetry_init(&packet);
+        packet.bytes[1] |= (unsigned char)(1u << (value - 8));
+        assert(!s1_telemetry_valid(&packet));
+    }
     s1_telemetry_init(&packet);
-    packet.bytes[1] |= 127;
+    packet.bytes[10] |= 0x80;
     assert(!s1_telemetry_valid(&packet));
-    /* Bit 86 alone is the map flag; bits 87-89 are S5's CAL_FAIL / NO_PATH /
-       LINE_LOST (#46); no bit is reserved any more, so an all-ones packet that
-       otherwise decodes (battery 127 aside) is valid. */
+    /* S5 faults (#46) are bits 8-10: each alone, nothing else moves. */
+    for (value = 0; value < 3; ++value) {
+        s1_telemetry_init(&packet);
+        packet.bytes[1] |= (unsigned char)(1u << value);
+        assert(s1_telemetry_valid(&packet));
+        assert(s1_telemetry_get(&packet, S1_FIELD_S5_FAULTS, &decoded) && decoded == (1 << value));
+        assert(s1_telemetry_get(&packet, S1_FIELD_FAULTS, &decoded) && decoded == 0);
+    }
+    /* Bit 86 alone is the map flag and is valid. */
     s1_telemetry_init(&packet);
     packet.bytes[10] |= 0x40;
     assert(s1_telemetry_valid(&packet));
     assert(s1_telemetry_get(&packet, S1_FIELD_MAP_RECEIVED, &decoded) && decoded == 1);
-    assert(s1_telemetry_get(&packet, S1_FIELD_S5_FAULTS, &decoded) && decoded == 0);
-    packet.bytes[10] |= 0x80;   /* bit 87: CAL_FAIL */
-    assert(s1_telemetry_valid(&packet));
-    assert(s1_telemetry_get(&packet, S1_FIELD_S5_FAULTS, &decoded) && decoded == S1_S5_FAULT_CAL_FAIL);
-    packet.bytes[11] |= 0x03;   /* bits 88-89: NO_PATH, LINE_LOST */
-    assert(s1_telemetry_get(&packet, S1_FIELD_S5_FAULTS, &decoded) && decoded == 7);
     assert(s1_telemetry_get(&packet, S1_FIELD_BARCODE_BLACK, &decoded) && decoded == 0);
-    packet.bytes[11] |= 0x04;   /* bit 90: lowest bit of the black count */
-    assert(s1_telemetry_get(&packet, S1_FIELD_BARCODE_BLACK, &decoded) && decoded == 1);
-    assert(s1_telemetry_get(&packet, S1_FIELD_S5_FAULTS, &decoded) && decoded == 7);
+    /* The counters are 16 bits at bits 88 and 104. */
+    packet.bytes[12] = 0x01;   /* bit 96 = bit 8 of the black count */
+    assert(s1_telemetry_get(&packet, S1_FIELD_BARCODE_BLACK, &decoded) && decoded == 256);
+    assert(s1_telemetry_get(&packet, S1_FIELD_BARCODE_WHITE, &decoded) && decoded == 0);
+    packet.bytes[14] = 0x80;
+    assert(s1_telemetry_get(&packet, S1_FIELD_BARCODE_WHITE, &decoded) && decoded == 0x8000);
     {
         /* Barcode result packet: every letter x runs, frame wraps to 16 bits. */
         static const unsigned char valid_z[] = {0x01, 0x00, 0xba, 0x03};
