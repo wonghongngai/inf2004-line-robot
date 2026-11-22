@@ -385,8 +385,14 @@ void line_barcode_test(void)
     TEST_CHECK("S3-U05", LINE_BARCODE_FOLLOW == (msg.data[1] & 7u),
                "line reacquired after search");
     (void)feed(&context, 0u, 2500u, &commands, &last_command);
+#if LINE_BARCODE_SEARCH_MS > 0
     TEST_CHECK("S3-U06", LINE_BARCODE_FAULT == context.state,
                "search timeout requests stop");
+#else
+    /* Integrated/all_test: no search deadline on purpose (#8). */
+    TEST_CHECK("S3-U06", LINE_BARCODE_SEARCH == context.state,
+               "no search deadline: long loss stays in search");
+#endif
     for (uint8_t command = 0u; command < TEST_SYMBOLS; command++)
     {
         for (uint8_t direction = 0u; direction < TEST_DIRECTIONS; direction++)

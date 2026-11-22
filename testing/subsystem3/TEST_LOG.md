@@ -15,7 +15,7 @@ Define a test here before running it. Test IDs never change.
 | S3-U03 | One sample of noise is rejected | FR3 / CR1 | auto | `line_barcode_test.c` host + target | `[TEST] S3-U03 PASS` |
 | S3-U04 | Persistent line loss enters search | FR3 / CR1 | auto | `line_barcode_test.c` host + target | `[TEST] S3-U04 PASS` |
 | S3-U05 | Reacquisition returns to tracking | FR3 / CR1 | auto | `line_barcode_test.c` host + target | `[TEST] S3-U05 PASS` |
-| S3-U06 | Search timeout reports a line fault | FR3 / CR1 | auto | `line_barcode_test.c` host + target | `[TEST] S3-U06 PASS` |
+| S3-U06 | 2.5 s of line loss: with a search deadline (`LINE_BARCODE_SEARCH_MS` 2000, host and standalone builds) it reports a line fault; with none (0 in integrated and all_test since #8) it stays in SEARCH. Before 22 Nov it expected the fault in every build | FR3 / CR1 | auto | `line_barcode_test.c` host + target | `[TEST] S3-U06 PASS` |
 | S3-U07 | A-Z frames decode forward and backward (expanded after sample review) | FR3 / CR1 | auto | `line_barcode_test.c` host + target | `[TEST] S3-U07 PASS` |
 | S3-U08 | Sampled frames report exactly one decoded letter | FR3 / CR1 | auto | `line_barcode_test.c` host + target | `[TEST] S3-U08 PASS` |
 | S3-U09 | Malformed zero-width frame rejected | FR3 / CR1 | auto | `line_barcode_test.c` host + target | `[TEST] S3-U09 PASS` |
