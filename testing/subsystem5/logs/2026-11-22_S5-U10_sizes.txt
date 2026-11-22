@@ -1,0 +1,27 @@
+# S5-U10 (#29, CR1): sh testing/subsystem5/u10_sizes.sh after a clean sh build.sh integrated at a063f4b. Run by Claude 2026-11-22.
+
+S5-U10 sizes  (a063f4b)
+
+== Shared S5 data: unpacked struct (before) vs packed word (after), bytes
+  u10_packed_word        4
+  u10_obstacle_struct    6
+  u10_request_struct     16
+
+== The packed words in the image (robot-integrated.elf)
+20014880 00000004 b g_s5_obstacle
+20014888 00000004 b g_s5_request
+
+== Image (arm-none-eabi-size): RAM = data + bss
+   text	   data	    bss	    dec	    hex	filename
+ 390120	    120	  83988	 474228	  73c74	robot-integrated.elf
+
+== Subsystem 5 objects
+   text	   data	    bss	    dec	    hex	filename
+     76	      0	      0	     76	     4c	mtkernel_3/app_program/subsystem5/drv_rp2040.o
+   1052	     12	      4	   1068	    42c	mtkernel_3/app_program/subsystem5/drv_servo.o
+    472	      0	      8	    480	    1e0	mtkernel_3/app_program/subsystem5/drv_ultrasonic.o
+   2748	      0	      0	   2748	    abc	mtkernel_3/app_program/subsystem5/obstacle_logic.o
+    579	      0	      0	    579	    243	mtkernel_3/app_program/subsystem5/s5_executor.o
+     81	      0	      4	     85	     55	mtkernel_3/app_program/subsystem5/subsystem5.o
+      0	      0	      0	      0	      0	mtkernel_3/app_program/subsystem5/subsystem5_test.o
+   5435	      0	    485	   5920	   1720	mtkernel_3/app_program/subsystem5/task_obstacle.o
