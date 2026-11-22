@@ -70,4 +70,16 @@ IMPORT ultrasonic_status_t ultrasonic_ping_finish(UW * p_distance_mm);
  * was fired (BUSY).  For the start-up self-test only (#47).
  */
 IMPORT UW ultrasonic_last_echo_us(void);
+
+/**
+ * Pure (no hardware): the validity rules of ultrasonic_ping_finish()
+ * (NFR5-5).  Public so the tests can feed fixed echo times (S5-U03).
+ * @param  echo_us        echo time counted by the PWM slice, in us
+ * @param  b_still_high   ECHO still high when the window closed
+ * @param  p_distance_mm  Out: distance in mm, or 0 if not ULTRASONIC_OK
+ * @return NO_ECHO (still high, 0 us or NULL), TOO_NEAR (< 20 mm),
+ *         TOO_FAR (> 4000 mm), else OK.
+ */
+IMPORT ultrasonic_status_t ultrasonic_classify(UW echo_us, BOOL b_still_high,
+                                               UW * p_distance_mm);
 #endif /* DRV_ULTRASONIC_H */

@@ -110,7 +110,6 @@ EXPORT ultrasonic_status_t ultrasonic_measure_mm(UW   window_ms,
 EXPORT ultrasonic_status_t ultrasonic_ping_finish(UW * p_distance_mm)
 {
     UW   echo_us;
-    UW   distance_mm;
     BOOL b_still_high;
 
     if (NULL == p_distance_mm)
@@ -132,7 +131,24 @@ EXPORT ultrasonic_status_t ultrasonic_ping_finish(UW * p_distance_mm)
     clr_w(ECHO_CSR_ADDR, PWM_CH_CSR_EN);
     g_last_echo_us = echo_us;
 
-    /* turn the raw result into a status, no printing */
+    return ultrasonic_classify(echo_us, b_still_high, p_distance_mm);
+}
+
+/* Pure: raw echo time -> status and distance (S5-U03, NFR5-5) */
+EXPORT ultrasonic_status_t ultrasonic_classify(UW echo_us, BOOL b_still_high,
+                                               UW * p_distance_mm)
+{
+    UW distance_mm;
+
+    if (NULL == p_distance_mm)
+    {
+        return ULTRASONIC_NO_ECHO;
+    }
+
+    *p_distance_mm = 0U;
+
+    /* ECHO still high: no echo inside the window (nothing in range, or
+     * the sensor's own timeout); 0: ECHO never went high */
     if (b_still_high || (0U == echo_us))
     {
         return ULTRASONIC_NO_ECHO;

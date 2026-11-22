@@ -20,6 +20,18 @@
  * pings, scans and prints the plan (bench behaviour) and keeps watching. */
 #define S5_HAS_VC (APP_ROBOT_INTEGRATED || APP_ALL_TEST)
 
+/* Bench images for #29 (sh build.sh integrated S5_BENCH=1 or 2).  S5 keeps
+ * asking for HOLD, so the VC never arms and the wheels never turn, and
+ * every ping is printed with its status and raw echo time.
+ *   1: readings only, the servo stays forward (S5-U02, U43); a confirmed
+ *      obstacle is only reported, so a target 5 cm away can be measured
+ *   2: a confirmed obstacle also runs the normal coarse + fine scan,
+ *      profile and plan, which are printed and then forgotten (S5-U07) */
+#ifndef S5_BENCH
+#define S5_BENCH 0
+#endif
+#define BENCH_PING_GAP_MS (150U) /* ~5 readings per second */
+
 #define MONITOR_GAP_MS    (30U)   /* + ~30 ms ping = one ping per ~70-80 ms */
 #define IDLE_POLL_MS      (50U)   /* while the VC is not line-following    */
 #define RESUME_QUIET_MS   (1000U) /* no detection right after resuming     */
@@ -828,6 +840,54 @@ static BOOL s5_selftest(void)
     return b_ok;
 }
 
+#if S5_BENCH
+/* Bench loop (S5_BENCH=1): print every reading; scan on a confirmed one.
+ * Never returns.  The robot is held throughout (HOLD stays posted). */
+static void s5_bench_loop(void)
+{
+    UB                  history = 0U;
+    UW                  count   = 0U;
+    UW                  distance_mm;
+    UW                  start_us;
+    ultrasonic_status_t status;
+    plan_t              plan;
+    obstacle_profile_t  profile;
+
+    LOG_INFO(TAG_S5_OBS, "BENCH mode %u: robot held, every ping printed%s",
+              (UW)S5_BENCH, (S5_BENCH < 2) ? "" : ", scan when confirmed");
+    for (;;)
+    {
+        status = ultrasonic_measure_mm(ULTRASONIC_WINDOW_FULL_MS,
+                                       &distance_mm);
+        count++;
+        LOG_INFO(TAG_S5_OBS, "BENCH %u %s %u mm (echo %u us)", count,
+                  status_name(status), distance_mm,
+                  ultrasonic_last_echo_us());
+
+        if (obstacle_filter_update(&history, status, distance_mm))
+        {
+#if (S5_BENCH < 2)
+            LOG_INFO(TAG_S5_OBS, "BENCH would confirm at %u mm (no scan "
+                                 "in S5_BENCH=1)", distance_mm);
+            tk_dly_tsk(BENCH_PING_GAP_MS);
+            continue;
+#endif
+            LOG_INFO(TAG_S5_OBS, "BENCH confirmed at %u mm -> scan",
+                      distance_mm);
+            start_us = rp2040_time_us();
+            scan_and_plan(MAX_RETRIES, &plan, &profile);
+            s5_publish_obstacle(&profile);
+            LOG_INFO(TAG_S5_OBS, "BENCH detection -> decision %u ms",
+                      (rp2040_time_us() - start_us) / 1000U);
+            servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
+            history = 0U;
+            tk_dly_tsk(RESUME_QUIET_MS);
+        }
+        tk_dly_tsk(BENCH_PING_GAP_MS);
+    }
+}
+#endif
+
 /* Main obstacle task: monitor, hold, scan, plan, then resume or stop */
 EXPORT void obstacle_task(INT stacd, void * exinf)
 {
@@ -863,6 +923,9 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
     }
     else
     {
+#if S5_BENCH
+        s5_bench_loop(); /* keeps HOLD posted; never returns */
+#endif
         /* Servo parked and still: let the VC arm and follow the line */
         s5_post(S5_REQ_NONE, S5_MOVE_FWD, 0U, FALSE);
         LOG_INFO(TAG_S5_OBS, "MONITORING");

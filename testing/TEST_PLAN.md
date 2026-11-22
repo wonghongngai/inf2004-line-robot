@@ -187,7 +187,7 @@ is to measure real data.
 |---|---|---|---|
 | S5-U09, U21–U22, U28, U31–U38: packing, servo maths, fine-scan window, profile, plan, bypass table | L2 | `make TEST=1` | PASS on target 19 Nov (`d9c4830`, 68 checks) |
 | S5-U01, U04, U05, U16 | L3 | manual | PASS (logs not saved) |
-| S5-U02: accuracy ±2 cm over 5–100 cm | L3 | manual | **FAIL before the hardware-timer fix: re-run** |
+| S5-U02: > 90 % of readings within ±5 cm at 5 / 15 / 30 / 45 / 60 cm (rule and range changed 22 Nov, #29; was every reading within ±2 cm over 5–100 cm) | L3 | manual | **PASS 22 Nov** (re-scored under the new rule) |
 | S5-U06: detection → action ≤ 2 s | L3 | manual | **FAIL (2299 ms) before the `FINE_BUDGET_POINTS` fix: re-run** |
 | S5-U45: all of the above automatic checks, plus U08, U11–U13 (new), on the PC | L1 | `sh testing/run_host_tests.sh s5/` | PASS 22 Nov (102 checks, #30); U08, U11–U13 not yet run on the Pico |
 | S5-U03, U07, U10 | — | planned | not written yet. U15 is replaced by U28 (scan rework, 5 Nov) |
@@ -200,7 +200,7 @@ is to measure real data.
 | S5-U40 | Detect at ≥ 30 cm and stop ≥ 10 cm from the obstacle (NFR5-1) | L4 | 10 approaches to a box at cruise speed | 10/10 detected at ≥ 30 cm, stopped ≥ 10 cm away |
 | S5-U41 | Avoids a box | L4 | Box centred, offset left and offset right, 5 runs each | 15/15 pass without touching it |
 | S5-U42 | Reacquires the line within 50 cm (NFR5-4) | L4 | Same runs as U41; mark where the line is reacquired | 15/15 within 50 cm |
-| S5-U43 | Ignores invalid readings (NFR5-5) | L3 | Point at open space, a soft target, and very close (< 2 cm) | never the only basis of a decision; logged as invalid |
+| S5-U43 | Ignores invalid readings (NFR5-5) | L3 | Point at open space and very close (< 2 cm); the soft-target case was retired 22 Nov (#29) | never the only basis of a decision; logged as invalid |
 | S5-U46 / U47 | Start-up self-test (#47, W6 CALIBRATE → CAL_FAIL → SAFE_STOP): decision logic, then 9 boots on the robot (wired, open space, unplugged, replugged) | L1 + L3 | `run_host_tests.sh s5/`; bench with `integrated` | unplugged sensor → SAFE STOP and no wheel motion after START. **PASS 22 Nov** |
 | S5-U44 | Hump is not treated as an obstacle (A5-2) | L4 | 10 hump passes with S5 active | 0 false obstacle stops. **Dropped 22 Nov (#44):** the hump is too small to matter and the ultrasonic sits above its height |
 

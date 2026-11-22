@@ -85,6 +85,9 @@ MOTION_DEMO ?= 0
 PID_BENCH ?= 0
 # 1: S2-U07 pivot bench; needs MOTION_DEMO=1, not with PID_BENCH (#18)
 PIVOT_BENCH ?= 0
+# S5 bench images (#29), robot held, every ping printed: 1 readings only
+# (S5-U02, U43), 2 also scans a confirmed obstacle (S5-U07)
+S5_BENCH ?= 0
 ifeq ($(PIVOT_BENCH),1)
 ifneq ($(MOTION_DEMO),1)
 $(error PIVOT_BENCH=1 requires MOTION_DEMO=1)
@@ -163,7 +166,7 @@ endif
 # with the mode and adds a suffix only for a setting that differs from that
 # mode's usual build, so the builds people flash every day get short names:
 #
-#   robot-<mode>[-<network>][-demo][-smp0][-uart|-crash][-test]
+#   robot-<mode>[-<network>][-demo][-s5range|-s5scan][-smp0][-uart|-crash][-test]
 #
 #   robot-integrated.uf2             sh build.sh integrated
 #   robot-integrated-test.uf2        sh build.sh integrated TEST=1
@@ -186,11 +189,12 @@ IMAGE_NET_USUAL := $(if $(filter integrated all_test,$(ROBOT_MODE)),mqtt,offline
 
 NAME_NET     := $(if $(filter-out $(IMAGE_NET_USUAL),$(IMAGE_NET)),-$(IMAGE_NET))
 NAME_DEMO    := $(if $(filter 1,$(MOTION_DEMO)),-demo)
+NAME_S5BENCH := $(if $(filter 1,$(S5_BENCH)),-s5range,$(if $(filter 2,$(S5_BENCH)),-s5scan))
 NAME_SMP     := $(if $(filter 0,$(SMP)),-smp0)
 NAME_CONSOLE := $(if $(filter uart,$(CONSOLE)),-uart,$(if $(filter 1,$(CRASH_REPORT)),-crash))
 NAME_TEST    := $(if $(filter 1,$(TEST)),-test)
 
-EXE_FILE := robot-$(ROBOT_MODE)$(NAME_NET)$(NAME_DEMO)$(NAME_SMP)$(NAME_CONSOLE)$(NAME_TEST)
+EXE_FILE := robot-$(ROBOT_MODE)$(NAME_NET)$(NAME_DEMO)$(NAME_S5BENCH)$(NAME_SMP)$(NAME_CONSOLE)$(NAME_TEST)
 
 GCC := arm-none-eabi-gcc
 AS := arm-none-eabi-gcc
@@ -254,6 +258,7 @@ CFLAGS  += -DAPP_TEST=$(TEST)
 CFLAGS  += -DAPP_ROBOT_INTEGRATED=$(if $(filter integrated integrated_motor_test,$(ROBOT_MODE)),1,0)
 CFLAGS  += -DS2_MOTOR_HW_TEST=$(if $(filter motor_test integrated_motor_test,$(ROBOT_MODE)),1,0)
 CFLAGS  += -DS2_PID_BENCH=$(PID_BENCH) -DS2_PIVOT_BENCH=$(PIVOT_BENCH)
+CFLAGS  += -DS5_BENCH=$(S5_BENCH)
 CFLAGS  += -DS2_MOTION_DEMO=$(MOTION_DEMO) -DLINE_DEMO_ENABLE=$(if $(filter barcode_test,$(ROBOT_MODE)),1,0)
 CFLAGS += -DAPP_BARCODE_BENCH=$(if $(filter barcode_test,$(ROBOT_MODE)),1,0)
 CFLAGS += -DAPP_LINE_FOLLOW_TEST=$(if $(filter line_follow_test,$(ROBOT_MODE)),1,0)
@@ -290,7 +295,7 @@ endif
 # before any recipe executes.
 ################################################################################
 
-PROFILE_ID := smp$(SMP)-$(CONSOLE)-wifi$(WIFI)-net$(NET)-mqtt$(MQTT)-crash$(CRASH_REPORT)-test$(TEST)-robot$(ROBOT_MODE)-demo$(MOTION_DEMO)-bench$(PID_BENCH)$(PIVOT_BENCH)
+PROFILE_ID := smp$(SMP)-$(CONSOLE)-wifi$(WIFI)-net$(NET)-mqtt$(MQTT)-crash$(CRASH_REPORT)-test$(TEST)-robot$(ROBOT_MODE)-demo$(MOTION_DEMO)-bench$(PID_BENCH)$(PIVOT_BENCH)-s5bench$(S5_BENCH)
 PROFILE_FILE := .build_profile
 
 ifneq ($(strip $(shell cat $(PROFILE_FILE) 2>/dev/null)),$(PROFILE_ID))
