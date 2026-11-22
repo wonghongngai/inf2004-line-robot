@@ -623,10 +623,11 @@ static void alltest_motion_tests(void)
     EXPECT(motion_control_command(&m, &cmd, now, 0, 0) == MOTION_RESULT_OK);
     EXPECT(m.status.active_command == MOTION_CMD_FORWARD_CM &&
            NEAR(m.status.left_pwm_percent, L) && NEAR(m.status.right_pwm_percent, R));
+    /* The advance keeps the follow PWM (no ramp-down to the move PWM). */
     now = msteps(&m, now, 1, 90, 90);                       /* 0.76 cm */
     EXPECT(m.status.state == MOTION_STATE_MOVING_FORWARD &&
-           NEAR(m.status.left_pwm_percent, S2_MOVE_LEFT_PWM_PERCENT) &&
-           NEAR(m.status.right_pwm_percent, S2_MOVE_RIGHT_PWM_PERCENT));
+           NEAR(m.status.left_pwm_percent, L) &&
+           NEAR(m.status.right_pwm_percent, R));
     now = msteps(&m, now, 1, 95, 95);                       /* 0.80 cm */
     EXPECT(m.status.state == MOTION_STATE_IDLE && m.status.motion_complete);
 
@@ -635,10 +636,21 @@ static void alltest_motion_tests(void)
      * S2 turn calibration and no 2-degree tolerance. */
     cmd = (MOTION_COMMAND){MOTION_CMD_TURN_RIGHT_DEG, 90.0f};
     EXPECT(motion_control_command(&m, &cmd, now + 1u, 95, 95) == MOTION_RESULT_OK);
-    EXPECT(NEAR(m.status.left_pwm_percent, S2_MOVE_LEFT_PWM_PERCENT));
-    now = msteps(&m, now + 1u, 1, 96, 95);
-    EXPECT(m.status.right_pwm_percent == 0.0f &&
-           NEAR(m.status.left_pwm_percent, S2_JUNCTION_RIGHT_PIVOT_PWM_PERCENT));
+    /* Carry: the advance held the follow PWM. */
+    EXPECT(NEAR(m.status.left_pwm_percent, L));
+    {
+        float carried = m.status.left_pwm_percent;
+        float pivot = S2_JUNCTION_RIGHT_PIVOT_PWM_PERCENT;
+        /* One step later: the left wheel ramps from the carried PWM toward
+         * the pivot PWM, at the move ramp, and never past it. */
+        now = msteps(&m, now + 1u, 1, 96, 95);
+        EXPECT(m.status.right_pwm_percent == 0.0f &&
+               NEAR(m.status.left_pwm_percent,
+                    carried < pivot ? fminf(pivot, carried + move_step) :
+                                      fmaxf(pivot, carried - move_step)));
+        for (int i = 0; i < 40; ++i) now = msteps(&m, now, 1, 96, 95);
+        EXPECT(NEAR(m.status.left_pwm_percent, pivot));
+    }
     {
         int32_t target = (int32_t)(90.0f * S2_LEFT_TURN_TICKS_PER_DEGREE);
         now = msteps(&m, now, 1, 95 + target - 5, 95);
@@ -741,6 +753,9 @@ static void alltest_robot_tests(void)
 {
     MOTION_CONTROLLER ctl;
     uint32_t now;
+    /* Right-wheel ticks that cover the longer junction advance (6.3 cm at
+     * about 118 ticks/cm is 745), with room to spare. */
+    const int32_t adv = 800;
 
     all_numbers = true;
 
@@ -774,21 +789,21 @@ static void alltest_robot_tests(void)
         EXPECT(turning && turn_stage == TURN_ADVANCE && turn_cmd == LINE_BARCODE_CMD_UTURN);
         EXPECT(ctl.status.active_command == MOTION_CMD_FORWARD_CM &&
                ctl.status.left_pwm_percent > 10.0f);        /* not stopped first */
-        now = msteps(&ctl, now + 1u, 1, 100, 100);          /* > 0.8 cm */
+        now = msteps(&ctl, now + 1u, 1, adv, adv);          /* > the advance */
         EXPECT(ctl.status.state == MOTION_STATE_IDLE);
-        sstep(&ctl, now + 1u, 100, 100);
+        sstep(&ctl, now + 1u, adv, adv);
         EXPECT(turn_stage == TURN_PIVOT && ctl.active_profile == MOTION_PROFILE_UTURN &&
                ctl.status.left_pwm_percent > 10.0f);        /* carried on */
-        now = msteps(&ctl, now + 1u, 30, 100 - 300, 100 + 300);
+        now = msteps(&ctl, now + 1u, 30, adv - 300, adv + 300);
         EXPECT(ctl.status.left_pwm_percent < 0.0f);         /* reversing */
         set_sensors(centre_late ? 0u : 2u);                 /* centre black early */
-        sstep(&ctl, now, 100 - half + 100, 100 + half - 100);
+        sstep(&ctl, now, adv - half + 100, adv + half - 100);
         EXPECT(turning);                                    /* arc not done yet */
         set_sensors(0u);
-        sstep(&ctl, now + 1u, 100 - half, 100 + half + 1);
+        sstep(&ctl, now + 1u, adv - half, adv + half + 1);
         EXPECT(turning);                                    /* arc done, centre white */
         set_sensors(2u);
-        sstep(&ctl, now + 2u, 100 - half, 100 + half + 2);
+        sstep(&ctl, now + 2u, adv - half, adv + half + 2);
         EXPECT(!turning && !halted && enabled && leaving_junction);
         EXPECT(ctl.status.left_pwm_percent == 0.0f);        /* spin stopped */
     }
@@ -803,8 +818,8 @@ static void alltest_robot_tests(void)
     sstep(&ctl, 5040, 0, 0);
     set_sensors(3u);
     sstep(&ctl, 5050, 0, 0);
-    motion_control_step(&ctl, 5060, 100, 100);
-    sstep(&ctl, 5061, 100, 100);
+    motion_control_step(&ctl, 5060, adv, adv);
+    sstep(&ctl, 5061, adv, adv);
     EXPECT(turn_stage == TURN_PIVOT && ctl.active_profile == MOTION_PROFILE_JUNCTION &&
            ctl.status.active_command == MOTION_CMD_TURN_RIGHT_DEG);
 

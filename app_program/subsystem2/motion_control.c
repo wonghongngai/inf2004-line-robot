@@ -900,6 +900,14 @@ static void run_forward(
             complete_motion(controller);
             return;
         }
+        /* 22 Nov: the junction advance keeps the line-following PWM instead of
+           ramping down to the move PWM, so the robot does not slow on the
+           crossing (the follow PWM is higher than the move PWM). */
+        if (controller->active_profile == MOTION_PROFILE_JUNCTION &&
+            controller->cfg.follow_left_pwm_percent > 0.0f) {
+            l_target = controller->cfg.follow_left_pwm_percent;
+            r_target = controller->cfg.follow_right_pwm_percent;
+        }
         if (controller->active_profile == MOTION_PROFILE_AVOID) {
             float err = controller->cfg.avoid_heading_kp * (right_cm - left_cm);
 

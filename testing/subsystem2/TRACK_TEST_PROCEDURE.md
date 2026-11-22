@@ -18,7 +18,7 @@ Start it before the reset. One boot per test, so each log is one run.
 Read the `ctrl late=N/M gap_max=.. loop_max=.. ms` line each second.
 Pass: late=0 at the end; record the largest gap_max / loop_max.
 
-## S2-U09: 10 x left 90, 10 x right 90, 10 x U-turn 180
+## S2-U09: 5 x left 90, 5 x right 90, 5 x U-turn 180 (was 10 x each; reduced 22 Nov)
 Barcode map: left/right/uturn letters on a track with a junction after each
 barcode. Per turn record: angle by eye or protractor on the floor
 (+/-15 deg), and whether the line is reacquired (FOLLOW resumes, no FAULT).
