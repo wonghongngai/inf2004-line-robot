@@ -16,7 +16,9 @@ testing/TEST_PLAN.md):
           effect within --timeout (operator confirms the wheels)
   S1-U13  stop the broker for --outage s, then restart it; then the same with
           the hotspot: telemetry back within 10 s of each restart, wheels
-          unaffected (operator)
+          unaffected (operator). Run it on the laptop that hosts the broker:
+          the start and end of each outage are detected by polling the
+          broker's TCP port, so no Enter press is timed
   S1-U15  maps with duplicate letters and a reserved bit are rejected
           (map flag stays 0 after a reboot), a valid map is applied (flag 1),
           then the robot turns as mapped at a junction (operator)
@@ -33,6 +35,7 @@ alongside this log.
 import argparse
 import queue
 import shutil
+import socket
 import subprocess
 import sys
 import threading
@@ -227,18 +230,56 @@ def test_s1_u14(args, log, telemetry):
     return ok
 
 
+def broker_reachable(args):
+    """True if the broker's TCP port accepts a connection right now."""
+    try:
+        with socket.create_connection((args.broker, args.port), timeout=0.3):
+            return True
+    except OSError:
+        return False
+
+
+def poll_broker(args, want, limit):
+    """Poll every 0.1 s until broker_reachable() == want; return that moment
+    (time.monotonic()) or None after limit seconds."""
+    deadline = time.monotonic() + limit
+    while time.monotonic() < deadline:
+        if broker_reachable(args) == want:
+            return time.monotonic()
+        time.sleep(0.1)
+    return None
+
+
 def outage_case(args, log, telemetry, name, stop, start):
-    """One S1-U13 case: telemetry flowing, outage, time until it is back."""
+    """One S1-U13 case: telemetry flowing, outage, time until it is back.
+
+    The outage start and end are both detected by polling the broker's TCP
+    port, not by the operator pressing Enter. The broker runs on the laptop
+    at --broker, so this also works for the hotspot: that address only
+    answers again once the laptop is back on the hotspot, the same network
+    the robot needs. Recovery is timed from that moment."""
     telemetry.drain()
     if telemetry.wait_for(lambda d: True, 5.0) is None:
         log(f"{name}: FAIL, no telemetry before the outage (check the setup)")
         return False
-    pause_for(log, stop)
+    print(f"  >> {stop} (detected automatically)", flush=True)
+    log(f"OPERATOR asked: {stop}")
+    down = poll_broker(args, False, args.react_wait)
+    if down is None:
+        log(f"{name}: FAIL, broker {args.broker}:{args.port} still reachable after "
+            f"{args.react_wait:.0f} s; the outage never started")
+        return False
+    log(f"{name}: broker unreachable (outage started)")
     wait_with_countdown(log, args.outage, f"{name} outage")
-    input(f"  >> {start} Press Enter the moment it is back. ")
-    back = time.monotonic()
-    log(f"OPERATOR: {name} back")
-    # The subscriber may have lost the broker too; resubscribe until it works.
+    print(f"  >> {start} (detected automatically)", flush=True)
+    log(f"OPERATOR asked: {start}")
+    back = poll_broker(args, True, args.react_wait)
+    if back is None:
+        log(f"{name}: FAIL, broker not reachable again within {args.react_wait:.0f} s "
+            f"of asking; nothing to time")
+        return False
+    log(f"{name}: broker reachable again after {back - down:.1f} s off; timing telemetry from here")
+    # The subscriber lost the broker too; resubscribe until telemetry arrives.
     got = None
     deadline = back + args.recover_wait
     while got is None and time.monotonic() < deadline:
@@ -246,10 +287,11 @@ def outage_case(args, log, telemetry, name, stop, start):
         telemetry.drain()
         got = telemetry.wait_for(lambda d: True, min(2.0, max(deadline - time.monotonic(), 0.1)))
     if got is None:
-        log(f"{name}: no telemetry within {args.recover_wait:.0f} s of the restart")
+        log(f"{name}: no telemetry within {args.recover_wait:.0f} s of the broker being back")
         return False
     recovered = got[0] - back
-    log(f"{name}: telemetry back after {recovered:.1f} s ({describe(got[1])})")
+    log(f"{name}: telemetry back {recovered:.1f} s after the broker was reachable "
+        f"({describe(got[1])})")
     return recovered <= 10.0
 
 
@@ -380,7 +422,10 @@ def main():
     parser.add_argument("--timeout", type=float, default=1.5, help="seconds to see an effect")
     parser.add_argument("--outage", type=float, default=30.0, help="S1-U13 seconds off")
     parser.add_argument("--recover-wait", type=float, default=30.0,
-                        help="S1-U13 seconds to wait for telemetry after a restart")
+                        help="S1-U13 seconds to wait for telemetry after the broker is back")
+    parser.add_argument("--react-wait", type=float, default=180.0,
+                        help="S1-U13 seconds to wait for the operator to stop or restore "
+                             "the broker or hotspot")
     parser.add_argument("--flood", type=int, default=100, help="S1-U17 commands in about 1 s")
     parser.add_argument("--map", default="FAZW",
                         help="valid map for S1-U15 as LRSU letters (default FAZW: A turns right)")
