@@ -83,6 +83,16 @@ ROBOT_MODE ?= integrated
 MOTION_DEMO ?= 0
 # 1: S2-U10/U11 floor bench; needs MOTION_DEMO=1 (#18)
 PID_BENCH ?= 0
+# 1: S2-U07 pivot bench; needs MOTION_DEMO=1, not with PID_BENCH (#18)
+PIVOT_BENCH ?= 0
+ifeq ($(PIVOT_BENCH),1)
+ifneq ($(MOTION_DEMO),1)
+$(error PIVOT_BENCH=1 requires MOTION_DEMO=1)
+endif
+ifeq ($(PID_BENCH),1)
+$(error PIVOT_BENCH=1 cannot be combined with PID_BENCH=1)
+endif
+endif
 ifeq ($(PID_BENCH),1)
 ifneq ($(MOTION_DEMO),1)
 $(error PID_BENCH=1 requires MOTION_DEMO=1)
@@ -243,7 +253,7 @@ endif
 CFLAGS  += -DAPP_TEST=$(TEST)
 CFLAGS  += -DAPP_ROBOT_INTEGRATED=$(if $(filter integrated integrated_motor_test,$(ROBOT_MODE)),1,0)
 CFLAGS  += -DS2_MOTOR_HW_TEST=$(if $(filter motor_test integrated_motor_test,$(ROBOT_MODE)),1,0)
-CFLAGS  += -DS2_PID_BENCH=$(PID_BENCH)
+CFLAGS  += -DS2_PID_BENCH=$(PID_BENCH) -DS2_PIVOT_BENCH=$(PIVOT_BENCH)
 CFLAGS  += -DS2_MOTION_DEMO=$(MOTION_DEMO) -DLINE_DEMO_ENABLE=$(if $(filter barcode_test,$(ROBOT_MODE)),1,0)
 CFLAGS += -DAPP_BARCODE_BENCH=$(if $(filter barcode_test,$(ROBOT_MODE)),1,0)
 CFLAGS += -DAPP_LINE_FOLLOW_TEST=$(if $(filter line_follow_test,$(ROBOT_MODE)),1,0)
@@ -280,7 +290,7 @@ endif
 # before any recipe executes.
 ################################################################################
 
-PROFILE_ID := smp$(SMP)-$(CONSOLE)-wifi$(WIFI)-net$(NET)-mqtt$(MQTT)-crash$(CRASH_REPORT)-test$(TEST)-robot$(ROBOT_MODE)-demo$(MOTION_DEMO)-bench$(PID_BENCH)
+PROFILE_ID := smp$(SMP)-$(CONSOLE)-wifi$(WIFI)-net$(NET)-mqtt$(MQTT)-crash$(CRASH_REPORT)-test$(TEST)-robot$(ROBOT_MODE)-demo$(MOTION_DEMO)-bench$(PID_BENCH)$(PIVOT_BENCH)
 PROFILE_FILE := .build_profile
 
 ifneq ($(strip $(shell cat $(PROFILE_FILE) 2>/dev/null)),$(PROFILE_ID))

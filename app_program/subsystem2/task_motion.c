@@ -71,6 +71,9 @@ static MOTION_CONFIG build_config(void)
 
     cfg.base_pwm_percent =
         S2_BASE_PWM_PERCENT;
+#if S2_PIVOT_BENCH
+    cfg.base_pwm_percent = S2_PIVOT_BENCH_PWM; /* S2-U07: slow, like the junction pivots */
+#endif
 
     cfg.minimum_effective_pwm_percent =
         S2_MIN_EFFECTIVE_PWM_PERCENT;

@@ -95,7 +95,7 @@ Leave 1.2 m clear ahead and keep the motor switch within reach.
 
 ```sh
 cd build_make
-make ROBOT_MODE=motion MOTION_DEMO=1 PID_BENCH=1 -j8
+sh ../build.sh motion MOTION_DEMO=1 PID_BENCH=1
 ```
 
 It waits 5 s, then makes two 100 cm forward runs 5 s apart and logs
@@ -113,3 +113,22 @@ left-minus-right travel, positive when the left wheel is ahead.
   video is an optional cross-check. Run 2 only fires once per boot.
 
 Rebuild without `PID_BENCH=1` afterwards.
+
+## Driven pivots for S2-U07 (#18)
+
+Checks the turn constants with the motors doing the pivot (hand pivots only
+measure ticks per degree, they cannot test the controller).
+
+```sh
+sh build.sh motion MOTION_DEMO=1 PIVOT_BENCH=1
+```
+
+Flash it, put the robot on the floor with room to spin, and mark its heading
+(a line along one wheel is enough). After 5 s it does six pivots at 25 % PWM,
+8 s apart: right 90, right 90, left 90, left 90, right 360, left 360. After each
+it logs `turn N (...) done; ticks since start dL=.. dR=..`. During the 8 s
+pause, mark or measure the real heading change against the start mark.
+
+Pass: each 360° pivot within ±10° of 360°. Also record the 90° results.
+Rebuild without `PIVOT_BENCH=1` afterwards. It cannot be combined with
+`PID_BENCH=1`.

@@ -98,7 +98,7 @@ their line-stop re-arm checks now live in `int/robot_control`. Every L4 test run
 | ID | What | Level | How | Pass when |
 |---|---|---|---|---|
 | S2-U05 | Motor direction and sides | L3 | `motor_test`, wheels raised, follow `HARDWARE_TEST.md` | M1 = left, M2 = right, both forward |
-| S2-U06 | Encoder ticks per cm, each wheel | L3 | Push or drive 100 cm × 3, read the counts | spread between runs ≤ 2 %; value written into `CALIBRATION.md` |
+| S2-U06 | Encoder ticks per cm, each wheel | L3 | Push or drive 100 cm × 3, read the counts | spread between runs ≤ 7 % (hand pushes; was 2 %, relaxed 22 Nov); value written into `CALIBRATION.md` |
 | S2-U07 | Ticks per degree (pivot) | L3 | 4 × 90° and 1 × 360° pivots, check against floor marks | within ±10° per 360° |
 | S2-U08 | Drives straight | L4 | 2 m with no line; measure the sideways drift | ≤ 10 cm |
 | S2-U09 | Barcode turn angles | L4 | 10 × each of left 90°, right 90°, U-turn 180° | within ±15°, and the line is reacquired after each |

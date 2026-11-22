@@ -3,7 +3,7 @@
 > **Measurement record.** The live values are in
 > `app_program/subsystem2/subsystem2.h`. The ticks/cm below are the
 > 29 Oct polling-decoder figures; `subsystem2.h` now uses re-measured values
-> (23.10 left, 18.83 right). The pivot ticks/degree are still the ones below.
+> (23.10 left, 18.83 right). The pivot ticks/degree were re-measured 22 Nov (see the end of this file).
 
 Values supplied by the user and entered in `subsystem2.h`. PID gains remain
 zero pending physical tuning. The shared minimum effective PWM is 15%,
@@ -73,3 +73,62 @@ tilting the IMU while stationary provides no wheel distance.
 Motor calibration does not enable line calibration or change the normal
 integrated profile's sensor layout. Those remain separate configuration
 choices.
+
+## Re-measurement 2026-11-22 (S2-U06, #18)
+
+Hand pushes of about 100 cm (approximate distance), `robot-motion.uf2`, one push per boot.
+Four pushes; run 2 is excluded because the right encoder froze mid-push.
+
+| Run | Left ticks | Right ticks |
+| --- | ---: | ---: |
+| 1 | 11051 | 11302 |
+| 3 | 11474 | 10825 |
+| 4 | 11432 | 11492 |
+| Mean | 11319 | 11206 |
+| Ticks/cm | 113.2 | 112.1 |
+
+Spread (max − min) / mean: left 3.7 %, right 6.0 %. Run 3 curved (left 6 % ahead).
+These are 4–5 % below the live `S2_ENC_LEFT/RIGHT_TICKS_PER_CM` (117.8 / 118.3),
+which were trimmed on the track for drift on 8 Nov. **`subsystem2.h` is not
+changed**: a hand push is not accurate enough to override a track trim. The old
+`S2_LEFT/RIGHT_TICKS_PER_CM` (23.10 / 18.83) are far from every measurement and
+look obsolete.
+
+### Pivots, 2026-11-22 (S2-U07)
+
+Hand pivots about the stationary wheel (motors off), one 360° pivot each way,
+each ending on the 360° floor mark, plus four 90° pivots that reached 90°.
+
+| Pivot | Moving wheel | 360° ticks | Ticks/degree | 90° ticks |
+| --- | --- | ---: | ---: | --- |
+| Right | Left | 8287 | 23.02 | 2046, 2046 (22.7) |
+| Left | Right | 8343 | 23.18 | 2073, 1951, 1941 (21.6–23.0) |
+
+`subsystem2.h` now uses the 360° figures: `S2_LEFT_TURN_TICKS_PER_DEGREE` 23.02
+(was 20.3556) and `S2_RIGHT_TURN_TICKS_PER_DEGREE` 23.18 (was 22.9074). A long
+turn averages out the hand error, so it is preferred to the 90° pivots. The
+old right-turn value would have turned the robot about 407° on a commanded 360°.
+The 90° runs spread by about 7 % (hand pivots). Not yet checked with the
+motors driving the pivot; S2-U09 does that on the track.
+
+### Driven pivots, 2026-11-22 (S2-U07 re-check)
+
+Hand pivots gave 23.0 / 23.2 ticks per degree, but with the motors driving the
+pivot (25 % PWM, floor, `PIVOT_BENCH=1`) the robot came up short: about 5° on
+the 90° pivots (2044 ticks for about 85°, 24.05) and about 20° on a 360° pivot
+(8246 ticks for about 340°, 24.25). The tester's angles are by eye. A driven
+wheel scrubs on the floor, so it counts more ticks per real degree than a hand
+pivot. `subsystem2.h` now uses **24.2** for both pivots. The same pivot numbers
+feed the integrated build's junction pivots, which run at 12.5 / 15 %, so
+re-check a junction turn on the track too.
+
+### Driven pivots, second run, 2026-11-22 (24.2 for both)
+
+Observed by eye, no serial log kept for this run (the monitor was not attached).
+Right pivots (left wheel, 24.2) came out exactly 90° and 360°. Left pivots
+(right wheel, 24.2) came out short: about 5° at 90° and about 10° at 360°.
+At 24.2 a left pivot stops after about 2150 ticks (90°) and 8690 ticks (360°),
+so those ticks covered about 85° and 350°: 25.3 and 24.8 ticks per degree.
+`S2_RIGHT_TURN_TICKS_PER_DEGREE` is now **25.0**; `S2_LEFT_TURN_TICKS_PER_DEGREE`
+stays 24.2. Not yet re-tested.
+

@@ -1,0 +1,49 @@
+# Trimmed copy of 2026-11-22_182553_console.txt: heartbeat and repeated lines dropped. Turn constants 24.2 (right pivot) / 25.0 (left pivot).
+=== COM5 connected 18:26:37.206 ===
+microT-Kernel Version 3.00
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+[APP] task motion_task id=3 pri=14 prc=2
+[S2:BENCH] pivot bench: first turn in 5000 ms, state=1
+[APP] STANDALONE MOTION: S2 only; S3/S4 are not started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:BENCH] turn 1 starting
+[S2:MOTION] state=4 fault=0 ticks L=0 R=0 PWM=25/0
+[S2:MOTION] state=4 fault=0 ticks L=1799 R=0 PWM=25/0
+[S2:BENCH] turn 1 (right 90) done; ticks since start dL=2152 dR=0. Mark the heading now
+[S2:MOTION] state=1 fault=0 ticks L=2209 R=0 PWM=0/0
+[S2:BENCH] turn 2 starting
+[S2:MOTION] state=4 fault=0 ticks L=3648 R=0 PWM=25/0
+[S2:BENCH] turn 2 (right 90) done; ticks since start dL=2138 dR=0. Mark the heading now
+[S2:MOTION] state=1 fault=0 ticks L=4403 R=0 PWM=0/0
+[S2:BENCH] turn 3 starting
+[S2:MOTION] state=3 fault=0 ticks L=4403 R=964 PWM=0/25
+[S2:BENCH] turn 3 (left 90) done; ticks since start dL=0 dR=2211. Mark the heading now
+[S2:MOTION] state=1 fault=0 ticks L=4403 R=2252 PWM=0/0
+[S2:BENCH] turn 4 starting
+[S2:MOTION] state=3 fault=0 ticks L=4403 R=2499 PWM=0/25
+[S2:MOTION] state=3 fault=0 ticks L=4403 R=4077 PWM=0/25
+[S2:BENCH] turn 4 (left 90) done; ticks since start dL=0 dR=2215. Mark the heading now
+[S2:MOTION] state=1 fault=0 ticks L=4403 R=4509 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=4404 R=4509 PWM=0/0
+[S2:BENCH] turn 5 starting
+[S2:MOTION] state=4 fault=0 ticks L=5703 R=4509 PWM=25/0
+[S2:MOTION] state=4 fault=0 ticks L=7584 R=4509 PWM=25/0
+[S2:MOTION] state=4 fault=0 ticks L=9444 R=4509 PWM=25/0
+[S2:MOTION] state=4 fault=0 ticks L=11262 R=4509 PWM=25/0
+[S2:MOTION] state=1 fault=0 ticks L=13072 R=4509 PWM=0/0
+[S2:BENCH] turn 5 (right 360) done; ticks since start dL=8672 dR=0. Mark the heading now
+[S2:MOTION] state=1 fault=0 ticks L=13121 R=4509 PWM=0/0
+[S2:BENCH] turn 6 starting
+[S2:MOTION] state=3 fault=0 ticks L=13121 R=6119 PWM=0/25
+[S2:MOTION] state=3 fault=0 ticks L=13121 R=7918 PWM=0/25
+[S2:MOTION] state=3 fault=0 ticks L=13121 R=9680 PWM=0/25
+[S2:MOTION] state=3 fault=0 ticks L=13121 R=11362 PWM=0/25
+[S2:MOTION] state=3 fault=0 ticks L=13121 R=12995 PWM=0/25
+[S2:BENCH] turn 6 (left 360) done; ticks since start dL=0 dR=8953. Mark the heading now
+[S2:BENCH] finished; motors OFF
+[S2:MOTION] state=1 fault=0 ticks L=13121 R=13498 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=13122 R=13475 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=13148 R=13449 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=13174 R=13449 PWM=0/0

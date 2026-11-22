@@ -37,8 +37,10 @@
 // #define S2_RIGHT_TICKS_PER_CM                118.5634f
 #define S2_LEFT_TICKS_PER_CM   23.10f //updated calibration value
 #define S2_RIGHT_TICKS_PER_CM  18.83f
-#define S2_LEFT_TURN_TICKS_PER_DEGREE         20.3556f  /* right turn: 1832 / 90 */
-#define S2_RIGHT_TURN_TICKS_PER_DEGREE        22.9074f  /* left turn: 2061.6667 / 90 */
+/* 22 Nov (S2-U07): from hand-pivoted 360-degree turns, 8287 / 360 and 8343 / 360.
+   Was 20.3556 (right turn) and 22.9074 (left turn), from 29 Oct 90-degree pivots. */
+#define S2_LEFT_TURN_TICKS_PER_DEGREE         24.2f     /* right turn, driven: see CALIBRATION.md */
+#define S2_RIGHT_TURN_TICKS_PER_DEGREE        25.0f     /* left turn, driven: see CALIBRATION.md */
 #define S2_BASE_PWM_PERCENT                  55.0f
 #define S2_MIN_EFFECTIVE_PWM_PERCENT         15.0f    /* shared floor covers right motor */
 #define S2_MAX_PWM_PERCENT                   100.0f

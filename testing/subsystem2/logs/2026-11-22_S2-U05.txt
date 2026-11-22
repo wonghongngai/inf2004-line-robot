@@ -1,0 +1,29 @@
+=== COM5 connected 16:45:15.757 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+[APP] task motion_task id=3 pri=14 prc=2
+[S2:HWTEST] MOTOR BENCH TEST: raise wheels off the ground.
+[APP] MOTOR TEST: S2 only; S3/S4 are not started
+[S2:HWTEST] starts in 5000 ms; normal motion control disabled.
+[S2:HWTEST] LEFT ONLY (GP8 PWM, GP9 LOW): 750 ms
+[S2:HWTEST] STOP; ticks left=1391 right=0
+[S2:HWTEST] PWM check=0 counting=1/1 compare=200/0
+[S2:HWTEST] RIGHT ONLY (GP10 PWM, GP11 LOW): 750 ms
+[S2:HWTEST] STOP; ticks left=0 right=1369
+[S2:HWTEST] PWM check=0 counting=1/1 compare=0/200
+[S2:HWTEST] BOTH FORWARD: 750 ms
+[S2:HWTEST] STOP; ticks left=1385 right=1374
+[S2:HWTEST] PWM check=0 counting=1/1 compare=200/200
+[S2:HWTEST] LEFT PIVOT (right wheel only): 750 ms
+[S2:HWTEST] STOP; ticks left=0 right=1382
+[S2:HWTEST] PWM check=0 counting=1/1 compare=0/200
+[S2:HWTEST] RIGHT PIVOT (left wheel only): 750 ms
+[S2:HWTEST] STOP; ticks left=1400 right=0
+[S2:HWTEST] PWM check=0 counting=1/1 compare=200/0
+[S2:HWTEST] Sequence finished; motors OFF. Inspect wheel behaviour manually.
