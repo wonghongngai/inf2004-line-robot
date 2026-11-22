@@ -58,6 +58,9 @@ EXPORT void ultrasonic_init(void)
 /* TRUE between ultrasonic_ping_start() and ultrasonic_ping_finish() */
 static BOOL g_b_ping_armed = FALSE;
 
+/* Raw echo time of the last ping_finish(), for the start-up self-test */
+static UW g_last_echo_us = 0U;
+
 /* Arm the echo timer and fire the trigger (non-blocking ping, part 1) */
 EXPORT BOOL ultrasonic_ping_start(void)
 {
@@ -90,6 +93,7 @@ EXPORT ultrasonic_status_t ultrasonic_measure_mm(UW   window_ms,
     }
 
     *p_distance_mm = 0U;
+    g_last_echo_us = 0U; /* a BUSY ping below never reaches ping_finish */
 
     if (!ultrasonic_ping_start())
     {
@@ -115,6 +119,7 @@ EXPORT ultrasonic_status_t ultrasonic_ping_finish(UW * p_distance_mm)
     }
 
     *p_distance_mm = 0U;
+    g_last_echo_us = 0U;
 
     if (!g_b_ping_armed)
     {
@@ -125,6 +130,7 @@ EXPORT ultrasonic_status_t ultrasonic_ping_finish(UW * p_distance_mm)
     b_still_high = (0U != gpio_get_val(US_ECHO_PIN));
     echo_us      = in_w(ECHO_CTR_ADDR) & ECHO_CTR_MAX;
     clr_w(ECHO_CSR_ADDR, PWM_CH_CSR_EN);
+    g_last_echo_us = echo_us;
 
     /* turn the raw result into a status, no printing */
     if (b_still_high || (0U == echo_us))
@@ -145,4 +151,10 @@ EXPORT ultrasonic_status_t ultrasonic_ping_finish(UW * p_distance_mm)
 
     *p_distance_mm = distance_mm;
     return ULTRASONIC_OK;
+}
+
+/* Raw echo time of the last ping (start-up self-test, #47) */
+EXPORT UW ultrasonic_last_echo_us(void)
+{
+    return g_last_echo_us;
 }

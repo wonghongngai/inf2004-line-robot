@@ -779,6 +779,55 @@ static BOOL bypass_obstacle(const plan_t *             p_plan,
     return TRUE;
 }
 
+/*
+ * Start-up self-test (#47, W6 statechart CALIBRATE): servo homed forward
+ * (servo_init), then SELFTEST_PINGS pings; pass if enough of them saw
+ * ECHO go high (s5_selftest_echo_ok).  The servo has no position feedback,
+ * so "homed" means commanded to 90 deg and given time to get there.
+ * @return TRUE on pass; FALSE = CAL_FAIL (caller goes to SAFE_STOP).
+ */
+static BOOL s5_selftest(void)
+{
+    UW                  echo_us[SELFTEST_PINGS];
+    UW                  distance_mm = 0U;
+    UW                  index;
+    UW                  echoes = 0U;
+    ultrasonic_status_t status  = ULTRASONIC_NO_ECHO;
+    BOOL                b_ok;
+
+    servo_glide_to(SERVO_ANGLE_CENTRE_DEG); /* already there: no wait */
+
+    for (index = 0U; index < SELFTEST_PINGS; index++)
+    {
+        status         = ultrasonic_measure_mm(ULTRASONIC_WINDOW_FULL_MS,
+                                               &distance_mm);
+        echo_us[index] = ultrasonic_last_echo_us();
+        if (0U != echo_us[index])
+        {
+            echoes++;
+        }
+        tk_dly_tsk(SELFTEST_GAP_MS);
+    }
+
+    b_ok = s5_selftest_echo_ok(echo_us, SELFTEST_PINGS);
+    if (b_ok)
+    {
+        LOG_INFO(TAG_S5_OBS,
+                  "SELF-TEST PASS: servo home %u deg, echo %u/%u pings "
+                  "(last status %u, %u mm)",
+                  SERVO_ANGLE_CENTRE_DEG, echoes, SELFTEST_PINGS,
+                  (UW)status, distance_mm);
+    }
+    else
+    {
+        LOG_ERR(TAG_S5_OBS,
+                 "SELF-TEST FAIL (CAL_FAIL): echo %u/%u pings, need %u: "
+                 "check the HC-SR04P wiring (GP16 TRIG, GP17 ECHO, 3V3)",
+                 echoes, SELFTEST_PINGS, SELFTEST_MIN_ECHOES);
+    }
+    return b_ok;
+}
+
 /* Main obstacle task: monitor, hold, scan, plan, then resume or stop */
 EXPORT void obstacle_task(INT stacd, void * exinf)
 {
@@ -806,9 +855,18 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
     servo_init();
     tk_dly_tsk(STARTUP_SETTLE_MS);
 
-    /* Servo parked and still: let the VC arm and follow the line */
-    s5_post(S5_REQ_NONE, S5_MOVE_FWD, 0U, FALSE);
-    LOG_INFO(TAG_S5_OBS, "MONITORING");
+    /* Still holding: a failed self-test goes straight to SAFE_STOP, which
+     * the VC latches the moment it would arm, so the robot never moves */
+    if (!s5_selftest())
+    {
+        state = S5_SAFE_STOP;
+    }
+    else
+    {
+        /* Servo parked and still: let the VC arm and follow the line */
+        s5_post(S5_REQ_NONE, S5_MOVE_FWD, 0U, FALSE);
+        LOG_INFO(TAG_S5_OBS, "MONITORING");
+    }
 
     /* A task must never return: loop forever */
     for (;;)

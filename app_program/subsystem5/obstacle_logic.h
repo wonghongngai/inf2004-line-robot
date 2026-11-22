@@ -368,6 +368,27 @@ IMPORT UW s5_request_pack(const S5_REQUEST * p_req);
  */
 IMPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req);
 
+/* ---- Start-up self-test (#47, W6 statechart CALIBRATE -> CAL_FAIL) ----
+ * With the servo parked forward, S5 fires SELFTEST_PINGS pings and keeps
+ * each ping's raw echo time.  A working sensor always raises ECHO, even
+ * with nothing in range (it then holds ECHO high until its own timeout,
+ * which the driver reports as NO_ECHO), so the STATUS can't tell a dead
+ * sensor from open space; the raw count can.  An unplugged or dead ECHO
+ * line never counts. */
+#define SELFTEST_PINGS      (5U)
+#define SELFTEST_MIN_ECHOES (2U)   /* pings that must see ECHO go high  */
+#define SELFTEST_GAP_MS     (100U) /* between pings (sensor needs >= 60) */
+
+/**
+ * Pure: did enough self-test pings see the ECHO line go high?
+ * @param  p_echo_us  raw echo time of each ping in us (0 = ECHO never
+ *                    went high, or the ping could not be fired)
+ * @param  count      number of pings in p_echo_us
+ * @return TRUE if at least SELFTEST_MIN_ECHOES are non-zero; FALSE if
+ *         not, or if p_echo_us is NULL.
+ */
+IMPORT BOOL s5_selftest_echo_ok(const UW * p_echo_us, UW count);
+
 /* ---- S5 -> telemetry obstacle word (#40), layout in subsystem5.h ---- */
 
 /**
