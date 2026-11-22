@@ -33,6 +33,7 @@
 #define TAG_S2_MOTOR	"S2:MOTOR"	/* PWM driver			*/
 #define TAG_S2_DEMO	"S2:DEMO"	/* MOTION_DEMO=1 sequence	*/
 #define TAG_S2_HWTEST	"S2:HWTEST"	/* motor bench test		*/
+#define TAG_S2_BENCH	"S2:BENCH"	/* S2-U10/U11 floor bench	*/
 #define TAG_S3_LINE	"S3:LINE"	/* line / barcode demo		*/
 #define TAG_S3_BARCODE	"S3:BARCODE"	/* barcode service		*/
 #define TAG_S4_IMU	"S4:IMU"

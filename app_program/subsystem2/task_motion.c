@@ -289,6 +289,43 @@ static bool receive_latest_command(
 /*
  * Main Buddy 2 RTOS task.
  */
+#if S2_PID_BENCH
+/*
+ * S2-U11 without a scope: time STOP from firmware at the 1 ms loop rate.
+ * "motors off" = first loop where the state is no longer moving (apply_outputs
+ * has just cut PWM). "wheels still" = the last encoder tick seen before 50 ms
+ * of no change. Both are measured from the moment robot_control sent STOP.
+ */
+static void bench_stop_probe(uint32_t now_ms, const MOTION_STATUS *status,
+                             int32_t left_ticks, int32_t right_ticks)
+{
+    static uint32_t last_change_ms;
+    static int32_t last_sum;
+    static bool off_logged, done;
+    uint32_t t0 = s2_bench_stop_ms;
+    int32_t sum = left_ticks + right_ticks;
+
+    if (sum != last_sum) {
+        last_sum = sum;
+        last_change_ms = now_ms;
+    }
+    if (t0 == 0u || done) {
+        return;
+    }
+    if (!off_logged && (status->state == MOTION_STATE_STOPPING ||
+                        status->state == MOTION_STATE_IDLE)) {
+        off_logged = true;
+        LOG_INFO(TAG_S2_BENCH, "STOP: motors off at +%lu ms",
+                  (unsigned long)(now_ms - t0));
+    }
+    if (off_logged && (uint32_t)(now_ms - last_change_ms) >= 50u) {
+        done = true;
+        LOG_INFO(TAG_S2_BENCH, "STOP: wheels still at +%lu ms (latency, +/-2 ms)",
+                  (unsigned long)(last_change_ms - t0));
+    }
+}
+#endif
+
 EXPORT void motion_task(
     INT stacd,
     void *exinf
@@ -474,6 +511,10 @@ EXPORT void motion_task(
         subsystem2_publish_status(
             &status
         );
+
+#if S2_PID_BENCH
+        bench_stop_probe(now_ms, &status, left_ticks, right_ticks);
+#endif
 
         /*
          * Run PID/state calculations at the Motion Control period.

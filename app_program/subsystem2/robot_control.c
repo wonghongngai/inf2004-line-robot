@@ -890,6 +890,73 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
 
 #elif S2_MOTION_DEMO && !APP_TEST
 
+#if S2_PID_BENCH
+volatile uint32_t s2_bench_stop_ms;   /* set when run 2 sends STOP */
+/*
+ * S2-U10 / S2-U11 floor bench (#18). Two 100 cm forward runs, 5 s apart.
+ *   run 1 (U10): logs left-minus-right travel and PWM every 20 ms, so the
+ *                straight-line PID's response can be read from the console.
+ *   run 2 (U11): sends STOP through subsystem2_send_command() (the same path
+ *                as the real STOP) S2_BENCH_STOP_AFTER_MS into the run.
+ *                task_motion.c times the motors-off and wheels-still points.
+ * Needs 1.2 m of clear floor ahead. Not part of any normal build.
+ */
+void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
+{
+    static const MOTION_COMMAND fwd = {MOTION_CMD_FORWARD_CM, 100.0f};
+    static unsigned run;                 /* 0, 1: finished runs */
+    static bool active, stop_sent, done;
+    static uint32_t started, next_start = S2_ROBOT_START_MS, step_no;
+    MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
+
+    if (done || ctl->status.state == MOTION_STATE_FAULT) {
+        return;
+    }
+    if (!active) {
+        if ((int32_t)(now - next_start) >= 0 &&
+            motion_control_command(ctl, &fwd, now, l, r) == MOTION_RESULT_OK) {
+            active = true;
+            stop_sent = false;
+            started = now;
+            step_no = 0u;
+            LOG_INFO(TAG_S2_BENCH, "run %u (%s) start; cols: ms L R err_mm pwmL pwmR",
+                      run + 1u, run == 0u ? "U10 PID" : "U11 STOP");
+        }
+        return;
+    }
+    {
+        uint32_t t = now - started;
+        if ((step_no++ & 1u) == 0u) {
+            /* err > 0: the left wheel is ahead of the right. */
+            float el = (float)(l - ctl->command_start_left_ticks) / ctl->cfg.left_ticks_per_cm;
+            float er = (float)(r - ctl->command_start_right_ticks) / ctl->cfg.right_ticks_per_cm;
+            LOG_INFO(TAG_S2_BENCH, "%lu %ld %ld %ld %d %d", (unsigned long)t,
+                      (long)l, (long)r, (long)((el - er) * 10.0f),
+                      (int)ctl->status.left_pwm_percent,
+                      (int)ctl->status.right_pwm_percent);
+        }
+        if (run == 1u && !stop_sent && t >= S2_BENCH_STOP_AFTER_MS) {
+            stop_sent = true;
+            LOG_INFO(TAG_S2_BENCH, "STOP sent at %lu ms", (unsigned long)t);
+            s2_bench_stop_ms = now ? now : 1u;
+            (void)subsystem2_send_command(&stop);
+        }
+        if (ctl->status.state == MOTION_STATE_IDLE || t > S2_DEMO_TIMEOUT_MS ||
+            (stop_sent && t > S2_BENCH_STOP_AFTER_MS + 500u)) {
+            LOG_INFO(TAG_S2_BENCH, "run %u end at %lu ms, state=%d", run + 1u,
+                      (unsigned long)t, (int)ctl->status.state);
+            active = false;
+            next_start = now + 5000u;
+            if (++run == 2u) {
+                done = true;
+                (void)motion_control_command(ctl, &stop, now, l, r);
+                LOG_INFO(TAG_S2_BENCH, "finished; motors OFF");
+            }
+        }
+    }
+}
+#else
+
 /* Standalone closed-loop sequence uses the same motor task and encoders. */
 void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
 {
@@ -929,6 +996,7 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         }
     }
 }
+#endif /* S2_PID_BENCH */
 #else
 void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
 {

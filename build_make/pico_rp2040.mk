@@ -81,6 +81,13 @@ endif
 TEST ?= 0
 ROBOT_MODE ?= integrated
 MOTION_DEMO ?= 0
+# 1: S2-U10/U11 floor bench; needs MOTION_DEMO=1 (#18)
+PID_BENCH ?= 0
+ifeq ($(PID_BENCH),1)
+ifneq ($(MOTION_DEMO),1)
+$(error PID_BENCH=1 requires MOTION_DEMO=1)
+endif
+endif
 ifneq ($(filter $(ROBOT_MODE),integrated integrated_motor_test barcode_test line_follow_test all_test motion motor_test),$(ROBOT_MODE))
 $(error Unknown ROBOT_MODE '$(ROBOT_MODE)'; use integrated, integrated_motor_test, barcode_test, line_follow_test, all_test, motion or motor_test)
 endif
@@ -236,6 +243,7 @@ endif
 CFLAGS  += -DAPP_TEST=$(TEST)
 CFLAGS  += -DAPP_ROBOT_INTEGRATED=$(if $(filter integrated integrated_motor_test,$(ROBOT_MODE)),1,0)
 CFLAGS  += -DS2_MOTOR_HW_TEST=$(if $(filter motor_test integrated_motor_test,$(ROBOT_MODE)),1,0)
+CFLAGS  += -DS2_PID_BENCH=$(PID_BENCH)
 CFLAGS  += -DS2_MOTION_DEMO=$(MOTION_DEMO) -DLINE_DEMO_ENABLE=$(if $(filter barcode_test,$(ROBOT_MODE)),1,0)
 CFLAGS += -DAPP_BARCODE_BENCH=$(if $(filter barcode_test,$(ROBOT_MODE)),1,0)
 CFLAGS += -DAPP_LINE_FOLLOW_TEST=$(if $(filter line_follow_test,$(ROBOT_MODE)),1,0)
@@ -272,7 +280,7 @@ endif
 # before any recipe executes.
 ################################################################################
 
-PROFILE_ID := smp$(SMP)-$(CONSOLE)-wifi$(WIFI)-net$(NET)-mqtt$(MQTT)-crash$(CRASH_REPORT)-test$(TEST)-robot$(ROBOT_MODE)-demo$(MOTION_DEMO)
+PROFILE_ID := smp$(SMP)-$(CONSOLE)-wifi$(WIFI)-net$(NET)-mqtt$(MQTT)-crash$(CRASH_REPORT)-test$(TEST)-robot$(ROBOT_MODE)-demo$(MOTION_DEMO)-bench$(PID_BENCH)
 PROFILE_FILE := .build_profile
 
 ifneq ($(strip $(shell cat $(PROFILE_FILE) 2>/dev/null)),$(PROFILE_ID))
