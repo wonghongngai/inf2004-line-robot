@@ -57,10 +57,17 @@
    3.5 cm (+2.0 closed only 1 of 2 cm short). Right: 2.0 cm more, from the
    right turn ending about 1 cm short at the left's 4.3 cm. */
 #define S2_TURN_ADVANCE_BASE_CM (5.0f * S2_RIGHT_TICKS_PER_CM / S2_ENC_RIGHT_TICKS_PER_CM)
-#define S2_TURN_ADVANCE_LEFT_CM  (3.5f + S2_TURN_ADVANCE_BASE_CM)
+#define S2_TURN_ADVANCE_LEFT_CM  (3.7f + S2_TURN_ADVANCE_BASE_CM)  /* 4.5 cm: 4.3 missed on both sides, 5.0 overshot */
 #define S2_TURN_ADVANCE_RIGHT_CM (5.5f + S2_TURN_ADVANCE_BASE_CM)
 /* U-turn and straight-on keep the left value */
 #define S2_TURN_ADVANCE_CM S2_TURN_ADVANCE_LEFT_CM
+/* A left/right pivot stops on the line once past this fraction of its arc and
+   the centre sensor is black (not before: the sensors start on the crossing).
+   22 Nov: 0.6 stopped left pivots at 74-80 % of the arc with the robot 15-25
+   degrees short of the line; right pivots stopped at 91-99 %. */
+#define S2_PIVOT_LINE_MIN_FRACTION 0.9f
+/* Left pivot only: 0.9 overshot the line, so it may stop on the line from 80 %. */
+#define S2_PIVOT_LINE_MIN_FRACTION_LEFT 0.8f
 #define S2_JUNCTION_SETTLE_MS 500u   /* ignore the crossing just handled */
 
 /* Called only by the motor-owning task; no second writer to motor GPIO. */

@@ -22,6 +22,7 @@ static uint8_t pending_letter;           /* bit 7 = waiting, bits 4..0 = A..Z */
 #define TURN_PIVOT 2u
 static unsigned turn_stage, turn_cmd;
 static int32_t uturn_r0;                 /* right ticks when the U-turn began */
+static int32_t pivot_l0, pivot_r0;       /* wheel ticks when a left/right pivot began */
 /* #48 Ready state: arm only once START has arrived (or auto_start is set).
    A START that arrives while still initialising is kept until Ready. */
 static bool auto_start = S2_AUTO_START, start_requested, ready_reported;
@@ -795,6 +796,29 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
                 motion_control_step(ctl, now, l, r); /* STOPPING -> IDLE */
             }
         }
+        /* 22 Nov: a left/right pivot that is past S2_PIVOT_LINE_MIN_FRACTION of
+           its arc stops as soon as the centre sensor sees the line, instead of
+           turning on past it to the full tick count. Without a line it still
+           ends on the full count. */
+        if (ctl->cfg.move_left_pwm_percent > 0.0f && turn_stage == TURN_PIVOT &&
+            (turn_cmd == LINE_BARCODE_CMD_LEFT || turn_cmd == LINE_BARCODE_CMD_RIGHT) &&
+            ctl->status.state != MOTION_STATE_IDLE &&
+            ctl->status.state != MOTION_STATE_STOPPING) {
+            bool left = turn_cmd == LINE_BARCODE_CMD_LEFT;   /* left pivot: right wheel drives */
+            int32_t moved = left ? r - pivot_r0 : l - pivot_l0;
+            float arc = 90.0f * (left ? ctl->cfg.right_turn_ticks_per_degree :
+                                         ctl->cfg.left_turn_ticks_per_degree);
+            if (moved < 0) moved = -moved;
+            if ((float)moved >= arc * (left ? S2_PIVOT_LINE_MIN_FRACTION_LEFT :
+                                              S2_PIVOT_LINE_MIN_FRACTION) &&
+                line_service_snapshot(&msg) >= E_OK &&
+                (msg.data[0] & LINE_BARCODE_CENTRE) != 0u) {
+                LOG_INFO(TAG_S2_ROBOT, "pivot stopped on the line at %d%% of the arc",
+                          (int)(100.0f * (float)moved / arc));
+                vc_stop_motors(ctl, now, l, r);
+                motion_control_step(ctl, now, l, r); /* STOPPING -> IDLE */
+            }
+        }
         if ((uint32_t)(now - turn_started) > S2_ROBOT_TURN_TIMEOUT_MS) {
             halt(ctl, now, l, r, "turn timeout");
         } else if (ctl->status.state == MOTION_STATE_IDLE && ctl->status.motion_complete) {
@@ -807,6 +831,8 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
                                            MOTION_PROFILE_UTURN : MOTION_PROFILE_JUNCTION);
                 turn_stage = TURN_PIVOT;
                 uturn_r0 = r;
+                pivot_l0 = l;
+                pivot_r0 = r;
                 if (motion_control_command(ctl, &cmd, now, l, r) != MOTION_RESULT_OK)
                     halt(ctl, now, l, r, "turn rejected");
                 return;

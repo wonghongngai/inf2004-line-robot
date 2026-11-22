@@ -823,6 +823,41 @@ static void alltest_robot_tests(void)
     EXPECT(turn_stage == TURN_PIVOT && ctl.active_profile == MOTION_PROFILE_JUNCTION &&
            ctl.status.active_command == MOTION_CMD_TURN_RIGHT_DEG);
 
+    /* A left or right pivot stops on the line: past 90 % of its arc, the
+     * centre sensor on black ends it early; before 90 % or with no line it
+     * runs the full tick count. */
+    for (int side = 0; side < 2; ++side) {                  /* 0 right, 1 left */
+        const char letter = side ? 'F' : 'A';
+        const float tpd = side ? S2_RIGHT_TURN_TICKS_PER_DEGREE :
+                                 S2_LEFT_TURN_TICKS_PER_DEGREE;
+        const int32_t arc = (int32_t)(90.0f * tpd);
+        for (int variant = 0; variant < 4; ++variant) {     /* 0 late+black, 1 early, 2 late+white, 3 mid */
+            /* mid is 0.8 of the arc: a right pivot (min 0.9) keeps turning, a
+             * left pivot (min 0.8) may stop on the line from there. */
+            int32_t at = (int32_t)(arc * (variant == 1 ? 0.4f : variant == 3 ? 0.85f : 0.95f));
+            sfollow(&ctl);
+            send_map("FAZW");
+            queued = snapshot;
+            queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_BARCODE << 3u);
+            queued.data[2] = (uint8_t)(letter - 'A');
+            has_event = true;
+            sstep(&ctl, 5040, 0, 0);
+            set_sensors(3u);
+            sstep(&ctl, 5050, 0, 0);
+            motion_control_step(&ctl, 5060, adv, adv);
+            sstep(&ctl, 5061, adv, adv);
+            EXPECT(turn_stage == TURN_PIVOT);
+            set_sensors(variant == 2 ? 0u : 2u);
+            now = msteps(&ctl, 5062, 3, side ? adv : adv + at, side ? adv + at : adv);
+            sstep(&ctl, now, side ? adv : adv + at, side ? adv + at : adv);
+            if (variant == 0 || (variant == 3 && side == 1)) {
+                EXPECT(!turning && !halted && enabled);      /* stopped on the line */
+            } else {
+                EXPECT(turning && turn_stage == TURN_PIVOT); /* kept turning */
+            }
+        }
+    }
+
     /* S5: moves use the AVOID profile, all_test's settle and timeout, and
      * handing back gives the rejoin the same grace as a junction exit. */
     EXPECT(vc_s5_ops.hold_settle_ms == S2_AVOID_HOLD_SETTLE_MS);
