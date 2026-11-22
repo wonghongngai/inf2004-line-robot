@@ -70,7 +70,7 @@ EXPORT ER subsystem4_init(void)
     /* Do not stop the whole firmware if the IMU is absent at boot. */
     er = lsm303dlhc_init();
     if (er < E_OK) {
-        tm_printf((UB *)"Buddy4: IMU init deferred, er=%d\n", er);
+        LOG_WARN(TAG_S4_IMU, "IMU init deferred, er=%d", er);
     } else {
         s4_imu_data.sensor_ok = TRUE;
     }

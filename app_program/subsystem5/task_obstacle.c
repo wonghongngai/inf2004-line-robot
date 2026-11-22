@@ -388,7 +388,7 @@ static void scan_and_plan(UW retries, plan_t * p_plan,
         servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
         p_plan->decision = PLAN_CONTINUE;
         p_plan->shift_mm = 0U;
-        tm_printf((UB *)"S5: no obstacle in coarse scan\n");
+        LOG_INFO(TAG_S5_OBS, "no obstacle in coarse scan");
         return;
     }
 
@@ -405,40 +405,40 @@ static void scan_and_plan(UW retries, plan_t * p_plan,
 
     for (index = 0U; index < coarse_count; index++)
     {
-        tm_printf((UB *)"S5: coarse %3u deg %4u  %s\n", coarse[index].angle_deg,
+        LOG_INFO(TAG_S5_OBS, "coarse %3u deg %4u  %s", coarse[index].angle_deg,
                   coarse[index].distance_mm, status_name(coarse[index].status));
     }
-    tm_printf((UB *)"S5: fine %u..%u deg, %u points, scan %u ms\n", fine_start,
+    LOG_INFO(TAG_S5_OBS, "fine %u..%u deg, %u points, scan %u ms", fine_start,
               fine_end, fine_count, scan_ms);
     for (index = 0U; index < fine_count; index++)
     {
-        tm_printf((UB *)"S5: %3u deg  raw %4u  med %4u  %s\n",
+        LOG_INFO(TAG_S5_OBS, "%3u deg  raw %4u  med %4u  %s",
                   fine[index].angle_deg, fine_raw[index].distance_mm,
                   fine[index].distance_mm, status_name(fine[index].status));
     }
 
     if (p_profile->b_valid)
     {
-        tm_printf((UB *)"S5: closest %u mm at %u deg (x %d)\n",
+        LOG_INFO(TAG_S5_OBS, "closest %u mm at %u deg (x %d)",
                   p_profile->closest_mm, p_profile->closest_deg,
                   p_profile->closest_x_mm);
-        tm_printf((UB *)"S5: centre y %d mm, width %u mm\n",
+        LOG_INFO(TAG_S5_OBS, "centre y %d mm, width %u mm",
                   p_profile->centre_y_mm, p_profile->width_mm);
-        tm_printf((UB *)"S5: clear L %u mm, R %u mm (9999 = open, 9998 = "
-                        "not seen: the box runs past the scan)\n",
+        LOG_INFO(TAG_S5_OBS, "clear L %u mm, R %u mm (9999 = open, 9998 = "
+                        "not seen: the box runs past the scan)",
                   p_profile->clear_left_mm, p_profile->clear_right_mm);
     }
     else
     {
-        tm_printf((UB *)"S5: no obstacle in fine scan\n");
+        LOG_INFO(TAG_S5_OBS, "no obstacle in fine scan");
     }
 
-    tm_printf((UB *)"S5: PLAN %s, shift %u mm\n", plan_name(p_plan->decision),
+    LOG_INFO(TAG_S5_OBS, "PLAN %s, shift %u mm", plan_name(p_plan->decision),
               p_plan->shift_mm);
     if (p_plan->b_side_unseen)
     {
-        tm_printf((UB *)"S5: WARNING: no side seen clear; passing on a side "
-                        "the scan never saw past\n");
+        LOG_WARN(TAG_S5_OBS, "no side seen clear; passing on a side "
+                        "the scan never saw past");
     }
 }
 
@@ -474,7 +474,7 @@ static UINT forward_watched(const bypass_step_t * p_step)
          * reply */
         if ((rp2040_time_us() - t0_us) > ((UW)MOVE_TIMEOUT_MS * 1000U))
         {
-            tm_printf((UB *)"S5: leg timed out\n");
+            LOG_WARN(TAG_S5_OBS, "leg timed out");
             return 0U;
         }
 
@@ -487,7 +487,7 @@ static UINT forward_watched(const bypass_step_t * p_step)
         status = ultrasonic_measure_mm(ULTRASONIC_WINDOW_SCAN_MS, &distance_mm);
         if ((ULTRASONIC_OK == status) && (distance_mm < BYPASS_FRONT_STOP_MM))
         {
-            tm_printf((UB *)"S5: something %u mm ahead on the bypass\n",
+            LOG_INFO(TAG_S5_OBS, "something %u mm ahead on the bypass",
                       distance_mm);
             (void)s5_hold();
             return 0U;
@@ -522,8 +522,8 @@ static BOOL watch_pass(const plan_t *             p_plan,
     ultrasonic_status_t status;
     BOOL                b_passed = FALSE;
 
-    tm_printf((UB *)"S5: watching the box at %u deg (gap ~%u mm, beside "
-                    "< %u mm), plan %u cm, up to %u cm\n",
+    LOG_INFO(TAG_S5_OBS, "watching the box at %u deg (gap ~%u mm, beside "
+                    "< %u mm), plan %u cm, up to %u cm",
               bypass_side_deg(p_plan->decision), gap_mm, near_mm, stage_cm,
               PASS_MAX_CM);
     servo_glide_to(bypass_side_deg(p_plan->decision));
@@ -542,7 +542,7 @@ static BOOL watch_pass(const plan_t *             p_plan,
              * reply */
             if ((rp2040_time_us() - t0_us) > ((UW)MOVE_TIMEOUT_MS * 1000U))
             {
-                tm_printf((UB *)"S5: watched leg timed out\n");
+                LOG_WARN(TAG_S5_OBS, "watched leg timed out");
                 return FALSE;
             }
 
@@ -556,7 +556,7 @@ static BOOL watch_pass(const plan_t *             p_plan,
 
             status =
                 ultrasonic_measure_mm(ULTRASONIC_WINDOW_SCAN_MS, &distance_mm);
-            tm_printf((UB *)"S5: side %u mm %s\n", distance_mm,
+            LOG_INFO(TAG_S5_OBS, "side %u mm %s", distance_mm,
                       status_name(status));
             if (!b_passed &&
                 side_pass_update(&side, status, distance_mm, near_mm))
@@ -567,8 +567,8 @@ static BOOL watch_pass(const plan_t *             p_plan,
                     break; /* beyond the plan: drive on from here */
                 }
                 /* Inside the planned distance: never stop before it */
-                tm_printf((UB *)"S5: box looks passed inside the plan: "
-                                "finishing the plan's %u cm first\n",
+                LOG_INFO(TAG_S5_OBS, "box looks passed inside the plan: "
+                                "finishing the plan's %u cm first",
                           stage_cm);
             }
 
@@ -577,7 +577,7 @@ static BOOL watch_pass(const plan_t *             p_plan,
 
         if (0U != (pattern & S5_EVT_MOVE_FAILED))
         {
-            tm_printf((UB *)"S5: watched leg failed\n");
+            LOG_ERR(TAG_S5_OBS, "watched leg failed");
             return FALSE;
         }
         if (b_passed)
@@ -589,28 +589,28 @@ static BOOL watch_pass(const plan_t *             p_plan,
         if (!side.b_seen)
         {
             /* Too shallow to reach the beam: the plan's distance will do */
-            tm_printf((UB *)"S5: box not seen in %u cm (shallow)\n", driven_cm);
+            LOG_INFO(TAG_S5_OBS, "box not seen in %u cm (shallow)", driven_cm);
             servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
             return TRUE;
         }
         if (driven_cm >= PASS_MAX_CM)
         {
-            tm_printf((UB *)"S5: box still beside after %u cm: too long\n",
+            LOG_WARN(TAG_S5_OBS, "box still beside after %u cm: too long",
                       driven_cm);
             return FALSE;
         }
 
         /* Box still beside the sensor: carry on towards the limit */
         stage_cm = PASS_MAX_CM - driven_cm;
-        tm_printf((UB *)"S5: box still beside, up to %u cm more\n", stage_cm);
+        LOG_INFO(TAG_S5_OBS, "box still beside, up to %u cm more", stage_cm);
     }
 
     /* Passed: drive on (a new request cuts the running move short) */
     extra_cm = bypass_after_clear_cm(gap_mm);
-    tm_printf((UB *)"S5: box passed, %u cm on for the tail\n", extra_cm);
+    LOG_INFO(TAG_S5_OBS, "box passed, %u cm on for the tail", extra_cm);
     if (S5_EVT_MOTION_DONE != s5_move(S5_MOVE_FWD, extra_cm, FALSE))
     {
-        tm_printf((UB *)"S5: drive-on failed\n");
+        LOG_ERR(TAG_S5_OBS, "drive-on failed");
         return FALSE;
     }
     servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
@@ -640,7 +640,7 @@ static BOOL ahead_blocked(UW limit_mm)
         {
             near++;
         }
-        tm_printf((UB *)"S5: ahead %u mm %s\n", distance_mm,
+        LOG_INFO(TAG_S5_OBS, "ahead %u mm %s", distance_mm,
                   status_name(status));
         tk_dly_tsk(MONITOR_GAP_MS); /* sensor needs >= 60 ms per cycle */
     }
@@ -668,19 +668,19 @@ static BOOL clear_ahead(const bypass_step_t * p_turn, UW limit_mm)
     {
         if (tries >= PROBE_TRIES)
         {
-            tm_printf((UB *)"S5: box still ahead after %u tries\n", tries);
+            LOG_WARN(TAG_S5_OBS, "box still ahead after %u tries", tries);
             return FALSE;
         }
         tries++;
-        tm_printf((UB *)"S5: box still ahead (< %u mm): back, %u cm on, "
-                        "turn again (%u/%u)\n",
+        LOG_INFO(TAG_S5_OBS, "box still ahead (< %u mm): back, %u cm on, "
+                        "turn again (%u/%u)",
                   limit_mm, PROBE_STEP_CM, tries, PROBE_TRIES);
         if ((S5_EVT_MOTION_DONE !=
              s5_move(opposite_turn(p_turn->move), p_turn->value, FALSE)) ||
             (S5_EVT_MOTION_DONE != forward_watched(&on)) ||
             (S5_EVT_MOTION_DONE != s5_move(p_turn->move, p_turn->value, FALSE)))
         {
-            tm_printf((UB *)"S5: retry move failed\n");
+            LOG_ERR(TAG_S5_OBS, "retry move failed");
             return FALSE;
         }
     }
@@ -718,7 +718,7 @@ static BOOL bypass_obstacle(const plan_t *             p_plan,
      * the box is not right against it */
     if (p_profile->closest_x_mm < (INT)BYPASS_MIN_GAP_MM)
     {
-        tm_printf((UB *)"S5: box %d mm ahead: too close to turn\n",
+        LOG_WARN(TAG_S5_OBS, "box %d mm ahead: too close to turn",
                   p_profile->closest_x_mm);
         return FALSE;
     }
@@ -729,7 +729,7 @@ static BOOL bypass_obstacle(const plan_t *             p_plan,
         {
             return FALSE;
         }
-        tm_printf((UB *)"S5: step %u/%u: %s %u %s%s\n", index + 1U,
+        LOG_INFO(TAG_S5_OBS, "step %u/%u: %s %u %s%s", index + 1U,
                   BYPASS_STEPS, move_name(step.move), step.value,
                   (S5_MOVE_FWD == step.move) ? "cm" : "deg",
                   step.b_watch_side     ? " (at most, watching the box)"
@@ -755,7 +755,7 @@ static BOOL bypass_obstacle(const plan_t *             p_plan,
 
         if (0U == result)
         {
-            tm_printf((UB *)"S5: step %u failed\n", index + 1U);
+            LOG_ERR(TAG_S5_OBS, "step %u failed", index + 1U);
             return FALSE;
         }
         if (step.b_check_ahead &&
@@ -768,12 +768,12 @@ static BOOL bypass_obstacle(const plan_t *             p_plan,
         {
             if (0U == (result & S5_EVT_LINE_FOUND))
             {
-                tm_printf((UB *)"S5: LINE LOST after %u %s (NFR5-4)\n",
+                LOG_WARN(TAG_S5_OBS, "LINE LOST after %u %s (NFR5-4)",
                           step.value,
                           (S5_MOVE_FWD == step.move) ? "cm" : "deg");
                 return FALSE;
             }
-            tm_printf((UB *)"S5: line found\n");
+            LOG_INFO(TAG_S5_OBS, "line found");
         }
     }
     return TRUE;
@@ -808,7 +808,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
 
     /* Servo parked and still: let the VC arm and follow the line */
     s5_post(S5_REQ_NONE, S5_MOVE_FWD, 0U, FALSE);
-    tm_printf((UB *)"S5: MONITORING\n");
+    LOG_INFO(TAG_S5_OBS, "MONITORING");
 
     /* A task must never return: loop forever */
     for (;;)
@@ -829,13 +829,13 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 if (obstacle_filter_update(&history, status, distance_mm))
                 {
 #if S5_HAS_VC
-                    tm_printf((UB *)"S5: OBSTACLE at %u mm -> HOLD\n",
+                    LOG_INFO(TAG_S5_OBS, "OBSTACLE at %u mm -> HOLD",
                               distance_mm);
                     state = S5_HOLDING;
 #else
-                    tm_printf((UB *)"S5: OBSTACLE at %u mm -> SCANNING "
+                    LOG_INFO(TAG_S5_OBS, "OBSTACLE at %u mm -> SCANNING "
                                     "(no VC in this build: robot not "
-                                    "stopped)\n",
+                                    "stopped)",
                               distance_mm);
                     state = S5_SCANNING;
 #endif
@@ -854,7 +854,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 }
                 else
                 {
-                    tm_printf((UB *)"S5: VC did not stop\n");
+                    LOG_ERR(TAG_S5_OBS, "VC did not stop");
                     state = S5_SAFE_STOP;
                 }
                 break;
@@ -870,7 +870,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                  * the plan and keep watching */
                 tk_dly_tsk(RESUME_QUIET_MS);
                 history = 0U; /* forget readings from before the scan */
-                tm_printf((UB *)"S5: MONITORING\n");
+                LOG_INFO(TAG_S5_OBS, "MONITORING");
                 state = S5_MONITORING;
                 break;
 #endif
@@ -879,10 +879,10 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 {
                     /* Not in the way: hand control back */
                     s5_post(S5_REQ_RESUME, S5_MOVE_FWD, 0U, FALSE);
-                    tm_printf((UB *)"S5: RESUME line following\n");
+                    LOG_INFO(TAG_S5_OBS, "RESUME line following");
                     tk_dly_tsk(RESUME_QUIET_MS);
                     history = 0U; /* forget readings from before */
-                    tm_printf((UB *)"S5: MONITORING\n");
+                    LOG_INFO(TAG_S5_OBS, "MONITORING");
                     state = S5_MONITORING;
                 }
                 else if ((PLAN_PASS_LEFT == plan.decision) ||
@@ -893,13 +893,13 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 else
                 {
                     /* REVERSE (S2 has no reverse) or STOP: NO PATH */
-                    tm_printf((UB *)"S5: NO PATH\n");
+                    LOG_WARN(TAG_S5_OBS, "NO PATH");
                     state = S5_SAFE_STOP;
                 }
                 break;
 
             case S5_BYPASSING:
-                tm_printf((UB *)"S5: BYPASS %s\n", plan_name(plan.decision));
+                LOG_INFO(TAG_S5_OBS, "BYPASS %s", plan_name(plan.decision));
                 if (!bypass_obstacle(&plan, &profile))
                 {
                     servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
@@ -909,17 +909,17 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
 
                 /* Back on the line: hand control back to line following */
                 s5_post(S5_REQ_RESUME, S5_MOVE_FWD, 0U, FALSE);
-                tm_printf((UB *)"S5: RESUME line following\n");
+                LOG_INFO(TAG_S5_OBS, "RESUME line following");
                 tk_dly_tsk(RESUME_QUIET_MS);
                 history = 0U; /* forget readings from before */
-                tm_printf((UB *)"S5: MONITORING\n");
+                LOG_INFO(TAG_S5_OBS, "MONITORING");
                 state = S5_MONITORING;
                 break;
 
             case S5_SAFE_STOP:
                 s5_post(S5_REQ_SAFE_STOP, S5_MOVE_FWD, 0U, FALSE);
                 servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
-                tm_printf((UB *)"S5: SAFE STOP (reboot to re-arm)\n");
+                LOG_WARN(TAG_S5_OBS, "SAFE STOP (reboot to re-arm)");
                 (void)tk_slp_tsk(TMO_FEVR); /* stay stopped */
                 break;
 

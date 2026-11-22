@@ -139,7 +139,7 @@ EXPORT ER lsm303dlhc_init(void)
         lsm303_dd = tk_opn_dev((CONST UB *)LSM303_I2C_DEVNAME,
                                TD_UPDATE | TD_EXCL);
         if (lsm303_dd < E_OK) {
-            tm_printf((UB *)"Buddy4: failed to open I2C device, er=%d\n",
+            LOG_ERR(TAG_S4_IMU, "failed to open I2C device, er=%d",
                       lsm303_dd);
             return lsm303_dd;
         }
@@ -147,12 +147,12 @@ EXPORT ER lsm303dlhc_init(void)
 
     er = read_reg(LSM303_ACC_ADDR, LSM303_WHO_AM_I_A, &who_am_i);
     if (er < E_OK) {
-        tm_printf((UB *)"Buddy4: accelerometer not responding, er=%d\n", er);
+        LOG_ERR(TAG_S4_IMU, "accelerometer not responding, er=%d", er);
         return er;
     }
 
     if (who_am_i != LSM303_WHO_AM_I_VALUE) {
-        tm_printf((UB *)"Buddy4: unexpected WHO_AM_I=0x%02x\n", who_am_i);
+        LOG_ERR(TAG_S4_IMU, "unexpected WHO_AM_I=0x%02x", who_am_i);
         return E_IO;
     }
 
@@ -181,7 +181,7 @@ EXPORT ER lsm303dlhc_init(void)
         return er;
     }
 
-    tm_printf((UB *)"Buddy4: LSM303DLHC initialized\n");
+    LOG_INFO(TAG_S4_IMU, "LSM303DLHC initialized");
     return E_OK;
 }
 
