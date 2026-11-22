@@ -16,6 +16,7 @@
 #include "drv_motor.h"
 #include "drv_encoder.h"
 #include "robot_control.h"
+#include "loop_timing.h"
 #if APP_ROBOT_INTEGRATED
 #include "wheel_odometry.h"
 #include "../subsystem4/subsystem4.h"
@@ -308,6 +309,7 @@ EXPORT void motion_task(
 
     uint32_t now_ms;
     uint32_t last_report_ms = 0u;
+    LOOP_TIMING timing = {0};
 
     bool ready;
     bool manual_stop = false;
@@ -412,6 +414,7 @@ EXPORT void motion_task(
 
         now_ms =
             current_ms();
+        loop_timing_wake(&timing, now_ms);
 #if APP_ROBOT_INTEGRATED
         uint8_t travelled_mm;
         bool travelling = controller.status.state == MOTION_STATE_MOVING_FORWARD;
@@ -483,6 +486,9 @@ EXPORT void motion_task(
             S2_CONTROL_PERIOD_MS
         ) {
 
+            loop_timing_control(&timing, now_ms - next_control_ms,
+                                S2_CONTROL_PERIOD_MS);
+
             motion_control_step(
                 &controller,
                 now_ms,
@@ -511,6 +517,11 @@ EXPORT void motion_task(
             LOG_INFO(TAG_S2_MOTION, "state=%d fault=%d ticks L=%ld R=%ld PWM=%d/%d",
                       status.state, status.fault, (long)left_ticks, (long)right_ticks,
                       (int)status.left_pwm_percent, (int)status.right_pwm_percent);
+            /* S1-U17 / S2-U12 evidence: see loop_timing.h for the fields. */
+            LOG_INFO(TAG_S2_MOTION, "ctrl late=%lu/%lu gap_max=%lu loop_max=%lu ms",
+                      (unsigned long)timing.late, (unsigned long)timing.steps,
+                      (unsigned long)timing.gap_max_ms, (unsigned long)timing.loop_max_ms);
+            loop_timing_new_window(&timing);
             last_report_ms = now_ms;
         }
 

@@ -1,0 +1,15 @@
+16:02:29.153  robot_mqtt_test.py broker=172.20.10.2:1883 client=group17-robot
+16:02:29.197  repo commit 0a2ca0d (record the firmware's commit in TEST_LOG)
+16:02:29.204  == S1-U17 command flood: 100 STATUS commands in about 1 s ==
+16:03:20.126  OPERATOR: done: Robot STARTed and following (or wheels raised and turning), serial console captured.
+16:03:20.151  before: state=FOLLOWING speed=12 line=000 letter=0 map=0
+16:04:35.361  OPERATOR: ctrl late before = 0
+16:04:36.927  sent 100 STATUS in 1.56 s
+16:04:41.968  telemetry during/after: packets=73 max_gap=1.00s not-driving states=none
+16:04:42.187  PAUSE after the flood -> IDLE after 219 ms
+16:05:08.550  OPERATOR: ctrl late after = 0
+16:06:22.994  OPERATOR: Did a '[S1:CMD] commands rx=..' line appear, with every STATUS counted (rx = queued + invalid + dropped)? -> yes
+16:06:22.994  S1-U17 PASS (expect no telemetry gap > 3 s, still following, PAUSE works, ctrl late unchanged, every command counted)
+
+16:06:22.998  SUMMARY: S1-U17 PASS
+16:06:22.998  log saved to C:\Users\Hong Ngai\Desktop\Y2S1\INF2004 Embedded Systems Programming\Project\inf2004-line-robot\testing\integration\logs\2026-11-22_1602_robot_mqtt_test.txt

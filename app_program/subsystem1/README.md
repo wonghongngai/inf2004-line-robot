@@ -136,6 +136,51 @@ sets length 1 so its zero byte is not mistaken for an empty string.
 Old JSON/text publishers are incompatible. Clear old retained text heartbeats
 on your broker if you have any. Do not retain commands.
 
+## Commands across a connection loss (#49)
+
+The intended behaviour, recorded 22 Nov 2026 (`DECISIONS.md`) and tested on
+the robot by S1-U20 (`testing/subsystem1/TEST_LOG.md`):
+
+1. **A command or map sent while the robot is offline is dropped, never
+   replayed.** The robot connects with a clean session every time (lwIP's
+   MQTT client always sets the flag), so the broker keeps nothing for it and
+   delivers nothing old after a reconnect. To act on it, send it again once
+   the robot is back.
+2. **Check the robot is online before sending.** `MQTT_TOPIC` carries `01`
+   every 2 s while connected and the retained Last Will `00` once the broker
+   drops the robot. The broker can take up to 1.5 × the 60 s keepalive (90 s)
+   to notice; anything sent in that window is lost the same way.
+3. **Every command is safe to repeat.** QoS 1 may deliver a command twice,
+   and the operator may press a button twice:
+
+   | Command | First time | Repeated |
+   | --- | --- | --- |
+   | STATUS (0) | sends a telemetry packet | sends another |
+   | PAUSE (1) | stops the motors (in Ready: cancels a pending START) | nothing more changes |
+   | RESUME (2) | resumes, if the IMU is healthy | `RESUME ignored: not paused` |
+   | START (5) | arms the robot | `START ignored: already started` |
+   | RESET_STATS (3), REVERSE (4) | not supported in `integrated`: logged, no effect | same |
+   | letter map | the newest valid map is applied | the same map changes nothing |
+
+4. **Order is kept, age is not checked.** Commands carry no sequence number
+   or timestamp, so the robot cannot tell an old command from a new one.
+   Senders must therefore not queue commands to send later: the dashboard and
+   `tools/` publish each command with its own `mosquitto_pub` call, which
+   fails instead of queueing when the broker is down. Never retain a command
+   or a map: a retained one would be applied again on every reconnect.
+5. **Commands already received are still applied.** Up to four can wait in
+   the command queue when the link drops; the control loop empties it every
+   cycle (milliseconds). A full queue drops and counts the extra commands
+   (`[S1:CMD] commands rx=..`, S1-U17).
+6. **A reboot forgets the map.** It is not retained or stored, so after any
+   reboot send the map again before START; until then the robot goes
+   straight at junctions (#72).
+
+Not tested: a link blip short enough that the robot's TCP connection
+survives. TCP would then deliver a command a few seconds late, in order, and
+the robot would apply it on arrival. S1-U20 covers a 30-40 s outage, where
+the connection does not survive.
+
 ## Mac testing without the Pico
 
 `tools/mqtt_binary.py` needs only Python's standard library. It converts binary

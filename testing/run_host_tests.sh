@@ -178,6 +178,7 @@ run_py s1/binary_cli          testing/subsystem1/test_binary.py
 # ---- Subsystem 2: motors, encoders, motion protocol ------------------------
 run_c  s2/motion_protocol     $STRICT -DS2_PROTOCOL_HOST_TEST=1 -I$S2 testing/subsystem2/motion_protocol_host_test.c
 run_c  s2/motor_pwm           $STRICT -Iinclude $INT/motor_pwm_host_test.c
+run_c  s2/loop_timing         $STRICT -I$S2 testing/subsystem2/loop_timing_host_test.c
 
 # ---- Subsystem 3: line following + barcode ---------------------------------
 run_c  s3/line_barcode        $STRICT -pedantic -DAPP_TEST=1 -DLINE_BARCODE_HOST_TEST $S3/line_barcode.c $S3/line_barcode_test.c

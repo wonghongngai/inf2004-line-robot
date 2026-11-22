@@ -27,7 +27,7 @@ The source documents are not in this repo. Each row gives the planned item, what
 | 2 | IMU collision detection removed and the lift-stop built (#53, 21 Nov); host-tested; S4-U12 passed on the robot 21 Nov | Mandated | #53 |
 | 3 | Obstacle detection distance is 20 cm, NFR5-1 requires at least 30 cm | Changed, decided 20 Nov: keep 20 cm | #64 (`DECISIONS.md`); S5-U40 in #31 |
 | 4 | All recent tuning lives in `all_test`; the `integrated` firmware (the Week 6 architecture) is untested on the robot | Changed | Decided 13 Nov: integrated is final (#4); port the tuning (#8) |
-| 5 | Task priorities inverted: Week 6 made S5 the highest, the code makes it the lowest (20) | Changed, decided 20 Nov: keep | #66 (`DECISIONS.md`); timing still to measure (#15, #19) |
+| 5 | Task priorities inverted: Week 6 made S5 the highest, the code makes it the lowest (20) | Changed, decided 20 Nov: keep | #66 (`DECISIONS.md`); S1-U17 PASS 22 Nov (#15), S2-U12 still to record (#19) |
 | 6 | No reverse motion, though WU requires `moveBackward` and the S5 planner can choose REVERSE | Missing | #39 |
 | 7 | No IMU motion classes or turn rate (FR4-3, FR4-4; still assessed) | Missing | #42, #43 |
 | 8 | Coarse scan uses 50/70/90/110/130 deg, FR5-1 specifies 30/60/90/120/150 deg | Changed, decided 20 Nov: FR5-1 updated | #65 (`DECISIONS.md`) |
@@ -52,7 +52,7 @@ The task structure still matches Week 6 (one task per buddy), but priorities, th
 
 | ID | Week 6 / PT plan | Current code | Type | Justification or follow-up |
 | --- | --- | --- | --- | --- |
-| A1 | W6 §3 priorities: S5 obstacle highest, S4 IMU high/highest, S2 motion high, S3 line high, S1 comms medium | T-Kernel priorities (lower = runs first): Wi-Fi service 4, S2 motion 14, all_test loop 15, S3 line 16, S4 IMU 18, S5 obstacle 20, so S5 is now the **lowest** | Changed | Decided 20 Nov: keep. S2 and S3 run on core 1, Wi-Fi on core 0; S4 timing unchanged with Wi-Fi off; S5 only requests moves (`DECISIONS.md` #66). Still to measure: S1-U17 (#15), S2-U12 (#19) |
+| A1 | W6 §3 priorities: S5 obstacle highest, S4 IMU high/highest, S2 motion high, S3 line high, S1 comms medium | T-Kernel priorities (lower = runs first): Wi-Fi service 4, S2 motion 14, all_test loop 15, S3 line 16, S4 IMU 18, S5 obstacle 20, so S5 is now the **lowest** | Changed | Decided 20 Nov: keep. S2 and S3 run on core 1, Wi-Fi on core 0; S4 timing unchanged with Wi-Fi off; S5 only requests moves (`DECISIONS.md` #66). S1-U17 measured 22 Nov: no late control steps under a command flood (#15). Still to record: S2-U12 (#19) |
 | A2 | W6 diagram showed a Vehicle Controller and Safety Monitor as tasks; PT: keep the VC as a function in an existing task | VC runs inside `motion_task` (priority 14, core 1) in the integrated build | Changed (agreed at PT) | Closed; Safety Monitor never built as a separate entity |
 | A3 | W6 §4 objects: `line_nav_q`, `imu_data_q`, `obstacle_q`, `motion_cmd_q`, `motion_status_q`, `telemetry_q`, `cmd_q`, one `robot_events` event group | S3 message buffer + snapshot API; S4 snapshot under a mutex (`subsystem4_get_latest`), no queue; S5 packed 32-bit request word + `flg_s5_evt` (IF-10/IF-11), no `obstacle_q`; `mbf_motion_cmd` + STOP flag; motion status read through a getter; no shared event group | Changed | Interfaces are listed as IF-05 to IF-11 in `TEAM.md`, but sections 1 and 2 are still template rows (#10) |
 | A4 | W6: one integrated system coordinated by the VC | 7 firmware modes. All tuning since about 4 Nov (turns, straight driving, avoidance) is in `all_test`, which skips the subsystem start-up path and replaces the VC with its own control loop. `integrated` UF2 last built 8 Nov and never tested on the robot | Changed | Decided 13 Nov (#4, closed): integrated is final. Port the tuning (#8) |
@@ -67,13 +67,13 @@ The communication stack is built as designed, but none of FR1 or NFR1 has been t
 
 | ID | Requirement (source) | Current code | Type | Follow-up |
 | --- | --- | --- | --- | --- |
-| B1-1 | FR1-1 Wi-Fi + MQTT connection (W6) | CYW43 + lwIP + MQTT through the kernel Wi-Fi service; PT noted connectivity "not yet tested" | Unverified | #15 (S1-U11, S1-U12) |
+| B1-1 | FR1-1 Wi-Fi + MQTT connection (W6) | CYW43 + lwIP + MQTT through the kernel Wi-Fi service; PT noted connectivity "not yet tested" | Verified 22 Nov | #15: S1-U11 5/5 joins in ~4.1 s (22 Nov), S1-U12 PASS (21 Nov) |
 | B1-2 | FR1-2 publish telemetry; WU p5 examples include obstacle scan results, encoder counts, motor speed | 15-byte packet, 1 s period, published by both `all_test` and `integrated` (VC, #72, 21 Nov; host-tested). Obstacle distance, scan angle and width fields are still 0; no encoder counts | Partial | #40, #41 |
 | B1-3 | FR1-3 receive commands (W6) | The integrated VC handles STATUS, PAUSE, RESUME and START and applies the MQTT letter map (#72, #48, 21 Nov; host-tested, not yet on the robot). RESET_STATS and REVERSE are logged as unsupported | Partial | #38, #39 |
-| B1-4 | FR1-4 / NFR1-2 reconnect without restart (W6) | Recovery logic in `mqtt_manager.c`; never exercised | Unverified | #15 (S1-U13) |
-| B1-5 | FR1-5 periodic status (W6) | 1-byte heartbeat every 5 s (`MQTT_UTK_HEARTBEAT_MS`) | Unverified | #15 |
-| B1-6 | NFR1-3 telemetry must not disturb control; W6 gave comms **medium** priority | Wi-Fi service task priority 4, above motion (14) and line (16) | Changed, decided 20 Nov: keep | #66 (`DECISIONS.md`); measure control-loop lateness with Wi-Fi on (S1-U17, S2-U12) |
-| B1-7 | PT gap: define handling of commands during a connection loss | Not defined | Missing | #49 |
+| B1-4 | FR1-4 / NFR1-2 reconnect without restart (W6) | Recovery logic in `mqtt_manager.c` (MQTT retry every 3 s) and `cyw43_utk.c` (Wi-Fi rejoin) | Verified 22 Nov | #15: S1-U13 PASS on the robot, telemetry back 2.8 s after a broker restart and 3.1 s after the hotspot; needs PR #102 (S4 core pin, merged into `main` 22 Nov), without which the IMU fault stopped the robot during outages |
+| B1-5 | FR1-5 periodic status (W6) | 1-byte heartbeat every 2 s (`MQTT_UTK_HEARTBEAT_MS` = 2000; this row said 5 s until 22 Nov) | Unverified | #15 (seen on the broker during the 22 Nov runs, no saved log) |
+| B1-6 | NFR1-3 telemetry must not disturb control; W6 gave comms **medium** priority | Wi-Fi service task priority 4, above motion (14) and line (16) | Changed, decided 20 Nov: keep | #66 (`DECISIONS.md`). Measured 22 Nov (S1-U17 PASS): a 100-command flood left `ctrl late` at 0, and the same boot had 0 late control steps in 66 min with Wi-Fi on, through broker and hotspot outages. S2-U12 (#19) still to record |
+| B1-7 | PT gap: define handling of commands during a connection loss | Defined 22 Nov (`app_program/subsystem1/README.md`, `DECISIONS.md`): commands and maps sent while the robot is offline are dropped, never replayed (lwIP always connects with a clean session); every command is safe to repeat; senders check the heartbeat and never queue or retain commands | Verified 22 Nov | #49: S1-U20 PASS on the robot |
 | B1-8 | Barcode result events on `<id>/barcode` (`BARCODE_MQTT.md`) | The original code was lost; reimplemented 20 Nov on branch `s1/barcode-queue` (S1 queue, S3 hook, dashboard panel). Payload changed from JSON to a 4-byte binary packet so every topic follows protocol v1. Host tests pass; not yet run on the robot | Changed | #3 (closed), #16 |
 | B1-9 | WU deliverables: communication API, telemetry framework, MQTT documentation, telemetry demo | S1 README documents the packet layout and map topic; no demo evidence | Partial | #55 |
 
@@ -176,7 +176,7 @@ Each "Changed" row needs either a recorded justification for Tribunal 2 or a ret
 - [x] Final firmware: `integrated` (the Week 6 architecture) or `all_test` (A4, #4). Decided 13 Nov: integrated is final; all_test is a test harness only
 - [x] Obstacle detection at 20 cm or back to the required 30 cm (B5-2, #64). Decided 20 Nov: keep 20 cm, if S5-U40 shows a rest ≥ 10 cm away
 - [x] Update FR5-1 to the 50 to 130 deg scan, or restore 30 to 150 deg (B5-1, #65). Decided 20 Nov: FR5-1 updated to 50 to 130 deg
-- [x] Record why S5 is now the lowest-priority task and the Wi-Fi service the highest (A1, B1-6, #66). Decided 20 Nov: keep; loop-lateness timing still to measure
+- [x] Record why S5 is now the lowest-priority task and the Wi-Fi service the highest (A1, B1-6, #66). Decided 20 Nov: keep; loop lateness measured 22 Nov (S1-U17: 0 late), S2-U12 still to record
 - [x] Tilt: stop the robot, or report only as `TRIBUNAL_STATUS.md` says (B4-6, #67). Decided 20 Nov: report only
 - [x] Line loss: stop and wait, or actively search as in statechart 3 (B3-2, #68). Decided 20 Nov: stop and wait
 - [x] Hump height after the descent: keep the climb height or return to 0 (#5). Decided 20 Nov: keep the climb height

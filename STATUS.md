@@ -4,7 +4,7 @@
 What to test next, and how, is in [testing/TEST_PLAN.md](testing/TEST_PLAN.md).
 Where the code differs from the Week 6 / PreTri plan, and why, is in [DEVIATIONS.md](DEVIATIONS.md).
 Team decisions and their reasons are in [DECISIONS.md](DECISIONS.md) (latest: the M1 decisions, 20 Nov: #5, #6, #48, #54, #64–#68).
-Last updated: 2026-11-22, humps and the ultrasonic (#34 done; #36, #44 dropped; `DECISIONS.md`) · 2026-11-21, event-bit table checked against the code (#50, INT-14) · 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump test fixed) · subsystems 1, 2, 4 and 5 test results (`chore/m0-housekeeping` from `65ba452`; #14, #17, #24, #28) · subsystem 3 rows 2026-11-19 (`cc239d5`) · other sections as of 2026-11-13 (`double11` @ `1d78677`)
+Last updated: 2026-11-22, S1 bench tests on the robot (#15: S1-U11, U13, U17, U20 for #49) · 2026-11-22, humps and the ultrasonic (#34 done; #36, #44 dropped; `DECISIONS.md`) · 2026-11-21, event-bit table checked against the code (#50, INT-14) · 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump test fixed) · subsystems 1, 2, 4 and 5 test results (`chore/m0-housekeeping` from `65ba452`; #14, #17, #24, #28) · subsystem 3 rows 2026-11-19 (`cc239d5`) · other sections as of 2026-11-13 (`double11` @ `1d78677`)
 
 ## Rules
 
@@ -38,9 +38,11 @@ Last updated: 2026-11-22, humps and the ultrasonic (#34 done; #36, #44 dropped; 
 
 | Feature | Code | Host/Unit | Bench HW | Integrated | Track tuned | Evidence | Next action |
 |---|---|---|---|---|---|---|---|
-| 15-byte telemetry packing (CR1) | ✅ | ✅ host `s1/protocol`; Pico S1-U01–U04 (U01 fixed and re-run 20 Nov) | ⬜ | ⬜ | — | `testing/subsystem1/logs/2026-11-20_host.txt`, `testing/subsystem4/logs/2026-11-20_target_test.txt` | S1-U12: decode real packets on the PC (#15) |
+| 15-byte telemetry packing (CR1) | ✅ | ✅ host `s1/protocol`; Pico S1-U01–U04 (U01 fixed and re-run 20 Nov) | ✅ 21 Nov | ✅ 21 Nov | — | `testing/subsystem1/logs/2026-11-20_host.txt`, `testing/subsystem4/logs/2026-11-20_target_test.txt`; robot: `testing/integration/logs/2026-11-21_1944_robot_mqtt_test.txt` (S1-U12) | Done: S1-U12 PASS on the robot, 5 min of real packets decoded on the PC |
 | Command and map queues (STATUS, REVERSE, reserved bits, 3-byte barcode map) | ✅ | ✅ S1-U05–U10, U18 (Pico) | ✅ 21 Nov | ✅ 21 Nov | — | `testing/subsystem3/logs/2026-11-19_target_test.txt`; robot: `testing/integration/logs/2026-11-21_2129_robot_mqtt_test.txt` (S1-U14), `…_1944/1957/2001_robot_mqtt_test.txt` + `…_s1u15_drive_robot.txt` (S1-U15) | Done: S1-U14 PASS, S1-U15 PASS on the robot (#15, #38) |
-| MQTT connect + reconnect after AP or broker loss | 🟡 | ⬜ | ⬜ | ⬜ | ⬜ | — | Define S1-U tests (connect, publish rate, reconnect time); run on the bench with a broker and save logs |
+| MQTT connect + reconnect after AP or broker loss | ✅ | — | ✅ 22 Nov | ✅ 22 Nov | ⬜ | `testing/subsystem1/logs/2026-11-22_S1-U11_wifi_join.txt` (S1-U11), `testing/integration/logs/2026-11-22_1458_robot_mqtt_test.txt` + `testing/subsystem1/logs/2026-11-22_S1-U13_U20_run5.txt` (S1-U13) | Done (#15): S1-U11 joins 5/5 in ~4.1 s; S1-U13 telemetry back 2.8 s after a broker restart and 3.1 s after the hotspot, wheels unaffected. Runs 1-4 failed on the S4 stuck-core fault, fixed by PR #102 (merged into `main` 22 Nov) |
+| Command flood does not starve control (NFR1-3) | ✅ | ✅ `s1/barcode_queue` (command counters), `s2/loop_timing` | ✅ 22 Nov | ✅ 22 Nov | — | `testing/integration/logs/2026-11-22_1602_robot_mqtt_test.txt`, `testing/subsystem1/logs/2026-11-22_S1-U17_flood.txt` (S1-U17) | Done (#15): 100 commands in 1.6 s, `ctrl late` stayed 0, 13 dropped and counted, never blocking. Same boot: 0 late control steps in 66 min with Wi-Fi on |
+| Commands across a reconnect (#49) | ✅ | — | ✅ 22 Nov | ✅ 22 Nov | — | `testing/integration/logs/2026-11-22_1458_robot_mqtt_test.txt` (S1-U20) | Done (#49): behaviour written down in `app_program/subsystem1/README.md` and `DECISIONS.md`; S1-U20 PASS: a command sent while offline is never applied (clean MQTT session), repeats are harmless |
 | Telemetry publish (state, speed, hump, obstacle…) | 🟡 obstacle distance / angle / width sent from S5's last scan (IF-14, #40); battery still 0 | ✅ INT-03 host + S5-U39 on the Pico (22 Nov) | ✅ S5-U40 (22 Nov): dashboard matched the console | ✅ same run, `integrated` | ⬜ | `testing/integration/logs/2026-11-22_obstacle_telemetry_after_main_host.txt`, `testing/subsystem5/logs/2026-11-22_124815_S5_obstacle_telemetry.txt`, `testing/subsystem5/logs/2026-11-22_s5u39_target_test.txt` | Check every other field decodes correctly on the subscriber side; record the publish rate |
 | Barcode result events (`<id>/barcode`, QoS 1) | 🟡 | ❌ `s1/barcode_queue` does not compile: code not pushed (#3) | ⬜ | ⬜ | ⬜ | `testing/subsystem1/logs/2026-11-20_host.txt`, `testing/subsystem1/BARCODE_MQTT.md` | Run `barcode_queue_test.c` and log the result; then do a bench test with a real broker |
 | Letter-to-movement map received over MQTT and **applied** | ✅ | ✅ INT-03 (integrated, simulated) | ⬜ | ⬜ | ⬜ | No built-in map in either build; straight until a map arrives; telemetry bit 86 + dashboard "Letter map" (21 Nov, `testing/integration/logs/2026-11-21_map_flag_host.txt`) | On the robot: S1-U15 and S3-U27. No A–Z print test (decided 21 Nov, `DECISIONS.md`): use large prints |
@@ -128,7 +130,7 @@ Last updated: 2026-11-22, humps and the ultrasonic (#34 done; #36, #44 dropped; 
    `motion_control.c` / `task_motion.c` and host-tested (#8, 21 Nov), with
    the numbers in `subsystem2.h` for both builds. Next: flash `integrated`
    and log a track run.
-2. **MQTT**: write the S1 tests and get a bench run with a real broker.
+2. **MQTT**: done 22 Nov on the robot (S1-U11 to U17, U20; #15, #49). PR #102 (S4), which the reconnect results need, merged into `main` 22 Nov.
 3. **Barcode**: test all four commands at driving speed.
 4. **S4 thresholds** from real hump logs.
 5. Re-run the failed S5 tests (S5-U02, S5-U06).

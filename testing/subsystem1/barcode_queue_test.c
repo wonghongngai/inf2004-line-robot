@@ -54,4 +54,27 @@ int main(void)
     result.runs = 29; result.letter = '?';
     assert(subsystem1_publish_barcode(&result) == E_PAR);
     puts("PASS: valid/invalid barcode events, dedicated queue, full queue and invalid arguments");
+
+    /* S1-U17 command counters: every message counted once, a full queue
+     * drops without blocking, and only a burst per window may log. */
+    S1_COMMAND_STATS stats;
+    const unsigned char status = S1_COMMAND_STATUS, reserved = S1_COMMAND_MAX + 1u;
+    fail_send = 0;
+    for (int i = 0; i < 10; ++i) s1_deliver_command(&status, S1_COMMAND_BYTES);
+    s1_deliver_command(&reserved, S1_COMMAND_BYTES);
+    s1_deliver_command(&status, 0u);
+    s1_deliver_command(&status, 2u);
+    fail_send = 1;
+    for (int i = 0; i < 87; ++i) s1_deliver_command(&status, S1_COMMAND_BYTES);
+    s1_deliver_command(NULL, S1_COMMAND_BYTES);   /* not a message: not counted */
+    s1_command_stats_get(&stats);
+    assert(stats.received == 100u && stats.queued == 10u);
+    assert(stats.invalid == 3u && stats.dropped == 87u);
+    assert(stats.received == stats.queued + stats.invalid + stats.dropped);
+    int logged = 0;
+    for (int i = 0; i < 100; ++i) logged += s1_command_log_ok();
+    assert(logged == (int)S1_COMMAND_LOG_BURST);
+    s1_command_stats_report();
+    assert(s1_command_log_ok() == 1);              /* new window */
+    puts("PASS: command flood counted (100 = 10 queued + 3 invalid + 87 dropped), log burst limited");
 }
