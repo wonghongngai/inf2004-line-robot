@@ -71,6 +71,7 @@ something that hasn't passed on the bench (L3).
 | S1-U15 | Letter-to-movement map sent from the PC over MQTT: valid, duplicate letters, reserved bits set | L3 | Publish 3 maps to `<id>/mapping` from the PC, then drive over a mapped barcode and junction (`tools/robot_mqtt_test.py --only S1-U15` guides this) | valid map **applied** (robot does the mapped move), both invalid rejected, old map kept (#38; pairs with S3-U27) |
 | S1-U16 | Barcode result events (`<id>/barcode`) | L4 | After the code is pushed: 20 barcodes on the track | 20/20 events arrive, frame IDs in order |
 | S1-U17 | Command flood does not starve control | L2/L3 | Send 100 commands in 1 s while following: `tools/robot_mqtt_test.py --only S1-U17`. Read `[S2:MOTION] ctrl late=` before and after, and `[S1:CMD] commands rx=` | control loop shows no late cycles; extra commands rejected and counted, never blocking |
+| S1-U20 | Commands across a reconnect: sent while offline, delayed, duplicated (#49) | L3 | Run with S1-U13 (`tools/robot_mqtt_test.py --only S1-U13`): during the hotspot outage it publishes PAUSE to the broker on the laptop; after the reconnect it sends PAUSE x2, RESUME x2 and START while armed | the PAUSE sent while offline is never applied (the robot keeps following after the reconnect); duplicates give one state change; START while armed is ignored |
 
 **Done when:** U01–U17 pass, and telemetry runs through a full system run (SYS-05).
 

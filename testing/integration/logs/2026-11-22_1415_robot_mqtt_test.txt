@@ -1,0 +1,32 @@
+14:15:05.316  robot_mqtt_test.py broker=172.20.10.2:1883 client=group17-robot
+14:15:05.361  repo commit 9564a72 (record the firmware's commit in TEST_LOG)
+14:15:05.368  == S1-U13 reconnect: broker and hotspot off for 30 s each ==
+14:15:37.752  OPERATOR: done: Robot STARTed and following (or wheels raised and turning), serial console captured.
+14:15:39.916  OPERATOR asked: Stop the broker now (Ctrl-C the mosquitto window).
+14:15:52.924  broker: broker unreachable (outage started)
+14:15:52.924  waiting 30 s (broker outage)
+14:16:22.926  OPERATOR asked: Start the broker again.
+14:16:29.457  broker: broker reachable again after 36.5 s off; timing telemetry from here
+14:16:32.152  broker: telemetry back 2.7 s after the broker was reachable (state=FOLLOWING speed=12 line=000 letter=0 map=0)
+14:16:32.172  OPERATOR asked: Turn the hotspot (AP) off now.
+14:16:56.460  hotspot: broker unreachable (outage started)
+14:16:56.462  waiting 5 s (hotspot outage, before the offline step)
+14:17:01.490  S1-U20: PAUSE published via 127.0.0.1 while the robot is offline
+14:17:01.490  waiting 25 s (hotspot outage)
+14:17:26.490  OPERATOR asked: Turn the hotspot back on.
+14:17:26.505  hotspot: broker reachable again after 30.0 s off; timing telemetry from here
+14:17:30.585  hotspot: telemetry back 4.1 s after the broker was reachable (state=FOLLOWING speed=12 line=000 letter=0 map=0)
+14:17:30.586  == S1-U20 commands across a reconnect (#49) ==
+14:17:40.786  after the reconnect: 14 packets in 10 s, states=['FOLLOWING']
+14:17:40.786  offline PAUSE never applied
+14:17:43.537  PAUSE x2 -> IDLE and stayed IDLE
+14:17:46.314  RESUME x2 -> driving and stayed driving
+14:17:48.534  START while armed -> still driving
+14:19:19.567  OPERATOR: Did the console print 'START ignored: already started' once, and no PAUSE being applied right after the reconnect? -> yes
+14:19:19.567  S1-U20 PASS (expect the offline PAUSE never applied, duplicates harmless, START while armed ignored)
+14:19:19.567  Firmware times: compare the 'wifi: link up ... t=' and '[S1:MQTT] connected ... t=' lines in the console with the moment each outage ended.
+14:19:43.795  OPERATOR: Did the wheels keep turning (or the robot keep following) through both outages? -> no
+14:19:43.795  S1-U13 FAIL (expect telemetry back within 10 s of each restart; Wi-Fi loss must not stop driving)
+
+14:19:43.795  SUMMARY: S1-U13 FAIL, S1-U20 PASS
+14:19:43.796  log saved to C:\Users\Hong Ngai\Desktop\Y2S1\INF2004 Embedded Systems Programming\Project\inf2004-line-robot\testing\integration\logs\2026-11-22_1415_robot_mqtt_test.txt

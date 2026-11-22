@@ -19,6 +19,10 @@ testing/TEST_PLAN.md):
           unaffected (operator). Run it on the laptop that hosts the broker:
           the start and end of each outage are detected by polling the
           broker's TCP port, so no Enter press is timed
+  S1-U20  runs inside S1-U13's hotspot case (#49): a PAUSE published while the
+          robot is off the network must never be applied after it reconnects;
+          then PAUSE x2 / RESUME x2 give one state change each and START while
+          armed is ignored. Recorded as its own result
   S1-U15  maps with duplicate letters and a reserved bit are rejected
           (map flag stays 0 after a reboot), a valid map is applied (flag 1),
           then the robot turns as mapped at a junction (operator)
@@ -122,8 +126,8 @@ class Telemetry:
         self.process.terminate()
 
 
-def publish(args, topic, payload):
-    subprocess.run(["mosquitto_pub", "-h", args.broker, "-p", str(args.port), "-q", "1",
+def publish(args, topic, payload, host=None):
+    subprocess.run(["mosquitto_pub", "-h", host or args.broker, "-p", str(args.port), "-q", "1",
                     "-t", f"{args.client_id}/{topic}", "-s"],
                    input=payload, check=True, timeout=5)
 
@@ -146,14 +150,21 @@ def pause_for(log, instruction):
     log(f"OPERATOR: done: {instruction}")
 
 
-def wait_with_countdown(log, seconds, what):
+def wait_with_countdown(log, seconds, what, watch=None):
+    """Count down; with watch, poll it every 0.25 s and stop early if it turns
+    true. Returns the time.monotonic() it turned true, or None."""
     log(f"waiting {seconds:.0f} s ({what})")
     end = time.monotonic() + seconds
+    early = None
     while time.monotonic() < end:
         left = end - time.monotonic()
         print(f"\r  {left:4.0f} s left ", end="", flush=True)
-        time.sleep(min(1.0, max(left, 0.0)))
+        if watch is not None and watch():
+            early = time.monotonic()
+            break
+        time.sleep(min(0.25 if watch else 1.0, max(left, 0.0)))
     print("\r" + " " * 20 + "\r", end="", flush=True)
+    return early
 
 
 def describe(data):
@@ -239,46 +250,87 @@ def broker_reachable(args):
         return False
 
 
-def poll_broker(args, want, limit):
-    """Poll every 0.1 s until broker_reachable() == want; return that moment
+def poll_until(up, want, limit):
+    """Poll every 0.1 s until up() == want; return that moment
     (time.monotonic()) or None after limit seconds."""
     deadline = time.monotonic() + limit
     while time.monotonic() < deadline:
-        if broker_reachable(args) == want:
+        if up() == want:
             return time.monotonic()
         time.sleep(0.1)
     return None
 
 
-def outage_case(args, log, telemetry, name, stop, start):
+def laptop_ssid():
+    """SSID this laptop's Wi-Fi is connected to (Windows netsh), or None when
+    disconnected; raises OSError where netsh is not available."""
+    out = subprocess.run(["netsh", "wlan", "show", "interfaces"], capture_output=True,
+                         timeout=5).stdout.decode("utf-8", errors="replace")  # netsh writes the SSID as UTF-8
+    state = ssid = None
+    for line in out.splitlines():
+        key, sep, value = line.partition(":")
+        if not sep:
+            continue
+        key = key.strip()
+        if key == "State":
+            state = value.strip()
+        elif key == "SSID":
+            ssid = value.strip()
+    return ssid if state == "connected" else None
+
+
+def outage_case(args, log, telemetry, name, stop, start, during=None, up=None, what=None):
     """One S1-U13 case: telemetry flowing, outage, time until it is back.
 
-    The outage start and end are both detected by polling the broker's TCP
-    port, not by the operator pressing Enter. The broker runs on the laptop
-    at --broker, so this also works for the hotspot: that address only
-    answers again once the laptop is back on the hotspot, the same network
-    the robot needs. Recovery is timed from that moment."""
+    The outage start and end are detected by polling up() (default: the
+    broker's TCP port), not by the operator pressing Enter. Recovery is
+    timed from the moment up() is true again."""
+    if up is None:
+        up = lambda: broker_reachable(args)  # noqa: E731
+        what = what or f"broker {args.broker}:{args.port}"
     telemetry.drain()
     if telemetry.wait_for(lambda d: True, 5.0) is None:
         log(f"{name}: FAIL, no telemetry before the outage (check the setup)")
         return False
     print(f"  >> {stop} (detected automatically)", flush=True)
     log(f"OPERATOR asked: {stop}")
-    down = poll_broker(args, False, args.react_wait)
+    down = poll_until(up, False, args.react_wait)
     if down is None:
-        log(f"{name}: FAIL, broker {args.broker}:{args.port} still reachable after "
-            f"{args.react_wait:.0f} s; the outage never started")
+        log(f"{name}: FAIL, {what} still up after {args.react_wait:.0f} s; "
+            f"the outage never started")
         return False
-    log(f"{name}: broker unreachable (outage started)")
-    wait_with_countdown(log, args.outage, f"{name} outage")
-    print(f"  >> {start} (detected automatically)", flush=True)
-    log(f"OPERATOR asked: {start}")
-    back = poll_broker(args, True, args.react_wait)
-    if back is None:
-        log(f"{name}: FAIL, broker not reachable again within {args.react_wait:.0f} s "
-            f"of asking; nothing to time")
-        return False
-    log(f"{name}: broker reachable again after {back - down:.1f} s off; timing telemetry from here")
+    log(f"{name}: {what} down (outage started)")
+    # Keep polling during the countdown: if the broker or hotspot comes back
+    # early (run 3, 22 Nov: the laptop rejoined 13 s before the prompt), time
+    # the recovery from that moment, not from the end of the countdown.
+    reachable = up
+
+    early = None
+    if during is not None:
+        # Give the robot a few seconds to lose the link before acting.
+        early = wait_with_countdown(log, min(5.0, args.outage),
+                                    f"{name} outage, before the offline step", watch=reachable)
+        if early is None:
+            during()
+            early = wait_with_countdown(log, max(args.outage - 5.0, 0.0), f"{name} outage",
+                                        watch=reachable)
+        else:
+            log(f"{name}: back before the offline step; it was skipped")
+    else:
+        early = wait_with_countdown(log, args.outage, f"{name} outage", watch=reachable)
+    if early is not None:
+        back = early
+        log(f"{name}: WARN back after only {back - down:.1f} s, before the {args.outage:.0f} s "
+            f"outage ended (restored too early?); timing from then")
+    else:
+        print(f"  >> {start} (detected automatically)", flush=True)
+        log(f"OPERATOR asked: {start}")
+        back = poll_until(up, True, args.react_wait)
+        if back is None:
+            log(f"{name}: FAIL, {what} not up again within {args.react_wait:.0f} s "
+                f"of asking; nothing to time")
+            return False
+    log(f"{name}: {what} up again after {back - down:.1f} s off; timing telemetry from here")
     # The subscriber lost the broker too; resubscribe until telemetry arrives.
     got = None
     deadline = back + args.recover_wait
@@ -287,10 +339,10 @@ def outage_case(args, log, telemetry, name, stop, start):
         telemetry.drain()
         got = telemetry.wait_for(lambda d: True, min(2.0, max(deadline - time.monotonic(), 0.1)))
     if got is None:
-        log(f"{name}: no telemetry within {args.recover_wait:.0f} s of the broker being back")
+        log(f"{name}: no telemetry within {args.recover_wait:.0f} s of {what} being back")
         return False
     recovered = got[0] - back
-    log(f"{name}: telemetry back {recovered:.1f} s after the broker was reachable "
+    log(f"{name}: telemetry back {recovered:.1f} s after {what} was back "
         f"({describe(got[1])})")
     return recovered <= 10.0
 
@@ -301,15 +353,122 @@ def test_s1_u13(args, log, telemetry):
     broker = outage_case(args, log, telemetry, "broker",
                          "Stop the broker now (Ctrl-C the mosquitto window).",
                          "Start the broker again.")
+    offline_sent = []
+
+    def offline_pause():
+        # The laptop is off the hotspot too, so reach its broker over loopback.
+        try:
+            command_at(args, "pause", args.local_broker)
+            offline_sent.append(time.monotonic())
+            log(f"S1-U20: PAUSE published via {args.local_broker} while the robot is offline")
+        except (subprocess.SubprocessError, OSError) as error:
+            log(f"S1-U20: could not publish the offline PAUSE ({error})")
+
+    # Hotspot: Windows keeps the laptop's address for a while after it leaves
+    # the hotspot (run 4, 22 Nov: 2 min), so the broker keeps answering over
+    # loopback. Use the laptop's own Wi-Fi state instead: up = connected to
+    # the hotspot it is on now, and the broker answers.
+    try:
+        hotspot_ssid = laptop_ssid()
+    except (OSError, subprocess.SubprocessError):
+        hotspot_ssid = None
+    if hotspot_ssid:
+        log(f"hotspot: watching this laptop's Wi-Fi (SSID {hotspot_ssid!r}) for the outage")
+
+        def hotspot_up():
+            try:
+                return laptop_ssid() == hotspot_ssid and broker_reachable(args)
+            except (OSError, subprocess.SubprocessError):
+                return False
+        hotspot_what = f"laptop on {hotspot_ssid!r}"
+    else:
+        log("hotspot: WARN cannot read this laptop's Wi-Fi state (netsh); falling back to "
+            "the broker port, which can miss the outage")
+        hotspot_up = hotspot_what = None
     hotspot = outage_case(args, log, telemetry, "hotspot",
                           "Turn the hotspot (AP) off now.",
-                          "Turn the hotspot back on.")
+                          "Turn the hotspot back on.", during=offline_pause,
+                          up=hotspot_up, what=hotspot_what)
+    args.extra_results["S1-U20"] = test_s1_u20(args, log, telemetry, hotspot, bool(offline_sent))
     log("Firmware times: compare the 'wifi: link up ... t=' and '[S1:MQTT] connected ... t=' "
         "lines in the console with the moment each outage ended.")
     wheels = ask(log, "Did the wheels keep turning (or the robot keep following) through both outages?")
     ok = broker and hotspot and wheels
     log(f"S1-U13 {'PASS' if ok else 'FAIL'} (expect telemetry back within 10 s of each restart; "
         f"Wi-Fi loss must not stop driving)")
+    return ok
+
+
+def command_at(args, name, host):
+    publish(args, "command", bytes([COMMANDS[name]]), host=host)
+
+
+def states_for(telemetry, seconds):
+    """Telemetry states seen in the next `seconds` (valid packets only)."""
+    end = time.monotonic() + seconds
+    states = []
+    while time.monotonic() < end:
+        try:
+            _, _, data, error = telemetry.packets.get(timeout=0.5)
+        except queue.Empty:
+            continue
+        if error is None:
+            states.append(data["state"])
+    return states
+
+
+DRIVING = (1, 2, 4, 5)
+
+
+def test_s1_u20(args, log, telemetry, reconnected, offline_sent):
+    """#49: commands sent while offline, then duplicates, after a reconnect."""
+    log("== S1-U20 commands across a reconnect (#49) ==")
+    if not offline_sent:
+        log("S1-U20 FAIL: the offline PAUSE was never published (nothing to check)")
+        return False
+    if not reconnected:
+        log("S1-U20 FAIL (inconclusive): no telemetry after the reconnect, so the "
+            "robot's state cannot be read")
+        return False
+
+    # 1. The PAUSE sent while offline must not arrive late.
+    states = states_for(telemetry, args.stale_watch)
+    paused = [s for s in states if s == 0]
+    log(f"after the reconnect: {len(states)} packets in {args.stale_watch:.0f} s, "
+        f"states={sorted({STATES[s] for s in states}) or 'none'}")
+    stale_ok = bool(states) and not paused
+    log(f"offline PAUSE {'never applied' if stale_ok else 'APPLIED LATE or no telemetry'}")
+
+    # 2. PAUSE twice: paused once, and stays paused.
+    telemetry.drain()
+    command(args, "pause")
+    command(args, "pause")
+    command(args, "status")
+    got = telemetry.wait_for(lambda d: d["state"] == 0, args.timeout)
+    held = got is not None and all(s == 0 for s in states_for(telemetry, 2.0))
+    log(f"PAUSE x2 -> {'IDLE and stayed IDLE' if held else 'not paused, or did not stay paused'}")
+
+    # 3. RESUME twice: following again.
+    telemetry.drain()
+    command(args, "resume")
+    command(args, "resume")
+    command(args, "status")
+    got = telemetry.wait_for(lambda d: d["state"] in DRIVING, args.timeout)
+    resumed = got is not None and all(s in DRIVING for s in states_for(telemetry, 2.0))
+    log(f"RESUME x2 -> {'driving and stayed driving' if resumed else 'not resumed, or stopped again'}")
+
+    # 4. START while armed: ignored, keeps driving.
+    telemetry.drain()
+    command(args, "start")
+    command(args, "status")
+    states = states_for(telemetry, 2.0)
+    start_kept = bool(states) and all(s in DRIVING for s in states)
+    log(f"START while armed -> {'still driving' if start_kept else 'state changed or no telemetry'}")
+    console = ask(log, "Did the console print 'START ignored: already started' once, and no "
+                       "PAUSE being applied right after the reconnect?")
+    ok = stale_ok and held and resumed and start_kept and console
+    log(f"S1-U20 {'PASS' if ok else 'FAIL'} (expect the offline PAUSE never applied, duplicates "
+        f"harmless, START while armed ignored)")
     return ok
 
 
@@ -426,6 +585,11 @@ def main():
     parser.add_argument("--react-wait", type=float, default=180.0,
                         help="S1-U13 seconds to wait for the operator to stop or restore "
                              "the broker or hotspot")
+    parser.add_argument("--local-broker", default="127.0.0.1",
+                        help="S1-U20 address of the same broker that still works with the "
+                             "hotspot off (the broker must run on this laptop)")
+    parser.add_argument("--stale-watch", type=float, default=10.0,
+                        help="S1-U20 seconds to watch for a late PAUSE after the reconnect")
     parser.add_argument("--flood", type=int, default=100, help="S1-U17 commands in about 1 s")
     parser.add_argument("--map", default="FAZW",
                         help="valid map for S1-U15 as LRSU letters (default FAZW: A turns right)")
@@ -447,11 +611,14 @@ def main():
     log(f"repo commit {commit or 'unknown'} (record the firmware's commit in TEST_LOG)")
     telemetry = Telemetry(args)
     results = {}
+    args.extra_results = {}   # results a test records for another ID (S1-U13 -> S1-U20)
     try:
         tests = args.only or list(TESTS)
         for name, test in TESTS.items():
             if name in tests:
                 results[name] = test(args, log, telemetry)
+                results.update(args.extra_results)
+                args.extra_results.clear()
                 log()
     except KeyboardInterrupt:
         log("interrupted")

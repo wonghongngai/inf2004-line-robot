@@ -1,0 +1,10 @@
+13:52:41.219  robot_mqtt_test.py broker=172.20.10.2:1883 client=group17-robot
+13:52:41.262  repo commit 01b180d (record the firmware's commit in TEST_LOG)
+13:52:41.271  == S1-U13 reconnect: broker and hotspot off for 30 s each ==
+13:53:50.054  OPERATOR: done: Robot STARTed and following (or wheels raised and turning), serial console captured.
+13:53:55.068  broker: FAIL, no telemetry before the outage (check the setup)
+13:54:00.073  hotspot: FAIL, no telemetry before the outage (check the setup)
+13:54:00.073  Firmware times: compare the 'wifi: link up ... t=' and '[S1:MQTT] connected ... t=' lines in the console with the moment each outage ended.
+13:56:26.998  interrupted
+13:56:26.999  SUMMARY: no test completed
+13:56:26.999  log saved to C:\Users\Hong Ngai\Desktop\Y2S1\INF2004 Embedded Systems Programming\Project\inf2004-line-robot\testing\integration\logs\2026-11-22_1352_robot_mqtt_test.txt
