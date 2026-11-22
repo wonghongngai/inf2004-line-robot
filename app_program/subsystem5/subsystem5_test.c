@@ -604,6 +604,79 @@ EXPORT void subsystem5_test(void)
                    "flagged not seen");
     }
 
+    /* S5-U39: obstacle telemetry word (#40) */
+    {
+        obstacle_profile_t profile = {0};
+        S5_OBSTACLE_INFO   info    = {7U, 7U, 7U};
+        S5_OBSTACLE_INFO   out     = {0U, 0U, 0U};
+
+        TEST_CHECK("S5-U39",
+                   ((!s5_obstacle_from_profile(&profile, &info)) &&
+                    (7U == info.distance_cm) && (7U == info.angle_deg) &&
+                    (7U == info.width_cm)),
+                   "invalid profile (nothing found) leaves the result as it "
+                   "was");
+
+        profile.b_valid     = TRUE;
+        profile.closest_mm  = 294U;
+        profile.closest_deg = 85U;
+        profile.width_mm    = 215U;
+        TEST_CHECK("S5-U39",
+                   (s5_obstacle_from_profile(&profile, &info) &&
+                    (29U == info.distance_cm) && (85U == info.angle_deg) &&
+                    (22U == info.width_cm)),
+                   "294 mm -> 29 cm, 215 mm -> 22 cm (rounded), angle kept");
+
+        profile.closest_mm  = 9999U;
+        profile.closest_deg = 200U;
+        profile.width_mm    = 4005U;
+        TEST_CHECK("S5-U39",
+                   (s5_obstacle_from_profile(&profile, &info) &&
+                    (S5_OBS_DISTANCE_MAX_CM == info.distance_cm) &&
+                    (S5_OBS_ANGLE_MAX_DEG == info.angle_deg) &&
+                    (S5_OBS_WIDTH_MAX_CM == info.width_cm)),
+                   "over-range values clamp to 400 cm / 180 deg / 400 cm");
+
+        info.distance_cm = 29U;
+        info.angle_deg   = 85U;
+        info.width_cm    = 22U;
+        TEST_CHECK("S5-U39",
+                   (s5_obstacle_unpack(s5_obstacle_pack(&info), &out) &&
+                    (29U == out.distance_cm) && (85U == out.angle_deg) &&
+                    (22U == out.width_cm)),
+                   "pack + unpack round trip");
+
+        info.distance_cm = 400U;
+        info.angle_deg   = 180U;
+        info.width_cm    = 400U;
+        TEST_CHECK("S5-U39",
+                   (s5_obstacle_unpack(s5_obstacle_pack(&info), &out) &&
+                    (400U == out.distance_cm) && (180U == out.angle_deg) &&
+                    (400U == out.width_cm)),
+                   "maximum values round trip");
+
+        info.distance_cm = 999U;
+        TEST_CHECK("S5-U39",
+                   (s5_obstacle_unpack(s5_obstacle_pack(&info), &out) &&
+                    (400U == out.distance_cm)),
+                   "pack clamps an out-of-range distance");
+
+        TEST_CHECK("S5-U39",
+                   ((0U == s5_obstacle_pack(NULL)) &&
+                    s5_obstacle_unpack(0U, &out) && (0U == out.distance_cm) &&
+                    (0U == out.angle_deg) && (0U == out.width_cm)),
+                   "NULL packs to 0; 0 unpacks to 'no obstacle yet'");
+
+        TEST_CHECK("S5-U39",
+                   ((!s5_obstacle_unpack(1UL << 26U, &out)) &&
+                    (0U == out.distance_cm) &&
+                    (!s5_obstacle_unpack(401UL, &out)) &&
+                    (!s5_obstacle_unpack(181UL << 9U, &out)) &&
+                    (!s5_obstacle_unpack(401UL << 17U, &out)) &&
+                    (!s5_obstacle_unpack(0U, NULL))),
+                   "rejects unused bits, out-of-range fields and NULL");
+    }
+
     TEST_SUMMARY("subsystem5");
 }
 

@@ -52,6 +52,33 @@ EXPORT ER subsystem5_get_request(S5_REQUEST * p_req)
     return s5_request_unpack(g_s5_request, p_req) ? E_OK : E_PAR;
 }
 
+/* ---- S5 -> telemetry: last obstacle scan (#40) ------------------------
+ * Same rule as the request word: only this task writes it, with one
+ * aligned 32-bit store, so the VC on the other core reads a whole scan. */
+static volatile UW g_s5_obstacle = 0U; /* no obstacle scanned yet */
+
+/* Read the last obstacle scan (called by the VC for telemetry) */
+EXPORT ER subsystem5_get_obstacle(S5_OBSTACLE_INFO * p_info)
+{
+    if (NULL == p_info)
+    {
+        return E_PAR;
+    }
+    return s5_obstacle_unpack(g_s5_obstacle, p_info) ? E_OK : E_PAR;
+}
+
+/* Keep a scan's result for telemetry; a scan that found nothing keeps the
+ * previous result, so a false alarm can't wipe a real one. */
+static void s5_publish_obstacle(const obstacle_profile_t * p_profile)
+{
+    S5_OBSTACLE_INFO info;
+
+    if (s5_obstacle_from_profile(p_profile, &info))
+    {
+        g_s5_obstacle = s5_obstacle_pack(&info); /* one store */
+    }
+}
+
 /* Publish a new request with the next sequence number */
 static void s5_post_line(UB kind, UB move, UW value, BOOL b_stop_on_line,
                          BOOL b_line_all)
@@ -836,6 +863,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 /* Retries = MAX_RETRIES: S2 can't reverse, so "blocked"
                  * means PLAN_STOP (NO PATH) at once */
                 scan_and_plan(MAX_RETRIES, &plan, &profile);
+                s5_publish_obstacle(&profile);
 
 #if !S5_HAS_VC
                 /* Bench behaviour: nobody to ask for moves, so just report

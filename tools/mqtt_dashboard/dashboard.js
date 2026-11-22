@@ -20,7 +20,6 @@ function render(snapshot) {
   const faultBits = data?.faults ?? 0;
   const hasFault = bit => Boolean(faultBits & (1 << bit));
   const measure = (value, unit) => value == null ? empty : `${value} ${unit}`;
-  const optionalMeasure = (value, unit) => simulated ? measure(value, unit) : "Not published";
 
   put("robot", simulated ? "Demo mode · Simulated robot" : snapshot.client_id);
   put("heartbeat", snapshot.heartbeat === null ? "Waiting / expired" : snapshot.heartbeat ? "Online" : "Offline");
@@ -60,9 +59,14 @@ function render(snapshot) {
       map == null ? "" : map ? "received" : "waiting";
   put("hump", data?.highest_hump_mm > 0 ? measure(data.highest_hump_mm, "mm") :
       hasFault(2) ? "Unreliable" : data ? "No measurement yet" : empty);
-  put("obstacle", optionalMeasure(data?.obstacle_cm, "cm"));
-  put("angle", optionalMeasure(data?.scan_deg, "°"));
-  put("width", optionalMeasure(data?.obstacle_width_cm, "cm"));
+  /* #40: S5's last obstacle scan. All 0 until a scan finds an obstacle
+     (distance is never 0 for a real one: the sensor's minimum is 2 cm). */
+  const scanned = data?.obstacle_cm > 0;
+  const obstacleMeasure = (value, unit) => simulated ? measure(value, unit) :
+      !data ? empty : scanned ? measure(value, unit) : "No obstacle yet";
+  put("obstacle", obstacleMeasure(data?.obstacle_cm, "cm"));
+  put("angle", obstacleMeasure(data?.scan_deg, "°"));
+  put("width", obstacleMeasure(data?.obstacle_width_cm, "cm"));
 }
 
 function renderScans(scans, total) {

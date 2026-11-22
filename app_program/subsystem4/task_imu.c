@@ -278,9 +278,91 @@ LOCAL void publish_snapshot(const LSM303_SAMPLE *sample,
     tk_unl_mtx(mtx_imu_data);
 }
 
+/*
+ * IMU fault handling (robot log 21 Nov 2026, 22:55 boot; also 20 Nov ramp
+ * boot 3). After a fault, every kernel wait made by this task, tk_dly_tsk()
+ * included, returned E_CTX at once: this task's core could no longer block or
+ * dispatch. The 200 ms retry became a busy loop printing ~100 lines/s, and
+ * motion_task (pinned to core 1, priority 14) never ran again, so the VC could
+ * neither halt the robot nor handle PAUSE. Only this task was still running,
+ * so this task has to stop the motors and try to recover the core.
+ */
+#define S4_RETRY_DELAY_MS       200
+#define S4_ERROR_REPORT_MS      1000U
+#define S4_ERROR_MTX_TMO_MS     20
+
+/* Weak: links in modes that build S4 without the S2 motor driver. */
+extern void drv_motor_stop(void) __attribute__((weak));
+
+LOCAL UW err_unreported;
+LOCAL UW err_last_report_ms;
+LOCAL BOOL err_reported;
+LOCAL BOOL wedge_reported;
+
+LOCAL UW s4_now_ms(void)
+{
+    SYSTIM t;
+
+    tk_get_tim(&t);
+    return t.lo;
+}
+
+/* Print the first failure at once, then at most one line per second. */
+LOCAL void report_error(const char *what, ER er)
+{
+    UW now = s4_now_ms();
+
+    err_unreported++;
+    if (err_reported &&
+        (UW)(now - err_last_report_ms) < S4_ERROR_REPORT_MS) {
+        return;
+    }
+    LOG_ERR(TAG_S4_IMU, "IMU %s failed, er=%d (%u failures since last report)",
+            what, er, err_unreported);
+    err_unreported = 0U;
+    err_last_report_ms = now;
+    err_reported = TRUE;
+}
+
+/* The kernel refused to block this task: its core is wedged. */
+LOCAL void handle_unblockable_core(ER er)
+{
+    T_RSYS rsys;
+    UW primask = get_primask();
+    UINT sysstat = (tk_ref_sys(&rsys) >= E_OK) ? rsys.sysstat : 0xFFU;
+
+    if (drv_motor_stop != NULL) {
+        drv_motor_stop();   /* register writes only: works with no kernel */
+    }
+    if (!wedge_reported) {
+        wedge_reported = TRUE;
+        LOG_ERR(TAG_S4_IMU, "FATAL core %d cannot block (er=%d sysstat=0x%x primask=%u run=%d sched=%d); motors stopped",
+                tk_get_prc(), er, sysstat, primask,
+                (INT)rsys.runtskid, (INT)rsys.schedtskid);
+    }
+    /* This task holds no lock here, so a set PRIMASK was leaked by someone
+       else. Unmask so the tick and PendSV run and the VC can latch its stop. */
+    if (primask != 0U) {
+        set_primask(0U);
+    }
+    if (tk_ref_sys(&rsys) >= E_OK && (rsys.sysstat & TSS_DDSP) != 0U &&
+        (rsys.sysstat & (TSS_DINT | TSS_INDP)) == 0U) {
+        (void)tk_ena_dsp();
+    }
+}
+
+LOCAL void s4_delay(TMO ms)
+{
+    ER er = tk_dly_tsk(ms);
+
+    if (er < E_OK) {
+        handle_unblockable_core(er);
+    }
+}
+
 LOCAL void record_read_error(void)
 {
-    if (tk_loc_mtx(mtx_imu_data, TMO_FEVR) >= E_OK) {
+    if (tk_loc_mtx(mtx_imu_data, S4_ERROR_MTX_TMO_MS) >= E_OK) {
         s4_imu_data.read_errors++;
         s4_imu_data.sensor_ok = FALSE;
         s4_imu_data.motion_state = IMU_MOTION_FAULT;
@@ -731,11 +813,14 @@ EXPORT void imu_task(INT stacd, void *exinf)
             er = lsm303dlhc_init();
             if (er < E_OK) {
                 record_read_error();
-                tk_dly_tsk(200);
+                report_error("init", er);
+                s4_delay(S4_RETRY_DELAY_MS);
                 continue;
             }
 
             sensor_ok = TRUE;
+            err_reported = FALSE;   /* print the next first failure at once */
+            err_unreported = 0U;
             calibrated = FALSE;
             cal_state.sum_x = 0;
             cal_state.sum_y = 0;
@@ -758,7 +843,8 @@ EXPORT void imu_task(INT stacd, void *exinf)
         if (er < E_OK) {
             sensor_ok = FALSE;
             record_read_error();
-            tk_dly_tsk(200);
+            report_error("read", er);
+            s4_delay(S4_RETRY_DELAY_MS);
             continue;
         }
 
@@ -951,10 +1037,10 @@ EXPORT void imu_task(INT stacd, void *exinf)
         cycle_ms = cycle_end.lo - cycle_start.lo;
 
         if (cycle_ms < S4_SAMPLE_PERIOD_MS) {
-            tk_dly_tsk(S4_SAMPLE_PERIOD_MS - cycle_ms);
+            s4_delay((TMO)(S4_SAMPLE_PERIOD_MS - cycle_ms));
         } else {
             /* Do not print every overrun: USB logging would worsen timing. */
-            tk_dly_tsk(1);
+            s4_delay(1);
         }
     }
 }

@@ -1,0 +1,26 @@
+# #40 obstacle telemetry (IF-14), host tests, 2026-11-22 03:14
+# base commit 1618716 + uncommitted feat/s5-obstacle-telemetry changes
+
+## sh testing/run_host_tests.sh
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/line_service              
+PASS   s4/hump_height               
+PASS   int/robot_control            
+PASS   int/line_service             
+PASS   int/steering_ramp            
+PASS   int/event_bits               
+-----------------------------------------
+13 passed, 0 failed, 0 known failures, 0 skipped
+
+## mutation: VC copies distance into the width field -> int/robot_control must FAIL
+FAIL   int/robot_control  (seen; change reverted, then 13/13 PASS above)
+
+## S5 obstacle word on the PC (same cases as S5-U39 plus a 0..400 x 0..180 round-trip sweep)
+S5 obstacle word host check PASS

@@ -105,6 +105,14 @@ static unsigned s5_steps;
 void s5_exec_set_following(S5_EXEC *p_x, BOOL b_following)
 { (void)p_x; (void)b_following; }
 BOOL s5_exec_startup_hold(void) { return FALSE; }
+/* #40: S5's last obstacle scan, as subsystem5_get_obstacle() returns it. */
+static S5_OBSTACLE_INFO fake_obstacle;
+static ER fake_obstacle_er = E_OK;
+ER subsystem5_get_obstacle(S5_OBSTACLE_INFO *p_info)
+{
+    if (fake_obstacle_er != E_OK) { memset(p_info, 0, sizeof(*p_info)); return fake_obstacle_er; }
+    *p_info = fake_obstacle; return E_OK;
+}
 BOOL s5_exec_step(S5_EXEC *p_x, const S5_EXEC_OPS *p_ops, void *p_ctx, UW now_ms)
 { (void)p_x; (void)p_ops; (void)p_ctx; (void)now_ms; ++s5_steps; return FALSE; }
 
@@ -1141,6 +1149,26 @@ int main(void)
     EXPECT(field(S1_FIELD_HIGHEST_HUMP_MM) == 23);
     EXPECT(field(S1_FIELD_BARCODE_BLACK) == 15 && field(S1_FIELD_BARCODE_WHITE) == 14);
     EXPECT(field(S1_FIELD_FAULTS) == 0);
+    /* #40: no scan yet -> obstacle fields 0; then S5's last scan is copied;
+       a corrupt S5 word leaves them 0. */
+    EXPECT(field(S1_FIELD_OBSTACLE_CM) == 0 && field(S1_FIELD_SCAN_DEG) == 0 &&
+           field(S1_FIELD_OBSTACLE_WIDTH_CM) == 0);
+    fake_obstacle = (S5_OBSTACLE_INFO){29u, 85u, 22u};
+    send_command(S1_COMMAND_STATUS);
+    robot_control_step(&ctl, 6001, 100, 100);
+    EXPECT(field(S1_FIELD_OBSTACLE_CM) == 29 && field(S1_FIELD_SCAN_DEG) == 85 &&
+           field(S1_FIELD_OBSTACLE_WIDTH_CM) == 22);
+    fake_obstacle = (S5_OBSTACLE_INFO){400u, 180u, 400u};
+    send_command(S1_COMMAND_STATUS);
+    robot_control_step(&ctl, 6001, 100, 100);
+    EXPECT(field(S1_FIELD_OBSTACLE_CM) == 400 && field(S1_FIELD_SCAN_DEG) == 180 &&
+           field(S1_FIELD_OBSTACLE_WIDTH_CM) == 400);
+    fake_obstacle_er = E_PAR;
+    send_command(S1_COMMAND_STATUS);
+    robot_control_step(&ctl, 6001, 100, 100);
+    EXPECT(field(S1_FIELD_OBSTACLE_CM) == 0 && field(S1_FIELD_SCAN_DEG) == 0 &&
+           field(S1_FIELD_OBSTACLE_WIDTH_CM) == 0);
+    fake_obstacle_er = E_OK; fake_obstacle = (S5_OBSTACLE_INFO){0u, 0u, 0u};
     send_command(S1_COMMAND_PAUSE);
     send_command(S1_COMMAND_STATUS);
     robot_control_step(&ctl, 6002, 100, 100);

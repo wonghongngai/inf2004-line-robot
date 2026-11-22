@@ -31,8 +31,10 @@ EXPORT void subsystem1_test(void)
     TEST_CHECK("S1-U18", subsystem1_receive_command(&command, TMO_POL) == 1
                && command.bytes[0] == S1_COMMAND_REVERSE,
                "reverse command survives queue");
-    malformed[0] = S1_COMMAND_MAX + 1U;  /* 5 became START on 21 Nov */
+    /* First reserved code: since #48 START (5) is the highest valid one. */
+    malformed[0] = (unsigned char)(S1_COMMAND_MAX + 1U);
     s1_deliver_command(malformed, 1);
+    malformed[0] = S1_COMMAND_STATUS;   /* valid code, wrong length */
     s1_deliver_command(malformed, 2);
     TEST_CHECK("S1-U07", subsystem1_receive_command(&command, TMO_POL) == E_TMOUT,
                "reserved bits and wrong length rejected");

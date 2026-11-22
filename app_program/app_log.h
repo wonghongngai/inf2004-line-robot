@@ -21,11 +21,7 @@
 #ifndef APP_LOG_H
 #define APP_LOG_H
 
-/* Host (PC) tests define APP_LOG_HOST_TEST and supply their own tm_printf
- * and UB, so they get the real tags and macros without the kernel headers. */
-#ifndef APP_LOG_HOST_TEST
 #include <tm/tmonitor.h>	/* tm_printf() */
-#endif
 
 #define TAG_APP		"APP"
 #define TAG_S1_MQTT	"S1:MQTT"	/* broker link, RX/TX		*/
