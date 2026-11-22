@@ -1,0 +1,33 @@
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: b540f2d + uncommitted changes
+
+s1/protocol                  PASS
+s1/barcode_queue             PASS
+s1/binary_cli                PASS
+s2/motion_protocol           PASS
+s2/motor_pwm                 PASS
+s3/line_barcode              PASS
+s3/pptx_samples              PASS
+s3/line_service              PASS
+s4/hump_height               PASS
+int/robot_control            PASS
+int/line_service             PASS
+int/steering_ramp            PASS
+int/event_bits               PASS
+
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/line_service              
+PASS   s4/hump_height               
+PASS   int/robot_control            
+PASS   int/line_service             
+PASS   int/steering_ramp            
+PASS   int/event_bits               
+-----------------------------------------
+13 passed, 0 failed, 0 known failures, 0 skipped

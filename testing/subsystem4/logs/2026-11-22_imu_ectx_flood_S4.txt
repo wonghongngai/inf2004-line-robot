@@ -1,0 +1,85 @@
+# Excerpt of the gitignored raw log testing/subsystem5/logs/2026-11-22_135021_console.txt (main checkout), 35858 lines when copied (2026-11-22 14:06).
+# Image: sh build.sh integrated from 01b180d (test/s1-bench-15), which does NOT contain 9d96fca (PR #101, the S4-U15 guard).
+# Robot on a stand, wheels turning after START. Lines below are copied unchanged; line numbers are those of the raw file.
+# The Wi-Fi network name is redacted.
+# Boot 1 (connected 13:50:21): first 'accelerometer not responding, er=-25' at line 605 (n=2300, ~40 s after START); 10674 such lines in lines 605-11278; no other line after 604 in boot 1.
+# Boot 2 (connected 13:57:30): START line 11426, first er=-25 at line 11733 (n=6600, ~130 s after START); 24114 such lines after line 11278; 12 other lines after 11733 (Wi-Fi reconnect + MQTT, core 0), none of them [S2:MOTION] (motion_task, pinned to core 1).
+# Rate: between line 20144 (wifi t=181032 ms) and line 23168 (MQTT t=196015 ms) there are 3022 er=-25 lines in 15.0 s, about 201 per second. The 01b180d loop waits tk_dly_tsk(200) after each failure (at most 5 per second), so tk_dly_tsk itself was returning at once: the kernel refused to block the task (E_CTX).
+--- boot 1, lines 590-610
+[S2:MOTION] state=2 fault=0 ticks L=15607 R=15827 PWM=14/15
+[S2:MOTION] ctrl late=0/4350 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2100 acc=(-25,94,909)mg delta=(x:-2,y:-3)mg mag=(369,-313,-113) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=17031 R=17257 PWM=14/15
+[S2:MOTION] ctrl late=0/4445 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2150 acc=(30,76,973)mg delta=(x:53,y:-21)mg mag=(373,-312,-111) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=18452 R=18684 PWM=14/15
+[S2:MOTION] ctrl late=0/4541 gap_max=11 loop_max=4 ms
+[S4:IMU] n=2200 acc=(-50,86,924)mg delta=(x:-27,y:-11)mg mag=(371,-316,-113) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=19876 R=20115 PWM=14/15
+[S2:MOTION] ctrl late=0/4637 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2250 acc=(-19,84,917)mg delta=(x:4,y:-13)mg mag=(368,-319,-114) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=21294 R=21540 PWM=14/15
+[S2:MOTION] ctrl late=0/4733 gap_max=11 loop_max=5 ms
+[S4:IMU] n=2300 acc=(-21,70,943)mg delta=(x:2,y:-27)mg mag=(372,-312,-109) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] ERR accelerometer not responding, er=-25
+[S4:IMU] ERR accelerometer not responding, er=-25
+[S4:IMU] ERR accelerometer not responding, er=-25
+[S4:IMU] ERR accelerometer not responding, er=-25
+[S4:IMU] ERR accelerometer not responding, er=-25
+[S4:IMU] ERR accelerometer not responding, er=-25
+--- boot 1, lines 11276-11278
+[S4:IMU] ERR accelerometer not responding, er=-25
+[S4:IMU] ERR accelerometer not responding, er=-25
+[S4:IMU] ERR accelerometer not responding, er=-25
+--- boot 2, lines 11279-11296
+=== COM5 connected 13:57:30.797 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[S4:IMU] IMU task started, period=20 ms
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+--- boot 2, lines 11424-11430
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] n=1900 acc=(-30,112,924)mg delta=(x:-6,y:19)mg mag=(371,-313,-115) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=740 R=827 PWM=13/15
+[S2:MOTION] ctrl late=0/3996 gap_max=11 loop_max=4 ms
+--- boot 2, lines 11725-11735
+[S2:MOTION] ctrl late=0/13174 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6500 acc=(-25,77,901)mg delta=(x:-1,y:-16)mg mag=(368,-315,-114) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=137726 R=138462 PWM=14/15
+[S2:MOTION] ctrl late=0/13270 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6550 acc=(-29,86,919)mg delta=(x:-5,y:-7)mg mag=(369,-315,-116) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=139145 R=139889 PWM=14/15
+[S2:MOTION] ctrl late=0/13367 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6600 acc=(-25,102,907)mg delta=(x:-1,y:9)mg mag=(369,-309,-113) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] ERR accelerometer not responding, er=-25
+[S4:IMU] ERR accelerometer not responding, er=-25
+[S4:IMU] ERR accelerometer not responding, er=-25
+--- boot 2, every non-IMU-error line after 11733 (raw line numbers)
+18375: wifi: reconnecting (association/IP timeout)
+18376: wifi: joining "<SSID redacted>" ...
+18388: wifi: link status -> joined AP, waiting for IP (1)
+18531: wifi: link status -> FAILED: SSID not found (out of range, wrong name, or 5GHz-only network -- this chip is 2.4GHz only) (-2)
+19532: wifi: reconnecting (link down or join failed)
+19533: wifi: joining "<SSID redacted>" ...
+19545: wifi: link status -> joined AP, waiting for IP (1)
+20144: wifi: link up, ip=172.20.10.3 t=181032 ms
+20145: [S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+23168: [S1:MQTT] connected to 172.20.10.2 t=196015 ms
+23173: [S1:MQTT] subscribed to group17-robot/command
+23182: [S1:MQTT] subscribed to group17-robot/mapping

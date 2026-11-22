@@ -16,6 +16,9 @@
 #include "subsystem4.h"
 #include "drv_lsm303dlhc.h"
 #include <stdint.h>
+#if defined(TK_SUPPORT_SMP) && TK_SUPPORT_SMP
+#include <smp_lock.h>   /* kernel/knlinc: big-kernel-lock audit for the FATAL report */
+#endif
 /* Sample counts at S4_SAMPLE_PERIOD_MS = 20 ms (halved 20 Nov from the 10 ms values). */
 #define S4_HUMP_REARM_FLAT_SAMPLES 25U     /* 500 ms */
 #define S4_HUMP_ENTRY_CONFIRM_SAMPLES 3U  /* 60 ms (5 at 10 ms) */
@@ -287,41 +290,105 @@ LOCAL void publish_snapshot(const LSM303_SAMPLE *sample,
  * neither halt the robot nor handle PAUSE. Only this task was still running,
  * so this task has to stop the motors and try to recover the core.
  */
-#define S4_RETRY_DELAY_MS       200
+/*
+ * Back-off and recovery (S4-U17, robot log 22 Nov 2026 13:50: 10 674 lines of
+ * "accelerometer not responding, er=-25" from an image without the guard
+ * above). Each consecutive failure doubles the retry delay, from one sample
+ * period up to S4_RETRY_MAX_MS; every S4_RECOVER_EVERY_FAILS-th failure also
+ * frees the I2C bus (9 clocks + STOP). Not for E_CTX: that is the kernel
+ * refusing to block, not the bus. The streak ends at the first good read.
+ */
+#define S4_RETRY_MIN_MS         S4_SAMPLE_PERIOD_MS
+#define S4_RETRY_MAX_MS         1000U
+#define S4_RECOVER_EVERY_FAILS  3U
 #define S4_ERROR_REPORT_MS      1000U
 #define S4_ERROR_MTX_TMO_MS     20
 
 /* Weak: links in modes that build S4 without the S2 motor driver. */
 extern void drv_motor_stop(void) __attribute__((weak));
 
+/*
+ * Free-running 1 MHz hardware timer: keeps counting when the kernel tick
+ * cannot reach this core, so the rate limit and the fallback wait still
+ * work on a wedged core. The host test supplies its own.
+ */
+#ifndef S4_HW_NOW_US
+#define S4_HW_NOW_US()          in_w(TIMER_TIMERAWL)
+#endif
+
 LOCAL UW err_unreported;
-LOCAL UW err_last_report_ms;
+LOCAL UW err_last_report_us;
 LOCAL BOOL err_reported;
 LOCAL BOOL wedge_reported;
-
-LOCAL UW s4_now_ms(void)
-{
-    SYSTIM t;
-
-    tk_get_tim(&t);
-    return t.lo;
-}
+LOCAL BOOL wedge_followup_done;
+LOCAL UW wedge_report_us;
+LOCAL UW fail_streak;
+LOCAL UW bus_recoveries;
 
 /* Print the first failure at once, then at most one line per second. */
 LOCAL void report_error(const char *what, ER er)
 {
-    UW now = s4_now_ms();
+    UW now = S4_HW_NOW_US();
 
     err_unreported++;
     if (err_reported &&
-        (UW)(now - err_last_report_ms) < S4_ERROR_REPORT_MS) {
+        (UW)(now - err_last_report_us) < S4_ERROR_REPORT_MS * 1000U) {
         return;
     }
-    LOG_ERR(TAG_S4_IMU, "IMU %s failed, er=%d (%u failures since last report)",
-            what, er, err_unreported);
+    LOG_ERR(TAG_S4_IMU, "IMU %s failed, er=%d (%u failures since last report, streak %u, bus recoveries %u)",
+            what, er, err_unreported, fail_streak, bus_recoveries);
     err_unreported = 0U;
-    err_last_report_ms = now;
+    err_last_report_us = now;
     err_reported = TRUE;
+}
+
+/* Retry delay after the n-th consecutive failure (n >= 1). */
+LOCAL UW s4_retry_delay_ms(UW n)
+{
+    UW ms = S4_RETRY_MIN_MS;
+
+    while (n > 1U && ms < S4_RETRY_MAX_MS) {
+        ms *= 2U;
+        n--;
+    }
+    return (ms > S4_RETRY_MAX_MS) ? S4_RETRY_MAX_MS : ms;
+}
+
+/*
+ * Big-kernel-lock state (kernel/tkernel/smp_lock.c), printed with the FATAL
+ * line and once more S4_WEDGE_FOLLOWUP_MS later. Robot log 22 Nov 14:14
+ * (9564a72): FATAL with sysstat=0x3 primask=1 run=5 sched=7, i.e. this task
+ * came back from a kernel call with PRIMASK still set while a higher-priority
+ * task was waiting. A knl_kernel_lock_leave() without a matching enter()
+ * returns early without restoring PRIMASK and is counted in illegal_unlocks,
+ * so a non-zero count here points at that path. A large max_hold explains
+ * late control steps after the recovery.
+ */
+#define S4_WEDGE_FOLLOWUP_MS    5000U
+
+LOCAL void report_kernel_lock(const char *label)
+{
+#if defined(TK_SUPPORT_SMP) && TK_SUPPORT_SMP
+    KNL_LOCK_DIAG d;
+
+    knl_kernel_lock_audit(&d);
+    LOG_ERR(TAG_S4_IMU, "%s: tid=%d bkl owner=%u depth=%u/%u illegal_unlocks=%u illegal_suspends=%u dead_dispatch=%u max_hold=%u us max_wait=%u us max_depth=%u",
+            label, (INT)tk_get_tid(), d.owner, d.depth[0], d.depth[1],
+            d.illegal_unlocks, d.illegal_suspends, d.dead_ctxtsk_dispatches,
+            d.max_hold_us, d.max_wait_us, d.max_depth);
+#else
+    (void)label;
+#endif
+}
+
+/* One more look at the kernel state a few seconds after the FATAL line. */
+LOCAL void wedge_followup(void)
+{
+    if (wedge_reported && !wedge_followup_done &&
+        (UW)(S4_HW_NOW_US() - wedge_report_us) >= S4_WEDGE_FOLLOWUP_MS * 1000U) {
+        wedge_followup_done = TRUE;
+        report_kernel_lock("FATAL follow-up");
+    }
 }
 
 /* The kernel refused to block this task: its core is wedged. */
@@ -339,6 +406,8 @@ LOCAL void handle_unblockable_core(ER er)
         LOG_ERR(TAG_S4_IMU, "FATAL core %d cannot block (er=%d sysstat=0x%x primask=%u run=%d sched=%d); motors stopped",
                 tk_get_prc(), er, sysstat, primask,
                 (INT)rsys.runtskid, (INT)rsys.schedtskid);
+        report_kernel_lock("FATAL detail");
+        wedge_report_us = S4_HW_NOW_US();
     }
     /* This task holds no lock here, so a set PRIMASK was leaked by someone
        else. Unmask so the tick and PendSV run and the VC can latch its stop. */
@@ -351,12 +420,32 @@ LOCAL void handle_unblockable_core(ER er)
     }
 }
 
+/*
+ * When the kernel cannot block, wait on the hardware timer instead, so the
+ * retry loop still runs at the back-off rate rather than flat out (the
+ * 22 Nov flood). The core is no use to other tasks in that state anyway.
+ */
+#ifndef S4_SPIN_MS
+LOCAL void s4_spin_ms(UW ms)
+{
+    UW start = S4_HW_NOW_US();
+
+    while ((UW)(S4_HW_NOW_US() - start) < ms * 1000U) {
+        /* busy-wait */
+    }
+}
+#define S4_SPIN_MS(ms)          s4_spin_ms(ms)
+#endif
+
 LOCAL void s4_delay(TMO ms)
 {
     ER er = tk_dly_tsk(ms);
 
     if (er < E_OK) {
         handle_unblockable_core(er);
+        if (er == E_CTX && ms > 0) {
+            S4_SPIN_MS((UW)ms);
+        }
     }
 }
 
@@ -368,6 +457,29 @@ LOCAL void record_read_error(void)
         s4_imu_data.motion_state = IMU_MOTION_FAULT;
         s4_imu_data.event = IMU_EVENT_FAULT;
         tk_unl_mtx(mtx_imu_data);
+    }
+}
+
+/* One failed init or read: mark the data invalid, report, recover, back off. */
+LOCAL void imu_failed(const char *what, ER er)
+{
+    fail_streak++;
+    record_read_error();
+    report_error(what, er);
+    if (er != E_CTX && (fail_streak % S4_RECOVER_EVERY_FAILS) == 0U) {
+        (void)lsm303dlhc_recover_bus();
+        bus_recoveries++;
+    }
+    s4_delay((TMO)s4_retry_delay_ms(fail_streak));
+}
+
+/* First good read after failures: say so once and restart the back-off. */
+LOCAL void imu_read_ok(void)
+{
+    if (fail_streak > 0U) {
+        LOG_INFO(TAG_S4_IMU, "IMU recovered after %u failures (%u bus recoveries, %u unreported)",
+                 fail_streak, bus_recoveries, err_unreported);
+        fail_streak = 0U;
     }
 }
 
@@ -812,15 +924,13 @@ EXPORT void imu_task(INT stacd, void *exinf)
         if (!sensor_ok) {
             er = lsm303dlhc_init();
             if (er < E_OK) {
-                record_read_error();
-                report_error("init", er);
-                s4_delay(S4_RETRY_DELAY_MS);
+                imu_failed("init", er);
                 continue;
             }
 
             sensor_ok = TRUE;
-            err_reported = FALSE;   /* print the next first failure at once */
-            err_unreported = 0U;
+            /* err_reported stays set: a device that re-inits and then fails
+               again must not print once per retry (S4-U17). */
             calibrated = FALSE;
             cal_state.sum_x = 0;
             cal_state.sum_y = 0;
@@ -842,11 +952,10 @@ EXPORT void imu_task(INT stacd, void *exinf)
         er = lsm303dlhc_read(&sample);
         if (er < E_OK) {
             sensor_ok = FALSE;
-            record_read_error();
-            report_error("read", er);
-            s4_delay(S4_RETRY_DELAY_MS);
+            imu_failed("read", er);
             continue;
         }
+        imu_read_ok();
 
         local_sample_count++;
         motion = IMU_MOTION_NORMAL;
@@ -1031,6 +1140,8 @@ EXPORT void imu_task(INT stacd, void *exinf)
                                 last_ramp_height_valid,
                                 local_sample_count);
         }
+
+        wedge_followup();
 
         /* Maintain the configured interval between task cycles. */
         tk_get_tim(&cycle_end);

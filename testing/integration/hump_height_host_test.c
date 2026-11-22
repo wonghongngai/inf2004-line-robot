@@ -12,6 +12,7 @@ ER tk_get_tim(SYSTIM *now);
 ER tk_dly_tsk(unsigned ms);
 /* Kernel calls used by the S4 stuck-core guard (S4-U15). */
 #define E_CTX (-25)
+#define E_IO (-57)
 #define TSS_DDSP 0x01U
 #define TSS_DINT 0x02U
 #define TSS_INDP 0x04U
@@ -22,6 +23,11 @@ ER tk_ena_dsp(void);
 static UW fake_primask;
 static UW get_primask(void) { return fake_primask; }
 static void set_primask(UW pm) { fake_primask = pm; }
+/* S4-U17: fake 1 MHz hardware timer and a spin that advances it. */
+static uint32_t fake_ms;
+static unsigned spins, spun_ms;
+#define S4_HW_NOW_US() ((UW)(fake_ms * 1000u))
+#define S4_SPIN_MS(ms) (spins++, spun_ms += (ms), fake_ms += (ms))
 
 /* Exercise the actual IMU algorithm and snapshot code, replacing only I/O. */
 #include "../../app_program/subsystem4/task_imu.c"
@@ -32,7 +38,8 @@ IMU_DATA s4_imu_data;
 static unsigned prints, motor_stops, ena_dsp_calls;
 static UINT fake_sysstat;
 static ER dly_result;
-static uint32_t fake_ms;
+static unsigned bus_recover_calls;
+static unsigned last_dly_ms;
 int tm_printf(UB *fmt, ...) { (void)fmt; prints++; return 0; }
 void drv_motor_stop(void) { motor_stops++; }
 ER tk_ref_sys(T_RSYS *pk)
@@ -46,7 +53,8 @@ ER tk_ena_dsp(void) { ena_dsp_calls++; fake_sysstat &= ~TSS_DDSP; return E_OK; }
 ER tk_loc_mtx(ID id, TMO timeout) { (void)id; (void)timeout; return E_OK; }
 ER tk_unl_mtx(ID id) { (void)id; return E_OK; }
 ER tk_get_tim(SYSTIM *now) { now->hi = 0; now->lo = fake_ms; return E_OK; }
-ER tk_dly_tsk(unsigned ms) { (void)ms; return dly_result; }
+ER tk_dly_tsk(unsigned ms) { last_dly_ms = ms; if (dly_result == E_OK) fake_ms += ms; return dly_result; }
+BOOL lsm303dlhc_recover_bus(void) { bus_recover_calls++; return TRUE; }
 ER lsm303dlhc_init(void) { return E_OK; }
 ER lsm303dlhc_read(LSM303_SAMPLE *sample) { (void)sample; return E_PAR; }
 UW subsystem4_take_distance_mm(void) { return 0; }
@@ -196,14 +204,18 @@ int main(void)
 
     /* A healthy kernel: the retry delay works, motors are not touched. */
     prints = motor_stops = 0; dly_result = E_OK;
-    s4_delay(S4_RETRY_DELAY_MS);
+    s4_delay(S4_RETRY_MAX_MS);
     assert(motor_stops == 0 && prints == 0);
 
     /* Core stuck with interrupts masked: tk_dly_tsk returns E_CTX. The guard
        stops the motors, prints one FATAL line and unmasks the core. */
     dly_result = E_CTX; fake_primask = 1U; fake_sysstat = 0U;
-    s4_delay(S4_RETRY_DELAY_MS);
+    s4_delay(S4_RETRY_MAX_MS);
     assert(motor_stops == 1 && prints == 1 && fake_primask == 0U);
+    /* Follow-up kernel report: not before 5 s, exactly once after. */
+    wedge_followup(); assert(!wedge_followup_done);
+    fake_ms += S4_WEDGE_FOLLOWUP_MS; wedge_followup(); assert(wedge_followup_done);
+    wedge_followup(); assert(wedge_followup_done);
     assert(ena_dsp_calls == 0);
     /* Still stuck (dispatch disabled): motors stopped again, no new FATAL
        line, dispatching re-enabled. */
@@ -216,6 +228,65 @@ int main(void)
     assert(motor_stops == 3 && ena_dsp_calls == 1);
     dly_result = E_OK;
     puts("IMU fault path: rate-limited errors, stuck-core motor stop, unmask and re-enable dispatch PASS");
+
+    /* S4-U17 (22 Nov 2026 robot log, 10 674 x er=-25). */
+    /* Back-off doubles from one sample period and stops at the cap. */
+    assert(s4_retry_delay_ms(1) == S4_SAMPLE_PERIOD_MS);
+    assert(s4_retry_delay_ms(2) == 2u * S4_SAMPLE_PERIOD_MS);
+    assert(s4_retry_delay_ms(3) == 4u * S4_SAMPLE_PERIOD_MS);
+    assert(s4_retry_delay_ms(20) == S4_RETRY_MAX_MS);
+    assert(s4_retry_delay_ms(1000000u) == S4_RETRY_MAX_MS);
+    for (unsigned n = 1; n < 40; ++n)
+        assert(s4_retry_delay_ms(n + 1) >= s4_retry_delay_ms(n));
+
+    /* Bus fault (E_IO) for 60 s of retries: delays grow, the bus is freed
+       every third failure, the data is marked invalid, and the console gets
+       about one line per second, never one per retry. */
+    fail_streak = 0; bus_recoveries = 0; bus_recover_calls = 0;
+    err_reported = FALSE; err_unreported = 0; prints = 0;
+    s4_imu_data.sensor_ok = TRUE; s4_imu_data.read_errors = 0;
+    {
+        uint32_t t0 = fake_ms;
+        unsigned fails = 0;
+        while (fake_ms - t0 < 60000u) {
+            unsigned before = fake_ms;
+            imu_failed("init", E_IO);
+            ++fails;
+            assert(last_dly_ms == s4_retry_delay_ms(fails));
+            assert(fake_ms - before == last_dly_ms);
+        }
+        assert(fails < 80u);                       /* not thousands */
+        assert(bus_recover_calls == fails / S4_RECOVER_EVERY_FAILS);
+        assert(prints >= 55u && prints <= fails);  /* ~1 per second */
+        assert(!s4_imu_data.sensor_ok && s4_imu_data.motion_state == IMU_MOTION_FAULT);
+        assert(s4_imu_data.read_errors == fails);
+    }
+    /* A good read ends the streak (one INFO line) and the back-off restarts. */
+    prints = 0;
+    imu_read_ok();
+    assert(fail_streak == 0u && prints == 1u);
+    imu_read_ok();
+    assert(prints == 1u);
+
+    /* Kernel cannot block (E_CTX from tk_dly_tsk and from the I2C call, as
+       on 22 Nov): no bus recovery (not a bus fault), and the loop still waits
+       the back-off on the hardware timer, so 60 s of this is a few dozen
+       retries and about 60 lines, not 10 000. */
+    fail_streak = 0; bus_recover_calls = 0; prints = 0; spins = 0; spun_ms = 0;
+    motor_stops = 0;
+    dly_result = E_CTX;
+    {
+        uint32_t t0 = fake_ms;
+        unsigned fails = 0;
+        while (fake_ms - t0 < 60000u) { imu_failed("init", E_CTX); ++fails; }
+        assert(fails < 80u);
+        assert(bus_recover_calls == 0u);
+        assert(spins == fails && spun_ms >= 60000u);
+        assert(motor_stops == fails);
+        assert(prints >= 55u && prints <= 65u);
+    }
+    dly_result = E_OK;
+    puts("IMU dropout (S4-U17): exponential back-off, bus recovery every 3rd failure, ~1 error line/s, data invalid, spin-wait when the kernel cannot block PASS");
 
     puts("Hump height/odometry: fractional rise, descent, sign, bounds, missing calibration and validity PASS");
     puts("IMU lift (#53): vibration and single spikes ignored; pick-up and tilted hold detected after the filter and confirmation delay; window warm-up; release re-arms PASS");
