@@ -3,7 +3,7 @@
  * the PC.
  *
  * Runs the real subsystem5_test() from app_program/subsystem5/subsystem5_test.c
- * against the real obstacle_logic.c and drv_servo.c, so the host and the Pico
+ * against the real obstacle_logic.c, drv_servo.c and drv_ultrasonic.c, so the host and the Pico
  * run the same checks (filter, fine-scan window, profile, planner, bypass
  * table, servo maths, packed words).  Only the hardware calls below are fake.
  *
@@ -48,6 +48,12 @@ int tm_printf(UB *format, ...)
 /* ---- Hardware boundary: no servo, no PWM, no timer on the PC ---------- */
 ER tk_dly_tsk(RELTIM dlytim) { (void)dlytim; return E_OK; }
 void out_w(UW addr, UW data) { (void)addr; (void)data; }
+UW in_w(UW addr) { (void)addr; return 0U; }
+void set_w(UW addr, UW data) { (void)addr; (void)data; }
+void clr_w(UW addr, UW data) { (void)addr; (void)data; }
+ER gpio_set_pin(UINT no, UINT mode) { (void)no; (void)mode; return E_OK; }
+ER gpio_set_val(UINT no, UINT val) { (void)no; (void)val; return E_OK; }
+UINT gpio_get_val(UINT no) { (void)no; return 0U; }
 ER pwm_set_pin(unsigned int no) { (void)no; return E_OK; }
 ER pwm_set_wrap(unsigned int no, UW wrap) { (void)no; (void)wrap; return E_OK; }
 ER pwm_set_cc(unsigned int no, UW cc) { (void)no; (void)cc; return E_OK; }

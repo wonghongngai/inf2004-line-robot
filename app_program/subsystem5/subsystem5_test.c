@@ -778,6 +778,52 @@ EXPORT void subsystem5_test(void)
         obstacle_plan(&prof, 0U, NULL);
     }
 
+    /* S5-U03: echo time -> status and distance (NFR5-5).  d = t x 343 / 2000 */
+    {
+        UW mm = 7U;
+
+        TEST_CHECK("S5-U03",
+                   ((ULTRASONIC_NO_ECHO ==
+                     ultrasonic_classify(0U, FALSE, &mm)) &&
+                    (0U == mm)),
+                   "(a) 0 us (ECHO never high): NO_ECHO, 0 mm");
+        mm = 7U;
+        TEST_CHECK("S5-U03",
+                   ((ULTRASONIC_NO_ECHO ==
+                     ultrasonic_classify(1750U, TRUE, &mm)) &&
+                    (0U == mm)),
+                   "(b) ECHO still high at the window end: NO_ECHO");
+        TEST_CHECK("S5-U03",
+                   ((ULTRASONIC_TOO_NEAR ==
+                     ultrasonic_classify(116U, FALSE, &mm)) &&
+                    (0U == mm)),
+                   "(c) 116 us = 19 mm < 2 cm: TOO_NEAR, 0 mm");
+        TEST_CHECK("S5-U03",
+                   ((ULTRASONIC_OK == ultrasonic_classify(117U, FALSE, &mm)) &&
+                    (20U == mm)),
+                   "(d) 117 us = 20 mm: OK (lower limit is valid)");
+        TEST_CHECK("S5-U03",
+                   ((ULTRASONIC_OK == ultrasonic_classify(1750U, FALSE, &mm)) &&
+                    (300U == mm)),
+                   "(e) 1750 us = 300 mm: OK");
+        TEST_CHECK("S5-U03",
+                   ((ULTRASONIC_OK ==
+                     ultrasonic_classify(23324U, FALSE, &mm)) &&
+                    (4000U == mm)),
+                   "(f) 23324 us = 4000 mm: OK (upper limit is valid)");
+        TEST_CHECK("S5-U03",
+                   ((ULTRASONIC_TOO_FAR ==
+                     ultrasonic_classify(23330U, FALSE, &mm)) &&
+                    (0U == mm) &&
+                    (ULTRASONIC_TOO_FAR ==
+                     ultrasonic_classify(65535U, FALSE, &mm))),
+                   "(g) 4001 mm and the 65535 us counter limit: TOO_FAR, 0 mm");
+        TEST_CHECK("S5-U03",
+                   (ULTRASONIC_NO_ECHO ==
+                    ultrasonic_classify(1750U, FALSE, NULL)),
+                   "(h) NULL distance pointer: NO_ECHO");
+    }
+
     /* S5-U46: start-up self-test decision (#47) */
     {
         static const UW none[SELFTEST_PINGS]  = {0U, 0U, 0U, 0U, 0U};
