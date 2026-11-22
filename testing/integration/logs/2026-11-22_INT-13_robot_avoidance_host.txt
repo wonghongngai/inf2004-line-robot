@@ -1,0 +1,34 @@
+# INT-13 (#20): VC + real S5 executor on the PC. sh testing/run_host_tests.sh -v int/robot_avoidance, then the full suite; branch test/int13-avoidance-handover on 24bb28e, run by Claude 2026-11-22.
+# Also checked: SAFE_STOP handling removed from a scratch copy of s5_executor.c -> the test fails (scenario c2).
+
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: 24bb28e + uncommitted changes
+
+int/robot_avoidance          PASS
+robot host tests: 994 checks passed
+
+================ summary ================
+PASS   int/robot_avoidance          
+-----------------------------------------
+1 passed, 0 failed, 0 known failures, 0 skipped
+
+# ---- full suite ----
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s2/loop_timing               
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/line_service              
+PASS   s4/hump_height               
+PASS   s5/obstacle_logic            
+PASS   int/robot_control            
+PASS   int/robot_avoidance          
+PASS   int/line_service             
+PASS   int/steering_ramp            
+PASS   int/event_bits               
+-----------------------------------------
+16 passed, 0 failed, 0 known failures, 0 skipped

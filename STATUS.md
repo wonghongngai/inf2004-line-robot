@@ -4,7 +4,7 @@
 What to test next, and how, is in [testing/TEST_PLAN.md](testing/TEST_PLAN.md).
 Where the code differs from the Week 6 / PreTri plan, and why, is in [DEVIATIONS.md](DEVIATIONS.md).
 Team decisions and their reasons are in [DECISIONS.md](DECISIONS.md) (latest: the M1 decisions, 20 Nov: #5, #6, #48, #54, #64–#68).
-Last updated: 2026-11-22, S5 start-up self-test on the robot (#47: S5-U46, U47) · 2026-11-22, S5 logic on the PC (#30: S5-U45; new S5-U08, U11–U13) · 2026-11-22, S2 track tests (#19: S2-U08, U12 PASS) · 2026-11-22, S2 bench tests on the robot (#18: S2-U05, U06, U07, U10, U11) · 2026-11-22, S1 bench tests on the robot (#15: S1-U11, U13, U17, U20 for #49) · 2026-11-22, humps and the ultrasonic (#34 done; #36, #44 dropped; `DECISIONS.md`) · 2026-11-21, event-bit table checked against the code (#50, INT-14) · 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump test fixed) · subsystems 1, 2, 4 and 5 test results (`chore/m0-housekeeping` from `65ba452`; #14, #17, #24, #28) · subsystem 3 rows 2026-11-19 (`cc239d5`) · other sections as of 2026-11-13 (`double11` @ `1d78677`)
+Last updated: 2026-11-22, VC ↔ S5 hand-over on the PC (#20: INT-13) · 2026-11-22, S5 start-up self-test on the robot (#47: S5-U46, U47) · 2026-11-22, S5 logic on the PC (#30: S5-U45; new S5-U08, U11–U13) · 2026-11-22, S2 track tests (#19: S2-U08, U12 PASS) · 2026-11-22, S2 bench tests on the robot (#18: S2-U05, U06, U07, U10, U11) · 2026-11-22, S1 bench tests on the robot (#15: S1-U11, U13, U17, U20 for #49) · 2026-11-22, humps and the ultrasonic (#34 done; #36, #44 dropped; `DECISIONS.md`) · 2026-11-21, event-bit table checked against the code (#50, INT-14) · 2026-11-20, M1 decisions (`DECISIONS.md`; tilt report-only, hump test fixed) · subsystems 1, 2, 4 and 5 test results (`chore/m0-housekeeping` from `65ba452`; #14, #17, #24, #28) · subsystem 3 rows 2026-11-19 (`cc239d5`) · other sections as of 2026-11-13 (`double11` @ `1d78677`)
 
 ## Rules
 
@@ -97,7 +97,7 @@ Last updated: 2026-11-22, S5 start-up self-test on the robot (#47: S5-U46, U47) 
 | 1 MHz timer + hardware-timed echo | ✅ | — | ✅ S5-U01 | ⬜ | — | S5 TEST_LOG 2026-10-27 (console not saved) | — |
 | Distance accuracy ±2 cm over 5–100 cm (NFR5-6) | ✅ | — | ❌ S5-U02 (before the fix) | ⬜ | — | S5 TEST_LOG 2026-10-27 | **Re-run S5-U02** with the hardware-timed echo; save the log |
 | Servo calibration + smooth glide | ✅ | ✅ S5-U21–U22 (Pico) | ✅ S5-U04 | ⬜ | — | S5 TEST_LOG 2026-10-28, `testing/subsystem3/logs/2026-11-19_target_test.txt` | Recheck with the sensor mounted |
-| S5 → VC packed request word (IF-10, CR1) | ✅ | ✅ S5-U09 (Pico) | ⬜ | ⬜ | — | `testing/subsystem3/logs/2026-11-19_target_test.txt` | INT-13 host test of the hand-over |
+| S5 → VC packed request word (IF-10, CR1) | ✅ | ✅ S5-U09 (Pico); ✅ INT-13 hand-over (PC, 22 Nov) | ⬜ | ⬜ | — | `testing/subsystem3/logs/2026-11-19_target_test.txt`; `testing/integration/logs/2026-11-22_INT-13_robot_avoidance_host.txt` | Hand-over on the robot: INT-10 (S5-U41 in `integrated`) |
 | Start-up self-test: servo home + echo check, CAL_FAIL → SAFE_STOP (#47, W6 CALIBRATE) | ✅ | ✅ S5-U46 (PC) | ✅ S5-U47 (22 Nov: 9 boots; unplugged sensor → SAFE STOP, wheels never turned after START) | ✅ same run, `integrated` | — | `testing/subsystem5/logs/2026-11-22_S5-U47_selftest_bench.txt`, `testing/subsystem5/logs/2026-11-22_S5-U46_selftest_host.txt` | Run S5-U46 on the Pico (`make TEST=1`) |
 | Coarse scan ≤ 600 ms (NFR5-2) | ✅ | — | ✅ S5-U05 (570 ms, no sensor load) | ⬜ | — | S5 TEST_LOG 2026-10-28 | Retest with the sensor on the horn |
 | Detection → action ≤ 2 s (NFR5-3) | ✅ | ⬜ | ❌ S5-U06 2299 ms (before the fix) | ⬜ | — | S5 TEST_LOG 2026-11-01 | **Re-run S5-U06** after the `FINE_BUDGET_POINTS` fix |
@@ -111,7 +111,8 @@ Last updated: 2026-11-22, S5 start-up self-test on the robot (#47: S5-U46, U47) 
 | Test | Status | Evidence | Next action |
 |---|---|---|---|
 | INT-01 S2 → S3 samples, INT-02 S3 → S4 summaries | Retired (#74) | — (template example tests; the example tasks are removed) | Write INT tests for the real interfaces in `TEAM.md` §5 |
-| INT-03 robot adapter / VC (host, simulated) | ✅ | `logs/2026-11-13_host_tests.txt` (`af2da1c`) | Add a host test of the S5 avoidance hand-over (currently stubbed as idle) |
+| INT-03 robot adapter / VC (host, simulated) | ✅ | `logs/2026-11-13_host_tests.txt` (`af2da1c`) | — (the S5 hand-over is now INT-13, below) |
+| INT-13 VC ↔ S5 hand-over with the real executor (host, #20) | ✅ | `logs/2026-11-22_INT-13_robot_avoidance_host.txt` (994 checks) | On the robot: INT-10 |
 | INT-14 event-bit table (`TEAM.md` §5, #50) matches the code (host, static) | ✅ | `logs/2026-11-21_event_bits_host.txt` (`882f522` + this change; 8 seeded violations each caught) | Table agreed by the team (21 Nov). S5 bit timing still needs INT-13 (host) and INT-10 (robot); COLLISION replaced by LIFTED / LIFT in the table (#53) |
 | INT-04/06 all firmware profiles build | ✅ (28 Oct) | `logs/2026-10-28_robot_builds.txt` | Rerun on the current commit: the `integrated` UF2 is from 8 Nov, older than the latest fixes |
 | **Integrated firmware drives the full course on the robot** | ⬜ | — | Main goal: see *Top priorities* below |
