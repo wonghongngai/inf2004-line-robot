@@ -450,6 +450,7 @@ static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now)
     line_barcode_msg_t msg = {{0u, 0u, 0u}};
     unsigned faults = 0u, black = 0u, white = 0u, hump, sensors = 0u;
     uint8_t debug_letter;
+    S5_OBSTACLE_INFO obstacle;
     float speed;
     ER er;
 
@@ -485,7 +486,14 @@ static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now)
     (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_WHITE,
                            white > S1_BARCODE_COUNT_MAX ? (int)S1_BARCODE_COUNT_MAX : (int)white);
     (void)s1_telemetry_set(&packet, S1_FIELD_HIGHEST_HUMP_MM, hump > S1_HUMP_MAX ? S1_HUMP_MAX : (int)hump);
-    /* Battery and obstacle fields stay 0 placeholders (#40). */
+    /* #40: S5's last obstacle scan (all 0 until one found an obstacle; a
+       corrupt word reads as 0 too). S5's ranges equal S1's. */
+    if (subsystem5_get_obstacle(&obstacle) == E_OK) {
+        (void)s1_telemetry_set(&packet, S1_FIELD_OBSTACLE_CM, (int)obstacle.distance_cm);
+        (void)s1_telemetry_set(&packet, S1_FIELD_SCAN_DEG, (int)obstacle.angle_deg);
+        (void)s1_telemetry_set(&packet, S1_FIELD_OBSTACLE_WIDTH_CM, (int)obstacle.width_cm);
+    }
+    /* Battery stays a 0 placeholder: nothing measures it. */
     er = subsystem1_publish_telemetry(&packet);
     if (er != telemetry_error && er != E_NOSPT) {
         tm_printf((UB *)"[ROBOT] telemetry queue %s (%d)\n",
