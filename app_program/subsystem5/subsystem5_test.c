@@ -84,8 +84,8 @@ static BOOL window_is(const scan_point_t * p_coarse, UW start_deg, UW end_deg)
 /* Check that a request survives pack + unpack unchanged */
 static BOOL request_round_trip(UB kind, UB move, UB seq, BOOL b_line, UH value)
 {
-    S5_REQUEST in  = {kind, move, seq, b_line, value};
-    S5_REQUEST out = {0U, 0U, 0U, FALSE, 0U};
+    S5_REQUEST in  = {kind, move, seq, b_line, value, FALSE};
+    S5_REQUEST out = {0U, 0U, 0U, FALSE, 0U, FALSE};
 
     if (!s5_request_unpack(s5_request_pack(&in), &out))
     {
@@ -286,14 +286,18 @@ EXPORT void subsystem5_test(void)
                    "unused bits 29-31 set: rejected");
         TEST_CHECK("S5-U09", (S5_REQ_NONE == req.kind),
                    "rejected word reads back as NONE");
-        req = (S5_REQUEST){S5_REQ_MOVE, S5_MOVE_FWD, 1U, FALSE, 2000U};
+        req = (S5_REQUEST){S5_REQ_MOVE, S5_MOVE_FWD, 1U, FALSE, 2000U, FALSE};
         TEST_CHECK("S5-U09",
                    (1023U == ((s5_request_pack(&req) >> 10) & 0x3FFU)),
                    "value over 1023 clamped");
         TEST_CHECK("S5-U09", ((UW)S5_REQ_SAFE_STOP == s5_request_pack(NULL)),
                    "pack(NULL) gives a SAFE_STOP word");
+#ifndef S5_HOST_TEST
+        /* Target only: subsystem5_get_request() lives in task_obstacle.c,
+         * which the host test (S5-U45) does not build */
         TEST_CHECK("S5-U09", (E_PAR == subsystem5_get_request(NULL)),
                    "get_request(NULL) is E_PAR");
+#endif
     }
 
     /* S5-U35: turn-and-box bypass move table */
@@ -306,10 +310,10 @@ EXPORT void subsystem5_test(void)
             S5_MOVE_TURN_L, S5_MOVE_FWD, S5_MOVE_FWD,    S5_MOVE_TURN_R};
         static const UH values[BYPASS_STEPS] = {
             90U, 17U, 90U, PASS_MAX_CM, 90U, 50U, 4U, 120U}; /* F1: shift 170 */
-        static const plan_t left_plan  = {PLAN_PASS_LEFT, 170U};
-        static const plan_t right_plan = {PLAN_PASS_RIGHT, 170U};
-        static const plan_t stop_plan  = {PLAN_STOP, 0U};
-        static const plan_t cont_plan  = {PLAN_CONTINUE, 0U};
+        static const plan_t left_plan  = {PLAN_PASS_LEFT, 170U, FALSE};
+        static const plan_t right_plan = {PLAN_PASS_RIGHT, 170U, FALSE};
+        static const plan_t stop_plan  = {PLAN_STOP, 0U, FALSE};
+        static const plan_t cont_plan  = {PLAN_CONTINUE, 0U, FALSE};
         bypass_step_t       step;
         UW                  index;
         BOOL                b_left_ok  = TRUE;
@@ -544,9 +548,9 @@ EXPORT void subsystem5_test(void)
     {
         obstacle_profile_t prof  = {TRUE, 190U, 80U,   185,
                                     -88,  205U, 9999U, 9999U};
-        plan_t             left  = {PLAN_PASS_LEFT, 135U};
-        plan_t             right = {PLAN_PASS_RIGHT, 135U};
-        plan_t             stop  = {PLAN_STOP, 0U};
+        plan_t             left  = {PLAN_PASS_LEFT, 135U, FALSE};
+        plan_t             right = {PLAN_PASS_RIGHT, 135U, FALSE};
+        plan_t             stop  = {PLAN_STOP, 0U, FALSE};
 
         TEST_CHECK(
             "S5-U37", (226U == bypass_side_gap_mm(&left, &prof)),
@@ -602,6 +606,176 @@ EXPORT void subsystem5_test(void)
                     (260U == plan.shift_mm) && plan.b_side_unseen),
                    "no side seen clear: still passes (equal shifts -> left), "
                    "flagged not seen");
+    }
+
+    /* S5-U11: whole-degree calibration maths and clamping */
+    TEST_CHECK("S5-U11",
+               ((1077U == servo_angle_to_pulse_us(50U)) &&
+                (1303U == servo_angle_to_pulse_us(70U)) &&
+                (1530U == servo_angle_to_pulse_us(90U)) &&
+                (1757U == servo_angle_to_pulse_us(110U)) &&
+                (1983U == servo_angle_to_pulse_us(130U))),
+               "50/70/90/110/130 deg = 1077/1303/1530/1757/1983 us");
+    TEST_CHECK("S5-U11",
+               ((1077U == servo_angle_to_pulse_us(0U)) &&
+                (1077U == servo_angle_to_pulse_us(49U)) &&
+                (1983U == servo_angle_to_pulse_us(131U)) &&
+                (1983U == servo_angle_to_pulse_us(180U))),
+               "below 50 / above 130 deg clamped to the holder limits");
+
+    /* S5-U12: settle time for a coarse jump */
+    TEST_CHECK("S5-U12", (0U == servo_settle_ms(90U, 90U)),
+               "no move: no wait");
+    TEST_CHECK("S5-U12",
+               ((70U == servo_settle_ms(60U, 30U)) &&
+                (70U == servo_settle_ms(30U, 60U))),
+               "30 deg either way = 50 + 20 margin = 70 ms (symmetric)");
+    TEST_CHECK("S5-U12", (170U == servo_settle_ms(30U, 120U)),
+               "90 deg = 150 + 20 = 170 ms");
+    TEST_CHECK("S5-U12", (22U == servo_settle_ms(90U, 91U)),
+               "1 deg = 1.7 ms rounds UP to 2, + 20 = 22 ms");
+
+    /* S5-U13: 2-of-3 obstacle confirmation filter (NFR5-1, NFR5-5) */
+    {
+        UB   hist;
+        BOOL b_got;
+        UW   index;
+
+        hist = 0U;
+        TEST_CHECK("S5-U13",
+                   !obstacle_filter_update(&hist, ULTRASONIC_OK, 150U),
+                   "(a) one close reading does not confirm");
+        hist = 0U;
+        (void)obstacle_filter_update(&hist, ULTRASONIC_OK, 150U);
+        TEST_CHECK("S5-U13",
+                   obstacle_filter_update(&hist, ULTRASONIC_OK, 150U),
+                   "(b) two close readings in a row confirm");
+        hist = 0U;
+        (void)obstacle_filter_update(&hist, ULTRASONIC_OK, 150U);
+        (void)obstacle_filter_update(&hist, ULTRASONIC_OK, 500U);
+        TEST_CHECK("S5-U13",
+                   obstacle_filter_update(&hist, ULTRASONIC_OK, 150U),
+                   "(c) close, far, close: two of the last three confirm");
+        hist = 0U;
+        (void)obstacle_filter_update(&hist, ULTRASONIC_OK, 150U);
+        (void)obstacle_filter_update(&hist, ULTRASONIC_NO_ECHO, 0U);
+        TEST_CHECK("S5-U13",
+                   !obstacle_filter_update(&hist, ULTRASONIC_NO_ECHO, 0U),
+                   "(d) close then two NO_ECHO: not confirmed");
+        hist = 0U;
+        (void)obstacle_filter_update(&hist, ULTRASONIC_OK, 150U);
+        (void)obstacle_filter_update(&hist, ULTRASONIC_TOO_NEAR, 0U);
+        b_got = obstacle_filter_update(&hist, ULTRASONIC_TOO_NEAR, 0U);
+        TEST_CHECK("S5-U13", (!b_got && (1U == hist)),
+                   "(e) TOO_NEAR is never close and leaves the history at 1");
+        hist  = 0U;
+        b_got = FALSE;
+        for (index = 0U; index < 3U; index++)
+        {
+            b_got = b_got ||
+                    obstacle_filter_update(&hist, ULTRASONIC_NO_ECHO, 0U);
+        }
+        for (index = 0U; index < 3U; index++)
+        {
+            b_got = b_got ||
+                    obstacle_filter_update(&hist, ULTRASONIC_TOO_FAR, 0U);
+        }
+        TEST_CHECK("S5-U13", !b_got,
+                   "(f) NO_ECHO x3 and TOO_FAR x3 never confirm");
+        hist = 0U;
+        (void)obstacle_filter_update(&hist, ULTRASONIC_OK, D_DETECT_MM);
+        TEST_CHECK("S5-U13",
+                   !obstacle_filter_update(&hist, ULTRASONIC_OK, D_DETECT_MM),
+                   "(g) 200 mm x2: not under D_DETECT_MM (boundary)");
+        TEST_CHECK("S5-U13",
+                   !obstacle_filter_update(NULL, ULTRASONIC_OK, 150U),
+                   "(h) NULL history is FALSE");
+        hist = 0U;
+        (void)obstacle_filter_update(&hist, ULTRASONIC_OK, 150U);
+        (void)obstacle_filter_update(&hist, ULTRASONIC_BUSY, 0U);
+        TEST_CHECK("S5-U13",
+                   obstacle_filter_update(&hist, ULTRASONIC_OK, 150U),
+                   "(i) BUSY between two close readings is skipped");
+    }
+
+    /* S5-U08: planner decisions from fixed profiles.  Corridor half
+     * = 150 / 2 + 50 = 125 mm; a side fits from PASS_GAP_MM = 250 mm. */
+    {
+        obstacle_profile_t prof;
+        plan_t             plan;
+
+        /* 100 mm box centred, both sides open */
+        prof = (obstacle_profile_t){TRUE,  250U, 90U, 250, 0, 100U,
+                                    CLEARANCE_OPEN_MM, CLEARANCE_OPEN_MM};
+        obstacle_plan(&prof, 0U, &plan);
+        TEST_CHECK("S5-U08",
+                   ((PLAN_PASS_LEFT == plan.decision) &&
+                    (175U == plan.shift_mm) && !plan.b_side_unseen),
+                   "(a) centred, both open: equal shifts 175 -> LEFT");
+
+        prof.centre_y_mm = -40; /* box a little to the right */
+        obstacle_plan(&prof, 0U, &plan);
+        TEST_CHECK("S5-U08",
+                   ((PLAN_PASS_LEFT == plan.decision) &&
+                    (135U == plan.shift_mm)),
+                   "(b) box 40 mm right: LEFT, shift 10 + 125 = 135");
+
+        prof.centre_y_mm = 40; /* box a little to the left */
+        obstacle_plan(&prof, 0U, &plan);
+        TEST_CHECK("S5-U08",
+                   ((PLAN_PASS_RIGHT == plan.decision) &&
+                    (135U == plan.shift_mm)),
+                   "(c) box 40 mm left: RIGHT, shift 135");
+
+        prof.centre_y_mm   = -40;
+        prof.clear_left_mm = PASS_GAP_MM - 1U; /* left too narrow */
+        obstacle_plan(&prof, 0U, &plan);
+        TEST_CHECK("S5-U08",
+                   ((PLAN_PASS_RIGHT == plan.decision) &&
+                    (215U == plan.shift_mm) && !plan.b_side_unseen),
+                   "(d) left gap 249 < 250: RIGHT even though longer (215)");
+
+        prof.clear_left_mm  = PASS_GAP_MM; /* exactly fits */
+        prof.clear_right_mm = 100U;
+        obstacle_plan(&prof, 0U, &plan);
+        TEST_CHECK("S5-U08",
+                   ((PLAN_PASS_LEFT == plan.decision) &&
+                    (135U == plan.shift_mm)),
+                   "(e) left gap exactly 250 fits: LEFT");
+
+        prof.clear_left_mm  = 100U; /* both blocked */
+        prof.clear_right_mm = 100U;
+        obstacle_plan(&prof, 0U, &plan);
+        TEST_CHECK("S5-U08", (PLAN_REVERSE == plan.decision),
+                   "(f) both blocked, retries left: REVERSE");
+        obstacle_plan(&prof, MAX_RETRIES, &plan);
+        TEST_CHECK("S5-U08",
+                   ((PLAN_STOP == plan.decision) && (0U == plan.shift_mm)),
+                   "(g) both blocked, retries used up: STOP (NO PATH)");
+
+        prof.clear_left_mm  = CLEARANCE_OPEN_MM;
+        prof.clear_right_mm = CLEARANCE_OPEN_MM;
+        prof.centre_y_mm    = 300; /* right edge 250 > 125 */
+        obstacle_plan(&prof, 0U, &plan);
+        TEST_CHECK("S5-U08", (PLAN_CONTINUE == plan.decision),
+                   "(h) box wholly left of the corridor: CONTINUE (A5-1)");
+        prof.centre_y_mm = -300;
+        obstacle_plan(&prof, 0U, &plan);
+        TEST_CHECK("S5-U08", (PLAN_CONTINUE == plan.decision),
+                   "(i) wholly right of the corridor: CONTINUE");
+        prof.centre_y_mm = 175; /* right edge exactly 125: still in */
+        obstacle_plan(&prof, 0U, &plan);
+        TEST_CHECK("S5-U08", (PLAN_CONTINUE != plan.decision),
+                   "(j) edge exactly on the corridor line counts as in");
+
+        prof.b_valid = FALSE;
+        obstacle_plan(&prof, 0U, &plan);
+        TEST_CHECK("S5-U08", (PLAN_CONTINUE == plan.decision),
+                   "(k) nothing found (invalid profile): CONTINUE");
+        obstacle_plan(NULL, 0U, &plan);
+        TEST_CHECK("S5-U08", (PLAN_STOP == plan.decision),
+                   "(l) NULL profile: STOP; NULL plan does not crash");
+        obstacle_plan(&prof, 0U, NULL);
     }
 
     /* S5-U39: obstacle telemetry word (#40) */

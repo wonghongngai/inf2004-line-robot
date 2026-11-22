@@ -189,13 +189,14 @@ is to measure real data.
 | S5-U01, U04, U05, U16 | L3 | manual | PASS (logs not saved) |
 | S5-U02: accuracy ±2 cm over 5–100 cm | L3 | manual | **FAIL before the hardware-timer fix: re-run** |
 | S5-U06: detection → action ≤ 2 s | L3 | manual | **FAIL (2299 ms) before the `FINE_BUDGET_POINTS` fix: re-run** |
-| S5-U03, U07, U08, U10–U13, U15 | — | planned | not written yet |
+| S5-U45: all of the above automatic checks, plus U08, U11–U13 (new), on the PC | L1 | `sh testing/run_host_tests.sh s5/` | PASS 22 Nov (102 checks, #30); U08, U11–U13 not yet run on the Pico |
+| S5-U03, U07, U10 | — | planned | not written yet. U15 is replaced by U28 (scan rework, 5 Nov) |
 
 **New:**
 
 | ID | What | Level | How | Pass when |
 |---|---|---|---|---|
-| S5-U39 | Obstacle logic on the PC | L1 | Move the pure `obstacle_logic.c` checks (filters, profile, planner) into a host test `s5/obstacle_logic`, with kernel types stubbed like `robot_host_stubs.h` | same checks as on target; runs in seconds |
+| S5-U45 | Obstacle logic on the PC (was listed here as S5-U39, but that ID is the telemetry word in the TEST_LOG) | L1 | Host test `s5/obstacle_logic`: the real `subsystem5_test.c` + `obstacle_logic.c` + `drv_servo.c`, kernel and PWM stubbed (`testing/subsystem5/s5_host_stubs.h`) | same checks as on target; runs in seconds. **PASS 22 Nov (#30)** |
 | S5-U40 | Detect at ≥ 30 cm and stop ≥ 10 cm from the obstacle (NFR5-1) | L4 | 10 approaches to a box at cruise speed | 10/10 detected at ≥ 30 cm, stopped ≥ 10 cm away |
 | S5-U41 | Avoids a box | L4 | Box centred, offset left and offset right, 5 runs each | 15/15 pass without touching it |
 | S5-U42 | Reacquires the line within 50 cm (NFR5-4) | L4 | Same runs as U41; mark where the line is reacquired | 15/15 within 50 cm |

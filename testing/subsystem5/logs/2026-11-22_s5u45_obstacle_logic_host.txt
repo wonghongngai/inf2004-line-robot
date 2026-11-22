@@ -1,0 +1,116 @@
+# S5-U45 (#30): subsystem5_test.c + obstacle_logic.c + drv_servo.c on the PC. sh testing/run_host_tests.sh -v s5/, branch test/s5-obstacle-logic-host on 54c8681, run by Claude 2026-11-22.
+# Also checked: a planted bug (< D_DETECT_MM changed to <=) fails S5-U13 (g) and exits 1; the full suite passes 15/15; sh build.sh integrated TEST=1 still builds (not flashed).
+
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: 54c8681 + uncommitted changes
+
+s5/obstacle_logic            PASS
+[TEST] S5-U21 PASS  120 deg glide takes 1525 ms (ramp 100 + cruise 1325 + ramp 100)
+[TEST] S5-U21 PASS  starts at 0, 7 deg after the ramp, half way at mid-time, then stays at the end
+[TEST] S5-U21 PASS  120 deg: every 20 ms pulse moves 0.9-1.7 deg, never back, lands exactly
+[TEST] S5-U21 PASS  60 deg glide is smooth too
+[TEST] S5-U21 PASS  short 10 deg move runs at the start speed throughout
+[TEST] S5-U21 PASS  zero-length move takes no time
+[TEST] S5-U22 PASS  90.0 deg = 1530 us (forward)
+[TEST] S5-U22 PASS  50.0 / 130.0 deg = 1077 / 1983 us (the holder's limits)
+[TEST] S5-U22 PASS  90.5 deg = 1536 us: sub-degree steps change the pulse
+[TEST] S5-U22 PASS  below 50 / above 130 deg is clamped (holder would hit the body)
+[TEST] S5-U22 PASS  whole-degree requests are clamped to 50..130 too
+[TEST] S5-U22 PASS  whole-degree and ddeg conversions agree
+[TEST] S5-U28 PASS  coarse scan is 50 / 70 / 90 / 110 / 130
+[TEST] S5-U28 PASS  hits at 90 and 110: fine 70..130 (one step past each)
+[TEST] S5-U28 PASS  2026-11-05 bench: hits 50..110, none at 130 -> fine 50..130
+[TEST] S5-U28 PASS  hits at 70 and 110 (90 clear): fine 50..130
+[TEST] S5-U28 PASS  hit at 90 only: fine 70..110 (to both neighbours)
+[TEST] S5-U28 PASS  hit at 50 only: fine 50..70 (limited at 50)
+[TEST] S5-U28 PASS  hit at 130 only: fine 110..130 (limited at 130)
+[TEST] S5-U28 PASS  no hits (all NO_ECHO): no fine scan
+[TEST] S5-U28 PASS  OK at 700 mm is beyond D_PROFILE_MM: not a hit
+[TEST] S5-U28 PASS  NULL pointer gives FALSE
+[TEST] S5-U09 PASS  MOVE turn-right 1023, seq 9, stop-on-line round trip
+[TEST] S5-U09 PASS  HOLD round trip
+[TEST] S5-U09 PASS  SAFE_STOP, seq 15 round trip
+[TEST] S5-U09 PASS  reserved kind 5 rejected
+[TEST] S5-U09 PASS  reserved kind 7 rejected
+[TEST] S5-U09 PASS  reserved move 3 rejected
+[TEST] S5-U09 PASS  unused bits 20-27 set: rejected
+[TEST] S5-U09 PASS  FWD 50 cm, stop when BOTH sensors crossed (bit 28) round trip
+[TEST] S5-U09 PASS  unused bits 29-31 set: rejected
+[TEST] S5-U09 PASS  rejected word reads back as NONE
+[TEST] S5-U09 PASS  value over 1023 clamped
+[TEST] S5-U09 PASS  pack(NULL) gives a SAFE_STOP word
+[TEST] S5-U35 PASS  left pass, shift 170: L90, F17, R90, F up to 80 watched, R90, F50 to line, F4, L up to 120
+[TEST] S5-U35 PASS  right pass: the mirror (R90, F17, L90, F up to 80, L90, F50, F4, R up to 120)
+[TEST] S5-U35 PASS  only F3 (step 6) and T4 (step 8) stop on the line
+[TEST] S5-U35 PASS  only F3 waits for BOTH sensors to cross the line
+[TEST] S5-U35 PASS  F2 (step 4) is the watched pass; T3 (step 5) looks ahead after
+[TEST] S5-U35 PASS  index past the end, not a pass, or NULL: FALSE
+[TEST] S5-U35 PASS  F1 = shift rounded up to cm, 10..40 cm (170 -> 17, 171 -> 18, 98 -> 10, 600 -> 40)
+[TEST] S5-U31 PASS  closest 190 mm at 80 deg
+[TEST] S5-U31 PASS  box is 50..115 deg: 501 mm echo not part of it (run reaches 50 deg: only the left edge pulled in, 185 mm wide, centre -68)
+[TEST] S5-U31 PASS  lone 501 mm echo does not narrow the left; right never seen (box runs to 50 deg)
+[TEST] S5-U31 PASS  decision PASS LEFT (seen clear), shift 149 mm
+[TEST] S5-U31 PASS  confirmed object 501/505 mm on the left blocks it: PASS RIGHT, flagged not seen
+[TEST] S5-U32 PASS  closest 294 mm at 75 deg
+[TEST] S5-U32 PASS  run reaches 50 deg: right edge kept at -208, left 207 - 107 = 100 mm
+[TEST] S5-U32 PASS  PASS LEFT, shift 100 + 125 = 225 mm
+[TEST] S5-U33 PASS  right edge kept at -194 (not seen), left 95 - 107 = -12: 182 mm (was 75)
+[TEST] S5-U33 PASS  PASS LEFT, shift -12 + 125 = 113 mm
+[TEST] S5-U34 PASS  width 205 mm (box 210), centre -127 mm, closest x 275 mm
+[TEST] S5-U36 PASS  near 300, then passed only after SIDE_CLEAR_COUNT (10) clear readings
+[TEST] S5-U36 PASS  clear readings without seeing the box first: not passed
+[TEST] S5-U36 PASS  near again just before passing resets the clear count
+[TEST] S5-U36 PASS  TOO_NEAR and BUSY change nothing (NFR5-5)
+[TEST] S5-U36 PASS  NULL state is FALSE
+[TEST] S5-U37 PASS  side gap, left pass: F1 140 + pivots 100 - left edge 14 = 226 mm
+[TEST] S5-U37 PASS  side gap at least 50 mm; not a pass or NULL: 0
+[TEST] S5-U37 PASS  beside under 226 / sin 20 + 50 = 710 mm, at most 1000
+[TEST] S5-U37 PASS  never seen: front 185 - 100 + 60 deep + 150 tail + 50 = 345 -> 35 cm
+[TEST] S5-U37 PASS  plan at most PASS_MAX_CM; NULL: 10 cm
+[TEST] S5-U37 PASS  after passing: 226 x cot 60 + 150 + 50 + 100 sweep = 430 -> 43 cm on
+[TEST] S5-U37 PASS  after T3, box still ahead if under 226 + 200 = 426 mm
+[TEST] S5-U37 PASS  left pass watches 50 (box on the right), right pass 130
+[TEST] S5-U38 PASS  box runs to both 50 and 130 deg: both sides not seen
+[TEST] S5-U38 PASS  no side seen clear: still passes (equal shifts -> left), flagged not seen
+[TEST] S5-U11 PASS  50/70/90/110/130 deg = 1077/1303/1530/1757/1983 us
+[TEST] S5-U11 PASS  below 50 / above 130 deg clamped to the holder limits
+[TEST] S5-U12 PASS  no move: no wait
+[TEST] S5-U12 PASS  30 deg either way = 50 + 20 margin = 70 ms (symmetric)
+[TEST] S5-U12 PASS  90 deg = 150 + 20 = 170 ms
+[TEST] S5-U12 PASS  1 deg = 1.7 ms rounds UP to 2, + 20 = 22 ms
+[TEST] S5-U13 PASS  (a) one close reading does not confirm
+[TEST] S5-U13 PASS  (b) two close readings in a row confirm
+[TEST] S5-U13 PASS  (c) close, far, close: two of the last three confirm
+[TEST] S5-U13 PASS  (d) close then two NO_ECHO: not confirmed
+[TEST] S5-U13 PASS  (e) TOO_NEAR is never close and leaves the history at 1
+[TEST] S5-U13 PASS  (f) NO_ECHO x3 and TOO_FAR x3 never confirm
+[TEST] S5-U13 PASS  (g) 200 mm x2: not under D_DETECT_MM (boundary)
+[TEST] S5-U13 PASS  (h) NULL history is FALSE
+[TEST] S5-U13 PASS  (i) BUSY between two close readings is skipped
+[TEST] S5-U08 PASS  (a) centred, both open: equal shifts 175 -> LEFT
+[TEST] S5-U08 PASS  (b) box 40 mm right: LEFT, shift 10 + 125 = 135
+[TEST] S5-U08 PASS  (c) box 40 mm left: RIGHT, shift 135
+[TEST] S5-U08 PASS  (d) left gap 249 < 250: RIGHT even though longer (215)
+[TEST] S5-U08 PASS  (e) left gap exactly 250 fits: LEFT
+[TEST] S5-U08 PASS  (f) both blocked, retries left: REVERSE
+[TEST] S5-U08 PASS  (g) both blocked, retries used up: STOP (NO PATH)
+[TEST] S5-U08 PASS  (h) box wholly left of the corridor: CONTINUE (A5-1)
+[TEST] S5-U08 PASS  (i) wholly right of the corridor: CONTINUE
+[TEST] S5-U08 PASS  (j) edge exactly on the corridor line counts as in
+[TEST] S5-U08 PASS  (k) nothing found (invalid profile): CONTINUE
+[TEST] S5-U08 PASS  (l) NULL profile: STOP; NULL plan does not crash
+[TEST] S5-U39 PASS  invalid profile (nothing found) leaves the result as it was
+[TEST] S5-U39 PASS  294 mm -> 29 cm, 215 mm -> 22 cm (rounded), angle kept
+[TEST] S5-U39 PASS  over-range values clamp to 400 cm / 180 deg / 400 cm
+[TEST] S5-U39 PASS  pack + unpack round trip
+[TEST] S5-U39 PASS  maximum values round trip
+[TEST] S5-U39 PASS  pack clamps an out-of-range distance
+[TEST] S5-U39 PASS  NULL packs to 0; 0 unpacks to 'no obstacle yet'
+[TEST] S5-U39 PASS  rejects unused bits, out-of-range fields and NULL
+[TEST] subsystem5 SUMMARY 102 passed, 0 failed
+host: 102 checks, 0 failed
+
+================ summary ================
+PASS   s5/obstacle_logic            
+-----------------------------------------
+1 passed, 0 failed, 0 known failures, 0 skipped
