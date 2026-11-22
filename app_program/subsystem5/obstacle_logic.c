@@ -812,3 +812,100 @@ EXPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req)
     p_req->b_line_all = (0U != ((word >> REQ_LALL_SHIFT) & 1U)) ? TRUE : FALSE;
     return TRUE;
 }
+
+/* ---- S5 -> telemetry obstacle word (#40) ---- */
+
+/* Obstacle word layout (see subsystem5.h) */
+#define OBS_DIST_SHIFT   (0U)
+#define OBS_DIST_MASK    (0x1FFU)
+#define OBS_ANGLE_SHIFT  (9U)
+#define OBS_ANGLE_MASK   (0xFFU)
+#define OBS_WIDTH_SHIFT  (17U)
+#define OBS_WIDTH_MASK   (0x1FFU)
+#define OBS_UNUSED_SHIFT (26U) /* bits 26-31 must be 0 */
+
+/* mm -> cm, rounded to nearest, clamped */
+static UW mm_to_cm_clamped(UW mm, UW max_cm)
+{
+    UW cm = (mm + 5U) / 10U;
+
+    return (cm > max_cm) ? max_cm : cm;
+}
+
+/* Telemetry values from a valid profile */
+EXPORT BOOL s5_obstacle_from_profile(const obstacle_profile_t * p_profile,
+                                     S5_OBSTACLE_INFO *         p_info)
+{
+    if ((NULL == p_profile) || (NULL == p_info) || (!p_profile->b_valid))
+    {
+        return FALSE;
+    }
+
+    p_info->distance_cm =
+        (UH)mm_to_cm_clamped(p_profile->closest_mm, S5_OBS_DISTANCE_MAX_CM);
+    p_info->angle_deg = (UB)((p_profile->closest_deg > S5_OBS_ANGLE_MAX_DEG)
+                                 ? S5_OBS_ANGLE_MAX_DEG
+                                 : p_profile->closest_deg);
+    p_info->width_cm =
+        (UH)mm_to_cm_clamped(p_profile->width_mm, S5_OBS_WIDTH_MAX_CM);
+    return TRUE;
+}
+
+/* Pack the obstacle result into one 32-bit word */
+EXPORT UW s5_obstacle_pack(const S5_OBSTACLE_INFO * p_info)
+{
+    UW distance;
+    UW angle;
+    UW width;
+
+    if (NULL == p_info)
+    {
+        return 0U;
+    }
+
+    distance = (p_info->distance_cm > S5_OBS_DISTANCE_MAX_CM)
+                   ? S5_OBS_DISTANCE_MAX_CM
+                   : (UW)p_info->distance_cm;
+    angle    = (p_info->angle_deg > S5_OBS_ANGLE_MAX_DEG)
+                   ? S5_OBS_ANGLE_MAX_DEG
+                   : (UW)p_info->angle_deg;
+    width    = (p_info->width_cm > S5_OBS_WIDTH_MAX_CM) ? S5_OBS_WIDTH_MAX_CM
+                                                       : (UW)p_info->width_cm;
+
+    return ((distance & OBS_DIST_MASK) << OBS_DIST_SHIFT) |
+           ((angle & OBS_ANGLE_MASK) << OBS_ANGLE_SHIFT) |
+           ((width & OBS_WIDTH_MASK) << OBS_WIDTH_SHIFT);
+}
+
+/* Unpack an obstacle word, rejecting reserved bits and out-of-range values */
+EXPORT BOOL s5_obstacle_unpack(UW word, S5_OBSTACLE_INFO * p_info)
+{
+    UW distance;
+    UW angle;
+    UW width;
+
+    if (NULL == p_info)
+    {
+        return FALSE;
+    }
+
+    p_info->distance_cm = 0U;
+    p_info->angle_deg   = 0U;
+    p_info->width_cm    = 0U;
+
+    distance = (word >> OBS_DIST_SHIFT) & OBS_DIST_MASK;
+    angle    = (word >> OBS_ANGLE_SHIFT) & OBS_ANGLE_MASK;
+    width    = (word >> OBS_WIDTH_SHIFT) & OBS_WIDTH_MASK;
+
+    if ((0U != (word >> OBS_UNUSED_SHIFT)) ||
+        (distance > S5_OBS_DISTANCE_MAX_CM) ||
+        (angle > S5_OBS_ANGLE_MAX_DEG) || (width > S5_OBS_WIDTH_MAX_CM))
+    {
+        return FALSE;
+    }
+
+    p_info->distance_cm = (UH)distance;
+    p_info->angle_deg   = (UB)angle;
+    p_info->width_cm    = (UH)width;
+    return TRUE;
+}

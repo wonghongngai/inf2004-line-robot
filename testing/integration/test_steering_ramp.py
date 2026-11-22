@@ -14,8 +14,8 @@ import subprocess
 import tempfile
 
 root = Path(__file__).resolve().parents[2]
-source = (root / 'app_program/subsystem2/all_buddies_test.c').read_text(encoding='utf-8')
-header = (root / 'app_program/subsystem2/all_buddies_test.h').read_text(encoding='utf-8')
+source = (root / 'app_program/all_test/all_buddies_test.c').read_text(encoding='utf-8')
+header = (root / 'app_program/all_test/all_buddies_test.h').read_text(encoding='utf-8')
 barcode_h = (root / 'app_program/subsystem3/line_barcode.h').read_text(encoding='utf-8')
 s2_h = (root / 'app_program/subsystem2/subsystem2.h').read_text(encoding='utf-8')
 period = re.search(r'#define LINE_BARCODE_PERIOD_MS\s+(\d+)u', barcode_h).group(1)

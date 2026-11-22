@@ -3,7 +3,7 @@
 > **all_test only, and partly out of date.** `integrated` is the final
 > firmware (issue #4); this describes the `all_test` harness as of early
 > November. PWM values below may have been retuned since: the current
-> constants are at the top of `app_program/subsystem2/all_buddies_test.c`.
+> constants are at the top of `app_program/all_test/all_buddies_test.c`.
 > The offline `all_test` build uses the default barcode map (`A,F,Z,W`).
 > MQTT-enabled `all_test` can replace this map at runtime. Build commands are
 > in the root README.
@@ -50,7 +50,7 @@ GPIO and filtered transitions also printed as [IR RAW].
 The previous corner-memory/search routine is bypassed in this profile.
 Black-line LOST/SEARCH and junction classifications do not override these
 centre/right rules. Queue errors, stale snapshots, sensor faults, manual
-pause, IMU tilt/collision/faults still stop movement. Straight and outer-wheel
+pause, lifting the robot (#53) and IMU faults still stop movement (tilt is report-only, #67). Straight and outer-wheel
 power use the existing acceleration ramp. No search deadline is enabled.
 Both white can also mean the robot is off the intended track; this two-sensor
 rule alone cannot distinguish that from the desired white area. Switch off

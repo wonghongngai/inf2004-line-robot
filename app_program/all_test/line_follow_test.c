@@ -4,8 +4,8 @@
 #include "line_follow_test.h"
 
 #if APP_LINE_FOLLOW_TEST
-#include "drv_motor.h"
-#include "subsystem2.h"
+#include "../subsystem2/drv_motor.h"
+#include "../subsystem2/subsystem2.h"
 #include "line_follow_output.h"
 #include "../subsystem3/line_service.h"
 

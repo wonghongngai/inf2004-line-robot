@@ -7,6 +7,14 @@ differs from the plan is in [DEVIATIONS.md](DEVIATIONS.md); what is done is in
 
 Decided 13 Nov 2026: `integrated` is the final firmware (#4, see `STATUS.md`).
 
+## 22 Nov 2026: humps and the ultrasonic
+
+| Issue | Decision | Follow-up |
+| --- | --- | --- |
+| #44 | **S5 does not gate on the IMU tilt state** (A5-2 dropped): the hump is too small to matter | S5-U44 dropped in `TEST_PLAN.md` |
+| #36 | **INT-11 dropped:** the ultrasonic sits above the hump's height, so it cannot see the hump | — |
+| #34 | INT-09 target cut to 5/5 lifts; tilt removed (report-only, #67) | PASS on the robot 21 Nov (S4-U12) |
+
 ## 20 Nov 2026: M1 decisions
 
 Decided by the team on 20 Nov 2026, from `main` @ `42be6ea`.
@@ -22,7 +30,7 @@ Decided by the team on 20 Nov 2026, from `main` @ `42be6ea`.
 | #64 | Keep 20 cm detection | Buddy 5 records the reason; S5-U40 (#31) must show the robot rests ≥ 10 cm away |
 | #65 | Keep the 50–130° scan. FR5-1 changed to 50, 70, 90, 110, 130° | Re-measure NFR5-2 with the sensor mounted (#29) |
 | #66 | Keep the current task priorities | S1-U17 (#15) and S2-U12 (#19) measure loop lateness with Wi-Fi on |
-| #67 | Tilt is report-only | Check on the real humps with INT-11 (#36) |
+| #67 | Tilt is report-only | INT-11 (#36) dropped 22 Nov: see below |
 | #68 | On line loss the robot stops and waits. Statechart 3 changed | S3-U31 (#23) |
 
 ### #5 Hump height after the descent
@@ -175,8 +183,8 @@ still ignores ultrasonic readings while tilted. The VC no longer stops on
 latches until reboot, so one false tilt (the 20 Nov ramp log has 22, though
 that ramp was under one side and the robot was handled) would end the demo
 run. The real danger, the robot being picked up, is covered by the lift
-check (#53). IMU faults, stale IMU data and (until #53 removes it) collision
-still stop the robot.
+check (#53). IMU faults, stale IMU data and (until #53 removed it on 21 Nov,
+replacing it with the lift check) collision still stop the robot.
 
 ### #68 Line loss
 

@@ -1,4 +1,4 @@
-/* Host-only: gcc -DS2_PROTOCOL_HOST_TEST=1 motion_protocol_host_test.c */
+/* Host-only, no SDK: see testing/run_host_tests.sh (s2/motion_protocol). */
 #if defined(S2_PROTOCOL_HOST_TEST) && S2_PROTOCOL_HOST_TEST
 #include "motion_protocol.h"
 #include <assert.h>

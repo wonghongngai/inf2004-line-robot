@@ -372,7 +372,7 @@ static void publish_barcode_result(const line_service_barcode_frame_t *frame)
                     (unsigned char)('A' + frame->letter) : 0u;
     ER er = subsystem1_publish_barcode(&result);
     if (er < E_OK && er != E_NOSPT && er != E_OBJ)
-        tm_printf((UB *)"[BARCODE MQTT] enqueue=%d frame=%u (queue full or invalid)\n",
+        LOG_ERR(TAG_S3_BARCODE, "MQTT enqueue=%d frame=%u (queue full or invalid)",
                   (int)er, result.id);
 }
 

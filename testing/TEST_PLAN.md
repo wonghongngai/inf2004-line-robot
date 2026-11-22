@@ -170,11 +170,11 @@ is to measure real data.
 | S4-U09 | Hump detected | L4 | 10 passes over each real hump, 10 runs on flat floor | 10/10 detected, 0 false detections |
 | S4-U10 | Highest hump height accuracy | L4 | Measure each hump with a ruler; 5 passes each | within ±3 mm; with several humps, the highest is reported |
 | S4-U11 | Tilt detection | L3 | Tilt the robot by hand past the limit, 10× | 10/10 flagged within 200 ms |
-| S4-U12 | Lift stops the motors (replaces collision detection, removed 13 Nov; #53) | L4 | Lift the robot off the floor while driving, 10×; drive over each hump 10× | 10/10 stop and stay stopped; 0 false stops over humps |
+| S4-U12 | Lift stops the motors (replaces collision detection, removed 13 Nov; #53) | L4 | Lift the robot off the floor while driving, 5×; drive over each hump 5× (cut from 10 on 21 Nov) | 5/5 stop and stay stopped; 0 false stops over humps |
 | S4-U13 | Replay recorded IMU logs on the PC | L1 | New `s4/imu_replay` host test: feed the U08–U12 logs into `task_imu.c` | same results as on the robot; tuning changes can then be checked offline |
 | S4-U14 | CR1 minimum-bit change | L2 | `arm-none-eabi-size` and `.map` before and after | numbers recorded (the README says this is still the PRE version) |
 
-**Done when:** U01–U14 pass, and the tilt/obstacle timing check (INT-11) passes.
+**Done when:** U01–U14 pass. (The tilt/obstacle timing check INT-11 was dropped 22 Nov, #36.)
 
 ---
 
@@ -199,7 +199,7 @@ is to measure real data.
 | S5-U41 | Avoids a box | L4 | Box centred, offset left and offset right, 5 runs each | 15/15 pass without touching it |
 | S5-U42 | Reacquires the line within 50 cm (NFR5-4) | L4 | Same runs as U41; mark where the line is reacquired | 15/15 within 50 cm |
 | S5-U43 | Ignores invalid readings (NFR5-5) | L3 | Point at open space, a soft target, and very close (< 2 cm) | never the only basis of a decision; logged as invalid |
-| S5-U44 | Hump is not treated as an obstacle (A5-2) | L4 | 10 hump passes with S5 active | 0 false obstacle stops (pairs with INT-11) |
+| S5-U44 | Hump is not treated as an obstacle (A5-2) | L4 | 10 hump passes with S5 active | 0 false obstacle stops. **Dropped 22 Nov (#44):** the hump is too small to matter and the ultrasonic sits above its height |
 
 **Done when:** U01–U44 pass, and avoidance works in integrated mode (INT-10).
 
@@ -213,9 +213,9 @@ is to measure real data.
 | INT-04/06 | All firmware profiles build | build | `sh testing/integration/build_robot_profiles.sh` passes: rerun on every PR that touches `app_program/` |
 | INT-07 | Telemetry and commands, S1 ↔ VC (IF-05, IF-06) on the robot | L4 | S1-U12 + S1-U14 pass in the integrated build |
 | INT-08 | Barcode command at a junction gives the right turn (IF-07) | L4 | 4 commands × 5, 20/20 correct |
-| INT-09 | IMU safety stop in integrated mode (IF-08) | L4 | lift / tilt → stops 10/10 (collision detection removed 13 Nov) |
+| INT-09 | IMU safety stop in integrated mode (IF-08) | L4 | lift → stops 5/5 (cut from 10; collision detection removed 13 Nov; tilt is report-only, #67). **PASS 21 Nov** (S4-U12, #34) |
 | INT-10 | S5 takes control, avoids, hands back (IF-10, IF-11) | L4 | S5-U41 passes in the integrated build |
-| INT-11 | Hump vs obstacle timing (open risk) | L4 | tilt flag is set before the ultrasonic reacts; 0 false obstacle stops on 10 hump passes |
+| INT-11 | Hump vs obstacle timing | — | **Dropped 22 Nov (#36):** the ultrasonic sits above the hump's height, so it cannot see the hump |
 | INT-12 | Host suite clean | L1 | `sh testing/run_host_tests.sh` all PASS before each merge to `main` |
 | INT-13 | VC ↔ S5 hand-over on the PC | L1 | see Buddy 2 |
 | INT-14 | Event-bit table matches the code (#50) | L1 | `int/event_bits`: no file outside TEAM.md §5's producer/consumer columns sets, clears, waits on, sends to or reads an event object |
@@ -241,7 +241,7 @@ is to measure real data.
    hump test; the team decides `integrated` vs `all_test` and the barcode mounting.
 3. **Bench (L3), in parallel:** S1-U11–U15, S2-U05–U07/U10–U11, S3-U28/U34,
    S4-U08/U11, S5-U02/U06/U43.
-4. **Integrated (L4):** INT-07–INT-11, then each buddy's L4 tests.
+4. **Integrated (L4):** INT-07–INT-10, then each buddy's L4 tests.
 5. **Track (L5) and SYS:** only after L4 passes, then SYS-01–SYS-06.
 
 At each weekly check-in, move `STATUS.md` cells only for tests that have a

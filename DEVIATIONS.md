@@ -24,7 +24,7 @@ The source documents are not in this repo. Each row gives the planned item, what
 | # | Deviation | Type | Fix |
 | --- | --- | --- | --- |
 | 1 | Barcode letter-to-movement map: no longer hard-coded; both builds apply the MQTT map and go straight until it arrives; telemetry bit 86 reports it (21 Nov, host-tested). A–Z on the robot not tested by decision (21 Nov, `DECISIONS.md`): only A was scanned on the robot | Partial | #38 |
-| 2 | IMU collision detection still in the code; prof replaced it with a lift-stop | Mandated | #53 |
+| 2 | IMU collision detection removed and the lift-stop built (#53, 21 Nov); host-tested; S4-U12 passed on the robot 21 Nov | Mandated | #53 |
 | 3 | Obstacle detection distance is 20 cm, NFR5-1 requires at least 30 cm | Changed, decided 20 Nov: keep 20 cm | #64 (`DECISIONS.md`); S5-U40 in #31 |
 | 4 | All recent tuning lives in `all_test`; the `integrated` firmware (the Week 6 architecture) is untested on the robot | Changed | Decided 13 Nov: integrated is final (#4); port the tuning (#8) |
 | 5 | Task priorities inverted: Week 6 made S5 the highest, the code makes it the lowest (20) | Changed, decided 20 Nov: keep | #66 (`DECISIONS.md`); timing still to measure (#15, #19) |
@@ -41,7 +41,7 @@ Three requirement changes came from the instructor after Week 6; only the minimu
 | ID | Original plan | New requirement | Current code | Status | Issue |
 | --- | --- | --- | --- | --- | --- |
 | M1 | WU p3: barcodes A to D map to fixed commands; W6 FR3-3 decodes "navigation barcodes" | Prof, 13 Nov: decode all A to Z in both directions; store the letter; act at the next cross-junction; the 4-letter map is sent PC to car over MQTT just before the demo and must not be hard-coded | Decoder handles A to Z both ways and "store, act at junction" (host tests S3-U07, S3-U26). Map hard-coded: integrated A,B,C,Z; all_test A,F,Z,W and logs "MQTT map ignored" | Partial | #38 |
-| M2 | WU p8, W6 FR4-3: detect collision with the IMU; W6 system statechart: collision triggers Emergency Stop | Prof, 13 Nov: IMU collision detection removed; lifting the robot must stop the motors; no detailed lift or overturn classification | Collision still detected (1200 mg) and stops the robot in both builds; no lift detection | Missing | #53 |
+| M2 | WU p8, W6 FR4-3: detect collision with the IMU; W6 system statechart: collision triggers Emergency Stop | Prof, 13 Nov: IMU collision detection removed; lifting the robot must stop the motors; no detailed lift or overturn classification | Collision detection removed (21 Nov). Lift check: 200 ms average of the Z deviation from the baseline ≥ 200 mg for 60 ms; it stops the robot in both builds and the stop latches. Host tests pass; S4-U12 on the robot passed 21 Nov (7/7 lifts stopped, 0 false stops in 6 hump runs) | Matches | #53 |
 | M3 | W6 data passed as plain structs and floats | PT curveball: minimum-bit data representation (CR1) | Done for S1 telemetry (80 bits), S3 messages (3 bytes), S2 motion protocol (5-byte command), S5 request word; S4 still the "PRE" version; S2 numeric widths provisional | Partial | #25 (S4-U14), #52. S5 distance: 9-bit cm on the wire, mm inside S5 (#54, decided 20 Nov) |
 
 For M1, the team decided that before a map arrives the robot goes straight at junctions.
@@ -109,16 +109,16 @@ The decoder is the best-tested part of the project on the PC, but the sensor lay
 
 ## Buddy 4: IMU, humps, tilt
 
-Calibration, tilt and hump detection exist, but motion classes and turn rate (still assessed) are missing, collision must be replaced by a lift-stop, and all thresholds are placeholders.
+Calibration, tilt and hump detection exist, but motion classes and turn rate (still assessed) are missing, collision was replaced by a lift-stop (S4-U12 passed 21 Nov), and all thresholds are placeholders.
 
 | ID | Requirement (source) | Current code | Type | Follow-up |
 | --- | --- | --- | --- | --- |
 | B4-1 | FR4-1 calibrate before monitoring (W6) | 1 s stationary baseline at start; on-target check S4-U03 passed 19 Nov (`d9c4830`); baseline values not yet logged on the bench | Partial | #24 |
 | B4-2 | FR4-2 tilt and hump events with peak estimate (W6); WU: measure the highest hump peak | Implemented. The estimator keeps the climb height after the descent (decided 20 Nov, #5; `s4/hump_height` passes). Thresholds are placeholders (`subsystem4/README.md`) | Partial | #25, #27 |
-| B4-3 | FR4-3 motion classification (W6); WU p8 events: stationary, accelerating, turning, climbing, descending | Only NORMAL, HUMP, TILT, COLLISION, FAULT safety states | Missing | #42 |
-| B4-4 | FR4-3 collision detection (W6) | Still implemented (1200 mg, tripped on motor start-up before) | Mandated removal (M2) | #53 |
+| B4-3 | FR4-3 motion classification (W6); WU p8 events: stationary, accelerating, turning, climbing, descending | Only NORMAL, HUMP, TILT, LIFTED, FAULT safety states | Missing | #42 |
+| B4-4 | FR4-3 collision detection (W6) | Removed 21 Nov (#53); the lift check replaces it | Mandated removal (M2) | #53 |
 | B4-5 | FR4-4 report turn rate (W6, WU) | No turn rate; the LSM303DLHC has no gyroscope; magnetometer is read but unused | Missing | #43 |
-| B4-6 | PT decision: a normal hump must not cause an emergency stop; tilt and hump are informational (`TRIBUNAL_STATUS.md`) | Decided 20 Nov: tilt is report-only. The VC no longer halts on tilt (`robot_control.c`); host test INT-03 passes | Matches (not yet tested on the robot) | INT-11 (#36) |
+| B4-6 | PT decision: a normal hump must not cause an emergency stop; tilt and hump are informational (`TRIBUNAL_STATUS.md`) | Decided 20 Nov: tilt is report-only. The VC no longer halts on tilt (`robot_control.c`); host test INT-03 passes | Matches (not yet tested on the robot) | INT-11 dropped 22 Nov (#36): the ultrasonic sits above the hump |
 | B4-7 | NFR4-1 sample every 20 ms; NFR4-3 cycle within 20 ms | `S4_SAMPLE_PERIOD_MS` back to 20 on 20 Nov, with every sample count halved to keep the same timings (it was 10 from `8dde092`, 18 Nov). At 10 ms, S4-U05 **failed** on target 19 and 20 Nov: cycles take about 12 ms (longest 17 ms with Wi-Fi off, 20 ms with it on). At 20 ms, S4-U05 **passed** on target 20 Nov (0 overruns, longest cycle 19 ms); hump detection not yet re-checked at 20 ms | Unverified | #24 |
 | B4-8 | NFR4-2 report a hump within 100 ms | Not measured; the collision part of NFR4-2 is void (M2) | Unverified | #27 |
 | B4-9 | CR1 minimum-bit representation | 4-byte `IMU_PACKED_MSG` exists (S4-U06), but `subsystem4/README.md` still calls this the "PRE" version; no before/after sizes | Partial | #25 (S4-U14) |

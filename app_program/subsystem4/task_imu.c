@@ -61,6 +61,15 @@ LOCAL UW hump_rearm_count;
 LOCAL UW movement_hold_samples;
 LOCAL int64_t hump_entry_height_milli_mm;
 
+/* Lift check (#53): moving average of the clipped Z deviation and the
+ * consecutive-sample count. */
+LOCAL W lift_samples[S4_LIFT_FILTER_SAMPLES];
+LOCAL W lift_sum;
+LOCAL UW lift_next;
+LOCAL UW lift_count;
+LOCAL UW lift_confirm;
+LOCAL BOOL lift_reported;
+
 /* Height estimator state for one ramp crossing. */
 LOCAL W current_height_mm;
 LOCAL UW peak_height_mm;
@@ -72,19 +81,6 @@ LOCAL BOOL height_distance_seen;
 LOCAL W abs_w(W value)
 {
     return (value < 0) ? -value : value;
-}
-
-LOCAL W max3(W a, W b, W c)
-{
-    W max = a;
-
-    if (b > max) {
-        max = b;
-    }
-    if (c > max) {
-        max = c;
-    }
-    return max;
 }
 
 LOCAL INT sign_w(W value)
@@ -321,8 +317,8 @@ LOCAL void report_error(const char *what, ER er)
         (UW)(now - err_last_report_ms) < S4_ERROR_REPORT_MS) {
         return;
     }
-    tm_printf((UB *)"Buddy4: IMU %s failed, er=%d (%u failures since last report)\n",
-              what, er, err_unreported);
+    LOG_ERR(TAG_S4_IMU, "IMU %s failed, er=%d (%u failures since last report)",
+            what, er, err_unreported);
     err_unreported = 0U;
     err_last_report_ms = now;
     err_reported = TRUE;
@@ -340,9 +336,9 @@ LOCAL void handle_unblockable_core(ER er)
     }
     if (!wedge_reported) {
         wedge_reported = TRUE;
-        tm_printf((UB *)"Buddy4: FATAL core %d cannot block (er=%d sysstat=0x%x primask=%u run=%d sched=%d); motors stopped\n",
-                  tk_get_prc(), er, sysstat, primask,
-                  (INT)rsys.runtskid, (INT)rsys.schedtskid);
+        LOG_ERR(TAG_S4_IMU, "FATAL core %d cannot block (er=%d sysstat=0x%x primask=%u run=%d sched=%d); motors stopped",
+                tk_get_prc(), er, sysstat, primask,
+                (INT)rsys.runtskid, (INT)rsys.schedtskid);
     }
     /* This task holds no lock here, so a set PRIMASK was leaked by someone
        else. Unmask so the tick and PendSV run and the VC can latch its stop. */
@@ -393,29 +389,71 @@ LOCAL BOOL update_calibration(const LSM303_SAMPLE *sample,
     *baseline_y = cal_state.sum_y / (W)cal_state.count;
     *baseline_z = cal_state.sum_z / (W)cal_state.count;
 
-    tm_printf((UB *)"Buddy4: calibration complete base=(%d,%d,%d) mg\n",
+    LOG_INFO(TAG_S4_IMU, "calibration complete base=(%d,%d,%d) mg",
               *baseline_x, *baseline_y, *baseline_z);
 
     return TRUE;
 }
 
-/* Collision = sudden sample-to-sample acceleration change. */
-LOCAL BOOL detect_collision(const LSM303_SAMPLE *current,
-                            const LSM303_SAMPLE *previous,
-                            W *measured_delta_mg)
+LOCAL void reset_lift_detector(void)
 {
-    W dax;
-    W day;
-    W daz;
-    W peak_delta;
+    UW i;
 
-    dax = current->ax_mg - previous->ax_mg;
-    day = current->ay_mg - previous->ay_mg;
-    daz = current->az_mg - previous->az_mg;
+    for (i = 0U; i < S4_LIFT_FILTER_SAMPLES; i++) {
+        lift_samples[i] = 0;
+    }
+    lift_sum = 0;
+    lift_next = 0U;
+    lift_count = 0U;
+    lift_confirm = 0U;
+    lift_reported = FALSE;
+}
 
-    peak_delta = max3(abs_w(dax), abs_w(day), abs_w(daz));
-    if (measured_delta_mg != NULL) *measured_delta_mg = peak_delta;
-    return (peak_delta >= S4_COLLISION_DELTA_MG) ? TRUE : FALSE;
+/*
+ * Lift (#53) = the averaged vertical acceleration stays away from the
+ * calibrated baseline. Picking the robot up accelerates it upwards (Z rises)
+ * and holding it tilted lowers Z; driving vibration averages out. Returns
+ * TRUE on every sample while the condition has held for
+ * S4_LIFT_CONFIRM_SAMPLES; *filtered_delta_mg is the averaged (clipped)
+ * Z deviation from the baseline.
+ */
+LOCAL BOOL update_lift(W az_mg, W baseline_az_mg, W *filtered_delta_mg)
+{
+    W delta;
+    W deviation = az_mg - baseline_az_mg;
+
+    if (deviation > S4_LIFT_CLIP_MG) {
+        deviation = S4_LIFT_CLIP_MG;
+    } else if (deviation < -S4_LIFT_CLIP_MG) {
+        deviation = -S4_LIFT_CLIP_MG;
+    }
+
+    if (lift_count == S4_LIFT_FILTER_SAMPLES) {
+        lift_sum -= lift_samples[lift_next];
+    } else {
+        lift_count++;
+    }
+    lift_samples[lift_next] = deviation;
+    lift_sum += deviation;
+    lift_next = (lift_next + 1U) % S4_LIFT_FILTER_SAMPLES;
+
+    delta = lift_sum / (W)lift_count;
+    if (filtered_delta_mg != NULL) {
+        *filtered_delta_mg = delta;
+    }
+
+    /* Only a full window is averaged enough to judge. */
+    if (lift_count == S4_LIFT_FILTER_SAMPLES &&
+        abs_w(delta) >= S4_LIFT_DELTA_MG) {
+        if (lift_confirm < S4_LIFT_CONFIRM_SAMPLES) {
+            lift_confirm++;
+        }
+    } else {
+        lift_confirm = 0U;
+        lift_reported = FALSE;
+    }
+
+    return (lift_confirm >= S4_LIFT_CONFIRM_SAMPLES) ? TRUE : FALSE;
 }
 
 LOCAL BOOL update_tilt(W lateral_mg, W forward_mg, BOOL hump_active)
@@ -483,7 +521,7 @@ LOCAL BOOL update_hump(W forward_mg,
                 hump_armed = TRUE;
                 hump_rearm_count = 0U;
 
-                tm_printf((UB *)"Buddy4: hump detector re-armed\n");
+                LOG_INFO(TAG_S4_IMU, "hump detector re-armed");
             }
 
         } else {
@@ -501,7 +539,7 @@ LOCAL BOOL update_hump(W forward_mg,
             hump_rearm_count = 0U;
             reset_hump_detector();
             reset_height_tracker();
-            tm_printf((UB *)"Buddy4: hump timed out; waiting for level ground\n");
+            LOG_WARN(TAG_S4_IMU, "hump timed out; waiting for level ground");
             return FALSE;
         }
     }
@@ -566,8 +604,8 @@ LOCAL BOOL update_hump(W forward_mg,
                 hump_state.entry_sign = 0;
                 hump_state.entry_samples = 0U;
 
-                tm_printf((UB *)
-                          "Buddy4: hump entry confirmed sign=%d peak=%dmg\n",
+                LOG_INFO(TAG_S4_IMU,
+                          "hump entry confirmed sign=%d peak=%dmg",
                           hump_state.first_sign,
                           hump_state.peak_mg);
             }
@@ -584,8 +622,8 @@ LOCAL BOOL update_hump(W forward_mg,
 
     case HUMP_FIRST_SLOPE:
 
-        tm_printf((UB *)
-            "HUMP ACTIVE: forward=%d abs=%d dist=%u height=%u\n",
+        LOG_INFO(TAG_S4_IMU,
+            "HUMP ACTIVE: forward=%d abs=%d dist=%u height=%u",
             forward_mg,
             abs_forward,
             distance_mm,
@@ -683,16 +721,15 @@ LOCAL void print_periodic_status(const LSM303_SAMPLE *sample,
     dx = sample->ax_mg - baseline_x;
     dy = sample->ay_mg - baseline_y;
 
-    tm_printf(
-        (UB *)
-        "Buddy4: n=%u "
+    LOG_INFO(TAG_S4_IMU,
+        "n=%u "
         "acc=(%d,%d,%d)mg "
         "delta=(x:%d,y:%d)mg "
         "mag=(%d,%d,%d) "
         "pitch=%d "
         "height=%umm "
         "height_valid=%d "
-        "state=%d\n",
+        "state=%d",
 
         sample_count,
 
@@ -717,7 +754,6 @@ LOCAL void print_periodic_status(const LSM303_SAMPLE *sample,
 EXPORT void imu_task(INT stacd, void *exinf)
 {
     LSM303_SAMPLE sample;
-    LSM303_SAMPLE previous_sample;
     SYSTIM cycle_start;
     SYSTIM cycle_end;
     W baseline_x = 0;
@@ -733,7 +769,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
     UW hump_count = 0U;
     W last_hump_peak = 0;
     W pitch_deg = 0;
-    W collision_delta_mg = 0;
+    W lift_delta_mg = 0;
     UW last_ramp_height = 0U;
     BOOL last_ramp_height_valid = FALSE;
     UW distance_mm;
@@ -741,7 +777,6 @@ EXPORT void imu_task(INT stacd, void *exinf)
     UW local_sample_count = 0U;
     BOOL calibrated = FALSE;
     BOOL sensor_ok = FALSE;
-    BOOL have_previous = FALSE;
     BOOL tilt_now;
     BOOL hump_was_active;
     BOOL hump_is_active;
@@ -765,8 +800,9 @@ EXPORT void imu_task(INT stacd, void *exinf)
     movement_hold_samples = 0U;
     reset_hump_detector();
     reset_height_tracker();
+    reset_lift_detector();
 
-    tm_printf((UB *)"Buddy4: IMU task started, period=%d ms\n",
+    LOG_INFO(TAG_S4_IMU, "IMU task started, period=%d ms",
               S4_SAMPLE_PERIOD_MS);
 
     while (1) {
@@ -786,7 +822,6 @@ EXPORT void imu_task(INT stacd, void *exinf)
             err_reported = FALSE;   /* print the next first failure at once */
             err_unreported = 0U;
             calibrated = FALSE;
-            have_previous = FALSE;
             cal_state.sum_x = 0;
             cal_state.sum_y = 0;
             cal_state.sum_z = 0;
@@ -801,6 +836,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
             hump_count = 0U;
             reset_hump_detector();
             reset_height_tracker();
+            reset_lift_detector();
         }
 
         er = lsm303dlhc_read(&sample);
@@ -821,9 +857,6 @@ EXPORT void imu_task(INT stacd, void *exinf)
                                             &baseline_x,
                                             &baseline_y,
                                             &baseline_z);
-
-            previous_sample = sample;
-            have_previous = TRUE;
 
             publish_snapshot(&sample,
                              baseline_x, baseline_y, baseline_z,
@@ -861,10 +894,10 @@ EXPORT void imu_task(INT stacd, void *exinf)
 
             completed_hump_peak = 0;
 
-            /* Safety event has highest classification priority. */
-            if (have_previous && detect_collision(&sample, &previous_sample, &collision_delta_mg)) {
-                motion = IMU_MOTION_COLLISION;
-                event = IMU_EVENT_COLLISION;
+            /* Lift is the safety event (#53): highest classification
+               priority. A hump in progress is abandoned. */
+            if (update_lift(sample.az_mg, baseline_z, &lift_delta_mg)) {
+                motion = IMU_MOTION_LIFTED;
                 hump_sum = 0;
                 hump_next = 0U;
                 hump_count = 0U;
@@ -872,10 +905,13 @@ EXPORT void imu_task(INT stacd, void *exinf)
                 reset_height_tracker();
                 tilt_samples = 0U;
 
-                tm_printf((UB *)"Buddy4 EVENT: COLLISION delta=%dmg threshold=%dmg previous=(%d,%d,%d) current=(%d,%d,%d)\n",
-                          collision_delta_mg, S4_COLLISION_DELTA_MG,
-                          previous_sample.ax_mg, previous_sample.ay_mg, previous_sample.az_mg,
-                          sample.ax_mg, sample.ay_mg, sample.az_mg);
+                if (!lift_reported) {
+                    event = IMU_EVENT_LIFT;
+                    lift_reported = TRUE;
+                    LOG_INFO(TAG_S4_IMU, "EVENT LIFT z_avg-base=%dmg threshold=%dmg acc=(%d,%d,%d) base_z=%d",
+                              lift_delta_mg, S4_LIFT_DELTA_MG,
+                              sample.ax_mg, sample.ay_mg, sample.az_mg, baseline_z);
+                }
             } else {
                 if (hump_count == S4_HUMP_FILTER_SAMPLES) {
                     hump_sum -= hump_samples[hump_next];
@@ -890,8 +926,8 @@ EXPORT void imu_task(INT stacd, void *exinf)
                 hump_was_active = (hump_state.phase != HUMP_IDLE);
                 if (!hump_was_active && hump_armed &&
                     abs_w(hump_dy) >= S4_HUMP_OPPOSITE_MG) {
-                    tm_printf((UB *)
-                              "HUMP DEBUG: raw=%d filtered=%d moving=%d dist=%u entry=%u\n",
+                    LOG_INFO(TAG_S4_IMU,
+                              "HUMP DEBUG: raw=%d filtered=%d moving=%d dist=%u entry=%u",
                               dy, hump_dy, movement_hold_samples > 0U,
                               distance_mm, hump_state.entry_samples);
                 }
@@ -945,11 +981,11 @@ EXPORT void imu_task(INT stacd, void *exinf)
                             last_ramp_height = peak_height_mm;
                             last_ramp_height_valid = TRUE;
                         }
-                        tm_printf((UB *)
-                                  "Buddy4 EVENT: HUMP height=%u mm highest=%u mm peak=%d mg\n",
+                        LOG_INFO(TAG_S4_IMU,
+                                  "EVENT HUMP height=%u mm highest=%u mm peak=%d mg",
                                   peak_height_mm, last_ramp_height, last_hump_peak);
                     } else {
-                        tm_printf((UB *)"Buddy4 EVENT: HUMP height=unavailable (no wheel distance) peak=%d mg\n",
+                        LOG_INFO(TAG_S4_IMU, "EVENT HUMP height=unavailable (no wheel distance) peak=%d mg",
                                   last_hump_peak);
                     }
                 } else {
@@ -962,8 +998,8 @@ EXPORT void imu_task(INT stacd, void *exinf)
                         if (!tilt_reported) {
                             event = IMU_EVENT_TILT;
                             tilt_reported = TRUE;
-                            tm_printf((UB *)
-                                      "Buddy4 EVENT: TILT roll=%d deg lateral=%d mg\n", roll_deg,dx);
+                            LOG_INFO(TAG_S4_IMU,
+                                      "EVENT TILT roll=%d deg lateral=%d mg", roll_deg,dx);
                         }
                     }
                 }
@@ -995,9 +1031,6 @@ EXPORT void imu_task(INT stacd, void *exinf)
                                 last_ramp_height_valid,
                                 local_sample_count);
         }
-
-        previous_sample = sample;
-        have_previous = TRUE;
 
         /* Maintain the configured interval between task cycles. */
         tk_get_tim(&cycle_end);
