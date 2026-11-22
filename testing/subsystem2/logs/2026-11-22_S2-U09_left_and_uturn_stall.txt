@@ -1,0 +1,1350 @@
+=== COM5 connected 21:34:30.291 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-31,28,916) mg
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+wifi: link status -> joined AP, no IP yet (2)
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+wifi: link up, ip=172.20.10.3 t=5782 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1100 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1300 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3100 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: letter map from MQTT
+[S2:MOTION] state=2 fault=0 ticks L=298 R=332 PWM=15/19
+[S2:MOTION] ctrl late=0/3197 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=476 R=0 C=0 both=0 act straight=476 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=1416 R=1412 PWM=15/19
+[S2:MOTION] ctrl late=0/3293 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=473 sens none=433 R=0 C=40 both=0 act straight=418 right=0 left=55
+[S2:MOTION] state=2 fault=0 ticks L=2256 R=2303 PWM=13/17
+[S2:MOTION] ctrl late=0/3388 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=475 sens none=429 R=0 C=46 both=0 act straight=385 right=0 left=90
+[S2:MOTION] state=2 fault=0 ticks L=3040 R=3136 PWM=13/17
+[S2:MOTION] ctrl late=0/3483 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=474 sens none=407 R=0 C=67 both=0 act straight=363 right=0 left=111
+[S2:MOTION] state=2 fault=0 ticks L=3842 R=3940 PWM=13/17
+[S2:MOTION] ctrl late=0/3578 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=475 sens none=419 R=0 C=56 both=0 act straight=390 right=0 left=85
+[S2:MOTION] state=2 fault=0 ticks L=4651 R=4774 PWM=7/20
+[S2:MOTION] ctrl late=0/3673 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=475 sens none=443 R=0 C=32 both=0 act straight=428 right=0 left=47
+[S2:MOTION] state=2 fault=0 ticks L=5461 R=5600 PWM=13/17
+[S2:MOTION] ctrl late=0/3768 gap_max=12 loop_max=4 ms
+[S2:BARCODE] decoded=Z queued=LEFT; execute at next C/R junction
+[S2:ROBOT] steer n=477 sens none=443 R=0 C=34 both=0 act straight=413 right=0 left=64
+[S2:BARCODE] frame id=1 runs=29/29 black=15 white=14 result=Z skipped=0
+[S2:BARCODE] width frame=1 run=1 BLACK width_ms=96
+[S2:BARCODE] width frame=1 run=2 WHITE width_ms=82
+[S2:BARCODE] width frame=1 run=3 BLACK width_ms=233
+[S2:BARCODE] width frame=1 run=4 WHITE width_ms=120
+[S2:BARCODE] width frame=1 run=5 BLACK width_ms=248
+[S2:BARCODE] width frame=1 run=6 WHITE width_ms=80
+[S2:BARCODE] width frame=1 run=7 BLACK width_ms=110
+[S2:BARCODE] width frame=1 run=8 WHITE width_ms=301
+[S2:BARCODE] width frame=1 run=9 BLACK width_ms=88
+[S2:BARCODE] width frame=1 run=10 WHITE width_ms=71
+[S2:BARCODE] width frame=1 run=11 BLACK width_ms=89
+[S2:BARCODE] width frame=1 run=12 WHITE width_ms=110
+[S2:BARCODE] width frame=1 run=13 BLACK width_ms=85
+[S2:BARCODE] width frame=1 run=14 WHITE width_ms=81
+[S2:BARCODE] width frame=1 run=15 BLACK width_ms=306
+[S2:BARCODE] width frame=1 run=16 WHITE width_ms=82
+[S2:BARCODE] width frame=1 run=17 BLACK width_ms=283
+[S2:BARCODE] width frame=1 run=18 WHITE width_ms=292
+[S2:BARCODE] width frame=1 run=19 BLACK width_ms=82
+[S2:BARCODE] width frame=1 run=20 WHITE width_ms=82
+[S2:BARCODE] width frame=1 run=21 BLACK width_ms=85
+[S2:BARCODE] width frame=1 run=22 WHITE width_ms=127
+[S2:BARCODE] width frame=1 run=23 BLACK width_ms=256
+[S2:BARCODE] width frame=1 run=24 WHITE width_ms=80
+[S2:BARCODE] width frame=1 run=25 BLACK width_ms=262
+[S2:BARCODE] width frame=1 run=26 WHITE width_ms=74
+[S2:BARCODE] width frame=1 run=27 BLACK width_ms=84
+[S2:BARCODE] width frame=1 run=28 WHITE width_ms=329
+[S2:BARCODE] width frame=1 run=29 BLACK width_ms=80
+[S1:MQTT] barcode acked frame=1
+[S2:MOTION] state=2 fault=0 ticks L=6440 R=6605 PWM=15/19
+[S2:MOTION] ctrl late=0/3864 gap_max=11 loop_max=7 ms
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=7507 R=7711 PWM=15/19
+[S2:MOTION] ctrl late=0/3959 gap_max=11 loop_max=3 ms
+[S2:ROBOT] junction: letter 'Z' -> LEFT
+[S2:MOTION] state=3 fault=0 ticks L=8114 R=8620 PWM=0/20
+[S2:MOTION] ctrl late=0/4058 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=8114 R=9319 PWM=0/20
+[S2:MOTION] ctrl late=0/4158 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=3 fault=0 ticks L=8114 R=9980 PWM=0/20
+[S2:MOTION] ctrl late=0/4258 gap_max=11 loop_max=3 ms
+[S2:ROBOT] pivot stopped on the line at 82% of the arc
+[S2:ROBOT] steer n=251 sens none=234 R=1 C=16 both=0 act straight=219 right=1 left=31
+[S2:MOTION] state=2 fault=0 ticks L=8385 R=10560 PWM=15/19
+[S2:MOTION] ctrl late=0/4355 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=480 sens none=189 R=0 C=291 both=0 act straight=160 right=0 left=320
+[S2:MOTION] state=2 fault=0 ticks L=9292 R=11580 PWM=15/19
+[S2:MOTION] ctrl late=0/4451 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=441 R=0 C=35 both=0 act straight=426 right=0 left=50
+[S2:MOTION] state=2 fault=0 ticks L=10294 R=12642 PWM=15/19
+[S2:MOTION] ctrl late=0/4546 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=477 sens none=458 R=0 C=19 both=0 act straight=443 right=0 left=34
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=10860 R=13269 PWM=0/0
+[S2:MOTION] ctrl late=0/4643 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=10860 R=13269 PWM=0/0
+[S2:MOTION] ctrl late=0/4743 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=10860 R=13269 PWM=0/0
+[S2:MOTION] ctrl late=0/4843 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=0 deg lateral=41 mg
+[S2:MOTION] state=5 fault=0 ticks L=10861 R=13269 PWM=0/0
+[S2:MOTION] ctrl late=0/4943 gap_max=10 loop_max=2 ms
+[S4:IMU] EVENT TILT roll=0 deg lateral=39 mg
+[S2:MOTION] state=5 fault=0 ticks L=10861 R=13269 PWM=0/0
+[S2:MOTION] ctrl late=0/5043 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=10861 R=13268 PWM=0/0
+[S2:MOTION] ctrl late=0/5143 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=10861 R=13268 PWM=0/0
+[S2:MOTION] ctrl late=0/5243 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=10861 R=13268 PWM=0/0
+[S2:MOTION] ctrl late=0/5343 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=2
+[S2:ROBOT] resumed (MQTT)
+[S2:ROBOT] steer n=181 sens none=173 R=0 C=8 both=0 act straight=158 right=0 left=23
+[S2:MOTION] state=2 fault=0 ticks L=11680 R=14115 PWM=15/19
+[S2:MOTION] ctrl late=0/5439 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=12723 R=15164 PWM=13/17
+[S2:MOTION] ctrl late=0/5534 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=475 sens none=475 R=0 C=0 both=0 act straight=475 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=13618 R=16067 PWM=13/17
+[S2:MOTION] ctrl late=0/5629 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=475 sens none=475 R=0 C=0 both=0 act straight=475 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=14487 R=16890 PWM=13/17
+[S2:MOTION] ctrl late=0/5724 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=474 sens none=474 R=0 C=0 both=0 act straight=474 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=15280 R=17745 PWM=13/17
+[S2:MOTION] ctrl late=0/5820 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=421 R=0 C=55 both=0 act straight=379 right=0 left=97
+[S2:MOTION] state=2 fault=0 ticks L=16086 R=18584 PWM=13/17
+[S2:MOTION] ctrl late=0/5915 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=474 sens none=440 R=0 C=34 both=0 act straight=411 right=0 left=63
+[S2:BARCODE] decoded=Z queued=LEFT; execute at next C/R junction
+[S1:MQTT] barcode acked frame=2
+[S2:BARCODE] frame id=2 runs=29/29 black=15 white=14 result=Z skipped=0
+[S2:BARCODE] width frame=2 run=1 BLACK width_ms=67
+[S2:BARCODE] width frame=2 run=2 WHITE width_ms=75
+[S2:BARCODE] width frame=2 run=3 BLACK width_ms=225
+[S2:BARCODE] width frame=2 run=4 WHITE width_ms=91
+[S2:BARCODE] width frame=2 run=5 BLACK width_ms=241
+[S2:BARCODE] width frame=2 run=6 WHITE width_ms=78
+[S2:BARCODE] width frame=2 run=7 BLACK width_ms=83
+[S2:BARCODE] width frame=2 run=8 WHITE width_ms=243
+[S2:BARCODE] width frame=2 run=9 BLACK width_ms=98
+[S2:BARCODE] width frame=2 run=10 WHITE width_ms=70
+[S2:BARCODE] width frame=2 run=11 BLACK width_ms=91
+[S2:BARCODE] width frame=2 run=12 WHITE width_ms=80
+[S2:BARCODE] width frame=2 run=13 BLACK width_ms=88
+[S2:BARCODE] width frame=2 run=14 WHITE width_ms=77
+[S2:BARCODE] width frame=2 run=15 BLACK width_ms=260
+[S2:BARCODE] width frame=2 run=16 WHITE width_ms=82
+[S2:BARCODE] width frame=2 run=17 BLACK width_ms=250
+[S2:BARCODE] width frame=2 run=18 WHITE width_ms=258
+[S2:BARCODE] width frame=2 run=19 BLACK width_ms=106
+[S2:BARCODE] width frame=2 run=20 WHITE width_ms=82
+[S2:BARCODE] width frame=2 run=21 BLACK width_ms=84
+[S2:BARCODE] width frame=2 run=22 WHITE width_ms=90
+[S2:BARCODE] width frame=2 run=23 BLACK width_ms=284
+[S2:BARCODE] width frame=2 run=24 WHITE width_ms=81
+[S2:BARCODE] width frame=2 run=25 BLACK width_ms=286
+[S2:BARCODE] width frame=2 run=26 WHITE width_ms=76
+[S2:BARCODE] width frame=2 run=27 BLACK width_ms=82
+[S2:BARCODE] width frame=2 run=28 WHITE width_ms=303
+[S2:BARCODE] width frame=2 run=29 BLACK width_ms=78
+[S2:MOTION] state=2 fault=0 ticks L=16986 R=19538 PWM=15/19
+[S2:MOTION] ctrl late=0/6010 gap_max=12 loop_max=7 ms
+[S2:ROBOT] steer n=471 sens none=452 R=0 C=19 both=0 act straight=438 right=0 left=33
+[S2:MOTION] state=2 fault=0 ticks L=18072 R=20641 PWM=15/19
+[S2:MOTION] ctrl late=0/6106 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=476 R=0 C=0 both=0 act straight=476 right=0 left=0
+[S2:ROBOT] junction: letter 'Z' -> LEFT
+[S2:MOTION] state=3 fault=0 ticks L=19092 R=21734 PWM=0/20
+[S2:MOTION] ctrl late=0/6204 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=19092 R=22549 PWM=0/20
+[S2:MOTION] ctrl late=0/6304 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=19092 R=23336 PWM=0/20
+[S2:MOTION] ctrl late=0/6404 gap_max=10 loop_max=4 ms
+[S2:ROBOT] pivot stopped on the line at 80% of the arc
+[S2:ROBOT] steer n=161 sens none=158 R=2 C=1 both=0 act straight=158 right=2 left=1
+[S2:MOTION] state=2 fault=0 ticks L=19092 R=23450 PWM=0/23
+[S2:MOTION] ctrl late=0/6502 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=489 sens none=0 R=0 C=489 both=0 act straight=0 right=0 left=489
+[S2:MOTION] state=2 fault=0 ticks L=19092 R=23450 PWM=0/23
+[S2:MOTION] ctrl late=0/6599 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=484 sens none=0 R=0 C=484 both=0 act straight=0 right=0 left=484
+[S2:MOTION] state=2 fault=0 ticks L=19092 R=23450 PWM=0/23
+[S2:MOTION] ctrl late=0/6697 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=490 sens none=0 R=0 C=490 both=0 act straight=0 right=0 left=490
+[S2:MOTION] state=2 fault=0 ticks L=19092 R=23450 PWM=0/23
+[S2:MOTION] ctrl late=0/6794 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=483 sens none=0 R=0 C=483 both=0 act straight=0 right=0 left=483
+[S2:MOTION] state=2 fault=0 ticks L=19092 R=23450 PWM=0/23
+[S2:MOTION] ctrl late=0/6891 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=486 sens none=0 R=0 C=486 both=0 act straight=0 right=0 left=486
+[S2:MOTION] state=2 fault=0 ticks L=19092 R=23450 PWM=0/23
+[S2:MOTION] ctrl late=0/6989 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=490 sens none=0 R=0 C=490 both=0 act straight=0 right=0 left=490
+[S2:MOTION] state=2 fault=0 ticks L=19092 R=23450 PWM=0/23
+[S2:MOTION] ctrl late=0/7085 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=481 sens none=0 R=0 C=481 both=0 act straight=0 right=0 left=481
+[S2:MOTION] state=2 fault=0 ticks L=19092 R=23450 PWM=0/23
+[S2:MOTION] ctrl late=0/7182 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=483 sens none=0 R=0 C=483 both=0 act straight=0 right=0 left=483
+[S2:MOTION] state=2 fault=0 ticks L=19092 R=23450 PWM=0/23
+[S2:MOTION] ctrl late=0/7278 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=484 sens none=0 R=0 C=484 both=0 act straight=0 right=0 left=484
+[S2:MOTION] state=2 fault=0 ticks L=19527 R=24111 PWM=16/19
+[S2:MOTION] ctrl late=0/7374 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=476 sens none=352 R=0 C=124 both=0 act straight=337 right=0 left=139
+[S2:MOTION] state=2 fault=0 ticks L=20534 R=25160 PWM=15/19
+[S2:MOTION] ctrl late=0/7470 gap_max=13 loop_max=5 ms
+[S2:ROBOT] steer n=477 sens none=434 R=0 C=43 both=0 act straight=404 right=0 left=73
+[S2:MOTION] state=2 fault=0 ticks L=21468 R=26206 PWM=15/19
+[S2:MOTION] ctrl late=0/7566 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=474 sens none=454 R=0 C=20 both=0 act straight=439 right=0 left=35
+[S2:MOTION] state=2 fault=0 ticks L=22431 R=27234 PWM=15/19
+[S2:MOTION] ctrl late=0/7662 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=473 sens none=458 R=0 C=15 both=0 act straight=443 right=0 left=30
+[S2:MOTION] state=2 fault=0 ticks L=23459 R=28296 PWM=15/19
+[S2:MOTION] ctrl late=0/7757 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=476 sens none=476 R=0 C=0 both=0 act straight=476 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=24530 R=29374 PWM=15/19
+[S2:MOTION] ctrl late=0/7852 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=475 sens none=475 R=0 C=0 both=0 act straight=475 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=25621 R=30482 PWM=16/19
+[S2:MOTION] ctrl late=0/7948 gap_max=12 loop_max=4 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S4:IMU] hump entry confirmed sign=1 peak=208mg
+[S4:IMU] HUMP ACTIVE: forward=110 abs=110 dist=0 height=0
+[S4:IMU] HUMP ACTIVE: forward=40 abs=40 dist=0 height=0
+[S4:IMU] EVENT HUMP height=unavailable (no wheel distance) peak=208 mg
+[S4:IMU] hump detector re-armed
+[S2:MOTION] state=5 fault=0 ticks L=25719 R=30573 PWM=0/0
+[S2:MOTION] ctrl late=0/8047 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=0 deg lateral=-40 mg
+[S4:IMU] EVENT LIFT z_avg-base=227mg threshold=200mg acc=(108,18,1056) base_z=916
+[S2:MOTION] state=5 fault=0 ticks L=25719 R=30573 PWM=0/0
+[S2:MOTION] ctrl late=0/8147 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT LIFT z_avg-base=-226mg threshold=200mg acc=(-17,-90,677) base_z=916
+[S4:IMU] EVENT TILT roll=-5 deg lateral=-105 mg
+[S2:MOTION] state=5 fault=0 ticks L=25719 R=30573 PWM=0/0
+[S2:MOTION] ctrl late=0/8247 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=25719 R=30573 PWM=0/0
+[S2:MOTION] ctrl late=0/8347 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=25719 R=30573 PWM=0/0
+[S2:MOTION] ctrl late=0/8447 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=25719 R=30573 PWM=0/0
+[S2:MOTION] ctrl late=0/8547 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=2
+[S2:ROBOT] resumed (MQTT)
+[S2:ROBOT] steer n=406 sens none=406 R=0 C=0 both=0 act straight=406 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=26528 R=31383 PWM=15/19
+[S2:MOTION] ctrl late=0/8643 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=476 R=0 C=0 both=0 act straight=476 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=27520 R=32368 PWM=13/17
+[S2:MOTION] ctrl late=0/8739 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=476 R=0 C=0 both=0 act straight=476 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=28362 R=33240 PWM=13/17
+[S2:MOTION] ctrl late=0/8834 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=474 sens none=421 R=0 C=53 both=0 act straight=393 right=0 left=81
+[S2:MOTION] state=2 fault=0 ticks L=29179 R=34077 PWM=7/20
+[S2:MOTION] ctrl late=0/8930 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=408 R=0 C=68 both=0 act straight=366 right=0 left=110
+[S2:MOTION] state=2 fault=0 ticks L=30001 R=34931 PWM=13/17
+[S2:MOTION] ctrl late=0/9025 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=475 sens none=460 R=0 C=15 both=0 act straight=445 right=0 left=30
+[S2:MOTION] state=2 fault=0 ticks L=30828 R=35794 PWM=13/17
+[S2:MOTION] ctrl late=0/9120 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=477 sens none=441 R=0 C=36 both=0 act straight=413 right=0 left=64
+[S2:BARCODE] decoded=Z queued=LEFT; execute at next C/R junction
+[S1:MQTT] barcode acked frame=3
+[S2:BARCODE] frame id=3 runs=29/29 black=15 white=14 result=Z skipped=0
+[S2:BARCODE] width frame=3 run=1 BLACK width_ms=66
+[S2:BARCODE] width frame=3 run=2 WHITE width_ms=75
+[S2:BARCODE] width frame=3 run=3 BLACK width_ms=230
+[S2:BARCODE] width frame=3 run=4 WHITE width_ms=82
+[S2:BARCODE] width frame=3 run=5 BLACK width_ms=236
+[S2:BARCODE] width frame=3 run=6 WHITE width_ms=81
+[S2:BARCODE] width frame=3 run=7 BLACK width_ms=84
+[S2:BARCODE] width frame=3 run=8 WHITE width_ms=244
+[S2:BARCODE] width frame=3 run=9 BLACK width_ms=85
+[S2:BARCODE] width frame=3 run=10 WHITE width_ms=96
+[S2:BARCODE] width frame=3 run=11 BLACK width_ms=102
+[S2:BARCODE] width frame=3 run=12 WHITE width_ms=78
+[S2:BARCODE] width frame=3 run=13 BLACK width_ms=82
+[S2:BARCODE] width frame=3 run=14 WHITE width_ms=110
+[S2:BARCODE] width frame=3 run=15 BLACK width_ms=256
+[S2:BARCODE] width frame=3 run=16 WHITE width_ms=117
+[S2:BARCODE] width frame=3 run=17 BLACK width_ms=256
+[S2:BARCODE] width frame=3 run=18 WHITE width_ms=280
+[S2:BARCODE] width frame=3 run=19 BLACK width_ms=81
+[S2:BARCODE] width frame=3 run=20 WHITE width_ms=122
+[S2:BARCODE] width frame=3 run=21 BLACK width_ms=94
+[S2:BARCODE] width frame=3 run=22 WHITE width_ms=93
+[S2:BARCODE] width frame=3 run=23 BLACK width_ms=253
+[S2:BARCODE] width frame=3 run=24 WHITE width_ms=81
+[S2:BARCODE] width frame=3 run=25 BLACK width_ms=250
+[S2:BARCODE] width frame=3 run=26 WHITE width_ms=78
+[S2:BARCODE] width frame=3 run=27 BLACK width_ms=100
+[S2:BARCODE] width frame=3 run=28 WHITE width_ms=276
+[S2:BARCODE] width frame=3 run=29 BLACK width_ms=102
+[S2:MOTION] state=2 fault=0 ticks L=31840 R=36823 PWM=15/19
+[S2:MOTION] ctrl late=0/9215 gap_max=11 loop_max=6 ms
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=32953 R=37961 PWM=15/19
+[S2:MOTION] ctrl late=0/9310 gap_max=12 loop_max=3 ms
+[S2:ROBOT] junction: letter 'Z' -> LEFT
+[S2:MOTION] state=3 fault=0 ticks L=33535 R=38975 PWM=0/20
+[S2:MOTION] ctrl late=0/9410 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=3 fault=0 ticks L=33535 R=39757 PWM=0/20
+[S2:MOTION] ctrl late=0/9510 gap_max=11 loop_max=3 ms
+[S2:ROBOT] pivot stopped on the line at 80% of the arc
+[S2:ROBOT] steer n=461 sens none=458 R=0 C=3 both=0 act straight=458 right=0 left=3
+[S2:MOTION] state=2 fault=0 ticks L=33535 R=40358 PWM=0/16
+[S2:MOTION] ctrl late=0/9609 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=480 sens none=257 R=0 C=223 both=0 act straight=229 right=0 left=251
+[S2:MOTION] state=2 fault=0 ticks L=34231 R=41244 PWM=5/20
+[S2:MOTION] ctrl late=0/9705 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=447 R=0 C=29 both=0 act straight=433 right=0 left=43
+[S2:MOTION] state=2 fault=0 ticks L=35143 R=42267 PWM=5/23
+[S2:MOTION] ctrl late=0/9800 gap_max=11 loop_max=3 ms
+[S5:OBS] OBSTACLE at 199 mm -> HOLD
+[S2:ROBOT] obstacle: S5 has control
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/9899 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/9999 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/10099 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/10199 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/10299 gap_max=10 loop_max=2 ms
+[S5:OBS] coarse  50 deg  202  ok
+[S5:OBS] coarse  70 deg  202  ok
+[S5:OBS] coarse  90 deg  186  ok
+[S5:OBS] coarse 110 deg  209  ok
+[S5:OBS] coarse 130 deg  293  ok
+[S5:OBS] fine 50..130 deg, 17 points, scan 5644 ms
+[S5:OBS]  50 deg  raw  291  med  291  ok
+[S5:OBS]  55 deg  raw  291  med  291  ok
+[S5:OBS]  60 deg  raw  293  med  291  ok
+[S5:OBS]  65 deg  raw  202  med  202  ok
+[S5:OBS]  70 deg  raw  193  med  196  ok
+[S5:OBS]  75 deg  raw  196  med  196  ok
+[S5:OBS]  80 deg  raw  196  med  196  ok
+[S5:OBS]  85 deg  raw  186  med  186  ok
+[S5:OBS]  90 deg  raw  186  med  186  ok
+[S5:OBS]  95 deg  raw  186  med  186  ok
+[S5:OBS] 100 deg  raw  186  med  186  ok
+[S5:OBS] 105 deg  raw  209  med  196  ok
+[S5:OBS] 110 deg  raw  196  med  205  ok
+[S5:OBS] 115 deg  raw  205  med  205  ok
+[S5:OBS] 120 deg  raw  337  med  306  ok
+[S5:OBS] 125 deg  raw  306  med  319  ok
+[S5:OBS] 130 deg  raw  319  med  319  ok
+[S5:OBS] closest 186 mm at 85 deg (x 185)
+[S5:OBS] centre y 9 mm, width 392 mm
+[S5:OBS] clear L 9998 mm, R 9998 mm (9999 = open, 9998 = not seen: the box runs past the scan)
+[S5:OBS] PLAN PASS RIGHT, shift 312 mm
+[S5:OBS] WARN no side seen clear; passing on a side the scan never saw past
+[S5:OBS] BYPASS PASS RIGHT
+[S5:OBS] step 1/8: turn R 90 deg
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/10399 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/10499 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/10599 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/10699 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/10799 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/10899 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/10999 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=10 deg lateral=181 mg
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/11099 gap_max=10 loop_max=2 ms
+[S4:IMU] EVENT TILT roll=0 deg lateral=-37 mg
+[S4:IMU] EVENT TILT roll=-5 deg lateral=-111 mg
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/11199 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/11299 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/11399 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/11499 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/11599 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/11699 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/11799 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/11899 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/11999 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=35303 R=42460 PWM=0/0
+[S2:MOTION] ctrl late=0/12099 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=2
+[S2:ROBOT] resumed (MQTT)
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=2
+[S2:ROBOT] WARN RESUME ignored: not paused
+[S2:MOTION] state=4 fault=0 ticks L=36199 R=42460 PWM=20/0
+[S2:MOTION] ctrl late=0/12199 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=4 fault=0 ticks L=37383 R=42460 PWM=20/0
+[S2:MOTION] ctrl late=0/12299 gap_max=11 loop_max=3 ms
+[S5:OBS] step 2/8: forward 32 cm
+[S2:BARCODE] frame id=4 runs=1/29 black=1 white=0 result=? skipped=0
+[S2:BARCODE] width frame=4 run=1 BLACK width_ms=155
+[S2:MOTION] state=2 fault=0 ticks L=37909 R=42977 PWM=12/14
+[S2:MOTION] ctrl late=0/12397 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S1:MQTT] barcode acked frame=4
+[S2:MOTION] state=5 fault=0 ticks L=38284 R=43375 PWM=0/0
+[S2:MOTION] ctrl late=0/12495 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=38284 R=43375 PWM=0/0
+[S2:MOTION] ctrl late=0/12595 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=38284 R=43375 PWM=0/0
+[S2:MOTION] ctrl late=0/12695 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=-15 deg lateral=-266 mg
+[S2:MOTION] state=5 fault=0 ticks L=38284 R=43375 PWM=0/0
+[S2:MOTION] ctrl late=0/12795 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=38284 R=43375 PWM=0/0
+[S2:MOTION] ctrl late=0/12895 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=38284 R=43375 PWM=0/0
+[S2:MOTION] ctrl late=0/12995 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=38284 R=43375 PWM=0/0
+[S2:MOTION] ctrl late=0/13095 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=38284 R=43375 PWM=0/0
+[S2:MOTION] ctrl late=0/13195 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=38284 R=43375 PWM=0/0
+[S2:MOTION] ctrl late=0/13295 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=5 fault=0 ticks L=38284 R=43375 PWM=0/0
+[S2:MOTION] ctrl late=0/13395 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/mapping length=3
+[S2:ROBOT] MQTT map applied: Z=left W=right D=straight S=U-turn
+[S2:MOTION] state=5 fault=0 ticks L=38284 R=43375 PWM=0/0
+[S2:MOTION] ctrl late=0/13495 gap_max=11 loop_max=4 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=2
+[S2:ROBOT] resumed (MQTT)
+[S5:OBS] step 3/8: turn L 90 deg
+[S2:MOTION] state=3 fault=0 ticks L=38284 R=43384 PWM=0/9
+[S2:MOTION] ctrl late=0/13595 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=38284 R=44138 PWM=0/20
+[S2:MOTION] ctrl late=0/13695 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=38284 R=44850 PWM=0/20
+[S2:MOTION] ctrl late=0/13795 gap_max=11 loop_max=3 ms
+[S5:OBS] step 4/8: forward 80 cm (at most, watching the box)
+[S5:OBS] watching the box at 130 deg (gap ~233 mm, beside < 731 mm), plan 35 cm, up to 80 cm
+[S2:MOTION] state=1 fault=0 ticks L=38284 R=45475 PWM=0/0
+[S2:MOTION] ctrl late=0/13895 gap_max=11 loop_max=3 ms
+[S5:OBS] side 293 mm ok
+[S5:OBS] side 293 mm ok
+[S2:BARCODE] frame id=5 runs=0/29 black=0 white=0 result=? skipped=0
+[S5:OBS] side 293 mm ok
+[S5:OBS] side 293 mm ok
+[S5:OBS] side 360 mm ok
+[S5:OBS] side 335 mm ok
+[S5:OBS] side 367 mm ok
+[S5:OBS] side 358 mm ok
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S2:MOTION] state=2 fault=0 ticks L=38448 R=45623 PWM=10/15
+[S2:MOTION] ctrl late=0/13994 gap_max=11 loop_max=3 ms
+[S5:OBS] side 304 mm ok
+[S5:OBS] side 293 mm ok
+[S5:OBS] side 309 mm ok
+[S5:OBS] side 291 mm ok
+[S5:OBS] side 360 mm ok
+[S5:OBS] side 494 mm ok
+[S5:OBS] side 515 mm ok
+[S5:OBS] side 565 mm ok
+[S5:OBS] side 563 mm ok
+[S5:OBS] side 363 mm ok
+[S5:OBS] side 301 mm ok
+[S5:OBS] side 291 mm ok
+[S5:OBS] side 293 mm ok
+[S5:OBS] side 309 mm ok
+[S5:OBS] side 298 mm ok
+[S1:MQTT] barcode acked frame=5
+[S5:OBS] side 360 mm ok
+[S5:OBS] side 435 mm ok
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S5:OBS] side 447 mm ok
+[S5:OBS] side 441 mm ok
+[S2:MOTION] state=1 fault=0 ticks L=38960 R=46144 PWM=0/0
+[S2:MOTION] ctrl late=0/14091 gap_max=11 loop_max=3 ms
+[S5:OBS] side 437 mm ok
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 501 mm ok
+[S5:OBS] side 1839 mm ok
+[S5:OBS] side 445 mm ok
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 381 mm ok
+[S5:OBS] side 376 mm ok
+[S5:OBS] side 565 mm ok
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 565 mm ok
+[S5:OBS] side 1839 mm ok
+[S5:OBS] side 1831 mm ok
+[S5:OBS] side 376 mm ok
+[S2:MOTION] state=1 fault=0 ticks L=38960 R=46144 PWM=0/0
+[S2:MOTION] ctrl late=0/14191 gap_max=11 loop_max=3 ms
+[S5:OBS] side 565 mm ok
+[S5:OBS] side 376 mm ok
+[S5:OBS] side 376 mm ok
+[S5:OBS] side 372 mm ok
+[S5:OBS] side 367 mm ok
+[S5:OBS] side 372 mm ok
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 86 mm ok
+[S4:IMU] EVENT TILT roll=-5 deg lateral=-87 mg
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 92 mm ok
+[S4:IMU] EVENT TILT roll=-15 deg lateral=-229 mg
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 665 mm ok
+[S2:MOTION] state=1 fault=0 ticks L=38960 R=46143 PWM=0/0
+[S2:MOTION] ctrl late=0/14291 gap_max=11 loop_max=3 ms
+[S5:OBS] side 695 mm ok
+[S5:OBS] side 625 mm ok
+[S5:OBS] side 564 mm ok
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 782 mm ok
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 562 mm ok
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S2:MOTION] state=1 fault=0 ticks L=38959 R=46143 PWM=0/0
+[S2:MOTION] ctrl late=0/14391 gap_max=11 loop_max=3 ms
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] box looks passed inside the plan: finishing the plan's 35 cm first
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 613 mm ok
+[S5:OBS] side 579 mm ok
+[S5:OBS] side 593 mm ok
+[S5:OBS] side 587 mm ok
+[S5:OBS] side 614 mm ok
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 562 mm ok
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 562 mm ok
+[S5:OBS] side 575 mm ok
+[S5:OBS] side 570 mm ok
+[S5:OBS] side 562 mm ok
+[S5:OBS] side 562 mm ok
+[S2:MOTION] state=1 fault=0 ticks L=38959 R=46143 PWM=0/0
+[S2:MOTION] ctrl late=0/14491 gap_max=11 loop_max=3 ms
+[S5:OBS] side 576 mm ok
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 562 mm ok
+[S5:OBS] side 562 mm ok
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+[S5:OBS] side 0 mm no-echo
+=== COM5 connected 21:36:29.755 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-27,26,913) mg
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+wifi: link status -> joined AP, no IP yet (2)
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+wifi: link up, ip=172.20.10.3 t=4139 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S1:MQTT] connected to 172.20.10.2 t=4273 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/499 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/599 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/699 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/799 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/899 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/999 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1099 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=766 R=785 PWM=15/19
+[S2:MOTION] ctrl late=0/1194 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=477 sens none=477 R=0 C=0 both=0 act straight=477 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=1787 R=1819 PWM=15/19
+[S2:MOTION] ctrl late=0/1290 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=478 sens none=478 R=0 C=0 both=0 act straight=478 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=2669 R=2663 PWM=13/17
+[S2:MOTION] ctrl late=0/1385 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=472 sens none=462 R=10 C=0 both=0 act straight=447 right=25 left=0
+[S2:MOTION] state=2 fault=0 ticks L=3501 R=3479 PWM=13/17
+[S2:MOTION] ctrl late=0/1480 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=4403 R=4387 PWM=13/17
+[S2:MOTION] ctrl late=0/1575 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=475 sens none=475 R=0 C=0 both=0 act straight=475 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=5232 R=5255 PWM=13/17
+[S2:MOTION] ctrl late=0/1669 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0
+[S2:BARCODE] decoded=Z queued=no mapping; execute at next C/R junction
+[S1:MQTT] barcode acked frame=1
+[S2:MOTION] state=2 fault=0 ticks L=6055 R=6077 PWM=15/19
+[S2:MOTION] ctrl late=0/1764 gap_max=12 loop_max=4 ms
+[S2:BARCODE] frame id=1 runs=29/29 black=15 white=14 result=Z skipped=0
+[S2:BARCODE] width frame=1 run=1 BLACK width_ms=70
+[S2:BARCODE] width frame=1 run=2 WHITE width_ms=80
+[S2:BARCODE] width frame=1 run=3 BLACK width_ms=244
+[S2:BARCODE] width frame=1 run=4 WHITE width_ms=83
+[S2:BARCODE] width frame=1 run=5 BLACK width_ms=266
+[S2:BARCODE] width frame=1 run=6 WHITE width_ms=88
+[S2:BARCODE] width frame=1 run=7 BLACK width_ms=100
+[S2:BARCODE] width frame=1 run=8 WHITE width_ms=263
+[S2:BARCODE] width frame=1 run=9 BLACK width_ms=100
+[S2:BARCODE] width frame=1 run=10 WHITE width_ms=67
+[S2:BARCODE] width frame=1 run=11 BLACK width_ms=107
+[S2:BARCODE] width frame=1 run=12 WHITE width_ms=79
+[S2:BARCODE] width frame=1 run=13 BLACK width_ms=94
+[S2:BARCODE] width frame=1 run=14 WHITE width_ms=79
+[S2:BARCODE] width frame=1 run=15 BLACK width_ms=262
+[S2:BARCODE] width frame=1 run=16 WHITE width_ms=79
+[S2:BARCODE] width frame=1 run=17 BLACK width_ms=243
+[S2:BARCODE] width frame=1 run=18 WHITE width_ms=240
+[S2:BARCODE] width frame=1 run=19 BLACK width_ms=78
+[S2:BARCODE] width frame=1 run=20 WHITE width_ms=76
+[S2:BARCODE] width frame=1 run=21 BLACK width_ms=82
+[S2:BARCODE] width frame=1 run=22 WHITE width_ms=88
+[S2:BARCODE] width frame=1 run=23 BLACK width_ms=239
+[S2:BARCODE] width frame=1 run=24 WHITE width_ms=75
+[S2:BARCODE] width frame=1 run=25 BLACK width_ms=247
+[S2:BARCODE] width frame=1 run=26 WHITE width_ms=72
+[S2:BARCODE] width frame=1 run=27 BLACK width_ms=107
+[S2:BARCODE] width frame=1 run=28 WHITE width_ms=315
+[S2:BARCODE] width frame=1 run=29 BLACK width_ms=82
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=7064 R=7133 PWM=15/19
+[S2:MOTION] ctrl late=0/1860 gap_max=12 loop_max=7 ms
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0
+[S2:ROBOT] junction: no MQTT letter map yet, straight on
+[S2:MOTION] state=2 fault=0 ticks L=8131 R=8186 PWM=15/19
+[S2:MOTION] ctrl late=0/1955 gap_max=11 loop_max=5 ms
+[S2:ROBOT] steer n=475 sens none=391 R=11 C=0 both=73 act straight=464 right=11 left=0
+[S2:MOTION] state=2 fault=0 ticks L=9057 R=9115 PWM=13/17
+[S2:MOTION] ctrl late=0/2050 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=475 sens none=471 R=4 C=0 both=0 act straight=456 right=19 left=0
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S2:MOTION] state=2 fault=0 ticks L=9905 R=9986 PWM=15/19
+[S2:MOTION] ctrl late=0/2146 gap_max=11 loop_max=4 ms
+[S2:BARCODE] frame id=2 runs=1/29 black=1 white=0 result=? skipped=0
+[S2:BARCODE] width frame=2 run=1 BLACK width_ms=264
+[S2:ROBOT] steer n=478 sens none=478 R=0 C=0 both=0 act straight=478 right=0 left=0
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S1:MQTT] barcode acked frame=2
+[S2:MOTION] state=1 fault=0 ticks L=10155 R=10248 PWM=0/0
+[S2:MOTION] ctrl late=0/2245 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=-10 deg lateral=-148 mg
+[S2:MOTION] state=1 fault=0 ticks L=10163 R=10248 PWM=0/0
+[S2:MOTION] ctrl late=0/2345 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=-10 deg lateral=-193 mg
+[S2:MOTION] state=1 fault=0 ticks L=10163 R=10248 PWM=0/0
+[S2:MOTION] ctrl late=0/2445 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=10163 R=10254 PWM=0/0
+[S2:MOTION] ctrl late=0/2545 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=10163 R=10254 PWM=0/0
+[S2:MOTION] ctrl late=0/2645 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=10163 R=10254 PWM=0/0
+[S2:MOTION] ctrl late=0/2745 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=10163 R=10254 PWM=0/0
+[S2:MOTION] ctrl late=0/2845 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/mapping length=3
+[S2:ROBOT] MQTT map applied: Z=left W=right D=straight S=U-turn
+[S2:MOTION] state=1 fault=0 ticks L=10163 R=10254 PWM=0/0
+[S2:MOTION] ctrl late=0/2945 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=1 fault=0 ticks L=10163 R=10254 PWM=0/0
+[S2:MOTION] ctrl late=0/3045 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=10163 R=10254 PWM=0/0
+[S2:MOTION] ctrl late=0/3145 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=10163 R=10254 PWM=0/0
+[S2:MOTION] ctrl late=0/3245 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=10163 R=10254 PWM=0/0
+[S2:MOTION] ctrl late=0/3345 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=2
+[S2:ROBOT] resumed (MQTT)
+[S2:ROBOT] steer n=91 sens none=91 R=0 C=0 both=0 act straight=91 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=10676 R=10817 PWM=15/19
+[S2:MOTION] ctrl late=0/3441 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=477 sens none=477 R=0 C=0 both=0 act straight=477 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=11754 R=11882 PWM=15/19
+[S2:MOTION] ctrl late=0/3536 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=475 sens none=475 R=0 C=0 both=0 act straight=475 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=12685 R=12768 PWM=7/20
+[S2:MOTION] ctrl late=0/3632 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=475 sens none=429 R=0 C=46 both=0 act straight=414 right=0 left=61
+[S2:MOTION] state=2 fault=0 ticks L=13427 R=13577 PWM=13/17
+[S2:MOTION] ctrl late=0/3727 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=473 sens none=420 R=0 C=53 both=0 act straight=391 right=0 left=82
+[S2:MOTION] state=2 fault=0 ticks L=14241 R=14399 PWM=13/17
+[S2:MOTION] ctrl late=0/3823 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=475 sens none=439 R=0 C=36 both=0 act straight=410 right=0 left=65
+[S2:MOTION] state=2 fault=0 ticks L=15032 R=15233 PWM=13/17
+[S2:MOTION] ctrl late=0/3918 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=475 sens none=454 R=0 C=21 both=0 act straight=439 right=0 left=36
+[S2:BARCODE] decoded=Z queued=LEFT; execute at next C/R junction
+[S2:MOTION] state=2 fault=0 ticks L=15827 R=16031 PWM=15/19
+[S2:MOTION] ctrl late=0/4013 gap_max=12 loop_max=3 ms
+[S2:BARCODE] frame id=3 runs=29/29 black=15 white=14 result=Z skipped=0
+[S2:BARCODE] width frame=3 run=1 BLACK width_ms=65
+[S2:BARCODE] width frame=3 run=2 WHITE width_ms=76
+[S2:BARCODE] width frame=3 run=3 BLACK width_ms=228
+[S2:BARCODE] width frame=3 run=4 WHITE width_ms=84
+[S2:BARCODE] width frame=3 run=5 BLACK width_ms=231
+[S2:BARCODE] width frame=3 run=6 WHITE width_ms=80
+[S2:BARCODE] width frame=3 run=7 BLACK width_ms=83
+[S2:BARCODE] width frame=3 run=8 WHITE width_ms=324
+[S2:BARCODE] width frame=3 run=9 BLACK width_ms=92
+[S2:BARCODE] width frame=3 run=10 WHITE width_ms=75
+[S2:BARCODE] width frame=3 run=11 BLACK width_ms=117
+[S2:BARCODE] width frame=3 run=12 WHITE width_ms=97
+[S2:BARCODE] width frame=3 run=13 BLACK width_ms=87
+[S2:BARCODE] width frame=3 run=14 WHITE width_ms=85
+[S2:BARCODE] width frame=3 run=15 BLACK width_ms=316
+[S2:BARCODE] width frame=3 run=16 WHITE width_ms=83
+[S2:BARCODE] width frame=3 run=17 BLACK width_ms=291
+[S2:BARCODE] width frame=3 run=18 WHITE width_ms=260
+[S2:BARCODE] width frame=3 run=19 BLACK width_ms=81
+[S2:BARCODE] width frame=3 run=20 WHITE width_ms=87
+[S2:BARCODE] width frame=3 run=21 BLACK width_ms=89
+[S2:BARCODE] width frame=3 run=22 WHITE width_ms=128
+[S2:BARCODE] width frame=3 run=23 BLACK width_ms=264
+[S2:BARCODE] width frame=3 run=24 WHITE width_ms=84
+[S2:BARCODE] width frame=3 run=25 BLACK width_ms=261
+[S2:BARCODE] width frame=3 run=26 WHITE width_ms=75
+[S2:BARCODE] width frame=3 run=27 BLACK width_ms=89
+[S2:BARCODE] width frame=3 run=28 WHITE width_ms=316
+[S2:BARCODE] width frame=3 run=29 BLACK width_ms=79
+[S1:MQTT] barcode acked frame=3
+[S2:ROBOT] steer n=472 sens none=453 R=0 C=19 both=0 act straight=439 right=0 left=33
+[S2:MOTION] state=2 fault=0 ticks L=16840 R=17084 PWM=15/19
+[S2:MOTION] ctrl late=0/4108 gap_max=12 loop_max=7 ms
+[S2:ROBOT] steer n=476 sens none=476 R=0 C=0 both=0 act straight=476 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=17919 R=18169 PWM=5/19
+[S2:MOTION] ctrl late=0/4203 gap_max=11 loop_max=3 ms
+[S2:ROBOT] junction: letter 'Z' -> LEFT
+[S2:MOTION] state=3 fault=0 ticks L=18461 R=19157 PWM=0/20
+[S2:MOTION] ctrl late=0/4303 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=18461 R=19930 PWM=0/20
+[S2:MOTION] ctrl late=0/4403 gap_max=11 loop_max=3 ms
+[S2:ROBOT] pivot stopped on the line at 80% of the arc
+[S2:ROBOT] steer n=330 sens none=320 R=0 C=10 both=0 act straight=320 right=0 left=10
+[S2:MOTION] state=2 fault=0 ticks L=18461 R=20549 PWM=5/10
+[S2:MOTION] ctrl late=0/4502 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=258 R=0 C=218 both=0 act straight=229 right=0 left=247
+[S2:MOTION] state=2 fault=0 ticks L=19020 R=21246 PWM=5/22
+[S2:MOTION] ctrl late=0/4597 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=475 sens none=432 R=0 C=43 both=0 act straight=403 right=0 left=72
+[S2:MOTION] state=2 fault=0 ticks L=19911 R=22275 PWM=15/19
+[S2:MOTION] ctrl late=0/4693 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=475 sens none=458 R=0 C=17 both=0 act straight=443 right=0 left=32
+[S2:MOTION] state=2 fault=0 ticks L=20868 R=23292 PWM=15/19
+[S2:MOTION] ctrl late=0/4788 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=20931 R=23355 PWM=0/0
+[S2:MOTION] ctrl late=0/4887 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=5 fault=0 ticks L=20931 R=23355 PWM=0/0
+[S2:MOTION] ctrl late=0/4987 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=20931 R=23355 PWM=0/0
+[S2:MOTION] ctrl late=0/5087 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=20931 R=23355 PWM=0/0
+[S2:MOTION] ctrl late=0/5187 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=20931 R=23355 PWM=0/0
+[S2:MOTION] ctrl late=0/5287 gap_max=10 loop_max=2 ms
+[S4:IMU] EVENT TILT roll=20 deg lateral=374 mg
+[S4:IMU] EVENT TILT roll=10 deg lateral=147 mg
+[S2:MOTION] state=5 fault=0 ticks L=20931 R=23354 PWM=0/0
+[S2:MOTION] ctrl late=0/5387 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=20931 R=23354 PWM=0/0
+[S2:MOTION] ctrl late=0/5487 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=20931 R=23353 PWM=0/0
+[S2:MOTION] ctrl late=0/5587 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=20931 R=23353 PWM=0/0
+[S2:MOTION] ctrl late=0/5687 gap_max=12 loop_max=4 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=2
+[S2:ROBOT] resumed (MQTT)
+[S2:ROBOT] steer n=82 sens none=82 R=0 C=0 both=0 act straight=82 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=20931 R=23353 PWM=0/0
+[S2:MOTION] ctrl late=0/5787 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=21841 R=24238 PWM=15/19
+[S2:MOTION] ctrl late=0/5882 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=476 R=0 C=0 both=0 act straight=476 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=22869 R=25228 PWM=13/18
+[S2:MOTION] ctrl late=0/5978 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=477 sens none=477 R=0 C=0 both=0 act straight=477 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=23696 R=26096 PWM=7/17
+[S2:MOTION] ctrl late=0/6073 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=477 sens none=419 R=0 C=58 both=0 act straight=390 right=0 left=87
+[S2:MOTION] state=2 fault=0 ticks L=24485 R=26929 PWM=13/17
+[S2:MOTION] ctrl late=0/6168 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=474 sens none=433 R=0 C=41 both=0 act straight=390 right=0 left=84
+[S2:MOTION] state=2 fault=0 ticks L=25308 R=27771 PWM=13/17
+[S2:MOTION] ctrl late=0/6263 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=453 R=0 C=23 both=0 act straight=438 right=0 left=38
+[S2:MOTION] state=2 fault=0 ticks L=26089 R=28574 PWM=13/17
+[S2:MOTION] ctrl late=0/6359 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=432 R=0 C=44 both=0 act straight=403 right=0 left=73
+[S2:BARCODE] decoded=Z queued=LEFT; execute at next C/R junction
+[S2:BARCODE] frame id=4 runs=29/29 black=15 white=14 result=Z skipped=0
+[S2:BARCODE] width frame=4 run=1 BLACK width_ms=65
+[S2:BARCODE] width frame=4 run=2 WHITE width_ms=75
+[S2:BARCODE] width frame=4 run=3 BLACK width_ms=220
+[S2:BARCODE] width frame=4 run=4 WHITE width_ms=82
+[S2:BARCODE] width frame=4 run=5 BLACK width_ms=228
+[S2:BARCODE] width frame=4 run=6 WHITE width_ms=79
+[S2:BARCODE] width frame=4 run=7 BLACK width_ms=101
+[S2:BARCODE] width frame=4 run=8 WHITE width_ms=309
+[S2:BARCODE] width frame=4 run=9 BLACK width_ms=92
+[S2:BARCODE] width frame=4 run=10 WHITE width_ms=72
+[S2:BARCODE] width frame=4 run=11 BLACK width_ms=93
+[S2:BARCODE] width frame=4 run=12 WHITE width_ms=85
+[S2:BARCODE] width frame=4 run=13 BLACK width_ms=114
+[S2:BARCODE] width frame=4 run=14 WHITE width_ms=91
+[S2:BARCODE] width frame=4 run=15 BLACK width_ms=295
+[S2:BARCODE] width frame=4 run=16 WHITE width_ms=89
+[S2:BARCODE] width frame=4 run=17 BLACK width_ms=244
+[S2:BARCODE] width frame=4 run=18 WHITE width_ms=282
+[S2:BARCODE] width frame=4 run=19 BLACK width_ms=80
+[S2:BARCODE] width frame=4 run=20 WHITE width_ms=84
+[S2:BARCODE] width frame=4 run=21 BLACK width_ms=85
+[S2:BARCODE] width frame=4 run=22 WHITE width_ms=117
+[S2:BARCODE] width frame=4 run=23 BLACK width_ms=264
+[S2:BARCODE] width frame=4 run=24 WHITE width_ms=85
+[S2:BARCODE] width frame=4 run=25 BLACK width_ms=257
+[S2:BARCODE] width frame=4 run=26 WHITE width_ms=78
+[S2:BARCODE] width frame=4 run=27 BLACK width_ms=87
+[S2:BARCODE] width frame=4 run=28 WHITE width_ms=313
+[S2:BARCODE] width frame=4 run=29 BLACK width_ms=80
+[S2:MOTION] state=2 fault=0 ticks L=27058 R=29564 PWM=15/19
+[S2:MOTION] ctrl late=0/6454 gap_max=15 loop_max=8 ms
+[S2:ROBOT] steer n=474 sens none=474 R=0 C=0 both=0 act straight=474 right=0 left=0
+[S1:MQTT] barcode acked frame=4
+[S2:MOTION] state=2 fault=0 ticks L=28140 R=30664 PWM=15/19
+[S2:MOTION] ctrl late=0/6549 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=474 sens none=474 R=0 C=0 both=0 act straight=474 right=0 left=0
+[S2:ROBOT] junction: letter 'Z' -> LEFT
+[S2:MOTION] state=3 fault=0 ticks L=28991 R=31746 PWM=0/20
+[S2:MOTION] ctrl late=0/6647 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=28991 R=32562 PWM=0/20
+[S2:MOTION] ctrl late=0/6747 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=28991 R=33331 PWM=0/20
+[S2:MOTION] ctrl late=0/6847 gap_max=10 loop_max=2 ms
+[S2:ROBOT] pivot stopped on the line at 80% of the arc
+[S2:ROBOT] steer n=122 sens none=112 R=0 C=10 both=0 act straight=112 right=0 left=10
+[S2:MOTION] state=2 fault=0 ticks L=28991 R=33359 PWM=0/23
+[S2:MOTION] ctrl late=0/6945 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=487 sens none=0 R=0 C=487 both=0 act straight=0 right=0 left=487
+[S2:MOTION] state=2 fault=0 ticks L=28991 R=33359 PWM=0/23
+[S2:MOTION] ctrl late=0/7043 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=492 sens none=0 R=0 C=492 both=0 act straight=0 right=0 left=492
+[S2:MOTION] state=2 fault=0 ticks L=28991 R=33359 PWM=0/23
+[S2:MOTION] ctrl late=0/7141 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=491 sens none=0 R=0 C=491 both=0 act straight=0 right=0 left=491
+[S2:MOTION] state=2 fault=0 ticks L=29175 R=33620 PWM=15/19
+[S2:MOTION] ctrl late=0/7238 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=486 sens none=153 R=0 C=333 both=0 act straight=138 right=0 left=348
+[S2:MOTION] state=2 fault=0 ticks L=30052 R=34649 PWM=15/19
+[S2:MOTION] ctrl late=0/7334 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=426 R=0 C=50 both=0 act straight=397 right=0 left=79
+[S2:MOTION] state=2 fault=0 ticks L=31012 R=35677 PWM=15/19
+[S2:MOTION] ctrl late=0/7429 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=475 sens none=453 R=0 C=22 both=0 act straight=439 right=0 left=36
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=31652 R=36369 PWM=0/0
+[S2:MOTION] ctrl late=0/7526 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=31652 R=36369 PWM=0/0
+[S2:MOTION] ctrl late=0/7626 gap_max=10 loop_max=2 ms
+[S4:IMU] EVENT TILT roll=5 deg lateral=101 mg
+[S2:MOTION] state=5 fault=0 ticks L=31652 R=36369 PWM=0/0
+[S2:MOTION] ctrl late=0/7726 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=-5 deg lateral=-92 mg
+[S2:MOTION] state=5 fault=0 ticks L=31647 R=36366 PWM=0/0
+[S2:MOTION] ctrl late=0/7826 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=31641 R=36367 PWM=0/0
+[S2:MOTION] ctrl late=0/7926 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=31628 R=36366 PWM=0/0
+[S2:MOTION] ctrl late=0/8026 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=31628 R=36366 PWM=0/0
+[S2:MOTION] ctrl late=0/8126 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=2
+[S2:ROBOT] resumed (MQTT)
+[S2:ROBOT] steer n=283 sens none=263 R=0 C=20 both=0 act straight=248 right=0 left=35
+[S2:MOTION] state=2 fault=0 ticks L=32523 R=37220 PWM=15/19
+[S2:MOTION] ctrl late=0/8221 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=475 sens none=453 R=0 C=22 both=0 act straight=453 right=0 left=22
+[S2:MOTION] state=2 fault=0 ticks L=33432 R=38195 PWM=13/17
+[S2:MOTION] ctrl late=0/8317 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=474 sens none=445 R=0 C=29 both=0 act straight=415 right=0 left=59
+[S2:MOTION] state=2 fault=0 ticks L=34256 R=39046 PWM=13/17
+[S2:MOTION] ctrl late=0/8412 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=478 sens none=448 R=0 C=30 both=0 act straight=420 right=0 left=58
+[S2:MOTION] state=2 fault=0 ticks L=35092 R=39900 PWM=13/17
+[S2:MOTION] ctrl late=0/8508 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=478 sens none=432 R=0 C=46 both=0 act straight=404 right=0 left=74
+[S2:MOTION] state=2 fault=0 ticks L=35904 R=40745 PWM=13/17
+[S2:MOTION] ctrl late=0/8603 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=474 sens none=432 R=0 C=42 both=0 act straight=403 right=0 left=71
+[S2:MOTION] state=2 fault=0 ticks L=36708 R=41559 PWM=13/17
+[S2:MOTION] ctrl late=0/8699 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=477 sens none=436 R=0 C=41 both=0 act straight=407 right=0 left=70
+[S2:BARCODE] decoded=Z queued=LEFT; execute at next C/R junction
+[S1:MQTT] barcode acked frame=5
+[S2:BARCODE] frame id=5 runs=29/29 black=15 white=14 result=Z skipped=0
+[S2:BARCODE] width frame=5 run=1 BLACK width_ms=60
+[S2:BARCODE] width frame=5 run=2 WHITE width_ms=78
+[S2:BARCODE] width frame=5 run=3 BLACK width_ms=267
+[S2:BARCODE] width frame=5 run=4 WHITE width_ms=92
+[S2:BARCODE] width frame=5 run=5 BLACK width_ms=244
+[S2:BARCODE] width frame=5 run=6 WHITE width_ms=84
+[S2:BARCODE] width frame=5 run=7 BLACK width_ms=105
+[S2:BARCODE] width frame=5 run=8 WHITE width_ms=306
+[S2:BARCODE] width frame=5 run=9 BLACK width_ms=88
+[S2:BARCODE] width frame=5 run=10 WHITE width_ms=72
+[S2:BARCODE] width frame=5 run=11 BLACK width_ms=93
+[S2:BARCODE] width frame=5 run=12 WHITE width_ms=76
+[S2:BARCODE] width frame=5 run=13 BLACK width_ms=85
+[S2:BARCODE] width frame=5 run=14 WHITE width_ms=83
+[S2:BARCODE] width frame=5 run=15 BLACK width_ms=283
+[S2:BARCODE] width frame=5 run=16 WHITE width_ms=78
+[S2:BARCODE] width frame=5 run=17 BLACK width_ms=283
+[S2:BARCODE] width frame=5 run=18 WHITE width_ms=243
+[S2:BARCODE] width frame=5 run=19 BLACK width_ms=73
+[S2:BARCODE] width frame=5 run=20 WHITE width_ms=108
+[S2:BARCODE] width frame=5 run=21 BLACK width_ms=97
+[S2:BARCODE] width frame=5 run=22 WHITE width_ms=92
+[S2:BARCODE] width frame=5 run=23 BLACK width_ms=240
+[S2:BARCODE] width frame=5 run=24 WHITE width_ms=83
+[S2:BARCODE] width frame=5 run=25 BLACK width_ms=299
+[S2:BARCODE] width frame=5 run=26 WHITE width_ms=79
+[S2:BARCODE] width frame=5 run=27 BLACK width_ms=83
+[S2:BARCODE] width frame=5 run=28 WHITE width_ms=285
+[S2:BARCODE] width frame=5 run=29 BLACK width_ms=107
+[S2:MOTION] state=2 fault=0 ticks L=37706 R=42572 PWM=15/19
+[S2:MOTION] ctrl late=0/8794 gap_max=11 loop_max=7 ms
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=38783 R=43656 PWM=15/19
+[S2:MOTION] ctrl late=0/8889 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=475 sens none=475 R=0 C=0 both=0 act straight=475 right=0 left=0
+[S2:ROBOT] junction: letter 'Z' -> LEFT
+[S2:MOTION] state=3 fault=0 ticks L=39547 R=44719 PWM=0/20
+[S2:MOTION] ctrl late=0/8988 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=39547 R=45511 PWM=0/20
+[S2:MOTION] ctrl late=0/9087 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=39547 R=46263 PWM=0/20
+[S2:MOTION] ctrl late=0/9187 gap_max=11 loop_max=3 ms
+[S2:ROBOT] pivot stopped on the line at 80% of the arc
+[S2:ROBOT] steer n=68 sens none=51 R=0 C=17 both=0 act straight=51 right=0 left=17
+[S2:MOTION] state=2 fault=0 ticks L=39968 R=46865 PWM=15/19
+[S2:MOTION] ctrl late=0/9283 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=478 sens none=256 R=0 C=222 both=0 act straight=226 right=0 left=252
+[S2:MOTION] state=2 fault=0 ticks L=40916 R=47891 PWM=15/19
+[S2:MOTION] ctrl late=0/9379 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=475 sens none=455 R=0 C=20 both=0 act straight=441 right=0 left=34
+[S2:MOTION] state=2 fault=0 ticks L=41853 R=48909 PWM=5/23
+[S2:MOTION] ctrl late=0/9474 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=441 R=0 C=35 both=0 act straight=412 right=0 left=64
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S4:IMU] hump entry confirmed sign=1 peak=150mg
+[S4:IMU] HUMP ACTIVE: forward=41 abs=41 dist=0 height=0
+[S4:IMU] HUMP ACTIVE: forward=0 abs=0 dist=0 height=0
+[S4:IMU] EVENT HUMP height=unavailable (no wheel distance) peak=150 mg
+[S4:IMU] hump detector re-armed
+[S2:MOTION] state=5 fault=0 ticks L=42034 R=49127 PWM=0/0
+[S2:MOTION] ctrl late=0/9573 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42034 R=49127 PWM=0/0
+[S2:MOTION] ctrl late=0/9673 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=0 deg lateral=40 mg
+[S2:MOTION] state=5 fault=0 ticks L=42035 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/9773 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=0 deg lateral=6 mg
+[S2:MOTION] state=5 fault=0 ticks L=42035 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/9873 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/9973 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/10073 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/10173 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/10273 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/10373 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/10473 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/10573 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/10673 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/mapping length=3
+[S2:ROBOT] MQTT map applied: A=left W=right Z=straight S=U-turn
+[S1:MQTT] RX topic=group17-robot/mapping length=3
+[S2:ROBOT] MQTT map applied: A=left W=right Z=straight S=U-turn
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/10773 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/10873 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/10973 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/11073 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/11173 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/11273 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/11373 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/11473 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/11573 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/11673 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/11773 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/11873 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/11973 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/12073 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/12173 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/12273 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/12373 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/12473 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/12573 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/12673 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/12773 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/12873 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/12973 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/13073 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/13173 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/mapping length=3
+[S2:ROBOT] MQTT map applied: A=left W=right D=straight Z=U-turn
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/13273 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/13373 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/13473 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/13573 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/mapping length=3
+[S2:ROBOT] MQTT map applied: A=left W=right D=straight Z=U-turn
+[S2:MOTION] state=1 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/13673 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=42033 R=49123 PWM=0/0
+[S2:MOTION] ctrl late=0/13773 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=2
+[S2:ROBOT] resumed (MQTT)
+[S2:ROBOT] steer n=66 sens none=66 R=0 C=0 both=0 act straight=66 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=42571 R=49676 PWM=15/19
+[S2:MOTION] ctrl late=0/13869 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=476 R=0 C=0 both=0 act straight=476 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=43591 R=50688 PWM=13/17
+[S2:MOTION] ctrl late=0/13965 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=476 sens none=476 R=0 C=0 both=0 act straight=476 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=44408 R=51527 PWM=7/17
+[S2:MOTION] ctrl late=0/14060 gap_max=11 loop_max=5 ms
+[S2:ROBOT] steer n=477 sens none=414 R=0 C=63 both=0 act straight=370 right=0 left=107
+[S2:MOTION] state=2 fault=0 ticks L=45191 R=52371 PWM=13/17
+[S2:MOTION] ctrl late=0/14155 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=475 sens none=428 R=0 C=47 both=0 act straight=399 right=0 left=76
+[S2:MOTION] state=2 fault=0 ticks L=46018 R=53234 PWM=13/17
+[S2:MOTION] ctrl late=0/14250 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=475 sens none=441 R=0 C=34 both=0 act straight=412 right=0 left=63
+[S2:MOTION] state=2 fault=0 ticks L=46829 R=54040 PWM=13/17
+[S2:MOTION] ctrl late=0/14345 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=477 sens none=429 R=0 C=48 both=0 act straight=399 right=0 left=78
+[S2:BARCODE] decoded=Z queued=U-TURN; execute at next C/R junction
+[S2:BARCODE] frame id=6 runs=29/29 black=15 white=14 result=Z skipped=0
+[S2:BARCODE] width frame=6 run=1 BLACK width_ms=69
+[S2:BARCODE] width frame=6 run=2 WHITE width_ms=83
+[S2:BARCODE] width frame=6 run=3 BLACK width_ms=239
+[S2:BARCODE] width frame=6 run=4 WHITE width_ms=88
+[S2:BARCODE] width frame=6 run=5 BLACK width_ms=239
+[S2:BARCODE] width frame=6 run=6 WHITE width_ms=78
+[S2:BARCODE] width frame=6 run=7 BLACK width_ms=118
+[S2:BARCODE] width frame=6 run=8 WHITE width_ms=308
+[S2:BARCODE] width frame=6 run=9 BLACK width_ms=91
+[S2:BARCODE] width frame=6 run=10 WHITE width_ms=69
+[S2:BARCODE] width frame=6 run=11 BLACK width_ms=118
+[S2:BARCODE] width frame=6 run=12 WHITE width_ms=91
+[S2:BARCODE] width frame=6 run=13 BLACK width_ms=86
+[S2:BARCODE] width frame=6 run=14 WHITE width_ms=77
+[S2:BARCODE] width frame=6 run=15 BLACK width_ms=300
+[S2:BARCODE] width frame=6 run=16 WHITE width_ms=80
+[S2:BARCODE] width frame=6 run=17 BLACK width_ms=279
+[S2:BARCODE] width frame=6 run=18 WHITE width_ms=248
+[S2:BARCODE] width frame=6 run=19 BLACK width_ms=80
+[S2:BARCODE] width frame=6 run=20 WHITE width_ms=118
+[S2:BARCODE] width frame=6 run=21 BLACK width_ms=85
+[S2:BARCODE] width frame=6 run=22 WHITE width_ms=94
+[S2:BARCODE] width frame=6 run=23 BLACK width_ms=245
+[S2:BARCODE] width frame=6 run=24 WHITE width_ms=105
+[S2:BARCODE] width frame=6 run=25 BLACK width_ms=268
+[S2:BARCODE] width frame=6 run=26 WHITE width_ms=78
+[S2:BARCODE] width frame=6 run=27 BLACK width_ms=87
+[S2:BARCODE] width frame=6 run=28 WHITE width_ms=318
+[S2:BARCODE] width frame=6 run=29 BLACK width_ms=77
+[S1:MQTT] barcode acked frame=6
+[S2:MOTION] state=2 fault=0 ticks L=47734 R=54975 PWM=15/19
+[S2:MOTION] ctrl late=1/14440 gap_max=16 loop_max=7 ms
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0
+[S2:MOTION] state=2 fault=0 ticks L=48803 R=56077 PWM=15/19
+[S2:MOTION] ctrl late=1/14536 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=478 sens none=478 R=0 C=0 both=0 act straight=478 right=0 left=0
+[S2:ROBOT] junction: letter 'Z' -> U-TURN
+[S2:MOTION] state=2 fault=0 ticks L=49801 R=57159 PWM=15/19
+[S2:MOTION] ctrl late=1/14633 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=49714 R=57613 PWM=-12/15
+[S2:MOTION] ctrl late=1/14733 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=49404 R=57899 PWM=-12/15
+[S2:MOTION] ctrl late=1/14833 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=49051 R=58224 PWM=-12/15
+[S2:MOTION] ctrl late=1/14933 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=48658 R=58589 PWM=-12/15
+[S2:MOTION] ctrl late=1/15033 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=3 fault=0 ticks L=48262 R=58895 PWM=-12/15
+[S2:MOTION] ctrl late=1/15133 gap_max=11 loop_max=3 ms
+[S2:ROBOT] WARN stopped: motion fault / calibration missing; reboot to re-arm
+[S2:MOTION] state=6 fault=3 ticks L=48057 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/15233 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48057 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/15333 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48057 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/15433 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48057 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/15533 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48057 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/15633 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/15733 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/15833 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] WARN PAUSE ignored: already in a safety stop
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/15932 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/16032 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/16132 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/16232 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/16332 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/16432 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/16532 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/16632 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/16732 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/16832 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/16932 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/17032 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/17132 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/17232 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/17332 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/17432 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/17532 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/17632 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/17732 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=6 fault=3 ticks L=48048 R=58916 PWM=0/0
+[S2:MOTION] ctrl late=1/17832 gap_max=11 loop_max=3 ms

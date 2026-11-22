@@ -1,0 +1,580 @@
+=== COM5 connected 20:04:28.432 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-27,19,916) mg
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=10 loop_max=2 ms
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3 t=4078 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+wifi: link status -> down (0)
+[S1:MQTT] WARN Wi-Fi unavailable; waiting for IP
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1000 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1100 gap_max=11 loop_max=3 ms
+wifi: reconnecting (link down or join failed)
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1200 gap_max=10 loop_max=2 ms
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1500 gap_max=11 loop_max=3 ms
+wifi: link up, ip=172.20.10.3 t=15177 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1600 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1900 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2100 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2400 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2700 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3000 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3100 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3300 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3600 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3900 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4100 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4400 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4500 gap_max=11 loop_max=3 ms
+[S1:MQTT] WARN connection status 256 t=45786 ms, retrying in 3s
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4800 gap_max=11 loop_max=3 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5000 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5100 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5200 gap_max=11 loop_max=3 ms
+=== COM5 connected 20:05:53.797 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-27,18,916) mg
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3 t=4105 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=10 loop_max=2 ms
+wifi: link status -> down (0)
+[S1:MQTT] WARN Wi-Fi unavailable; waiting for IP
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1000 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1100 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1200 gap_max=11 loop_max=3 ms
+wifi: reconnecting (link down or join failed)
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1300 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1500 gap_max=11 loop_max=3 ms
+wifi: link up, ip=172.20.10.3 t=15207 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1600 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1800 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2100 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2200 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2400 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2700 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3000 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3100 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3300 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3500 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3600 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3800 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4100 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4400 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4500 gap_max=11 loop_max=3 ms
+[S1:MQTT] WARN connection status 256 t=45799 ms, retrying in 3s
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4700 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4800 gap_max=11 loop_max=3 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4900 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5000 gap_max=10 loop_max=2 ms
+[S4:IMU] EVENT TILT roll=5 deg lateral=108 mg
+[S4:IMU] EVENT LIFT z_avg-base=237mg threshold=200mg acc=(-85,88,1014) base_z=916
+[S4:IMU] EVENT TILT roll=-15 deg lateral=-221 mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5100 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=30 deg lateral=472 mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5200 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5500 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5800 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6100 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6400 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6600 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6900 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7100 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7200 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7500 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7600 gap_max=11 loop_max=3 ms
+[S1:MQTT] WARN connection status 256 t=76515 ms, retrying in 3s
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7800 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7900 gap_max=11 loop_max=3 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8100 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8400 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8600 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8900 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9100 gap_max=11 loop_max=3 ms
+[S1:MQTT] connected to 172.20.10.2 t=91220 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9200 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9500 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9700 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10000 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10100 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10300 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10500 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10600 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10900 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/11000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/11100 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/11200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/11300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/11400 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/11500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/11600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/11700 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/11800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/11900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/12000 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/12100 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/12200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/12300 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/12400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/12500 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/12600 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/12700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/12800 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/12900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/13000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/13100 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/13200 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/mapping length=3
+[S2:ROBOT] MQTT map applied: Z=left A=right D=straight S=U-turn
+[S1:MQTT] RX topic=group17-robot/mapping length=3
+[S2:ROBOT] MQTT map applied: Z=left A=right D=straight S=U-turn
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/13299 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/13399 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/13499 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/13599 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/13699 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/13799 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/13899 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: letter map from MQTT
+[S2:MOTION] state=2 fault=0 ticks L=88 R=66 PWM=15/19
+[S2:MOTION] ctrl late=0/13999 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=1042 R=1019 PWM=15/19
+[S2:MOTION] ctrl late=0/14096 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=1901 R=1783 PWM=15/20
+[S2:MOTION] ctrl late=0/14192 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=2771 R=2716 PWM=13/17
+[S2:MOTION] ctrl late=0/14288 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=3587 R=3523 PWM=13/17
+[S2:MOTION] ctrl late=0/14384 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=4404 R=4328 PWM=13/17
+[S2:MOTION] ctrl late=0/14481 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=5253 R=5199 PWM=13/17
+[S2:MOTION] ctrl late=0/14577 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=6020 R=5929 PWM=13/17
+[S2:MOTION] ctrl late=0/14672 gap_max=11 loop_max=3 ms
+[S2:BARCODE] decoded=Z queued=LEFT; execute at next C/R junction
+[S2:BARCODE] frame id=1 runs=29/29 black=15 white=14 result=Z skipped=0
+[S2:BARCODE] width frame=1 run=1 BLACK width_ms=76
+[S2:BARCODE] width frame=1 run=2 WHITE width_ms=87
+[S2:BARCODE] width frame=1 run=3 BLACK width_ms=248
+[S2:BARCODE] width frame=1 run=4 WHITE width_ms=94
+[S2:BARCODE] width frame=1 run=5 BLACK width_ms=247
+[S2:BARCODE] width frame=1 run=6 WHITE width_ms=94
+[S2:BARCODE] width frame=1 run=7 BLACK width_ms=88
+[S2:BARCODE] width frame=1 run=8 WHITE width_ms=284
+[S2:BARCODE] width frame=1 run=9 BLACK width_ms=89
+[S2:BARCODE] width frame=1 run=10 WHITE width_ms=91
+[S2:BARCODE] width frame=1 run=11 BLACK width_ms=88
+[S2:BARCODE] width frame=1 run=12 WHITE width_ms=95
+[S2:BARCODE] width frame=1 run=13 BLACK width_ms=89
+[S2:BARCODE] width frame=1 run=14 WHITE width_ms=98
+[S2:BARCODE] width frame=1 run=15 BLACK width_ms=275
+[S2:BARCODE] width frame=1 run=16 WHITE width_ms=83
+[S2:BARCODE] width frame=1 run=17 BLACK width_ms=259
+[S2:BARCODE] width frame=1 run=18 WHITE width_ms=278
+[S2:BARCODE] width frame=1 run=19 BLACK width_ms=89
+[S2:BARCODE] width frame=1 run=20 WHITE width_ms=86
+[S2:BARCODE] width frame=1 run=21 BLACK width_ms=87
+[S2:BARCODE] width frame=1 run=22 WHITE width_ms=96
+[S2:BARCODE] width frame=1 run=23 BLACK width_ms=243
+[S2:BARCODE] width frame=1 run=24 WHITE width_ms=81
+[S2:BARCODE] width frame=1 run=25 BLACK width_ms=255
+[S2:BARCODE] width frame=1 run=26 WHITE width_ms=85
+[S2:BARCODE] width frame=1 run=27 BLACK width_ms=89
+[S2:BARCODE] width frame=1 run=28 WHITE width_ms=300
+[S2:BARCODE] width frame=1 run=29 BLACK width_ms=89
+[S1:MQTT] barcode acked frame=1
+[S2:MOTION] state=2 fault=0 ticks L=6881 R=6809 PWM=15/19
+[S2:MOTION] ctrl late=0/14769 gap_max=11 loop_max=7 ms
+[S2:MOTION] state=2 fault=0 ticks L=7803 R=7762 PWM=15/19
+[S2:MOTION] ctrl late=0/14866 gap_max=11 loop_max=3 ms
+[S2:ROBOT] junction: letter 'Z' -> LEFT
+[S2:MOTION] state=3 fault=0 ticks L=8500 R=8525 PWM=0/15
+[S2:MOTION] ctrl late=0/14964 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=8502 R=8860 PWM=0/15
+[S2:MOTION] ctrl late=0/15064 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=3 fault=0 ticks L=8502 R=9015 PWM=0/15
+[S2:MOTION] ctrl late=0/15164 gap_max=11 loop_max=3 ms
+[S2:ROBOT] WARN stopped: motion fault / calibration missing; reboot to re-arm
+[S2:MOTION] state=6 fault=3 ticks L=8502 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/15264 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=8502 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/15364 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=8502 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/15464 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=8502 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/15564 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=8502 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/15664 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/15764 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/15864 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/15964 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/16064 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/16164 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/16264 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/16364 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/16464 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/16564 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/16664 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/16764 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/16864 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/16964 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/17064 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/17164 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=6 fault=3 ticks L=8503 R=9013 PWM=0/0
+[S2:MOTION] ctrl late=0/17264 gap_max=10 loop_max=2 ms

@@ -49,7 +49,25 @@
 /* Drive onto the crossing before pivoting. all_test's "5 cm" counts 5 x
    S2_RIGHT_TICKS_PER_CM = 94 right-wheel ticks, which is 0.8 cm with the
    interrupt encoder: keep that tuned distance. */
-#define S2_TURN_ADVANCE_CM (5.0f * S2_RIGHT_TICKS_PER_CM / S2_ENC_RIGHT_TICKS_PER_CM)
+/* 22 Nov (S2-U09). Pivots swing the sensors about the stationary wheel, and
+   the right IR sensor sits about 2 cm right of the centre one, so the line is
+   held about 1 cm right of the robot's centreline. That puts the sensors
+   about 2 cm further along after a left pivot than after a right pivot, so
+   the two turns get separate advances. Left: 0.8 cm all_test distance plus
+   3.5 cm (+2.0 closed only 1 of 2 cm short). Right: 2.0 cm more, from the
+   right turn ending about 1 cm short at the left's 4.3 cm. */
+#define S2_TURN_ADVANCE_BASE_CM (5.0f * S2_RIGHT_TICKS_PER_CM / S2_ENC_RIGHT_TICKS_PER_CM)
+#define S2_TURN_ADVANCE_LEFT_CM  (3.7f + S2_TURN_ADVANCE_BASE_CM)  /* 4.5 cm: 4.3 missed on both sides, 5.0 overshot */
+#define S2_TURN_ADVANCE_RIGHT_CM (5.5f + S2_TURN_ADVANCE_BASE_CM)
+/* U-turn and straight-on keep the left value */
+#define S2_TURN_ADVANCE_CM S2_TURN_ADVANCE_LEFT_CM
+/* A left/right pivot stops on the line once past this fraction of its arc and
+   the centre sensor is black (not before: the sensors start on the crossing).
+   22 Nov: 0.6 stopped left pivots at 74-80 % of the arc with the robot 15-25
+   degrees short of the line; right pivots stopped at 91-99 %. */
+#define S2_PIVOT_LINE_MIN_FRACTION 0.9f
+/* Left pivot only: 0.9 overshot the line, so it may stop on the line from 80 %. */
+#define S2_PIVOT_LINE_MIN_FRACTION_LEFT 0.8f
 #define S2_JUNCTION_SETTLE_MS 500u   /* ignore the crossing just handled */
 
 /* Called only by the motor-owning task; no second writer to motor GPIO. */

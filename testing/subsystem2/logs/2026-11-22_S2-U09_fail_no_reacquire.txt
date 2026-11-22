@@ -1,0 +1,176 @@
+=== COM5 connected 20:12:17.818 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-37,34,919) mg
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+wifi: link status -> joined AP, no IP yet (2)
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+wifi: link up, ip=172.20.10.3 t=4145 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1100 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1200 gap_max=10 loop_max=2 ms
+[S1:MQTT] connected to 172.20.10.2 t=12335 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1300 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1400 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1500 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1700 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/mapping length=3
+[S2:ROBOT] MQTT map applied: Z=left A=right D=straight S=U-turn
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1799 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1899 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1999 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2099 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: letter map from MQTT
+[S2:MOTION] state=2 fault=0 ticks L=391 R=421 PWM=15/19
+[S2:MOTION] ctrl late=0/2197 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=1432 R=1501 PWM=15/19
+[S2:MOTION] ctrl late=0/2293 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=2406 R=2482 PWM=14/17
+[S2:MOTION] ctrl late=0/2389 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=3281 R=3349 PWM=14/17
+[S2:MOTION] ctrl late=0/2485 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=4216 R=4301 PWM=14/17
+[S2:MOTION] ctrl late=0/2581 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=5111 R=5154 PWM=13/17
+[S2:MOTION] ctrl late=0/2677 gap_max=12 loop_max=3 ms
+[S2:BARCODE] decoded=Z queued=LEFT; execute at next C/R junction
+[S1:MQTT] barcode acked frame=1
+[S2:MOTION] state=2 fault=0 ticks L=5942 R=6042 PWM=15/19
+[S2:MOTION] ctrl late=0/2772 gap_max=11 loop_max=4 ms
+[S2:BARCODE] frame id=1 runs=29/29 black=15 white=14 result=Z skipped=0
+[S2:BARCODE] width frame=1 run=1 BLACK width_ms=65
+[S2:BARCODE] width frame=1 run=2 WHITE width_ms=79
+[S2:BARCODE] width frame=1 run=3 BLACK width_ms=224
+[S2:BARCODE] width frame=1 run=4 WHITE width_ms=92
+[S2:BARCODE] width frame=1 run=5 BLACK width_ms=242
+[S2:BARCODE] width frame=1 run=6 WHITE width_ms=89
+[S2:BARCODE] width frame=1 run=7 BLACK width_ms=78
+[S2:BARCODE] width frame=1 run=8 WHITE width_ms=252
+[S2:BARCODE] width frame=1 run=9 BLACK width_ms=88
+[S2:BARCODE] width frame=1 run=10 WHITE width_ms=77
+[S2:BARCODE] width frame=1 run=11 BLACK width_ms=102
+[S2:BARCODE] width frame=1 run=12 WHITE width_ms=74
+[S2:BARCODE] width frame=1 run=13 BLACK width_ms=92
+[S2:BARCODE] width frame=1 run=14 WHITE width_ms=80
+[S2:BARCODE] width frame=1 run=15 BLACK width_ms=251
+[S2:BARCODE] width frame=1 run=16 WHITE width_ms=73
+[S2:BARCODE] width frame=1 run=17 BLACK width_ms=229
+[S2:BARCODE] width frame=1 run=18 WHITE width_ms=229
+[S2:BARCODE] width frame=1 run=19 BLACK width_ms=76
+[S2:BARCODE] width frame=1 run=20 WHITE width_ms=78
+[S2:BARCODE] width frame=1 run=21 BLACK width_ms=83
+[S2:BARCODE] width frame=1 run=22 WHITE width_ms=88
+[S2:BARCODE] width frame=1 run=23 BLACK width_ms=235
+[S2:BARCODE] width frame=1 run=24 WHITE width_ms=79
+[S2:BARCODE] width frame=1 run=25 BLACK width_ms=239
+[S2:BARCODE] width frame=1 run=26 WHITE width_ms=73
+[S2:BARCODE] width frame=1 run=27 BLACK width_ms=80
+[S2:BARCODE] width frame=1 run=28 WHITE width_ms=265
+[S2:BARCODE] width frame=1 run=29 BLACK width_ms=81
+[S2:MOTION] state=2 fault=0 ticks L=7014 R=7160 PWM=16/19
+[S2:MOTION] ctrl late=0/2869 gap_max=12 loop_max=6 ms
+[S2:ROBOT] junction: letter 'Z' -> LEFT
+[S2:MOTION] state=3 fault=0 ticks L=8006 R=8264 PWM=0/20
+[S2:MOTION] ctrl late=0/2966 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=8007 R=9111 PWM=0/20
+[S2:MOTION] ctrl late=0/3065 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=3 fault=0 ticks L=8007 R=9927 PWM=0/20
+[S2:MOTION] ctrl late=0/3165 gap_max=12 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=8077 R=10519 PWM=15/19
+[S2:MOTION] ctrl late=0/3264 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=8987 R=11426 PWM=15/19
+[S2:MOTION] ctrl late=0/3361 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=9878 R=12305 PWM=15/19
+[S2:MOTION] ctrl late=0/3457 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=10776 R=13233 PWM=15/19
+[S2:MOTION] ctrl late=0/3553 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=11724 R=14212 PWM=15/19
+[S2:MOTION] ctrl late=0/3649 gap_max=11 loop_max=4 ms
+[S2:MOTION] state=2 fault=0 ticks L=12728 R=15246 PWM=16/19
+[S2:MOTION] ctrl late=0/3745 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=2 fault=0 ticks L=13727 R=16246 PWM=16/19
+[S2:MOTION] ctrl late=0/3841 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S4:IMU] hump entry confirmed sign=1 peak=188mg
+[S4:IMU] HUMP ACTIVE: forward=-26 abs=26 dist=0 height=0
+[S4:IMU] HUMP ACTIVE: forward=-65 abs=65 dist=0 height=0
+[S4:IMU] HUMP ACTIVE: forward=38 abs=38 dist=0 height=0
+[S4:IMU] EVENT HUMP height=unavailable (no wheel distance) peak=188 mg
+[S4:IMU] hump detector re-armed
+[S2:MOTION] state=5 fault=0 ticks L=13884 R=16414 PWM=0/0
+[S2:MOTION] ctrl late=0/3940 gap_max=12 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=13884 R=16414 PWM=0/0
+[S2:MOTION] ctrl late=0/4040 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=13884 R=16414 PWM=0/0
+[S2:MOTION] ctrl late=0/4140 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=13884 R=16414 PWM=0/0
+[S2:MOTION] ctrl late=0/4240 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=13884 R=16414 PWM=0/0
+[S2:MOTION] ctrl late=0/4340 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=13884 R=16414 PWM=0/0
+[S2:MOTION] ctrl late=0/4440 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=13884 R=16414 PWM=0/0
+[S2:MOTION] ctrl late=0/4540 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=13884 R=16414 PWM=0/0
+[S2:MOTION] ctrl late=0/4640 gap_max=11 loop_max=3 ms
