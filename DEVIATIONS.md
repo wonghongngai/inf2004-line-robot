@@ -31,7 +31,7 @@ The source documents are not in this repo. Each row gives the planned item, what
 | 6 | No reverse motion, though WU requires `moveBackward` and the S5 planner can choose REVERSE | Missing | #39 |
 | 7 | No IMU motion classes or turn rate (FR4-3, FR4-4; still assessed) | Missing | #42, #43 |
 | 8 | Coarse scan uses 50/70/90/110/130 deg, FR5-1 specifies 30/60/90/120/150 deg | Changed, decided 20 Nov: FR5-1 updated | #65 (`DECISIONS.md`) |
-| 9 | S5 never reads the IMU, so the A5-2 tilt suppression is not implemented | Missing | #44 |
+| 9 | A5-2 tilt suppression only in part: S5 ignores forward readings while S4 reports a hump or tilt (`s5_detect_allowed()`, since 7 Nov), but has no hold after the tilt clears and no rate-of-change check; its test S5-U44 was dropped (#44) | Partial | #44 (decided: no further work) |
 | 10 | Most requirements have no recorded test result; S5-U02 and S5-U06 last failed | Unverified | #14 to #37 |
 
 ## Changes mandated by the instructor
@@ -126,7 +126,7 @@ Calibration, tilt and hump detection exist, but motion classes and turn rate (st
 
 ## Buddy 5: Ultrasonic scanning and avoidance
 
-The full scan, profile, plan and bypass pipeline exists, but the detection distance and scan angles were changed from FR5-1 and NFR5-1, two NFRs last failed, and both Week 6 assumptions are still open.
+The full scan, profile, plan and bypass pipeline exists, but the detection distance and scan angles were changed from FR5-1 and NFR5-1, two NFRs last failed, A5-1 (corridor) was accepted unmeasured, and A5-2 (tilt suppression) is only partly implemented.
 
 | ID | Requirement (source) | Current code | Type | Follow-up |
 | --- | --- | --- | --- | --- |
@@ -140,7 +140,7 @@ The full scan, profile, plan and bypass pipeline exists, but the detection dista
 | B5-7 | FR5-4 choose avoidance moves; WU p9 options include reverse and reattempt | Turn-and-box bypass (S5-U35). Planner can choose REVERSE (`MAX_RETRIES` 2). Until 23 Nov S5 could only request forward and turn moves, so REVERSE meant NO PATH at once; since 23 Nov S5 backs off `REVERSE_CM` (15 cm) straight back (IF-10 reverse bit, S2 `MOTION_PROFILE_REVERSE`, heading held), then scans again (an offset box had read as blocked on both sides) | Matches | #39, #31 |
 | B5-8 | FR5-5 / NFR5-4 reacquire the line within 50 cm and hand back | Measured 23 Nov in `integrated`: S5-U42 9 of 9 at about 30 cm from the start of the return leg, and the robot followed the original line each time (S5-U41, INT-10) | Matches | #31 (S5-U41, U42), #35 |
 | B5-9 | W6 A5-1: only objects inside the robot's corridor count | Corridor filter exists, with `ROBOT_WIDTH_MM` 150 and `PASS_MARGIN_MM` 50 left unmeasured: decided 22 Nov by the S5 owner that the track will be open, so there is no corridor to calibrate (#45 closed, not planned) | Accepted (owner) | — |
-| B5-10 | W6 A5-2 and PT next actions: ignore readings while tilted, hold after tilt clears, check distance rate of change | S5 never reads the IMU | Missing | #44 |
+| B5-10 | W6 A5-2 and PT next actions: ignore readings while tilted, hold after tilt clears, check distance rate of change | Ignoring readings is implemented: `s5_detect_allowed()` (`task_obstacle.c`, since `a942e14`, 7 Nov) skips detection while `subsystem4_get_latest()` reports `IMU_MOTION_HUMP` or `IMU_MOTION_TILT`. No hold after the tilt clears and no rate-of-change check. Decided 22 Nov (#44) not to test or extend it: the hump is too small to matter, and the track has none (23 Nov). Corrected 23 Nov: this row and summary row 9 said S5 never read the IMU | Partial | #44 |
 | B5-11 | W6 statechart 5: CALIBRATE self-test; SAFE_STOP faults CAL_FAIL, NO_PATH, LINE_LOST sent to telemetry | Self-test done (#47). CAL_FAIL, NO_PATH and LINE_LOST are sent in a 3-bit telemetry field at bits 8–10 (23 Nov, #46). The battery field was removed to make room (nothing measured it); the barcode counters stay 16 bits. Seen on the robot 23 Nov (INT-16): each fault read back from the broker as its own bit | Changed | #46, #47 |
 | B5-12 | PT gap check: one distance representation (9-bit vs 16-bit in Version B) | Decided 20 Nov: 9-bit cm on the wire (IF-05), mm inside S5; no 16-bit distance exists in the code | Matches | #54 (`DECISIONS.md`) |
 | B5-13 | WU p3: minimise deviation from the route | Detour length never measured | Unverified | #62 |

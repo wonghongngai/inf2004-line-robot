@@ -22,7 +22,7 @@ Decided 13 Nov 2026: `integrated` is the final firmware (#4, see `STATUS.md`).
 | Issue | Decision | Follow-up |
 | --- | --- | --- |
 | #49 | **Commands across a connection loss:** a command or map sent while the robot is offline is dropped, never replayed (clean MQTT session); every command is safe to repeat; senders check the online heartbeat first and never queue or retain commands; the map is resent after any reboot. Adopts what the code already does, so nothing changes | Written up in `app_program/subsystem1/README.md`; S1-U20 PASS on the robot 22 Nov (`testing/subsystem1/TEST_LOG.md`) |
-| #44 | **S5 does not gate on the IMU tilt state** (A5-2 dropped): the hump is too small to matter | S5-U44 dropped in `TEST_PLAN.md` |
+| #44 | **No further work on S5's tilt gate** (A5-2): the hump is too small to matter. The gate already in the code stays: S5 ignores forward readings while S4 reports a hump or tilt (`s5_detect_allowed()`). Corrected 23 Nov: this row said S5 does not gate on tilt | S5-U44 dropped in `TEST_PLAN.md` |
 | #36 | **INT-11 dropped:** the ultrasonic sits above the hump's height, so it cannot see the hump | — |
 | #34 | INT-09 target cut to 5/5 lifts; tilt removed (report-only, #67) | PASS on the robot 21 Nov (S4-U12) |
 
