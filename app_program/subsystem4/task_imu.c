@@ -114,6 +114,166 @@ LOCAL void reset_height_tracker(void)
 }
 
 /*
+ * Hump capture build (#27 step 2, `sh build.sh integrated S4_TRACE=1`).
+ *
+ * Every calibrated sample goes into a RAM ring. When a hump measurement ends
+ * (event, timeout, or a lift) the last S4_TRACE_LEN samples are copied out
+ * and printed S4_TRACE_PER_LINE per cycle, so nothing is printed while the
+ * hump is being measured. While moving on level ground a noise line is
+ * printed every S4_PRINT_PERIOD_SAMPLES samples (S4-U08 driving noise).
+ * Off (0) in every normal build; the per-sample HUMP ACTIVE / HUMP DEBUG
+ * lines are left out of trace builds because the trace already holds them.
+ *
+ *   HT#k <why> len=N cols=n,ph,mv,raw,f,d,h,s,cyc
+ *   HT#k n,ph,mv,raw,f,d,h,s,cyc;...    (oldest first)
+ *   HT noise n=50 f=min..max |f|=mean raw=min..max
+ *
+ * n = sample number (low 16 bits), ph = hump phase after the sample
+ * (0 idle, 1 first slope, 2 opposite, 3 settling, 8 not armed, 9 lifted),
+ * mv = moving, raw = forward dy (mg), f = filtered dy (or the lift deviation
+ * when ph = 9), d = wheel distance this sample (mm), h = peak height (mm),
+ * s = settle count, cyc = previous cycle time (ms).
+ */
+#ifndef S4_HUMP_TRACE
+#define S4_HUMP_TRACE 0
+#endif
+#if S4_HUMP_TRACE
+#define S4_TRACE_LEN 128U       /* 2.56 s: covers the 1.5 s timeout + entry */
+#define S4_TRACE_PER_LINE 4U
+#define S4_TRACE_PH_UNARMED 8U
+#define S4_TRACE_PH_LIFTED 9U
+
+typedef struct {
+    uint16_t n;
+    uint8_t phase;
+    uint8_t moving;
+    int16_t raw;
+    int16_t filt;
+    uint16_t dist;
+    uint8_t height;
+    uint8_t settle;
+    uint8_t cyc;
+} S4_TRACE_REC;
+
+LOCAL S4_TRACE_REC trace_ring[S4_TRACE_LEN];
+LOCAL UW trace_next;
+LOCAL UW trace_count;
+LOCAL S4_TRACE_REC trace_out[S4_TRACE_LEN];
+LOCAL UW trace_out_len;
+LOCAL UW trace_out_pos;
+LOCAL UW trace_id;
+LOCAL UW trace_last_cycle_ms;
+
+LOCAL W noise_fmin, noise_fmax, noise_rmin, noise_rmax;
+LOCAL W noise_abs_sum;
+LOCAL UW noise_n;
+
+LOCAL int16_t trace_clamp16(W v)
+{
+    return (int16_t)((v > 32767) ? 32767 : ((v < -32768) ? -32768 : v));
+}
+
+LOCAL uint8_t trace_clamp8(UW v)
+{
+    return (uint8_t)((v > 255U) ? 255U : v);
+}
+
+LOCAL void trace_record(UW n, UW phase, BOOL moving, W raw, W filt, UW dist)
+{
+    S4_TRACE_REC *r = &trace_ring[trace_next];
+
+    r->n = (uint16_t)n;
+    r->phase = (uint8_t)phase;
+    r->moving = moving ? 1U : 0U;
+    r->raw = trace_clamp16(raw);
+    r->filt = trace_clamp16(filt);
+    r->dist = (uint16_t)((dist > 65535U) ? 65535U : dist);
+    r->height = trace_clamp8(peak_height_mm);
+    r->settle = trace_clamp8(hump_state.settle_samples);
+    r->cyc = trace_clamp8(trace_last_cycle_ms);
+
+    trace_next = (trace_next + 1U) % S4_TRACE_LEN;
+    if (trace_count < S4_TRACE_LEN) {
+        trace_count++;
+    }
+}
+
+/* Copy the ring out for printing; a dump still printing is replaced. */
+LOCAL void trace_freeze(const char *why)
+{
+    UW i;
+    UW start = (trace_next + S4_TRACE_LEN - trace_count) % S4_TRACE_LEN;
+    BOOL cut = (trace_out_pos < trace_out_len) ? TRUE : FALSE;
+
+    for (i = 0U; i < trace_count; i++) {
+        trace_out[i] = trace_ring[(start + i) % S4_TRACE_LEN];
+    }
+    trace_out_len = trace_count;
+    trace_out_pos = 0U;
+    trace_id++;
+
+    LOG_INFO(TAG_S4_IMU, "HT#%u %s len=%u cols=n,ph,mv,raw,f,d,h,s,cyc%s",
+             trace_id, why, trace_out_len,
+             cut ? " (previous dump cut short)" : "");
+}
+
+/* Print at most one line of the frozen trace per cycle. */
+LOCAL void trace_dump_step(void)
+{
+    /* One record is at most 9 fields x 6 chars + 9 separators = 63. */
+    static UB line[32 + S4_TRACE_PER_LINE * 64U];
+    const S4_TRACE_REC *r;
+    INT len;
+    UW k;
+
+    if (trace_out_pos >= trace_out_len) {
+        return;
+    }
+
+    /* Built in one buffer and printed once, so other tasks cannot split it. */
+    len = tm_sprintf(line, (UB*)"[" TAG_S4_IMU "] HT#%u ", trace_id);
+    for (k = 0U; k < S4_TRACE_PER_LINE && trace_out_pos < trace_out_len; k++) {
+        r = &trace_out[trace_out_pos++];
+        len += tm_sprintf(&line[len], (UB*)"%s%u,%u,%u,%d,%d,%u,%u,%u,%u",
+                          (k == 0U) ? "" : ";",
+                          (UW)r->n, (UW)r->phase, (UW)r->moving,
+                          (W)r->raw, (W)r->filt, (UW)r->dist,
+                          (UW)r->height, (UW)r->settle, (UW)r->cyc);
+    }
+    tm_printf((UB*)"%s\n", line);
+}
+
+/* Level-ground noise while moving (S4-U08); partial windows are dropped. */
+LOCAL void trace_noise(BOOL moving, BOOL hump_idle, W raw, W filt)
+{
+    W a = abs_w(filt);
+
+    if (!moving || !hump_idle) {
+        noise_n = 0U;
+        return;
+    }
+    if (noise_n == 0U) {
+        noise_fmin = noise_fmax = filt;
+        noise_rmin = noise_rmax = raw;
+        noise_abs_sum = 0;
+    }
+    if (filt < noise_fmin) noise_fmin = filt;
+    if (filt > noise_fmax) noise_fmax = filt;
+    if (raw < noise_rmin) noise_rmin = raw;
+    if (raw > noise_rmax) noise_rmax = raw;
+    noise_abs_sum += a;
+    noise_n++;
+
+    if (noise_n >= S4_PRINT_PERIOD_SAMPLES) {
+        LOG_INFO(TAG_S4_IMU, "HT noise n=%u f=%d..%d |f|=%d raw=%d..%d",
+                 noise_n, noise_fmin, noise_fmax,
+                 (W)(noise_abs_sum / (W)noise_n), noise_rmin, noise_rmax);
+        noise_n = 0U;
+    }
+}
+#endif /* S4_HUMP_TRACE */
+
+/*
  * Estimate pitch for logging/telemetry without floating-point trigonometry.
  * Uses the IMU Y axis as the forward/ramp axis for the current mounting.
  * The table maps |forward-baseline| in mg to the nearest 5-degree pitch angle.
@@ -734,12 +894,14 @@ LOCAL BOOL update_hump(W forward_mg,
 
     case HUMP_FIRST_SLOPE:
 
+#if !S4_HUMP_TRACE
         LOG_INFO(TAG_S4_IMU,
             "HUMP ACTIVE: forward=%d abs=%d dist=%u height=%u",
             forward_mg,
             abs_forward,
             distance_mm,
             peak_height_mm);
+#endif
 
         if (abs_forward > hump_state.peak_mg) {
             hump_state.peak_mg = abs_forward;
@@ -1006,6 +1168,15 @@ EXPORT void imu_task(INT stacd, void *exinf)
             /* Lift is the safety event (#53): highest classification
                priority. A hump in progress is abandoned. */
             if (update_lift(sample.az_mg, baseline_z, &lift_delta_mg)) {
+#if S4_HUMP_TRACE
+                trace_record(local_sample_count, S4_TRACE_PH_LIFTED,
+                             movement_hold_samples > 0U, dy, lift_delta_mg,
+                             distance_mm);
+                if (!lift_reported) {
+                    trace_freeze((hump_state.phase != HUMP_IDLE)
+                                 ? "lift (hump abandoned)" : "lift");
+                }
+#endif
                 motion = IMU_MOTION_LIFTED;
                 hump_sum = 0;
                 hump_next = 0U;
@@ -1033,6 +1204,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
                 W hump_dy = hump_sum / (W)hump_count;
 
                 hump_was_active = (hump_state.phase != HUMP_IDLE);
+#if !S4_HUMP_TRACE
                 if (!hump_was_active && hump_armed &&
                     abs_w(hump_dy) >= S4_HUMP_OPPOSITE_MG) {
                     LOG_INFO(TAG_S4_IMU,
@@ -1040,12 +1212,29 @@ EXPORT void imu_task(INT stacd, void *exinf)
                               dy, hump_dy, movement_hold_samples > 0U,
                               distance_mm, hump_state.entry_samples);
                 }
+#endif
                 hump_completed = update_hump(
                     hump_dy,
                     movement_hold_samples > 0U,
                     distance_mm,
                     &completed_hump_peak);
                 hump_is_active = (hump_state.phase != HUMP_IDLE);
+#if S4_HUMP_TRACE
+                /* Height is not updated yet for this sample; the next
+                   record shows it. Good enough for a capture. */
+                trace_record(local_sample_count,
+                             hump_armed || hump_is_active || hump_completed
+                                 ? (UW)hump_state.phase : S4_TRACE_PH_UNARMED,
+                             movement_hold_samples > 0U, dy, hump_dy,
+                             distance_mm);
+                trace_noise(movement_hold_samples > 0U,
+                            (!hump_was_active && !hump_is_active &&
+                             hump_armed) ? TRUE : FALSE,
+                            dy, hump_dy);
+                if (hump_was_active && !hump_is_active && !hump_completed) {
+                    trace_freeze("timeout");
+                }
+#endif
 
                 if (!hump_was_active && hump_is_active) {
                     /*
@@ -1097,6 +1286,9 @@ EXPORT void imu_task(INT stacd, void *exinf)
                         LOG_INFO(TAG_S4_IMU, "EVENT HUMP height=unavailable (no wheel distance) peak=%d mg",
                                   last_hump_peak);
                     }
+#if S4_HUMP_TRACE
+                    trace_freeze("event");
+#endif
                 } else {
                     /* A normal ramp should not be misclassified as severe tilt. */
                     tilt_now = update_tilt(dx, dy, hump_is_active);
@@ -1139,6 +1331,9 @@ EXPORT void imu_task(INT stacd, void *exinf)
                                 last_ramp_height,
                                 last_ramp_height_valid,
                                 local_sample_count);
+#if S4_HUMP_TRACE
+            trace_dump_step();
+#endif
         }
 
         wedge_followup();
@@ -1146,6 +1341,9 @@ EXPORT void imu_task(INT stacd, void *exinf)
         /* Maintain the configured interval between task cycles. */
         tk_get_tim(&cycle_end);
         cycle_ms = cycle_end.lo - cycle_start.lo;
+#if S4_HUMP_TRACE
+        trace_last_cycle_ms = cycle_ms;
+#endif
 
         if (cycle_ms < S4_SAMPLE_PERIOD_MS) {
             s4_delay((TMO)(S4_SAMPLE_PERIOD_MS - cycle_ms));

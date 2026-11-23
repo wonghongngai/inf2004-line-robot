@@ -7,6 +7,15 @@ differs from the plan is in [DEVIATIONS.md](DEVIATIONS.md); what is done is in
 
 Decided 13 Nov 2026: `integrated` is the final firmware (#4, see `STATUS.md`).
 
+## 23 Nov 2026: the hump tests (#27)
+
+| Issue | Decision | Follow-up |
+| --- | --- | --- |
+| #27 | **The hump is a 10 mm ramp under one side of the robot only**; the other side stays on the floor | S4-U09, U10 and the capture procedure in `testing/subsystem4/TEST_LOG.md` describe that one ramp |
+| #27 | **S4-U09 cut to 5 ramp passes + 5 flat runs** (from 10 + 10), before any scored run | Pass: 5/5 detected, 0 false on flat floor |
+| #27 | **S4-U10 compares against the ramp's height at the wheels, 10 mm**, not the rise of the robot's centre (about 5 mm, since the body tilts only about half as much as the ramp) | The height factor `S4_HEIGHT_CAL_NUM/DEN` (step 5 of #27) must absorb that geometry; SYS-03 inherits it through S4-U10's tolerance |
+| #27 | **Height stays a fixed factor on the forward-tilt estimate** (no sideways-tilt term). Refit at 20 ms in `integrated`: new factor = 25/11 × 10 mm ÷ mean reported height, from the capture and S4-U09 passes; S4-U10 is then scored on fresh passes. The factor is only valid for this kind of hump (one-side ramp): a hump across the full width of the robot would read about twice its height | Chosen over adding a sideways-tilt term (geometry-based, works for any hump) because the demo has only this ramp and it is a one-constant change |
+
 ## 22 Nov 2026: humps, the ultrasonic and commands across a connection loss
 
 | Issue | Decision | Follow-up |
@@ -67,7 +76,7 @@ overflows telemetry's 8-bit field. The cap now applies after calibration
 | S2-U13 reverse | ±2 cm | Same as the S5 distance accuracy (NFR5-6) |
 | S3-U31 lost line | 10/10 nudges off the tape stop within `S2_LINE_LOST_MM` + 5 cm; 10/10 small nudges recover with no stop; no false stop in 3 laps (rewritten 23 Nov, #23) | The straddle VC (#8) ignores S3 FOUND/LOST, so the old "FOUND ≤ 200 ms, re-armed ≤ 1.5 s" no longer applies; +5 cm covers braking at cruise |
 | S3-U32 letters | ≥ 9/10 per letter | |
-| S4-U10 hump height | ±3 mm | The 20 Nov data (mean error 2.3 mm on a 5 mm ramp) does not meet this yet, so S4-U10 stays failing until tuned |
+| S4-U10 hump height | ±3 mm | The 20 Nov data (mean error 5.8 mm at 20 ms on the 10 mm ramp; recorded until 23 Nov as 2.3 mm on a 5 mm ramp, a typing error in the ramp height) does not meet this yet, so S4-U10 stays failing until tuned |
 | S4-U11 tilt | flagged within 200 ms, 10/10 | Confirmation takes 5 × 20 ms = 100 ms |
 | SYS-05 telemetry | no gap > 3 s | Same as S1-U12 |
 

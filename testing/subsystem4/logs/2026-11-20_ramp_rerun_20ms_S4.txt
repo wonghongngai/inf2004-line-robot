@@ -1,6 +1,7 @@
 # Ramp rerun, 20 ms IMU period: robot-all_test-offline.uf2 (sh build.sh all_test_offline), built 20 Nov 17:41
 # from 65ba452 plus the uncommitted chore/m0-housekeeping changes (S4_SAMPLE_PERIOD_MS = 20, sample counts halved).
 # Track: a 5 mm ramp under the right wheels; left IR sensor (GP28) repositioned by the operator before this run.
+# Correction 23 Nov: the ramp is 10 mm, not 5 mm (typing error by the operator); one side of the robot only.
 # Operator: 5 ramp passes then 2 flat runs, one reset per pass. The log has 8 boots ('=== COM5 connected'); the
 # first boot after flashing is most likely an extra run. Every boot was reset while still line-following (no junction).
 # Trimmed copy of the gitignored raw capture 2026-11-20_181550_console.txt: kept boot headers, every 'Buddy4' line except the

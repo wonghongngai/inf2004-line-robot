@@ -169,8 +169,8 @@ is to measure real data.
 | ID | What | Level | How | Pass when |
 |---|---|---|---|---|
 | S4-U08 | Noise at rest and while driving on flat floor | L3 | Log the IMU for 60 s still and 60 s driving (save the CSV in `logs/`) | noise recorded; thresholds set clearly above it |
-| S4-U09 | Hump detected | L4 | 10 passes over each real hump, 10 runs on flat floor | 10/10 detected, 0 false detections |
-| S4-U10 | Highest hump height accuracy | L4 | Measure each hump with a ruler; 5 passes each | within ±3 mm; with several humps, the highest is reported |
+| S4-U09 | Hump detected | L4 | 5 passes over the hump (a 10 mm ramp under one side of the robot), 5 runs on flat floor (cut from 10 + 10 on 23 Nov) | 5/5 detected, 0 false detections |
+| S4-U10 | Highest hump height accuracy | L4 | Measure the 10 mm one-side ramp with a ruler; 5 passes | within ±3 mm of the ramp's height at the wheels (10 mm, decided 23 Nov); with several humps, the highest is reported |
 | S4-U11 | Tilt detection | L3 | Tilt the robot by hand past the limit, 10× | 10/10 flagged within 200 ms |
 | S4-U12 | Lift stops the motors (replaces collision detection, removed 13 Nov; #53) | L4 | Lift the robot off the floor while driving, 5×; drive over each hump 5× (cut from 10 on 21 Nov) | 5/5 stop and stay stopped; 0 false stops over humps |
 | S4-U13 | Replay recorded IMU logs on the PC | L1 | New `s4/imu_replay` host test: feed the U08–U12 logs into `task_imu.c` | same results as on the robot; tuning changes can then be checked offline |
