@@ -1,6 +1,7 @@
 # S4-U09 and S4-U10, scored runs, 23 Nov 2026 18:04-18:11, 10 mm ramp under one side of the robot.
 # Image: build_make/robot-integrated-s4trace.uf2 built 18:02 (sh build.sh integrated S4_TRACE=1) from 36f29fc plus the
-# uncommitted start-up blank (500 ms) and height factor 4/3 changes in app_program/subsystem4/task_imu.c.
+# uncommitted start-up blank (500 ms) and height factor 4/3 changes in app_program/subsystem4/task_imu.c;
+# that firmware code was committed unchanged as 6742cae.
 # Copy of the gitignored raw testing/subsystem5/logs/2026-11-23_180458_console.txt, unchanged below this header.
 # Operator: 5 ramp passes, then runs without the ramp; one reboot each. Analysis (Claude):
 #   18:04:58  RAMP  `EVENT HUMP height=8 mm highest=8 mm peak=84 mg`    (-2 mm)

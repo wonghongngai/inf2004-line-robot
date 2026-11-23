@@ -1,5 +1,5 @@
 # S4-U12 (a), 5 lifts on the final hump detector, 23 Nov 2026 18:16-18:18.
-# Image: build_make/robot-integrated-s4trace.uf2 built 18:02 (36f29fc + uncommitted start-up blank and factor 4/3),
+# Image: build_make/robot-integrated-s4trace.uf2 built 18:02 (36f29fc + uncommitted start-up blank and factor 4/3; committed unchanged as 6742cae),
 # same image as 2026-11-23_s4u09_s4u10_scored_S4.txt and _s4u12_lift_final_S4.txt. Copy of the gitignored raw
 # testing/subsystem5/logs/2026-11-23_181600_console.txt, unchanged below this header. Analysis (Claude):
 # Each boot: START, line following at PWM 15/19, lifted by hand, `EVENT LIFT`, then

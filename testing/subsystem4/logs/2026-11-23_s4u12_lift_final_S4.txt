@@ -1,5 +1,5 @@
 # S4-U12 (a), one lift on the final hump detector, 23 Nov 2026 18:13.
-# Image: build_make/robot-integrated-s4trace.uf2 built 18:02 (36f29fc + uncommitted start-up blank and factor 4/3),
+# Image: build_make/robot-integrated-s4trace.uf2 built 18:02 (36f29fc + uncommitted start-up blank and factor 4/3; committed unchanged as 6742cae),
 # same image as 2026-11-23_s4u09_s4u10_scored_S4.txt. Copy of the gitignored raw
 # testing/subsystem5/logs/2026-11-23_181330_console.txt, unchanged below this header. Analysis (Claude):
 #   18:13:30  not a new boot: the serial logger reconnected to the 18:10:37 boot (paused, same ticks L=10499 R=10608)
