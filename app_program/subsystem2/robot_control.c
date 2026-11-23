@@ -162,9 +162,12 @@ static BOOL vc_start_move(void *p, const S5_REQUEST *req)
                MOTION_CMD_TURN_RIGHT_DEG;
     cmd.value = (float)req->value;
     /* all_test's S5 moves: heading-held 12.5/15 % legs, 20 % pivots; a
-       turn with the spin bit turns on the spot instead (23 Nov). */
-    motion_control_set_profile(c->ctl, (req->b_spin && req->move != S5_MOVE_FWD) ?
-                                           MOTION_PROFILE_SPIN : MOTION_PROFILE_AVOID);
+       turn with the spin bit turns on the spot instead, and a leg with the
+       reverse bit drives backwards (23 Nov). */
+    motion_control_set_profile(c->ctl,
+        (req->b_spin && req->move != S5_MOVE_FWD) ? MOTION_PROFILE_SPIN :
+        (req->b_reverse && req->move == S5_MOVE_FWD) ? MOTION_PROFILE_REVERSE :
+                                                      MOTION_PROFILE_AVOID);
 
     return motion_control_command(c->ctl, &cmd, c->now, c->l, c->r) == MOTION_RESULT_OK;
 }

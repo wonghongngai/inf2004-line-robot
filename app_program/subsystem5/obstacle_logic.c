@@ -754,7 +754,14 @@ EXPORT UB bypass_look_turn(plan_decision_t decision)
 #define REQ_MOVE_RESERVED    (3U)  /* move 3: invalid */
 #define REQ_LALL_SHIFT       (28U) /* line_all */
 #define REQ_SPIN_SHIFT       (29U) /* spin (turning MOVE only) */
-#define REQ_UNUSED_SHIFT     (30U)
+#define REQ_REV_SHIFT        (30U) /* reverse (forward MOVE only) */
+#define REQ_UNUSED_SHIFT     (31U)
+
+/* TRUE for a forward MOVE: the only request that may reverse */
+static BOOL req_is_leg(UW kind, UW move)
+{
+    return ((S5_REQ_MOVE == kind) && (S5_MOVE_FWD == move)) ? TRUE : FALSE;
+}
 
 /* TRUE for a MOVE that turns: the only request that may spin */
 static BOOL req_is_turn(UW kind, UW move)
@@ -788,7 +795,12 @@ EXPORT UW s5_request_pack(const S5_REQUEST * p_req)
                                            (UW)p_req->move & REQ_MOVE_MASK))
                  ? 1UL
                  : 0UL)
-            << REQ_SPIN_SHIFT);
+            << REQ_SPIN_SHIFT) |
+           (((p_req->b_reverse && req_is_leg((UW)p_req->kind & REQ_KIND_MASK,
+                                             (UW)p_req->move & REQ_MOVE_MASK))
+                 ? 1UL
+                 : 0UL)
+            << REQ_REV_SHIFT);
 }
 
 /* Unpack a request word, rejecting reserved values */
@@ -797,6 +809,7 @@ EXPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req)
     UB   kind;
     UB   move;
     BOOL b_spin;
+    BOOL b_reverse;
 
     if (NULL == p_req)
     {
@@ -810,15 +823,18 @@ EXPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req)
     p_req->value          = 0U;
     p_req->b_line_all     = FALSE;
     p_req->b_spin         = FALSE;
+    p_req->b_reverse      = FALSE;
 
     kind = (UB)((word >> REQ_KIND_SHIFT) & REQ_KIND_MASK);
     move = (UB)((word >> REQ_MOVE_SHIFT) & REQ_MOVE_MASK);
     b_spin = (0U != ((word >> REQ_SPIN_SHIFT) & 1U)) ? TRUE : FALSE;
+    b_reverse = (0U != ((word >> REQ_REV_SHIFT) & 1U)) ? TRUE : FALSE;
 
     if ((kind > S5_REQ_SAFE_STOP) || (REQ_MOVE_RESERVED == move) ||
         (0U != ((word >> REQ_UNUSED_LOW_SHIFT) & REQ_UNUSED_LOW_MASK)) ||
         (0U != (word >> REQ_UNUSED_SHIFT)) ||
-        (b_spin && !req_is_turn(kind, move)))
+        (b_spin && !req_is_turn(kind, move)) ||
+        (b_reverse && !req_is_leg(kind, move)))
     {
         return FALSE; /* reserved: the VC must stop safely */
     }
@@ -831,6 +847,7 @@ EXPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req)
     p_req->value      = (UH)((word >> REQ_VALUE_SHIFT) & REQ_VALUE_MASK);
     p_req->b_line_all = (0U != ((word >> REQ_LALL_SHIFT) & 1U)) ? TRUE : FALSE;
     p_req->b_spin     = b_spin;
+    p_req->b_reverse  = b_reverse;
     return TRUE;
 }
 

@@ -40,7 +40,10 @@
  *                            pivoting on one stopped wheel.  The robot
  *                            ends where it began.  Set with any other
  *                            kind or move = invalid (23 Nov).
- *   bits 30-31 unused, 0
+ *   bit  30    reverse       MOVE with FWD only: drive the distance
+ *                            backwards (heading held).  Set with any other
+ *                            kind or move = invalid (23 Nov).
+ *   bit  31    unused, 0
  */
 #define S5_REQ_NONE      (0U) /* no request: VC follows the line          */
 #define S5_REQ_HOLD      (1U) /* stop and stay still (S5 is scanning)     */
@@ -65,6 +68,7 @@ typedef struct
     UH   value;          /* cm or deg, 0..1023 (MOVE only)  */
     BOOL b_line_all;     /* (stop-on-line) every sensor     */
     BOOL b_spin;         /* (TURN only) turn on the spot    */
+    BOOL b_reverse;      /* (FWD only) drive backwards      */
 } S5_REQUEST;
 
 /* ---- VC -> S5 event flag (owned and created by S5) ----

@@ -259,7 +259,7 @@ ER subsystem5_get_request(S5_REQUEST *p_req)
 /* What S5's s5_post_line() does: next seq, one store. */
 static void s5_post(UB kind, UB move, UH value, BOOL stop_on_line)
 {
-    S5_REQUEST req = {kind, move, 0u, stop_on_line, value, FALSE, FALSE};
+    S5_REQUEST req = {kind, move, 0u, stop_on_line, value, FALSE, FALSE, FALSE};
     s5_seq = (UB)((s5_seq + 1u) & S5_REQ_SEQ_MASK);
     req.seq = s5_seq;
     s5_word = s5_request_pack(&req);
@@ -1256,6 +1256,31 @@ static void alltest_motion_tests(void)
         now = msteps(&m, now, 60, -l90 + 50, r90 - 50);
         EXPECT(m.status.state == MOTION_STATE_FAULT);
     }
+    /* S5 reverse (23 Nov): FORWARD_CM backwards at the leg PWM, heading held
+     * on distance magnitudes (the wheel that has gone further is slowed),
+     * ends on the distance, no carry; turns are refused. */
+    cfg = alltest_config();
+    EXPECT(motion_control_init(&m, &cfg, 0u, 0, 0));
+    motion_control_set_profile(&m, MOTION_PROFILE_REVERSE);
+    EXPECT(motion_control_command(&m, &(MOTION_COMMAND){MOTION_CMD_TURN_LEFT_DEG, 90.0f}, 0u, 0, 0) ==
+           MOTION_RESULT_INVALID_COMMAND);
+    cmd = (MOTION_COMMAND){MOTION_CMD_FORWARD_CM, 15.0f};
+    EXPECT(motion_control_command(&m, &cmd, 0u, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, 0u, 1, 0, 0);
+    EXPECT(NEAR(m.status.left_pwm_percent, -move_step) && NEAR(m.status.right_pwm_percent, -move_step));
+    now = msteps(&m, now, 100, 0, 0);
+    EXPECT(m.status.state == MOTION_STATE_MOVING_FORWARD &&
+           NEAR(m.status.left_pwm_percent, -S2_MOVE_LEFT_PWM_PERCENT) &&
+           NEAR(m.status.right_pwm_percent, -S2_MOVE_RIGHT_PWM_PERCENT));
+    now = msteps(&m, now, 100, -(int32_t)(2.0f * lt), -(int32_t)(2.5f * rt));   /* right 0.5 cm ahead */
+    EXPECT(fabsf(m.status.right_pwm_percent +
+                 (S2_MOVE_RIGHT_PWM_PERCENT - S2_AVOID_HEADING_KP * 0.5f)) < 0.05f &&
+           NEAR(m.status.left_pwm_percent, -S2_MOVE_LEFT_PWM_PERCENT));
+    now = msteps(&m, now, 1, -(int32_t)(14.95f * lt), -(int32_t)(14.95f * rt));
+    EXPECT(m.status.state == MOTION_STATE_MOVING_FORWARD);
+    now = msteps(&m, now, 1, -(int32_t)(15.01f * lt), -(int32_t)(15.01f * rt));
+    EXPECT(m.status.state == MOTION_STATE_IDLE && m.status.motion_complete && !m.carry_valid);
+
     /* No spin PWM configured: spins are refused. */
     cfg = alltest_config();
     cfg.avoid_spin_pwm_percent = 0.0f;
@@ -1422,6 +1447,16 @@ static void alltest_robot_tests(void)
         EXPECT(vc_start_move(&c, &req));
         EXPECT(ctl.active_profile == MOTION_PROFILE_AVOID &&
                ctl.status.active_command == MOTION_CMD_TURN_RIGHT_DEG);
+        /* A leg with the reverse bit drives backwards. */
+        req.move = S5_MOVE_FWD;
+        req.value = 15u;
+        req.b_reverse = TRUE;
+        vc_stop(&c);
+        motion_control_step(&ctl, 6003u, 0, 0);
+        EXPECT(vc_start_move(&c, &req));
+        EXPECT(ctl.active_profile == MOTION_PROFILE_REVERSE &&
+               ctl.status.active_command == MOTION_CMD_FORWARD_CM);
+        req.b_reverse = FALSE;
         steer_action = 1u;
         EXPECT(vc_give_back(&c));
         EXPECT(leaving_junction && junction_done == 6000u && steer_action == 0u);

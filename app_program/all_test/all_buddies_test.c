@@ -673,6 +673,10 @@ static UB at_run_move(void *p, const S5_REQUEST *req)
         else left_pwm += err;
         if (left_pwm < 0.0f) left_pwm = 0.0f;
         if (right_pwm < 0.0f) right_pwm = 0.0f;
+        if (req->b_reverse) {           /* S5 back-off (23 Nov): backwards */
+            left_pwm = -left_pwm;
+            right_pwm = -right_pwm;
+        }
         apply_follow_pwm(t, left_pwm, right_pwm, c->now);
     } else if (req->b_spin) {
         /* Spin on the spot (23 Nov): both wheels counter-rotate, each over

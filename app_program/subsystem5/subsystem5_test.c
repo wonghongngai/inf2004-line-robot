@@ -84,8 +84,8 @@ static BOOL window_is(const scan_point_t * p_coarse, UW start_deg, UW end_deg)
 /* Check that a request survives pack + unpack unchanged */
 static BOOL request_round_trip(UB kind, UB move, UB seq, BOOL b_line, UH value)
 {
-    S5_REQUEST in  = {kind, move, seq, b_line, value, FALSE, FALSE};
-    S5_REQUEST out = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE};
+    S5_REQUEST in  = {kind, move, seq, b_line, value, FALSE, FALSE, FALSE};
+    S5_REQUEST out = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE, FALSE};
 
     if (!s5_request_unpack(s5_request_pack(&in), &out))
     {
@@ -271,8 +271,8 @@ EXPORT void subsystem5_test(void)
                    "unused bits 20-27 set: rejected");
         {
             S5_REQUEST all_in = {S5_REQ_MOVE, S5_MOVE_FWD, 3U, TRUE, 50U, TRUE,
-                                 FALSE};
-            S5_REQUEST all_out = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE};
+                                 FALSE, FALSE};
+            S5_REQUEST all_out = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE, FALSE};
 
             TEST_CHECK("S5-U09",
                        (s5_request_unpack(s5_request_pack(&all_in), &all_out) &&
@@ -290,10 +290,14 @@ EXPORT void subsystem5_test(void)
         /* Spin (bit 29, 23 Nov): valid only on a MOVE that turns */
         {
             S5_REQUEST spin_in  = {S5_REQ_MOVE, S5_MOVE_TURN_R, 4U, FALSE, 90U,
-                                   FALSE, TRUE};
-            S5_REQUEST spin_out = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE};
+                                   FALSE, TRUE, FALSE};
+            S5_REQUEST spin_out = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE, FALSE};
             S5_REQUEST fwd_in   = {S5_REQ_MOVE, S5_MOVE_FWD, 4U, FALSE, 10U,
-                                   FALSE, TRUE};
+                                   FALSE, TRUE, FALSE};
+            S5_REQUEST rev_in   = {S5_REQ_MOVE, S5_MOVE_FWD, 6U, FALSE, 15U,
+                                   FALSE, FALSE, TRUE};
+            S5_REQUEST turn_rev = {S5_REQ_MOVE, S5_MOVE_TURN_L, 6U, FALSE, 90U,
+                                   FALSE, FALSE, TRUE};
             UW         word     = s5_request_pack(&spin_in);
 
             TEST_CHECK("S5-U09",
@@ -314,7 +318,7 @@ EXPORT void subsystem5_test(void)
                             s5_request_pack(&(S5_REQUEST){S5_REQ_MOVE,
                                                           S5_MOVE_TURN_L, 2U,
                                                           FALSE, 90U, FALSE,
-                                                          FALSE}),
+                                                          FALSE, FALSE}),
                             &spin_out) &&
                         !spin_out.b_spin),
                        "a turn without the bit is a pivot (b_spin FALSE)");
@@ -323,13 +327,33 @@ EXPORT void subsystem5_test(void)
                             (UW)S5_REQ_MOVE | (10UL << 10) | (1UL << 29), &req) &&
                         (0UL == (s5_request_pack(&fwd_in) & (1UL << 29)))),
                        "spin on a FWD move: rejected, and pack never sets it");
+            /* Reverse (bit 30, 23 Nov): valid only on a forward MOVE */
+            word = s5_request_pack(&rev_in);
             TEST_CHECK("S5-U09",
-                       (!s5_request_unpack((UW)S5_REQ_MOVE | (1UL << 30), &req) &&
-                        !s5_request_unpack((UW)S5_REQ_MOVE | (1UL << 31), &req)),
-                       "unused bits 30-31 set: rejected");
+                       ((0UL != (word & (1UL << 30))) &&
+                        s5_request_unpack(word, &spin_out) &&
+                        spin_out.b_reverse && !spin_out.b_spin &&
+                        (S5_MOVE_FWD == spin_out.move) &&
+                        (15U == spin_out.value)),
+                       "reverse 15 cm: bit 30 set, round trip");
+            TEST_CHECK("S5-U09",
+                       (s5_request_unpack(s5_request_pack(&fwd_in), &spin_out) &&
+                        !spin_out.b_reverse),
+                       "a leg without the bit goes forward (b_reverse FALSE)");
+            TEST_CHECK("S5-U09",
+                       (!s5_request_unpack((UW)S5_REQ_MOVE | (1UL << 3) |
+                                               (1UL << 30),
+                                           &req) &&
+                        !s5_request_unpack((UW)S5_REQ_HOLD | (1UL << 30), &req) &&
+                        (0UL == (s5_request_pack(&turn_rev) & (1UL << 30)))),
+                       "reverse on a turn or a HOLD: rejected, and pack never "
+                       "sets it there");
+            TEST_CHECK("S5-U09",
+                       !s5_request_unpack((UW)S5_REQ_MOVE | (1UL << 31), &req),
+                       "unused bit 31 set: rejected");
         }
         req = (S5_REQUEST){S5_REQ_MOVE, S5_MOVE_FWD, 1U, FALSE, 2000U, FALSE,
-                           FALSE};
+                           FALSE, FALSE};
         TEST_CHECK("S5-U09",
                    (1023U == ((s5_request_pack(&req) >> 10) & 0x3FFU)),
                    "value over 1023 clamped");

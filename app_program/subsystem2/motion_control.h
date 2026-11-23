@@ -216,13 +216,17 @@ typedef struct {
  *           once it has covered half its avoid pivot arc (the spin radius is
  *           half the pivot's), so the robot turns about its centre and ends
  *           where it began. FORWARD_CM is rejected in this profile.
+ * REVERSE   S5's back-off (23 Nov): FORWARD_CM drives both wheels backwards
+ *           at move_*, heading held as AVOID (the wheel that has gone
+ *           further is slowed); turns are rejected in this profile.
  */
 typedef enum {
     MOTION_PROFILE_BASE = 0,
     MOTION_PROFILE_JUNCTION,
     MOTION_PROFILE_UTURN,
     MOTION_PROFILE_AVOID,
-    MOTION_PROFILE_SPIN
+    MOTION_PROFILE_SPIN,
+    MOTION_PROFILE_REVERSE
 } MOTION_PROFILE;
 
 /*

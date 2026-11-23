@@ -61,6 +61,10 @@
 #define CORRIDOR_HALF_MM ((ROBOT_WIDTH_MM / 2U) + PASS_MARGIN_MM) /* A5-1   */
 #define PASS_GAP_MM      (ROBOT_WIDTH_MM + (2U * PASS_MARGIN_MM)) /* to fit */
 #define MAX_RETRIES      (2U) /* reverse-and-rescan attempts before NO_PATH */
+/* PLAN_REVERSE backs the robot straight back this far before it scans
+ * again (23 Nov): from one close spot, an offset box's sloping face read
+ * as a second object beside it, so both sides looked blocked.  [VERIFY] */
+#define REVERSE_CM       (15U)
 
 typedef struct
 {

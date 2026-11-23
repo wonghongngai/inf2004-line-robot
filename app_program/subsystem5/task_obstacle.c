@@ -45,6 +45,7 @@ typedef enum
     S5_HOLDING,        /* obstacle confirmed: waiting for the robot to stop */
     S5_SCANNING,       /* robot still: coarse jumps + fine glide, plan    */
     S5_BYPASSING,      /* driving round the box and back to the line      */
+    S5_REVERSING,      /* no room: backing off REVERSE_CM to scan again   */
     S5_SAFE_STOP       /* no path or a failed request: stay put           */
 } s5_state_t;
 
@@ -106,9 +107,10 @@ static void s5_publish_obstacle(const obstacle_profile_t * p_profile)
 }
 
 /* Publish a new request with the next sequence number.  b_spin: a turn on
- * the spot (TURN moves only; s5_request_pack drops it on anything else). */
+ * the spot (TURN moves only); b_reverse: a leg driven backwards (FWD only).
+ * s5_request_pack drops either on any other request. */
 static void s5_post_full(UB kind, UB move, UW value, BOOL b_stop_on_line,
-                         BOOL b_line_all, BOOL b_spin)
+                         BOOL b_line_all, BOOL b_spin, BOOL b_reverse)
 {
     S5_REQUEST req;
 
@@ -121,6 +123,7 @@ static void s5_post_full(UB kind, UB move, UW value, BOOL b_stop_on_line,
     req.value = (UH)((value > S5_REQ_VALUE_MAX) ? S5_REQ_VALUE_MAX : value);
     req.b_line_all = (b_stop_on_line && b_line_all) ? TRUE : FALSE;
     req.b_spin     = b_spin;
+    req.b_reverse  = b_reverse;
 
     g_s5_request = s5_request_pack(&req); /* one store */
 }
@@ -129,7 +132,7 @@ static void s5_post_full(UB kind, UB move, UW value, BOOL b_stop_on_line,
 static void s5_post_line(UB kind, UB move, UW value, BOOL b_stop_on_line,
                          BOOL b_line_all)
 {
-    s5_post_full(kind, move, value, b_stop_on_line, b_line_all, FALSE);
+    s5_post_full(kind, move, value, b_stop_on_line, b_line_all, FALSE, FALSE);
 }
 
 /* Publish a request whose stop-on-line (if any) needs just one sensor */
@@ -180,21 +183,33 @@ static UINT s5_move(UB move, UW value, BOOL b_stop_on_line)
                             MOVE_TIMEOUT_MS);
 }
 
-/* Ask the VC to turn on the spot (both wheels counter-rotating) and wait.
- * @return TRUE once the turn is done; FALSE on a failed or timed-out move. */
-static BOOL s5_spin(UB turn, UW deg)
+/* Post a spin or reverse MOVE and wait for it.
+ * @return TRUE once done; FALSE on a failed or timed-out move. */
+static BOOL s5_special_move(UB move, UW value, BOOL b_spin, BOOL b_reverse)
 {
     UINT wanted  = S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED;
     UINT pattern = 0U;
 
     (void)tk_clr_flg(flg_s5_evt, ~wanted);
-    s5_post_full(S5_REQ_MOVE, turn, deg, FALSE, FALSE, TRUE);
+    s5_post_full(S5_REQ_MOVE, move, value, FALSE, FALSE, b_spin, b_reverse);
     if (E_OK !=
         tk_wai_flg(flg_s5_evt, wanted, TWF_ORW, &pattern, MOVE_TIMEOUT_MS))
     {
         return FALSE;
     }
     return (S5_EVT_MOTION_DONE == (pattern & wanted)) ? TRUE : FALSE;
+}
+
+/* Ask the VC to turn on the spot (both wheels counter-rotating) and wait */
+static BOOL s5_spin(UB turn, UW deg)
+{
+    return s5_special_move(turn, deg, TRUE, FALSE);
+}
+
+/* Ask the VC to drive 'cm' straight backwards (heading held) and wait */
+static BOOL s5_reverse(UW cm)
+{
+    return s5_special_move(S5_MOVE_FWD, cm, FALSE, TRUE);
 }
 
 /* Check whether a forward obstacle reading may count right now */
@@ -843,6 +858,32 @@ static BOOL bypass_obstacle(const plan_t *             p_plan,
 }
 
 /*
+ * PLAN_REVERSE (23 Nov): back off REVERSE_CM straight back along the path
+ * the robot came in on (heading held), so the caller can scan again from
+ * further away.  Nothing watches behind (the sensor faces the obstacle),
+ * but the robot only retraces ground it has just driven over.  Then HOLD,
+ * so it is still for the scan.
+ * @return TRUE once done; FALSE on a failed leg or hold.
+ */
+static BOOL back_off(UW retry)
+{
+    LOG_INFO(TAG_S5_OBS, "REVERSE %u/%u: %u cm straight back, scan again",
+              retry, MAX_RETRIES, REVERSE_CM);
+    servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
+    if (!s5_reverse(REVERSE_CM))
+    {
+        LOG_ERR(TAG_S5_OBS, "reverse: leg failed");
+        return FALSE;
+    }
+    if (!s5_hold())
+    {
+        LOG_ERR(TAG_S5_OBS, "reverse: VC did not stop");
+        return FALSE;
+    }
+    return TRUE;
+}
+
+/*
  * Start-up self-test (#47, W6 statechart CALIBRATE): servo homed forward
  * (servo_init), then SELFTEST_PINGS pings; pass if enough of them saw
  * ECHO go high (s5_selftest_echo_ok).  The servo has no position feedback,
@@ -944,6 +985,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
 {
     s5_state_t          state   = S5_MONITORING;
     UB                  history = 0U;
+    UW                  retries = 0U; /* back-offs for this obstacle */
     UW                  distance_mm;
     ultrasonic_status_t status;
     plan_t              plan;
@@ -1001,6 +1043,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
 
                 if (obstacle_filter_update(&history, status, distance_mm))
                 {
+                    retries = 0U; /* a new obstacle: no back-offs yet */
 #if S5_HAS_VC
                     LOG_INFO(TAG_S5_OBS, "OBSTACLE at %u mm -> HOLD",
                               distance_mm);
@@ -1033,9 +1076,9 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 break;
 
             case S5_SCANNING:
-                /* Retries = MAX_RETRIES: S2 can't reverse, so "blocked"
-                 * means PLAN_STOP (NO PATH) at once */
-                scan_and_plan(MAX_RETRIES, &plan, &profile);
+                /* Blocked on both sides: PLAN_REVERSE (back off and scan
+                 * again, S5_REVERSING) until MAX_RETRIES, then PLAN_STOP */
+                scan_and_plan(retries, &plan, &profile);
                 s5_publish_obstacle(&profile);
 
 #if !S5_HAS_VC
@@ -1063,10 +1106,27 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 {
                     state = S5_BYPASSING;
                 }
+                else if (PLAN_REVERSE == plan.decision)
+                {
+                    state = S5_REVERSING;
+                }
                 else
                 {
-                    /* REVERSE (S2 has no reverse) or STOP: NO PATH */
+                    /* STOP: still blocked after MAX_RETRIES back-offs */
                     LOG_WARN(TAG_S5_OBS, "NO PATH");
+                    s5_raise_fault(S5_FAULT_NO_PATH);
+                    state = S5_SAFE_STOP;
+                }
+                break;
+
+            case S5_REVERSING:
+                retries++;
+                if (back_off(retries))
+                {
+                    state = S5_SCANNING;
+                }
+                else
+                {
                     s5_raise_fault(S5_FAULT_NO_PATH);
                     state = S5_SAFE_STOP;
                 }

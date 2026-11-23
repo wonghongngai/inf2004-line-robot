@@ -632,6 +632,13 @@ MOTION_RESULT motion_control_command(
             return MOTION_RESULT_INVALID_COMMAND;
         }
 
+        /* REVERSE: distance moves only. */
+        if (controller->next_profile == MOTION_PROFILE_REVERSE && profile_move &&
+            command->type != MOTION_CMD_FORWARD_CM) {
+
+            return MOTION_RESULT_INVALID_COMMAND;
+        }
+
         if (command->type == MOTION_CMD_FOLLOW_LINE ||
             command->type == MOTION_CMD_FORWARD_CM ||
             command->type == MOTION_CMD_TURN_LEFT_DEG ||
@@ -824,10 +831,11 @@ static void complete_motion(
     MOTION_CONTROLLER *controller
 )
 {
-    /* A spin ends with one wheel in reverse: never carry that into the
-       next move (it starts from rest). */
+    /* A spin or a reverse ends with a wheel in reverse: never carry that
+       into the next move (it starts from rest). */
     if (profile_running(controller) &&
-        controller->active_profile != MOTION_PROFILE_SPIN) {
+        controller->active_profile != MOTION_PROFILE_SPIN &&
+        controller->active_profile != MOTION_PROFILE_REVERSE) {
         controller->carry_left_pwm = controller->status.left_pwm_percent;
         controller->carry_right_pwm = controller->status.right_pwm_percent;
         controller->carry_ms = controller->previous_step_ms;
@@ -925,7 +933,10 @@ static void run_forward(
             l_target = controller->cfg.follow_left_pwm_percent;
             r_target = controller->cfg.follow_right_pwm_percent;
         }
-        if (controller->active_profile == MOTION_PROFILE_AVOID) {
+        if (controller->active_profile == MOTION_PROFILE_AVOID ||
+            controller->active_profile == MOTION_PROFILE_REVERSE) {
+            /* Distances are magnitudes, so this holds the heading backwards
+               too: the wheel that has gone further is slowed. */
             float err = controller->cfg.avoid_heading_kp * (right_cm - left_cm);
 
             if (err > 0.0f) {
@@ -939,6 +950,10 @@ static void run_forward(
             if (r_target < 0.0f) {
                 r_target = 0.0f;
             }
+        }
+        if (controller->active_profile == MOTION_PROFILE_REVERSE) {
+            l_target = -l_target;       /* backwards */
+            r_target = -r_target;
         }
         controller->status.left_pwm_percent =
             ramp_move_pwm(controller, controller->status.left_pwm_percent,
