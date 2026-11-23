@@ -171,6 +171,8 @@ typedef struct {
     float follow_straight_max_trim;
     float follow_straight_trim_rate;  /* PWM points per second */
     float follow_straight_deadband_cm;
+    float follow_straight_ki;         /* PWM points per cm per second; 0 = off */
+    float follow_straight_max_bias;   /* cap on the learned bias */
     float follow_scan_scale;          /* 0..1 */
     float follow_scan_left_inner_pwm_percent;
 
@@ -290,6 +292,7 @@ typedef struct {
     bool straight_active;
     int32_t straight_left0, straight_right0;
     float straight_trim;
+    float straight_bias;              /* learned I term, kept across stretches */
     float previous_follow_target;
 
 } MOTION_CONTROLLER;

@@ -1,0 +1,11 @@
+Command: PICO_SDK_PATH=<short path to pico-sdk 2.3.1> sh ../build.sh integrated  (from build_make/)
+Commit: f399b56 + uncommitted #23 changes (test/s3-integrated-23)
+Compiler warnings/errors:
+0
+--- tail ---
+ 390988	    120	  84016	 475124	  73ff4	robot-integrated.elf
+tools/elf2uf2 robot-integrated.elf robot-integrated.uf2
+ 
+
+Built: build_make/robot-integrated.uf2
+Flash it: hold BOOTSEL, plug in the Pico, copy the .uf2 onto the RPI-RP2 drive.

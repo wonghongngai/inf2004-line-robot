@@ -99,14 +99,16 @@ static bool config_is_valid(const MOTION_CONFIG *cfg)
         (cfg->follow_straight_max_trim >= 0.0f) &&
         (cfg->follow_straight_trim_rate >= 0.0f) &&
         (cfg->follow_straight_deadband_cm >= 0.0f) &&
+        (cfg->follow_straight_ki >= 0.0f) &&
+        (cfg->follow_straight_max_bias >= 0.0f) &&
         (cfg->follow_scan_scale >= 0.0f) &&
         (cfg->follow_scan_scale <= 1.0f) &&
         (cfg->follow_scan_left_inner_pwm_percent >= 0.0f) &&
         (cfg->follow_scan_left_inner_pwm_percent <= cfg->maximum_pwm_percent) &&
-        (cfg->follow_left_pwm_percent + cfg->follow_straight_max_trim <=
-             cfg->maximum_pwm_percent) &&
-        (cfg->follow_right_pwm_percent + cfg->follow_straight_max_trim <=
-             cfg->maximum_pwm_percent) &&
+        (cfg->follow_left_pwm_percent + cfg->follow_straight_max_trim +
+             cfg->follow_straight_max_bias <= cfg->maximum_pwm_percent) &&
+        (cfg->follow_right_pwm_percent + cfg->follow_straight_max_trim +
+             cfg->follow_straight_max_bias <= cfg->maximum_pwm_percent) &&
 
         /* all_test drive profiles: 0 = off; otherwise every output in range. */
         (cfg->move_left_pwm_percent == 0.0f ||
@@ -432,6 +434,7 @@ bool motion_control_init(
     controller->straight_left0 = left_ticks;
     controller->straight_right0 = right_ticks;
     controller->straight_trim = 0.0f;
+    controller->straight_bias = 0.0f;
     controller->previous_follow_target = 0.0f;
 
     controller->status.state =
@@ -955,7 +958,12 @@ static void run_forward(
         bool scan = controller->scanning && controller->cfg.follow_scan_scale > 0.0f;
 
         if (v > 0.0f) {              /* steer right: left wheel is outer */
-            l_target += controller->cfg.follow_boost_pwm_percent;
+            /* While scanning, no outer boost on the scanner-side (left)
+               wheel: a +boost mid-frame sped GP28 up over the bars and
+               garbled the widths (#23, 23 Nov: frames with 112 / 162 / 59 ms
+               runs during 17/5 and 19/5 corrections). The right wheel still
+               slows, so the robot still turns right. */
+            if (!scan) l_target += controller->cfg.follow_boost_pwm_percent;
             r_target = v >= 1.0f ? controller->cfg.follow_hard_inner_pwm_percent :
                                    controller->cfg.follow_inner_pwm_percent;
         } else if (v < 0.0f) {       /* steer left: right wheel is outer */
@@ -1002,10 +1010,22 @@ static void run_forward(
             } else {
                 controller->straight_trim = trim_target;
             }
-            if (controller->straight_trim > 0.0f) {
-                l_target += controller->straight_trim;
-            } else {
-                r_target -= controller->straight_trim;
+            /* I term: a steady mismatch shows up with the same sign on every
+               stretch, so the bias it learns outlives the stretch. */
+            if (controller->cfg.follow_straight_ki > 0.0f) {
+                controller->straight_bias = clamp_float(
+                    controller->straight_bias +
+                        controller->cfg.follow_straight_ki * err * dt,
+                    -controller->cfg.follow_straight_max_bias,
+                    controller->cfg.follow_straight_max_bias);
+            }
+            {
+                float trim = controller->straight_trim + controller->straight_bias;
+                if (trim > 0.0f) {
+                    l_target += trim;
+                } else {
+                    r_target -= trim;
+                }
             }
         } else {
             controller->straight_active = false;

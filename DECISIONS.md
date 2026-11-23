@@ -65,7 +65,7 @@ overflows telemetry's 8-bit field. The cap now applies after calibration
 | S2-U10 PID step | settles ≤ 300 ms, overshoot ≤ 20 % | Starting values. The gains are 0 today |
 | S2-U11 STOP | ≤ 100 ms | 10 ms control loop plus the motor run-down |
 | S2-U13 reverse | ±2 cm | Same as the S5 distance accuracy (NFR5-6) |
-| S3-U31 reacquire | S3 FOUND ≤ 200 ms after the line is back; VC re-armed ≤ 1.5 s | The VC waits `S2_LINE_REARM_MS` = 1 s with the wheels still before it re-arms |
+| S3-U31 lost line | 10/10 nudges off the tape stop within `S2_LINE_LOST_MM` + 5 cm; 10/10 small nudges recover with no stop; no false stop in 3 laps (rewritten 23 Nov, #23) | The straddle VC (#8) ignores S3 FOUND/LOST, so the old "FOUND ≤ 200 ms, re-armed ≤ 1.5 s" no longer applies; +5 cm covers braking at cruise |
 | S3-U32 letters | ≥ 9/10 per letter | |
 | S4-U10 hump height | ±3 mm | The 20 Nov data (mean error 2.3 mm on a 5 mm ramp) does not meet this yet, so S4-U10 stays failing until tuned |
 | S4-U11 tilt | flagged within 200 ms, 10/10 | Confirmation takes 5 × 20 ms = 100 ms |
@@ -199,3 +199,26 @@ second search would compete with it. Today: S3 queues LOST after 100 ms; the
 VC stops after 200 ms; it re-arms after centre and right have seen black for
 1 s with the wheels still. In `integrated`, S3 latches a LINE fault after 2 s
 (`LINE_BARCODE_SEARCH_MS`).
+
+**Update 23 Nov (#23).** This describes the S3 line model. Since the #8 port,
+`integrated` steers in the straddle model (`S2_LINE_STRADDLE` 1), where both
+white is the normal on-line reading, so the VC ignores S3's LOST and
+`LINE_BARCODE_SEARCH_MS` is 0 (a 2 s deadline faulted on every long
+straight). To keep this decision, the VC now detects loss itself: after a
+correction of at least 150 ms clears to white, the robot is angled back
+across the tape, so C or R should see black again soon. If neither does
+within `S2_LINE_LOST_MM` (150 mm by the encoders) the robot stops. Both white
+proves nothing, so it re-arms only once C or R has seen the tape and it is
+held still 1 s, or after PAUSE + RESUME. The 150 mm is a first guess, tuned
+in S3-U31 from the `watch max=` figure in the `steer` log; 0 turns it off.
+
+**Probe before stopping (23 Nov, #23).** On the track the check stopped the
+robot twice with the tape still between C and R: a correction had left it
+running parallel to the tape. Now, at 150 mm the VC first steers softly
+toward the side the tape was last under for up to 100 mm
+(`S2_LINE_PROBE_MM`). Tape between the sensors then passes under the other
+one, tape just outside passes back under the last one, and following
+carries on; only no black through the probe stops the robot. This is a
+bounded steer of at most 10 cm, not a search pattern, so "stops and waits"
+still holds for a line that is really gone. The team has not reviewed this
+addition.

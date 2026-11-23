@@ -46,6 +46,27 @@
 #define S2_LINE_CONFIRM_MS 5u        /* a left<->right reversal must persist */
 #define S2_WHITE_CLEAR_MS 30u        /* hold a correction this long after white */
 #define S2_LINE_HARD_MS 150u         /* soft correction becomes hard (inner wheel stops) */
+/* Lost line in the straddle model (#23). Both white means centred or lost.
+   After a correction of at least S2_LINE_LOST_ARM_MS clears to white, the
+   robot is angled back across the tape, so C or R should see black again
+   soon. No black within S2_LINE_LOST_MM of travel (encoders): probe (below),
+   and if the probe finds no black either, the line is lost: stop, and
+   re-arm only once C or R has seen black (or PAUSE + RESUME).
+   S2_LINE_LOST_MM is a first guess: tune it from the `watch max=` figure in
+   the once-a-second `steer` log (S3-U31). 0 turns the check off. */
+#ifndef S2_LINE_LOST_MM
+#define S2_LINE_LOST_MM 150u
+#endif
+/* Before stopping, steer softly (this follow value) toward the side the
+   tape was last under for up to S2_LINE_PROBE_MM more; any black ends it
+   and following carries on (#23: two false stops on 23 Nov had the tape
+   still between C and R). 0 = stop at S2_LINE_LOST_MM, no probe. */
+#ifndef S2_LINE_PROBE_MM
+#define S2_LINE_PROBE_MM 100u
+#endif
+#define S2_LINE_PROBE_STEER 0.5f
+#define S2_LINE_LOST_ARM_MS S2_LINE_HARD_MS
+#define S2_LINE_LOST_GAP_MS 50u      /* a longer gap in line following drops the watch */
 /* Drive onto the crossing before pivoting. all_test's "5 cm" counts 5 x
    S2_RIGHT_TICKS_PER_CM = 94 right-wheel ticks, which is 0.8 cm with the
    interrupt encoder: keep that tuned distance. */
