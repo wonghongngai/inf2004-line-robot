@@ -1,0 +1,13 @@
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: 8487fc2
+
+s1/protocol                  PASS
+s1/barcode_queue             PASS
+s1/binary_cli                PASS
+
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+-----------------------------------------
+3 passed, 0 failed, 0 known failures, 0 skipped

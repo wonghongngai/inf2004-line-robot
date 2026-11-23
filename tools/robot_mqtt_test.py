@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Guided robot tests over MQTT (#15, #38, #72): S1-U12 to S1-U15 and S1-U17.
+"""Guided robot tests over MQTT (#15, #16, #38, #72): S1-U12 to S1-U17.
 
 Runs the broker side of each test against the live integrated robot and
 writes one evidence log (everything printed is also saved). Steps that only a
@@ -26,6 +26,11 @@ testing/TEST_PLAN.md):
   S1-U15  maps with duplicate letters and a reserved bit are rejected
           (map flag stays 0 after a reboot), a valid map is applied (flag 1),
           then the robot turns as mapped at a junction (operator)
+  S1-U16  (#16) barcode result events on <id>/barcode: the operator drives over
+          --barcodes barcodes; every event must decode (4 bytes), exactly
+          --barcodes distinct frames must arrive, each frame one more than
+          the last (a gap is an event lost on the robot). QoS 1 duplicates
+          are allowed and counted. With --letters the letters are checked too
   S1-U17  --flood STATUS commands in about 1 s while following: telemetry keeps
           coming (no gap > 3 s), the robot keeps following, PAUSE still works
           straight after, and the console shows no new late control steps
@@ -52,8 +57,8 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from mqtt_binary import (COMMANDS, TELEMETRY_BYTES, decode_telemetry,  # noqa: E402
-                         encode_mapping)
+from mqtt_binary import (COMMANDS, TELEMETRY_BYTES, decode_barcode,  # noqa: E402
+                         decode_telemetry, encode_mapping)
 
 STATES = ["IDLE", "FOLLOWING", "TURNING", "SCANNING", "AVOIDING", "RECOVERING",
           "FINISHED", "FAULT"]
@@ -66,14 +71,16 @@ class Log:
 
     def __init__(self, path):
         self.path = path
+        self.lock = threading.Lock()   # S1-U16 logs from its reader thread too
         path.parent.mkdir(parents=True, exist_ok=True)
         self.file = open(path, "w", encoding="utf-8")
 
     def __call__(self, text=""):
         line = f"{datetime.now():%H:%M:%S.%f}"[:-3] + f"  {text}" if text else ""
-        print(line, flush=True)
-        self.file.write(line + "\n")
-        self.file.flush()
+        with self.lock:
+            print(line, flush=True)
+            self.file.write(line + "\n")
+            self.file.flush()
 
     def close(self):
         self.file.close()
@@ -537,6 +544,113 @@ def test_s1_u17(args, log, telemetry):
     return ok
 
 
+class BarcodeEvents:
+    """Background mosquitto_sub on <id>/barcode; logs each event as it arrives."""
+
+    def __init__(self, args, log):
+        self.log = log
+        self.events = []          # (hex payload, decoded dict or None, error or None)
+        self.lock = threading.Lock()
+        self.process = subprocess.Popen(
+            ["mosquitto_sub", "-h", args.broker, "-p", str(args.port), "-q", "1",
+             "-t", f"{args.client_id}/barcode", "-F", "%x"],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+        threading.Thread(target=self._read, daemon=True).start()
+
+    def _read(self):
+        for line in self.process.stdout:
+            hex_payload = line.strip()
+            try:
+                data, error = decode_barcode(bytes.fromhex(hex_payload)), None
+            except ValueError as exc:
+                data, error = None, str(exc)
+            with self.lock:
+                self.events.append((hex_payload, data, error))
+                n = len(self.events)
+            if error:
+                self.log(f"barcode #{n}: {hex_payload or '-'} UNDECODABLE ({error})")
+            else:
+                self.log(f"barcode #{n}: {hex_payload} frame={data['frame']} "
+                         f"letter={data['letter'] or 'rejected'} runs={data['runs']}")
+
+    def snapshot(self):
+        with self.lock:
+            return list(self.events)
+
+    def close(self):
+        self.process.terminate()
+
+
+def check_barcode_events(events, expected, letters=None):
+    """S1-U16 verdict from (hex, decoded, error) events: (ok, report lines).
+
+    QoS 1 may repeat a frame with the same payload: counted, not an error.
+    Frame IDs are per boot and wrap at 65536. S3 numbers only the results it
+    hands to S1, so each new frame must be the previous one + 1; a larger
+    step means events were lost on the robot (queue full)."""
+    undecodable = sum(1 for _, _, error in events if error is not None)
+    frames, payloads = [], {}
+    duplicates, gaps, backwards, conflicts = 0, [], [], []
+    for hex_payload, data, error in events:
+        if error is not None:
+            continue
+        frame = data["frame"]
+        if frame in payloads:
+            duplicates += 1
+            if payloads[frame] != hex_payload:
+                conflicts.append(frame)
+            continue
+        if frames:
+            step = (frame - frames[-1]) % 65536
+            if step > 32768:
+                backwards.append((frames[-1], frame))
+            elif step > 1:
+                gaps.append((frames[-1], frame, step - 1))
+        frames.append(frame)
+        payloads[frame] = hex_payload
+    got = "".join(decode_barcode(bytes.fromhex(payloads[f]))["letter"] or "?" for f in frames)
+    lines = [f"received {len(events)} events: {len(frames)} distinct frames "
+             f"(expect {expected}), {duplicates} QoS 1 duplicates, {undecodable} undecodable"]
+    if frames:
+        lines.append(f"frames {frames[0]}..{frames[-1]}, letters {got} (? = rejected capture)")
+    lines += [f"GAP: frame {a} -> {b} ({lost} event(s) lost)" for a, b, lost in gaps]
+    lines += [f"OUT OF ORDER: frame {a} -> {b}" for a, b in backwards]
+    lines += [f"CONFLICT: frame {f} arrived twice with different payloads" for f in conflicts]
+    ok = len(frames) == expected and not (undecodable or gaps or backwards or conflicts)
+    if letters is not None:
+        match = got == letters
+        lines.append(f"letters expected {letters}: {'match' if match else 'MISMATCH'}")
+        ok = ok and match
+    return ok, lines
+
+
+def test_s1_u16(args, log, telemetry):
+    log(f"== S1-U16 barcode result events: {args.barcodes} barcodes on <id>/barcode ==")
+    pause_for(log, "Boot the robot (integrated), wait for Wi-Fi + MQTT, and keep the serial "
+                   "console captured.")
+    events = BarcodeEvents(args, log)
+    try:
+        time.sleep(1.0)                       # let the subscription settle
+        start = len(events.snapshot())
+        if start:
+            log(f"note: {start} event(s) arrived before the run (ignored)")
+        pause_for(log, f"Drive the robot over {args.barcodes} barcodes (START, or push it by hand).")
+        log(f"waiting {args.settle:.0f} s for late events (QoS 1 retries)")
+        time.sleep(args.settle)
+        received = events.snapshot()[start:]
+    finally:
+        events.close()
+    ok, lines = check_barcode_events(received, args.barcodes, args.letters)
+    for line in lines:
+        log(line)
+    console = ask(log, f"Did the console show {args.barcodes} '[S1:MQTT] barcode acked frame=' "
+                       f"lines and no '[S3:BARCODE] ERR MQTT enqueue=' line?")
+    ok = ok and console
+    log(f"S1-U16 {'PASS' if ok else 'FAIL'} (expect {args.barcodes}/{args.barcodes} events, "
+        f"frame IDs consecutive, every packet valid)")
+    return ok
+
+
 def map_flag(args, telemetry):
     telemetry.drain()
     command(args, "status")
@@ -707,6 +821,11 @@ def main():
                              "hotspot off (the broker must run on this laptop)")
     parser.add_argument("--stale-watch", type=float, default=10.0,
                         help="S1-U20 seconds to watch for a late PAUSE after the reconnect")
+    parser.add_argument("--barcodes", type=int, default=5, help="S1-U16 barcodes to drive over")
+    parser.add_argument("--letters", help="S1-U16 expected letters in order, e.g. AZAZ... "
+                                          "('?' for a capture meant to be rejected)")
+    parser.add_argument("--settle", type=float, default=5.0,
+                        help="S1-U16 seconds to wait for late events after the last barcode")
     parser.add_argument("--flood", type=int, default=100, help="S1-U17 commands in about 1 s")
     parser.add_argument("--map", default="FAZW",
                         help="valid map for S1-U15 as LRSU letters (default FAZW: A turns right)")
@@ -715,6 +834,10 @@ def main():
     parser.add_argument("--out", type=Path, help="log path (default testing/integration/logs/...)")
     args = parser.parse_args()
     args.map = args.map.upper()
+    if args.letters is not None:
+        args.letters = args.letters.upper()
+        if len(args.letters) != args.barcodes:
+            parser.error("--letters needs one letter per barcode (see --barcodes)")
     if len(args.map) != 4 or len(set(args.map)) != 4 or not args.map.isalpha():
         parser.error("--map needs four different letters, e.g. FAZW")
     for tool in ("mosquitto_sub", "mosquitto_pub"):
@@ -749,7 +872,7 @@ def main():
 
 
 TESTS = {"S1-U12": test_s1_u12, "S1-U13": test_s1_u13, "S1-U14": test_s1_u14,
-         "S1-U15": test_s1_u15, "S1-U17": test_s1_u17, "INT-15": test_int_15}
+         "S1-U15": test_s1_u15, "S1-U16": test_s1_u16, "S1-U17": test_s1_u17, "INT-15": test_int_15}
 
 
 if __name__ == "__main__":

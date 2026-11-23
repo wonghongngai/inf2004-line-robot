@@ -1,0 +1,45 @@
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: 8487fc2 + uncommitted feat/s1-barcode-events-16 changes
+
+s1/protocol                  PASS
+s1/barcode_queue             PASS
+PASS: valid/invalid barcode events, dedicated queue, full queue and invalid arguments
+PASS: command flood counted (100 = 10 queued + 3 invalid + 87 dropped), log burst limited
+s1/binary_cli                PASS
+..................
+----------------------------------------------------------------------
+Ran 18 tests in 0.386s
+
+OK
+
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+-----------------------------------------
+3 passed, 0 failed, 0 known failures, 0 skipped
+
+python3 testing/subsystem1/test_binary.py -v  (commit 8487fc2 + uncommitted feat/s1-barcode-events-16 changes)
+test_bad_payload_and_conflict_fail (__main__.BarcodeEventCheckTests.test_bad_payload_and_conflict_fail) ... ok
+test_consecutive_pass (__main__.BarcodeEventCheckTests.test_consecutive_pass) ... ok
+test_gap_fails (__main__.BarcodeEventCheckTests.test_gap_fails) ... ok
+test_letter_mismatch_fails (__main__.BarcodeEventCheckTests.test_letter_mismatch_fails) ... ok
+test_missing_and_extra_fail (__main__.BarcodeEventCheckTests.test_missing_and_extra_fail) ... ok
+test_out_of_order_fails (__main__.BarcodeEventCheckTests.test_out_of_order_fails) ... ok
+test_wrap_and_duplicate_pass (__main__.BarcodeEventCheckTests.test_wrap_and_duplicate_pass) ... ok
+test_barcode_result_fixture (__main__.ProtocolTests.test_barcode_result_fixture) ... ok
+test_barcode_result_rejects (__main__.ProtocolTests.test_barcode_result_rejects) ... ok
+test_barcode_stream (__main__.ProtocolTests.test_barcode_stream) ... ok
+test_boundary_fixture (__main__.ProtocolTests.test_boundary_fixture) ... ok
+test_display_stream (__main__.ProtocolTests.test_display_stream) ... ok
+test_invalid_lengths_and_fields (__main__.ProtocolTests.test_invalid_lengths_and_fields) ... ok
+test_raw_barcode_mapping (__main__.ProtocolTests.test_raw_barcode_mapping) ... ok
+test_raw_start_command (__main__.ProtocolTests.test_raw_start_command) ... ok
+test_raw_zero_command (__main__.ProtocolTests.test_raw_zero_command) ... ok
+test_s5_faults_and_reserved_bits (__main__.ProtocolTests.test_s5_faults_and_reserved_bits) ... ok
+test_ticks_wrap (__main__.ProtocolTests.test_ticks_wrap) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.381s
+
+OK

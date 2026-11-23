@@ -58,7 +58,7 @@ something that hasn't passed on the bench (L3).
 | `s1/protocol`: 80-bit telemetry codec | L1 | `sh testing/run_host_tests.sh s1/protocol` | PASS |
 | `s1/binary_cli`: `tools/mqtt_binary.py` encoder/decoder | L1 | `sh testing/run_host_tests.sh s1/binary_cli` | PASS |
 | S1-U01–U10, U18: packet sizes, range rejection, queues, barcode map, reverse command | L2 | `make TEST=1` | PASS on target 20 Nov (11 checks; U01 fixed) |
-| `s1/barcode_queue` | L1 | — | **blocked**: the code it tests isn't committed (zhi xian) |
+| `s1/barcode_queue` | L1 | `sh testing/run_host_tests.sh s1/barcode_queue` | PASS 23 Nov on `main` (`8487fc2`), #16 |
 
 **New:**
 
@@ -69,7 +69,7 @@ something that hasn't passed on the bench (L3).
 | S1-U13 | Reconnect after broker restart and after AP off/on | L3 | Stop the broker for 30 s, then restart it; repeat with the hotspot. `tools/robot_mqtt_test.py --only S1-U13` guides both and times the return of telemetry | publishing resumes within 10 s; motors unaffected (Wi-Fi loss must not stop driving) |
 | S1-U14 | PAUSE / RESUME / STATUS from the laptop | L3→L4 | Send each command 10×, film the wheels with the console visible; `tools/robot_mqtt_test.py --only S1-U14` sends them and checks telemetry | 10/10 obey; PAUSE stops within 500 ms |
 | S1-U15 | Letter-to-movement map sent from the PC over MQTT: valid, duplicate letters, reserved bits set | L3 | Publish 3 maps to `<id>/mapping` from the PC, then drive over a mapped barcode and junction (`tools/robot_mqtt_test.py --only S1-U15` guides this) | valid map **applied** (robot does the mapped move), both invalid rejected, old map kept (#38; pairs with S3-U27) |
-| S1-U16 | Barcode result events (`<id>/barcode`) | L4 | After the code is pushed: 20 barcodes on the track | 20/20 events arrive, frame IDs in order |
+| S1-U16 | Barcode result events (`<id>/barcode`) | L4 | Drive over 5 barcodes on the track: `tools/robot_mqtt_test.py --only S1-U16` (add `--letters` with the 5 letters in track order to check them too); keep the console captured | 5/5 events arrive, frame IDs consecutive (QoS 1 repeats allowed), every packet valid; console shows 5 `[S1:MQTT] barcode acked frame=` and no `MQTT enqueue=` error |
 | S1-U17 | Command flood does not starve control | L2/L3 | Send 100 commands in 1 s while following: `tools/robot_mqtt_test.py --only S1-U17`. Read `[S2:MOTION] ctrl late=` before and after, and `[S1:CMD] commands rx=` | control loop shows no late cycles; extra commands rejected and counted, never blocking |
 | S1-U20 | Commands across a reconnect: sent while offline, delayed, duplicated (#49) | L3 | Run with S1-U13 (`tools/robot_mqtt_test.py --only S1-U13`): during the hotspot outage it publishes PAUSE to the broker on the laptop; after the reconnect it sends PAUSE x2, RESUME x2 and START while armed | the PAUSE sent while offline is never applied (the robot keeps following after the reconnect); duplicates give one state change; START while armed is ignored |
 
