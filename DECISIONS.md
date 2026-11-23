@@ -38,7 +38,7 @@ Decided by the team on 20 Nov 2026, from `main` @ `42be6ea`.
 | #38 | **No on-robot A–Z print test** (decided 21 Nov, time). A–Z in both directions rests on S3-U07 (all 26 letters, synthetic frames, host + Pico) and S3-U18 (real PDF A/Z); on the robot only A was scanned (large print 3/3 forward, 3/3 reversed; medium print failed reversed) | Use **large prints** on demo day; the medium-print failure is a known risk |
 | #72 | **No built-in letter map; a junction without a mapped barcode goes straight** (decided 21 Nov), before and after an MQTT map arrives, as in `all_test` | Built in `robot_control.c`; host-tested in `int/robot_control`. all_test's stop on an incomplete barcode (scanner edges, no letter) is **not** ported to integrated (decided 21 Nov): integrated goes straight there too |
 | #54 | Obstacle distance is 9-bit cm on the wire, mm inside S5 | VC converts `mm / 10` when filling IF-05 (#72) |
-| #64 | Keep 20 cm detection | Buddy 5 records the reason; S5-U40 (#31) must show the robot rests ≥ 10 cm away |
+| #64 | Keep 20 cm detection | Buddy 5 records the reason; S5-U48 (#31; planned as S5-U40 until 23 Nov) must show the robot rests ≥ 10 cm away |
 | #65 | Keep the 50–130° scan. FR5-1 changed to 50, 70, 90, 110, 130° | Re-measure NFR5-2 with the sensor mounted (#29) |
 | #66 | Keep the current task priorities | S1-U17 (#15) and S2-U12 (#19) measure loop lateness with Wi-Fi on |
 | #67 | Tilt is report-only | INT-11 (#36) dropped 22 Nov: see below |
@@ -144,9 +144,10 @@ the bypass legs are tuned for it. The measured echo cone is ±20° (S5-U32). At
 track could trigger it.
 
 **Conditions.** Buddy 5 adds the original reason for choosing 20 cm to
-`testing/subsystem5/TEST_LOG.md`. S5-U40 (#31) must show the robot comes to
+`testing/subsystem5/TEST_LOG.md`. S5-U48 (#31; called S5-U40 until 23 Nov,
+when that ID turned out to be the telemetry test) must show the robot comes to
 rest at least 10 cm from the box. At 20 cm, only 10 cm is left to stop in
-after the 2-of-3 confirmation. If S5-U40 fails, restore 30 cm and set
+after the 2-of-3 confirmation. If S5-U48 fails, restore 30 cm and set
 `BYPASS_MIN_GAP_MM` to 150.
 
 ### #65 Coarse scan angles
