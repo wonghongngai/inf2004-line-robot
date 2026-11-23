@@ -163,8 +163,8 @@ IMPORT void obstacle_plan(const obstacle_profile_t * p_profile, UW retries,
 /* ---- Bypass (FR5-4, FR5-5) -------------------------------------------
  * Turn-and-box path (one-wheel 90 deg pivots and straight legs), e.g. for
  * a left pass; a right pass is the mirror image:
- *   T1 turn L 90   F1 forward the plan's shift (out to the side), see
- *                  bypass_side_cm()
+ *   T1 turn L 90   F1 forward the plan's shift + LOOK_SIDE_EXTRA_MM (out
+ *                  to the side), see bypass_out_cm()
  *   T2 turn R 90   F2 forward beside the box, stopping to spin round and
  *                  look at it square on, until a look finds it gone (any
  *                  depth), see "Looked pass" below
@@ -229,6 +229,20 @@ typedef struct
  * extra margin, not counted on.
  */
 IMPORT UW bypass_side_cm(UW shift_mm);
+
+/* F1 goes this much further out than the plan's shift, so the look spins
+ * in F2 clear the box (23 Nov): on two centred runs the box face was 11-17
+ * cm from the robot's centre line, not the ~23 cm the scan's edge gave,
+ * and a spin's front corners reach about 11 cm (the scanned width of one
+ * box ranged 128-276 mm, DEVIATIONS B5-6a).  It lengthens F3 by as much
+ * (NFR5-4 budget, LINE_SEEK_MAX_CM).  [VERIFY in the U41 runs] */
+#define LOOK_SIDE_EXTRA_MM (120U)
+
+/**
+ * F1's distance as driven: bypass_side_cm(shift + LOOK_SIDE_EXTRA_MM), so
+ * still within BYPASS_SIDE_MIN_CM..BYPASS_SIDE_MAX_CM.
+ */
+IMPORT UW bypass_out_cm(UW shift_mm);
 
 /**
  * Move 'index' (0..BYPASS_STEPS-1) of the turn-and-box path for the plan's
@@ -304,7 +318,7 @@ IMPORT BOOL bypass_step(const plan_t * p_plan, UW index,
 
 /**
  * How far out to the side the box's face is during F2, from the robot's
- * centre line: F1 (bypass_side_cm) + PIVOT_STEP_MM - the box's passing-side
+ * centre line: F1 (bypass_out_cm) + PIVOT_STEP_MM - the box's passing-side
  * edge (centre y +/- half the width).  At least 50 mm; 0 if not a pass or
  * NULL.
  */

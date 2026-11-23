@@ -573,6 +573,12 @@ EXPORT UW bypass_side_cm(UW shift_mm)
     return side_cm;
 }
 
+/* Step F1's distance as driven: wider, for the look spins */
+EXPORT UW bypass_out_cm(UW shift_mm)
+{
+    return bypass_side_cm(shift_mm + LOOK_SIDE_EXTRA_MM);
+}
+
 /* One move of the turn-and-box path */
 EXPORT BOOL bypass_step(const plan_t * p_plan, UW index, bypass_step_t * p_step)
 {
@@ -588,7 +594,7 @@ EXPORT BOOL bypass_step(const plan_t * p_plan, UW index, bypass_step_t * p_step)
     step = g_left_pass[index];
     if (BYPASS_F1_INDEX == index)
     {
-        step.value = (UH)bypass_side_cm(p_plan->shift_mm);
+        step.value = (UH)bypass_out_cm(p_plan->shift_mm);
     }
     if (PLAN_PASS_RIGHT == p_plan->decision)
     {
@@ -638,7 +644,7 @@ EXPORT UW bypass_side_gap_mm(const plan_t *             p_plan,
         return 0U;
     }
 
-    gap_mm = (INT)(bypass_side_cm(p_plan->shift_mm) * MM_PER_CM) +
+    gap_mm = (INT)(bypass_out_cm(p_plan->shift_mm) * MM_PER_CM) +
              (INT)PIVOT_STEP_MM - edge_mm;
     return (gap_mm < 50) ? 50U : (UW)gap_mm;
 }
