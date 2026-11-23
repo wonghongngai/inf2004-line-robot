@@ -55,11 +55,18 @@
 #define S4_LIFT_CLIP_MG             400  /* 2 x threshold: half the window must agree */
 #define S4_LIFT_FILTER_SAMPLES      10U  /* 200 ms moving average */
 #define S4_LIFT_CONFIRM_SAMPLES     3U   /* 60 ms */
-#define S4_HUMP_ENTRY_MG            85
-#define S4_HUMP_OPPOSITE_MG          60
-#define S4_HUMP_SETTLE_MG           40
-#define S4_HUMP_SETTLE_SAMPLES      3U   /* 60 ms (5 at 10 ms) */
-#define S4_HUMP_TIMEOUT_SAMPLES     75U  /* 1.5 s */
+/*
+ * Hump detection (#27, tuned 23 Nov from the S4_TRACE captures of the 10 mm
+ * one-side ramp). Every decision uses the 10-sample (200 ms) average of the
+ * forward axis. On 16 s of recorded flat driving that average never stayed
+ * >= 30 mg for more than 4 samples; on the ramp it stayed there for 59-89
+ * samples, and never fell to <= 25 mg until the climb was over. The climb
+ * takes 1.2-1.8 s at cruise, so the timeout allows 5 s.
+ */
+#define S4_HUMP_ENTRY_MG            30   /* 10-sample average, held for S4_HUMP_ENTRY_CONFIRM_SAMPLES */
+#define S4_HUMP_OPPOSITE_MG          60  /* HUMP DEBUG print threshold only */
+#define S4_HUMP_SETTLE_MG           20   /* level: re-arm and end of a hump */
+#define S4_HUMP_TIMEOUT_SAMPLES     250U /* 5 s */
 
 /*
  * Ramp-height output range.
