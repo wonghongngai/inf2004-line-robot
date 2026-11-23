@@ -680,6 +680,21 @@ static UB at_run_move(void *p, const S5_REQUEST *req)
         if (left_pwm < 0.0f) left_pwm = 0.0f;
         if (right_pwm < 0.0f) right_pwm = 0.0f;
         apply_follow_pwm(t, left_pwm, right_pwm, c->now);
+    } else if (req->b_spin) {
+        /* Spin on the spot (23 Nov): both wheels counter-rotate, each over
+           half a pivot's arc; each stops on its own once it has done its
+           share, the turn ends when both have. Left spin: left wheel back. */
+        bool left_spin = req->move == S5_MOVE_TURN_L;
+        bool left_done = (float)tick_delta(t->left_ticks, t->s5_left0) >=
+                         0.5f * s5_pivot_ticks(req->value, S5_LEFT_TICKS_PER_CM);
+        bool right_done = (float)tick_delta(t->right_ticks, t->s5_right0) >=
+                          0.5f * s5_pivot_ticks(req->value, S5_RIGHT_TICKS_PER_CM);
+        float pwm = S2_AVOID_SPIN_PWM_PERCENT;
+        if (left_done && right_done) return S5_EXEC_DONE;
+        if (left_done) t->left = 0.0f;
+        if (right_done) t->right = 0.0f;
+        apply_follow_pwm(t, left_done ? 0.0f : (left_spin ? -pwm : pwm),
+                         right_done ? 0.0f : (left_spin ? pwm : -pwm), c->now);
     } else if (req->move == S5_MOVE_TURN_R) {
         /* Right pivot moves the left wheel (as turn_step). */
         if ((float)tick_delta(t->left_ticks, t->s5_left0) >=

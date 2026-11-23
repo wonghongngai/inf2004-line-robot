@@ -84,8 +84,8 @@ static BOOL window_is(const scan_point_t * p_coarse, UW start_deg, UW end_deg)
 /* Check that a request survives pack + unpack unchanged */
 static BOOL request_round_trip(UB kind, UB move, UB seq, BOOL b_line, UH value)
 {
-    S5_REQUEST in  = {kind, move, seq, b_line, value, FALSE};
-    S5_REQUEST out = {0U, 0U, 0U, FALSE, 0U, FALSE};
+    S5_REQUEST in  = {kind, move, seq, b_line, value, FALSE, FALSE};
+    S5_REQUEST out = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE};
 
     if (!s5_request_unpack(s5_request_pack(&in), &out))
     {
@@ -270,8 +270,9 @@ EXPORT void subsystem5_test(void)
                     !s5_request_unpack((UW)S5_REQ_MOVE | (1UL << 27), &req)),
                    "unused bits 20-27 set: rejected");
         {
-            S5_REQUEST all_in = {S5_REQ_MOVE, S5_MOVE_FWD, 3U, TRUE, 50U, TRUE};
-            S5_REQUEST all_out = {0U, 0U, 0U, FALSE, 0U, FALSE};
+            S5_REQUEST all_in = {S5_REQ_MOVE, S5_MOVE_FWD, 3U, TRUE, 50U, TRUE,
+                                 FALSE};
+            S5_REQUEST all_out = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE};
 
             TEST_CHECK("S5-U09",
                        (s5_request_unpack(s5_request_pack(&all_in), &all_out) &&
@@ -283,10 +284,52 @@ EXPORT void subsystem5_test(void)
         }
         TEST_CHECK("S5-U09",
                    !s5_request_unpack((UW)S5_REQ_HOLD | (1UL << 29), &req),
-                   "unused bits 29-31 set: rejected");
+                   "spin bit 29 on a HOLD: rejected");
         TEST_CHECK("S5-U09", (S5_REQ_NONE == req.kind),
                    "rejected word reads back as NONE");
-        req = (S5_REQUEST){S5_REQ_MOVE, S5_MOVE_FWD, 1U, FALSE, 2000U, FALSE};
+        /* Spin (bit 29, 23 Nov): valid only on a MOVE that turns */
+        {
+            S5_REQUEST spin_in  = {S5_REQ_MOVE, S5_MOVE_TURN_R, 4U, FALSE, 90U,
+                                   FALSE, TRUE};
+            S5_REQUEST spin_out = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE};
+            S5_REQUEST fwd_in   = {S5_REQ_MOVE, S5_MOVE_FWD, 4U, FALSE, 10U,
+                                   FALSE, TRUE};
+            UW         word     = s5_request_pack(&spin_in);
+
+            TEST_CHECK("S5-U09",
+                       ((0UL != (word & (1UL << 29))) &&
+                        s5_request_unpack(word, &spin_out) && spin_out.b_spin &&
+                        (S5_MOVE_TURN_R == spin_out.move) &&
+                        (90U == spin_out.value)),
+                       "spin right 90: bit 29 set, round trip");
+            spin_in.move = S5_MOVE_TURN_L;
+            TEST_CHECK("S5-U09",
+                       (s5_request_unpack(s5_request_pack(&spin_in), &spin_out) &&
+                        spin_out.b_spin && (S5_MOVE_TURN_L == spin_out.move)),
+                       "spin left 90 round trip");
+            TEST_CHECK("S5-U09",
+                       (request_round_trip(S5_REQ_MOVE, S5_MOVE_TURN_L, 2U, FALSE,
+                                           90U) &&
+                        s5_request_unpack(
+                            s5_request_pack(&(S5_REQUEST){S5_REQ_MOVE,
+                                                          S5_MOVE_TURN_L, 2U,
+                                                          FALSE, 90U, FALSE,
+                                                          FALSE}),
+                            &spin_out) &&
+                        !spin_out.b_spin),
+                       "a turn without the bit is a pivot (b_spin FALSE)");
+            TEST_CHECK("S5-U09",
+                       (!s5_request_unpack(
+                            (UW)S5_REQ_MOVE | (10UL << 10) | (1UL << 29), &req) &&
+                        (0UL == (s5_request_pack(&fwd_in) & (1UL << 29)))),
+                       "spin on a FWD move: rejected, and pack never sets it");
+            TEST_CHECK("S5-U09",
+                       (!s5_request_unpack((UW)S5_REQ_MOVE | (1UL << 30), &req) &&
+                        !s5_request_unpack((UW)S5_REQ_MOVE | (1UL << 31), &req)),
+                       "unused bits 30-31 set: rejected");
+        }
+        req = (S5_REQUEST){S5_REQ_MOVE, S5_MOVE_FWD, 1U, FALSE, 2000U, FALSE,
+                           FALSE};
         TEST_CHECK("S5-U09",
                    (1023U == ((s5_request_pack(&req) >> 10) & 0x3FFU)),
                    "value over 1023 clamped");
@@ -352,7 +395,7 @@ EXPORT void subsystem5_test(void)
             }
         }
         TEST_CHECK("S5-U35", b_left_ok,
-                   "left pass, shift 170: L90, F17, R90, F up to 80 watched, "
+                   "left pass, shift 170: L90, F17, R90, F up to 80 looked, "
                    "R90, F50 to line, F4, L up to 120");
         TEST_CHECK("S5-U35", b_right_ok,
                    "right pass: the mirror (R90, F17, L90, F up to 80, L90, "
@@ -363,7 +406,7 @@ EXPORT void subsystem5_test(void)
                    "only F3 waits for BOTH sensors to cross the line");
         TEST_CHECK(
             "S5-U35", b_flags_ok,
-            "F2 (step 4) is the watched pass; T3 (step 5) looks ahead after");
+            "F2 (step 4) is the looked pass; T3 (step 5) looks ahead after");
         TEST_CHECK("S5-U35",
                    (!bypass_step(&left_plan, BYPASS_STEPS, &step) &&
                     !bypass_step(&stop_plan, 0U, &step) &&
@@ -486,65 +529,10 @@ EXPORT void subsystem5_test(void)
                    "width 205 mm (box 210), centre -127 mm, closest x 275 mm");
     }
 
-    /* S5-U36: "passed the box" detector for the watched pass (F2) */
-    {
-        side_pass_t st = {FALSE, 0U};
-        UW          index;
-        BOOL        b_early = FALSE;
-        BOOL        b_last  = FALSE;
+    /* S5-U36 retired 23 Nov: the side watch's "passed the box" detector
+     * went with the watched pass (F2 now spins to look, S5-U49) */
 
-        /* Near once, then SIDE_CLEAR_COUNT clear readings (OK far and
-         * NO_ECHO alternating): passed only on the last one */
-        (void)side_pass_update(&st, ULTRASONIC_OK, 300U, 700U);
-        for (index = 1U; index <= SIDE_CLEAR_COUNT; index++)
-        {
-            b_last = side_pass_update(
-                &st, (0U == (index & 1U)) ? ULTRASONIC_OK : ULTRASONIC_NO_ECHO,
-                800U, 700U);
-            if (b_last && (index < SIDE_CLEAR_COUNT))
-            {
-                b_early = TRUE;
-            }
-        }
-        TEST_CHECK("S5-U36", (!b_early && b_last),
-                   "near 300, then passed only after SIDE_CLEAR_COUNT (10) "
-                   "clear readings");
-
-        st.b_seen    = FALSE;
-        st.clear_run = 0U;
-        b_last       = FALSE;
-        for (index = 0U; index < (2U * SIDE_CLEAR_COUNT); index++)
-        {
-            b_last =
-                b_last || side_pass_update(&st, ULTRASONIC_TOO_FAR, 0U, 700U);
-        }
-        TEST_CHECK("S5-U36", !b_last,
-                   "clear readings without seeing the box first: not passed");
-
-        st.b_seen    = FALSE;
-        st.clear_run = 0U;
-        (void)side_pass_update(&st, ULTRASONIC_OK, 300U, 700U);
-        for (index = 1U; index < SIDE_CLEAR_COUNT; index++)
-        {
-            (void)side_pass_update(&st, ULTRASONIC_OK, 800U, 700U);
-        }
-        TEST_CHECK("S5-U36",
-                   (!side_pass_update(&st, ULTRASONIC_OK, 300U, 700U) &&
-                    (0U == st.clear_run)),
-                   "near again just before passing resets the clear count");
-
-        st.b_seen    = FALSE;
-        st.clear_run = 0U;
-        (void)side_pass_update(&st, ULTRASONIC_OK, 300U, 700U);
-        (void)side_pass_update(&st, ULTRASONIC_TOO_NEAR, 0U, 700U);
-        (void)side_pass_update(&st, ULTRASONIC_BUSY, 0U, 700U);
-        TEST_CHECK("S5-U36", (0U == st.clear_run),
-                   "TOO_NEAR and BUSY change nothing (NFR5-5)");
-        TEST_CHECK("S5-U36", !side_pass_update(NULL, ULTRASONIC_OK, 800U, 700U),
-                   "NULL state is FALSE");
-    }
-
-    /* S5-U37: watched-pass distances */
+    /* S5-U37: F2 distances (side-watch checks removed 23 Nov) */
     {
         obstacle_profile_t prof  = {TRUE, 190U, 80U,   185,
                                     -88,  205U, 9999U, 9999U};
@@ -560,10 +548,6 @@ EXPORT void subsystem5_test(void)
                     (0U == bypass_side_gap_mm(&stop, &prof)) &&
                     (0U == bypass_side_gap_mm(NULL, &prof))),
                    "side gap at least 50 mm; not a pass or NULL: 0");
-        TEST_CHECK("S5-U37",
-                   ((710U == bypass_side_near_mm(226U)) &&
-                    (SIDE_NEAR_MAX_MM == bypass_side_near_mm(400U))),
-                   "beside under 226 / sin 20 + 50 = 710 mm, at most 1000");
         TEST_CHECK("S5-U37", (35U == bypass_pass_plan_cm(&prof)),
                    "never seen: front 185 - 100 + 60 deep + 150 tail + 50 = "
                    "345 -> 35 cm");
@@ -572,16 +556,42 @@ EXPORT void subsystem5_test(void)
                    ((PASS_MAX_CM == bypass_pass_plan_cm(&prof)) &&
                     (10U == bypass_pass_plan_cm(NULL))),
                    "plan at most PASS_MAX_CM; NULL: 10 cm");
-        TEST_CHECK("S5-U37", (43U == bypass_after_clear_cm(226U)),
-                   "after passing: 226 x cot 60 + 150 + 50 + 100 sweep = 430 "
-                   "-> 43 cm on");
         TEST_CHECK("S5-U37", (426U == bypass_probe_mm(226U)),
                    "after T3, box still ahead if under 226 + 200 = 426 mm");
-        TEST_CHECK("S5-U37",
-                   ((50U == bypass_side_deg(PLAN_PASS_LEFT)) &&
-                    (130U == bypass_side_deg(PLAN_PASS_RIGHT)) &&
-                    (SERVO_ANGLE_CENTRE_DEG == bypass_side_deg(PLAN_STOP))),
-                   "left pass watches 50 (box on the right), right pass 130");
+    }
+
+    /* S5-U49: looked-pass distances and the spin that faces the box */
+    {
+        obstacle_profile_t prof = {TRUE, 190U, 80U, 185, -88, 205U, 9999U, 9999U};
+
+        TEST_CHECK("S5-U49", (20U == bypass_look_start_cm(&prof)),
+                   "first look: front 185 - 100 + sensor 80 + 30 = 195 -> 20 cm");
+        prof.closest_x_mm = 900;
+        TEST_CHECK("S5-U49", (PASS_MAX_CM == bypass_look_start_cm(&prof)),
+                   "first look at most PASS_MAX_CM");
+        prof.closest_x_mm = -50;
+        TEST_CHECK("S5-U49",
+                   ((0U == bypass_look_start_cm(&prof)) &&
+                    (0U == bypass_look_start_cm(NULL))),
+                   "front already behind the centre, or NULL: look at once");
+        TEST_CHECK("S5-U49",
+                   (bypass_look_ok(LOOK_MIN_GAP_MM) &&
+                    !bypass_look_ok(LOOK_MIN_GAP_MM - 1U) &&
+                    (170U == LOOK_MIN_GAP_MM)),
+                   "room to spin from 120 sweep + 50 margin = 170 mm out");
+        TEST_CHECK("S5-U49",
+                   ((246U == bypass_look_limit_mm(226U)) &&
+                    (100U == bypass_look_limit_mm(50U))),
+                   "beside under (226 - 80) + 100 = 246 mm; gap under the "
+                   "sensor offset: 100");
+        TEST_CHECK("S5-U49", (22U == bypass_after_look_cm()),
+                   "after the box: tail 150 - 80 + 50 + 100 sweep = 220 -> 22 cm");
+        TEST_CHECK("S5-U49",
+                   ((S5_MOVE_TURN_R == bypass_look_turn(PLAN_PASS_LEFT)) &&
+                    (S5_MOVE_TURN_L == bypass_look_turn(PLAN_PASS_RIGHT)) &&
+                    (S5_MOVE_FWD == bypass_look_turn(PLAN_STOP))),
+                   "left pass spins right to face the box, right pass left; "
+                   "not a pass: no look");
     }
 
     /* S5-U38: a side the scan never saw past is "not seen", not open */

@@ -144,6 +144,7 @@ static MOTION_CONFIG build_config(void)
     cfg.uturn_right_pwm_percent = S2_UTURN_RIGHT_PWM_PERCENT;
     cfg.avoid_heading_kp = S2_AVOID_HEADING_KP;
     cfg.avoid_pivot_pwm_percent = S2_AVOID_PIVOT_PWM_PERCENT;
+    cfg.avoid_spin_pwm_percent = S2_AVOID_SPIN_PWM_PERCENT;
     cfg.avoid_left_turn_ticks_per_degree =
         S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_LEFT_TICKS_PER_CM);
     cfg.avoid_right_turn_ticks_per_degree =

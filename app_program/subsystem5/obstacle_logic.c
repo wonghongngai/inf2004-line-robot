@@ -609,39 +609,7 @@ EXPORT BOOL bypass_step(const plan_t * p_plan, UW index, bypass_step_t * p_step)
     return TRUE;
 }
 
-/* ---- Watched pass (F2) ---- */
-
-/* Detect the box passing by on the side */
-EXPORT BOOL side_pass_update(side_pass_t * p_state, ultrasonic_status_t status,
-                             UW distance_mm, UW near_mm)
-{
-    if (NULL == p_state)
-    {
-        return FALSE;
-    }
-
-    if ((ULTRASONIC_OK == status) && (distance_mm < near_mm))
-    {
-        p_state->b_seen    = TRUE;
-        p_state->clear_run = 0U;
-    }
-    else if ((ULTRASONIC_OK == status) || (ULTRASONIC_TOO_FAR == status) ||
-             (ULTRASONIC_NO_ECHO == status))
-    {
-        if (p_state->b_seen && (p_state->clear_run < 0xFFU))
-        {
-            p_state->clear_run++;
-        }
-    }
-    else
-    {
-        /* TOO_NEAR / BUSY: unknown, change nothing (NFR5-5) */
-    }
-
-    return (p_state->b_seen && (p_state->clear_run >= SIDE_CLEAR_COUNT))
-               ? TRUE
-               : FALSE;
-}
+/* ---- Looked pass (F2) ---- */
 
 /* Sideways distance to the box's face during F2 */
 EXPORT UW bypass_side_gap_mm(const plan_t *             p_plan,
@@ -675,14 +643,6 @@ EXPORT UW bypass_side_gap_mm(const plan_t *             p_plan,
     return (gap_mm < 50) ? 50U : (UW)gap_mm;
 }
 
-/* "Beside" threshold for the side readings */
-EXPORT UW bypass_side_near_mm(UW gap_mm)
-{
-    UW near_mm = ((gap_mm * INV_SIN_EDGE_X1000) / 1000U) + PASS_MARGIN_MM;
-
-    return (near_mm > SIDE_NEAR_MAX_MM) ? SIDE_NEAR_MAX_MM : near_mm;
-}
-
 /* F2's length if the box is never seen */
 EXPORT UW bypass_pass_plan_cm(const obstacle_profile_t * p_profile)
 {
@@ -708,11 +668,46 @@ EXPORT UW bypass_pass_plan_cm(const obstacle_profile_t * p_profile)
     return (leg_cm > PASS_MAX_CM) ? PASS_MAX_CM : leg_cm;
 }
 
-/* Drive on after the box has been passed */
-EXPORT UW bypass_after_clear_cm(UW gap_mm)
+/* Drive from T2 to the first look */
+EXPORT UW bypass_look_start_cm(const obstacle_profile_t * p_profile)
 {
-    UW on_mm = ((gap_mm * COT_CLEAR_X1000) / 1000U) + ROBOT_TAIL_MM +
-               PASS_MARGIN_MM + TURN_SWEEP_MM;
+    INT start_mm;
+    UW  start_cm;
+
+    if (NULL == p_profile)
+    {
+        return 0U;
+    }
+    start_mm = p_profile->closest_x_mm - (INT)PIVOT_STEP_MM +
+               (INT)SPIN_SENSOR_AHEAD_MM + (INT)LOOK_INTO_MM;
+    if (start_mm <= 0)
+    {
+        return 0U; /* the centre is past the front already: look now */
+    }
+    start_cm = ((UW)start_mm + (MM_PER_CM - 1U)) / MM_PER_CM;
+    return (start_cm > PASS_MAX_CM) ? PASS_MAX_CM : start_cm;
+}
+
+/* Room to spin beside the box? */
+EXPORT BOOL bypass_look_ok(UW gap_mm)
+{
+    return (gap_mm >= LOOK_MIN_GAP_MM) ? TRUE : FALSE;
+}
+
+/* "Still beside" threshold for a look */
+EXPORT UW bypass_look_limit_mm(UW gap_mm)
+{
+    UW face_mm =
+        (gap_mm > SPIN_SENSOR_AHEAD_MM) ? (gap_mm - SPIN_SENSOR_AHEAD_MM) : 0U;
+
+    return face_mm + LOOK_MARGIN_MM;
+}
+
+/* Drive on once a look finds the box gone */
+EXPORT UW bypass_after_look_cm(void)
+{
+    UW on_mm = (ROBOT_TAIL_MM - SPIN_SENSOR_AHEAD_MM) + PASS_MARGIN_MM +
+               TURN_SWEEP_MM;
 
     return (on_mm + (MM_PER_CM - 1U)) / MM_PER_CM;
 }
@@ -723,18 +718,18 @@ EXPORT UW bypass_probe_mm(UW gap_mm)
     return gap_mm + PROBE_MARGIN_MM;
 }
 
-/* Servo angle that watches the box during F2 */
-EXPORT UW bypass_side_deg(plan_decision_t decision)
+/* The spin that faces the box during F2 */
+EXPORT UB bypass_look_turn(plan_decision_t decision)
 {
     if (PLAN_PASS_LEFT == decision)
     {
-        return SERVO_ANGLE_CENTRE_DEG - SIDE_LOOK_DEG; /* box on the right */
+        return S5_MOVE_TURN_R; /* box on the right */
     }
     if (PLAN_PASS_RIGHT == decision)
     {
-        return SERVO_ANGLE_CENTRE_DEG + SIDE_LOOK_DEG; /* box on the left  */
+        return S5_MOVE_TURN_L; /* box on the left  */
     }
-    return SERVO_ANGLE_CENTRE_DEG;
+    return S5_MOVE_FWD; /* not a pass: no look */
 }
 
 /* ---- S5 -> VC request word (IF-10) ---- */
@@ -752,7 +747,17 @@ EXPORT UW bypass_side_deg(plan_decision_t decision)
 #define REQ_UNUSED_LOW_MASK  (0xFFU)
 #define REQ_MOVE_RESERVED    (3U)  /* move 3: invalid */
 #define REQ_LALL_SHIFT       (28U) /* line_all */
-#define REQ_UNUSED_SHIFT     (29U)
+#define REQ_SPIN_SHIFT       (29U) /* spin (turning MOVE only) */
+#define REQ_UNUSED_SHIFT     (30U)
+
+/* TRUE for a MOVE that turns: the only request that may spin */
+static BOOL req_is_turn(UW kind, UW move)
+{
+    return ((S5_REQ_MOVE == kind) &&
+            ((S5_MOVE_TURN_L == move) || (S5_MOVE_TURN_R == move)))
+               ? TRUE
+               : FALSE;
+}
 
 /* Pack a request into one 32-bit word */
 EXPORT UW s5_request_pack(const S5_REQUEST * p_req)
@@ -772,14 +777,20 @@ EXPORT UW s5_request_pack(const S5_REQUEST * p_req)
            ((p_req->b_stop_on_line ? 1UL : 0UL) << REQ_LINE_SHIFT) |
            (((UW)p_req->seq & S5_REQ_SEQ_MASK) << REQ_SEQ_SHIFT) |
            ((value & REQ_VALUE_MASK) << REQ_VALUE_SHIFT) |
-           ((p_req->b_line_all ? 1UL : 0UL) << REQ_LALL_SHIFT);
+           ((p_req->b_line_all ? 1UL : 0UL) << REQ_LALL_SHIFT) |
+           (((p_req->b_spin && req_is_turn((UW)p_req->kind & REQ_KIND_MASK,
+                                           (UW)p_req->move & REQ_MOVE_MASK))
+                 ? 1UL
+                 : 0UL)
+            << REQ_SPIN_SHIFT);
 }
 
 /* Unpack a request word, rejecting reserved values */
 EXPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req)
 {
-    UB kind;
-    UB move;
+    UB   kind;
+    UB   move;
+    BOOL b_spin;
 
     if (NULL == p_req)
     {
@@ -792,13 +803,16 @@ EXPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req)
     p_req->b_stop_on_line = FALSE;
     p_req->value          = 0U;
     p_req->b_line_all     = FALSE;
+    p_req->b_spin         = FALSE;
 
     kind = (UB)((word >> REQ_KIND_SHIFT) & REQ_KIND_MASK);
     move = (UB)((word >> REQ_MOVE_SHIFT) & REQ_MOVE_MASK);
+    b_spin = (0U != ((word >> REQ_SPIN_SHIFT) & 1U)) ? TRUE : FALSE;
 
     if ((kind > S5_REQ_SAFE_STOP) || (REQ_MOVE_RESERVED == move) ||
         (0U != ((word >> REQ_UNUSED_LOW_SHIFT) & REQ_UNUSED_LOW_MASK)) ||
-        (0U != (word >> REQ_UNUSED_SHIFT)))
+        (0U != (word >> REQ_UNUSED_SHIFT)) ||
+        (b_spin && !req_is_turn(kind, move)))
     {
         return FALSE; /* reserved: the VC must stop safely */
     }
@@ -810,6 +824,7 @@ EXPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req)
         (0U != ((word >> REQ_LINE_SHIFT) & 1U)) ? TRUE : FALSE;
     p_req->value      = (UH)((word >> REQ_VALUE_SHIFT) & REQ_VALUE_MASK);
     p_req->b_line_all = (0U != ((word >> REQ_LALL_SHIFT) & 1U)) ? TRUE : FALSE;
+    p_req->b_spin     = b_spin;
     return TRUE;
 }
 

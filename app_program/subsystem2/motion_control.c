@@ -129,7 +129,9 @@ static bool config_is_valid(const MOTION_CONFIG *cfg)
           cfg->uturn_right_pwm_percent <= cfg->maximum_pwm_percent &&
           cfg->uturn_left_pwm_percent >= -cfg->maximum_pwm_percent &&
           cfg->uturn_left_pwm_percent <= cfg->maximum_pwm_percent &&
-          cfg->avoid_pivot_pwm_percent <= cfg->maximum_pwm_percent));
+          cfg->avoid_pivot_pwm_percent <= cfg->maximum_pwm_percent &&
+          cfg->avoid_spin_pwm_percent >= 0.0f &&
+          cfg->avoid_spin_pwm_percent <= cfg->maximum_pwm_percent));
 }
 
 /* A profile move or FOLLOW_LINE starting within this long of a profile move
@@ -621,6 +623,15 @@ MOTION_RESULT motion_control_command(
             return MOTION_RESULT_INVALID_COMMAND;
         }
 
+        /* SPIN: turns only, and only if a spin PWM is configured. */
+        if (controller->next_profile == MOTION_PROFILE_SPIN && profile_move &&
+            ((command->type != MOTION_CMD_TURN_LEFT_DEG &&
+              command->type != MOTION_CMD_TURN_RIGHT_DEG) ||
+             controller->cfg.avoid_spin_pwm_percent <= 0.0f)) {
+
+            return MOTION_RESULT_INVALID_COMMAND;
+        }
+
         if (command->type == MOTION_CMD_FOLLOW_LINE ||
             command->type == MOTION_CMD_FORWARD_CM ||
             command->type == MOTION_CMD_TURN_LEFT_DEG ||
@@ -813,7 +824,10 @@ static void complete_motion(
     MOTION_CONTROLLER *controller
 )
 {
-    if (profile_running(controller)) {
+    /* A spin ends with one wheel in reverse: never carry that into the
+       next move (it starts from rest). */
+    if (profile_running(controller) &&
+        controller->active_profile != MOTION_PROFILE_SPIN) {
         controller->carry_left_pwm = controller->status.left_pwm_percent;
         controller->carry_right_pwm = controller->status.right_pwm_percent;
         controller->carry_ms = controller->previous_step_ms;
@@ -1300,6 +1314,58 @@ static void run_uturn(
 }
 
 /*
+ * SPIN profile: turn on the spot. Both wheels counter-rotate (left spin:
+ * left wheel back, right forward; right spin the mirror). A spin's wheel
+ * arc is half a one-wheel pivot's (radius half the track), so each wheel
+ * needs half the avoid pivot ticks per degree. Each wheel stops by itself
+ * once it has covered its share; the turn is complete when both have, so
+ * a faster wheel cannot over-turn the robot. A wheel still driving must
+ * keep making progress.
+ */
+static void run_spin(
+    MOTION_CONTROLLER *controller,
+    uint32_t now_ms,
+    int32_t left_ticks,
+    int32_t right_ticks,
+    bool left_spin,
+    float dt_s
+)
+{
+    float left_target = controller->target_value * 0.5f *
+                        controller->cfg.avoid_left_turn_ticks_per_degree;
+    float right_target = controller->target_value * 0.5f *
+                         controller->cfg.avoid_right_turn_ticks_per_degree;
+    bool left_done = (float)abs_i32(left_ticks -
+                         controller->command_start_left_ticks) >= left_target;
+    bool right_done = (float)abs_i32(right_ticks -
+                          controller->command_start_right_ticks) >= right_target;
+    float pwm = controller->cfg.avoid_spin_pwm_percent;
+
+    if (left_done && right_done) {
+        complete_motion(controller);
+        return;
+    }
+
+    if ((!left_done && timed_out(now_ms, controller->last_left_progress_ms,
+                                 controller->cfg.encoder_stall_timeout_ms))) {
+        enter_fault(controller, MOTION_FAULT_LEFT_ENCODER_STALL);
+        return;
+    }
+    if ((!right_done && timed_out(now_ms, controller->last_right_progress_ms,
+                                  controller->cfg.encoder_stall_timeout_ms))) {
+        enter_fault(controller, MOTION_FAULT_RIGHT_ENCODER_STALL);
+        return;
+    }
+
+    controller->status.left_pwm_percent = left_done ? 0.0f :
+        ramp_move_pwm(controller, controller->status.left_pwm_percent,
+                      left_spin ? -pwm : pwm, dt_s);
+    controller->status.right_pwm_percent = right_done ? 0.0f :
+        ramp_move_pwm(controller, controller->status.right_pwm_percent,
+                      left_spin ? pwm : -pwm, dt_s);
+}
+
+/*
  * One periodic Motion Control iteration.
  */
 void motion_control_step(
@@ -1369,6 +1435,14 @@ void motion_control_step(
             break;
         }
 
+        if (profile_running(controller) &&
+            controller->active_profile == MOTION_PROFILE_SPIN) {
+
+            run_spin(controller, now_ms, left_ticks, right_ticks, true, dt_s);
+
+            break;
+        }
+
         run_left_turn(
             controller,
             now_ms,
@@ -1379,6 +1453,14 @@ void motion_control_step(
         break;
 
     case MOTION_STATE_TURNING_RIGHT:
+
+        if (profile_running(controller) &&
+            controller->active_profile == MOTION_PROFILE_SPIN) {
+
+            run_spin(controller, now_ms, left_ticks, right_ticks, false, dt_s);
+
+            break;
+        }
 
         run_right_turn(
             controller,

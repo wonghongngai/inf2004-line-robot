@@ -119,6 +119,10 @@
 #define S2_AVOID_HEADING_KP                  15.0f  /* PWM points per cm */
 #define S2_AVOID_PIVOT_PWM_PERCENT           20.0f
 #define S2_AVOID_PIVOT_TRACK_CM              11.25f
+/* S5 spin-in-place turns (23 Nov, MOTION_PROFILE_SPIN): both wheels at this
+   PWM, one in reverse, as the U-turn (which needed 18-20 % on 22 Nov). Each
+   wheel covers half the pivot arc. [VERIFY on the floor: 90 deg spins] */
+#define S2_AVOID_SPIN_PWM_PERCENT            20.0f
 #define S2_AVOID_TURN_TICKS_PER_DEGREE(ticks_per_cm) \
     (3.14159265f / 180.0f * S2_AVOID_PIVOT_TRACK_CM * (ticks_per_cm))
 

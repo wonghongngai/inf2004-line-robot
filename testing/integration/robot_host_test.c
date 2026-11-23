@@ -259,7 +259,7 @@ ER subsystem5_get_request(S5_REQUEST *p_req)
 /* What S5's s5_post_line() does: next seq, one store. */
 static void s5_post(UB kind, UB move, UH value, BOOL stop_on_line)
 {
-    S5_REQUEST req = {kind, move, 0u, stop_on_line, value, FALSE};
+    S5_REQUEST req = {kind, move, 0u, stop_on_line, value, FALSE, FALSE};
     s5_seq = (UB)((s5_seq + 1u) & S5_REQ_SEQ_MASK);
     req.seq = s5_seq;
     s5_word = s5_request_pack(&req);
@@ -441,6 +441,7 @@ static MOTION_CONFIG alltest_config(void)
     c.uturn_right_pwm_percent = S2_UTURN_RIGHT_PWM_PERCENT;
     c.avoid_heading_kp = S2_AVOID_HEADING_KP;
     c.avoid_pivot_pwm_percent = S2_AVOID_PIVOT_PWM_PERCENT;
+    c.avoid_spin_pwm_percent = S2_AVOID_SPIN_PWM_PERCENT;
     c.avoid_left_turn_ticks_per_degree = S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_LEFT_TICKS_PER_CM);
     c.avoid_right_turn_ticks_per_degree = S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_RIGHT_TICKS_PER_CM);
     return c;
@@ -1214,6 +1215,59 @@ static void alltest_motion_tests(void)
         EXPECT(m.status.state == MOTION_STATE_IDLE && m.status.motion_complete);
     }
 
+    /* S5 spin (23 Nov): both wheels counter-rotate at the spin PWM; each
+     * stops on its own after half its pivot arc; the turn ends when both
+     * have; FORWARD is refused; a spin never carries its reverse PWM on. */
+    EXPECT(motion_control_command(&m, &(MOTION_COMMAND){MOTION_CMD_STOP, 0}, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, 0, 0);
+    motion_control_set_profile(&m, MOTION_PROFILE_SPIN);
+    EXPECT(motion_control_command(&m, &(MOTION_COMMAND){MOTION_CMD_FORWARD_CM, 10.0f}, now, 0, 0) ==
+           MOTION_RESULT_INVALID_COMMAND);
+    cmd = (MOTION_COMMAND){MOTION_CMD_TURN_LEFT_DEG, 90.0f};
+    EXPECT(motion_control_command(&m, &cmd, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, -1, 1);
+    EXPECT(m.status.left_pwm_percent < 0.0f && m.status.right_pwm_percent > 0.0f);  /* ramps from rest */
+    now = msteps(&m, now, 30, -50, 50);
+    EXPECT(m.status.state == MOTION_STATE_TURNING_LEFT &&
+           NEAR(m.status.left_pwm_percent, -S2_AVOID_SPIN_PWM_PERCENT) &&
+           NEAR(m.status.right_pwm_percent, S2_AVOID_SPIN_PWM_PERCENT));
+    {
+        int32_t l90 = (int32_t)(45.0f * S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_LEFT_TICKS_PER_CM)) + 1;
+        int32_t r90 = (int32_t)(45.0f * S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_RIGHT_TICKS_PER_CM)) + 1;
+        now = msteps(&m, now, 1, -(l90 - 3), r90 - 3);
+        EXPECT(m.status.state == MOTION_STATE_TURNING_LEFT);      /* half arc: not there yet */
+        now = msteps(&m, now, 1, -l90, r90 - 20);
+        EXPECT(m.status.state == MOTION_STATE_TURNING_LEFT &&     /* left done: it stops */
+               m.status.left_pwm_percent == 0.0f &&
+               NEAR(m.status.right_pwm_percent, S2_AVOID_SPIN_PWM_PERCENT));
+        now = msteps(&m, now, 1, -l90, r90);
+        EXPECT(m.status.state == MOTION_STATE_IDLE && m.status.motion_complete &&
+               m.status.left_pwm_percent == 0.0f && m.status.right_pwm_percent == 0.0f &&
+               !m.carry_valid);
+        /* Right spin: the mirror; a reversing wheel that stalls faults. */
+        motion_control_set_profile(&m, MOTION_PROFILE_SPIN);
+        cmd = (MOTION_COMMAND){MOTION_CMD_TURN_RIGHT_DEG, 90.0f};
+        EXPECT(motion_control_command(&m, &cmd, now, -l90, r90) == MOTION_RESULT_OK);
+        now = msteps(&m, now, 1, -l90 + 1, r90 - 1);
+        now = msteps(&m, now, 30, -l90 + 50, r90 - 50);
+        EXPECT(m.status.state == MOTION_STATE_TURNING_RIGHT &&
+               NEAR(m.status.left_pwm_percent, S2_AVOID_SPIN_PWM_PERCENT) &&
+               NEAR(m.status.right_pwm_percent, -S2_AVOID_SPIN_PWM_PERCENT));
+        now = msteps(&m, now, 60, -l90 + 50, r90 - 50);
+        EXPECT(m.status.state == MOTION_STATE_FAULT);
+    }
+    /* No spin PWM configured: spins are refused. */
+    cfg = alltest_config();
+    cfg.avoid_spin_pwm_percent = 0.0f;
+    EXPECT(motion_control_init(&m, &cfg, 0u, 0, 0));
+    motion_control_set_profile(&m, MOTION_PROFILE_SPIN);
+    EXPECT(motion_control_command(&m, &(MOTION_COMMAND){MOTION_CMD_TURN_LEFT_DEG, 90.0f}, 0u, 0, 0) ==
+           MOTION_RESULT_INVALID_COMMAND);
+    cfg = alltest_config();
+    cfg.avoid_spin_pwm_percent = 101.0f;
+    EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
+    cfg = alltest_config();
+
     /* Invalid profile numbers are rejected. */
     cfg.uturn_right_pwm_percent = 0.0f;
     EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
@@ -1353,6 +1407,21 @@ static void alltest_robot_tests(void)
         EXPECT(vc_start_move(&c, &req));
         EXPECT(ctl.active_profile == MOTION_PROFILE_AVOID &&
                ctl.status.active_command == MOTION_CMD_FORWARD_CM);
+        /* A turn with the spin bit runs as a spin; without it, a pivot. */
+        req.move = S5_MOVE_TURN_R;
+        req.value = 90u;
+        req.b_spin = TRUE;
+        vc_stop(&c);
+        motion_control_step(&ctl, 6001u, 0, 0);
+        EXPECT(vc_start_move(&c, &req));
+        EXPECT(ctl.active_profile == MOTION_PROFILE_SPIN &&
+               ctl.status.active_command == MOTION_CMD_TURN_RIGHT_DEG);
+        req.b_spin = FALSE;
+        vc_stop(&c);
+        motion_control_step(&ctl, 6002u, 0, 0);
+        EXPECT(vc_start_move(&c, &req));
+        EXPECT(ctl.active_profile == MOTION_PROFILE_AVOID &&
+               ctl.status.active_command == MOTION_CMD_TURN_RIGHT_DEG);
         steer_action = 1u;
         EXPECT(vc_give_back(&c));
         EXPECT(leaving_junction && junction_done == 6000u && steer_action == 0u);
