@@ -15,7 +15,10 @@ FIELDS = (
     ("barcode_letter", 80, 5, 0, 26), ("speed_valid", 85, 1, 0, 1),
     ("barcode_black", 88, 16, 0, 65535), ("barcode_white", 104, 16, 0, 65535),
     ("map_received", 86, 1, 0, 1),  # #38: a letter map has been applied
+    # #41: low 16 bits of each wheel's signed encoder count (wraps)
+    ("left_ticks", 120, 16, 0, 65535), ("right_ticks", 136, 16, 0, 65535),
 )
+TELEMETRY_BYTES = 19
 COMMANDS = {"status": 0, "pause": 1, "resume": 2, "reset-stats": 3, "reverse": 4, "start": 5}
 
 
@@ -31,8 +34,8 @@ def encode_mapping(letters):
 
 
 def decode_telemetry(payload):
-    if len(payload) not in (10, 11, 15):
-        raise ValueError("telemetry must be 10, 11, or 15 bytes")
+    if len(payload) not in (10, 11, 15, TELEMETRY_BYTES):
+        raise ValueError("telemetry must be 10, 11, 15 or 19 bytes")
     if len(payload) >= 11 and payload[10] & 0x80:  # bit 87 reserved; 86 = map
         raise ValueError("reserved telemetry bits must be zero")
     packed = int.from_bytes(payload, "little")
@@ -95,7 +98,19 @@ def encode_telemetry(values):
         if type(value) is not int or not minimum <= value <= maximum:
             raise ValueError(f"{name} must be an integer in {minimum}..{maximum}")
         packed |= (value - minimum) << offset
-    return packed.to_bytes(15, "little")
+    return packed.to_bytes(TELEMETRY_BYTES, "little")
+
+
+def ticks_signed(raw):
+    """A 16-bit tick field as int16, e.g. 65535 -> -1 (#41)."""
+    return raw - 0x10000 if raw >= 0x8000 else raw
+
+
+def ticks_delta(earlier, later):
+    """Ticks moved between two packets' 16-bit fields, across a wrap (#41).
+    Correct while a wheel moves less than 32767 ticks (~2.8 m at ~118
+    ticks/cm) between them; at 1 packet/s and <= 200 cm/s it always does."""
+    return ticks_signed((later - earlier) & 0xFFFF)
 
 
 def main():

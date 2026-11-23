@@ -1428,6 +1428,7 @@ int main(void)
     EXPECT(field(S1_FIELD_STATE) == S1_STATE_FOLLOWING);
     EXPECT(field(S1_FIELD_LINE_SENSORS) == 3);             /* wire: L bit0, C bit1 */
     EXPECT(field(S1_FIELD_DISTANCE_CM) == 10);
+    EXPECT(field(S1_FIELD_LEFT_TICKS) == 100 && field(S1_FIELD_RIGHT_TICKS) == 100); /* #41 */
     EXPECT(field(S1_FIELD_HIGHEST_HUMP_MM) == 23);
     EXPECT(field(S1_FIELD_BARCODE_BLACK) == 15 && field(S1_FIELD_BARCODE_WHITE) == 14);
     EXPECT(field(S1_FIELD_FAULTS) == 0);
@@ -1455,6 +1456,11 @@ int main(void)
     send_command(S1_COMMAND_STATUS);
     robot_control_step(&ctl, 6002, 100, 100);
     EXPECT(field(S1_FIELD_STATE) == S1_STATE_IDLE);        /* paused */
+    /* #41: raw counts go out as their low 16 bits: -5 -> 0xfffb, and
+       70000 wraps to 4464; the PC takes int16 differences. */
+    send_command(S1_COMMAND_STATUS);
+    robot_control_step(&ctl, 6003, -5, 70000);
+    EXPECT(field(S1_FIELD_LEFT_TICKS) == 0xfffb && field(S1_FIELD_RIGHT_TICKS) == 4464);
     follow(&ctl); line_stop(&ctl, 5041);
     send_command(S1_COMMAND_STATUS);
     robot_control_step(&ctl, 5042, 1, 1);

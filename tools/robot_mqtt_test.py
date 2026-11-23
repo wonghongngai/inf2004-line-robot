@@ -11,7 +11,7 @@ Needs mosquitto_sub / mosquitto_pub on PATH and the robot connected to the
 same broker. The dashboard can stay open: both subscribe at once. Tests (see
 testing/TEST_PLAN.md):
 
-  S1-U12  telemetry for --minutes: ~1 packet/s, 15 bytes, all valid, no gap > 3 s
+  S1-U12  telemetry for --minutes: ~1 packet/s, 19 bytes (#41), all valid, no gap > 3 s
   S1-U14  PAUSE / RESUME / STATUS each --repeats times; telemetry must show the
           effect within --timeout (operator confirms the wheels)
   S1-U13  stop the broker for --outage s, then restart it; then the same with
@@ -48,7 +48,8 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from mqtt_binary import COMMANDS, decode_telemetry, encode_mapping  # noqa: E402
+from mqtt_binary import (COMMANDS, TELEMETRY_BYTES, decode_telemetry,  # noqa: E402
+                         encode_mapping)
 
 STATES = ["IDLE", "FOLLOWING", "TURNING", "SCANNING", "AVOIDING", "RECOVERING",
           "FINISHED", "FAULT"]
@@ -191,13 +192,13 @@ def test_s1_u12(args, log, telemetry):
     gaps = [b - a for a, b in zip(stamps, stamps[1:])]
     max_gap = max(gaps) if gaps else float("inf")
     rate = len(stamps) / duration if duration else 0.0
-    wrong_size = sum(1 for size in sizes if size != 15)
+    wrong_size = sum(1 for size in sizes if size != TELEMETRY_BYTES)
     log(f"packets={len(stamps)} rate={rate:.2f}/s max_gap={max_gap:.2f}s "
-        f"invalid={len(invalid)} not_15_bytes={wrong_size}")
+        f"invalid={len(invalid)} not_{TELEMETRY_BYTES}_bytes={wrong_size}")
     for error in invalid[:5]:
         log(f"  invalid packet: {error}")
     ok = stamps and 0.8 <= rate <= 1.5 and max_gap <= 3.0 and not invalid and not wrong_size
-    log(f"S1-U12 {'PASS' if ok else 'FAIL'} (expect ~1/s, all 15 bytes and valid, no gap > 3 s)")
+    log(f"S1-U12 {'PASS' if ok else 'FAIL'} (expect ~1/s, all {TELEMETRY_BYTES} bytes and valid, no gap > 3 s)")
     return bool(ok)
 
 

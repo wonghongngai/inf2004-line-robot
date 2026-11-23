@@ -21,7 +21,7 @@ from mqtt_binary import (COMMANDS, decode_barcode, decode_telemetry, encode_barc
 ASSETS = Path(__file__).with_suffix("")
 EXAMPLE = dict(state=1, speed_cms=28, speed_valid=1, distance_cm=140, map_received=1,
                line_sensors=2, barcode=1, barcode_letter=6, barcode_black=15, barcode_white=14, highest_hump_mm=22, obstacle_cm=34,
-               scan_deg=90, obstacle_width_cm=16)
+               scan_deg=90, obstacle_width_cm=16, left_ticks=16492, right_ticks=16562)
 BARCODE_HISTORY = 20
 DEMO_SCANS = ("A", "F", None, "Z", "W")   # None = a rejected capture
 
@@ -77,6 +77,9 @@ class Feed:
                     "line_sensors": (2, 2, 3, 2, 6)[step % 5],
                     "obstacle_cm": 34 + step % 12,
                     "scan_deg": 60 + step % 7 * 10,
+                    # #41: ~118 ticks/cm (S2_ENC_*) at 28 cm/s, wrapping at 16 bits
+                    "left_ticks": (16492 + step * 3298) % 65536,
+                    "right_ticks": (16562 + step * 3312) % 65536,
                 }))
                 heartbeat, telemetry_at, heartbeat_at = True, now, now
                 count = step // 4 + 1           # one simulated scan every 4 s

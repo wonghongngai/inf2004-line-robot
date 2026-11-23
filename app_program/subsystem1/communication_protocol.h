@@ -2,7 +2,7 @@
 #ifndef COMMUNICATION_PROTOCOL_H
 #define COMMUNICATION_PROTOCOL_H
 
-#define S1_TELEMETRY_BYTES 15U
+#define S1_TELEMETRY_BYTES 19U
 #define S1_COMMAND_BYTES 1U
 #define S1_MAPPING_BYTES 3U
 #define S1_HEARTBEAT_BYTES 1U
@@ -16,6 +16,7 @@ typedef enum {
     S1_FIELD_SCAN_DEG, S1_FIELD_OBSTACLE_WIDTH_CM, S1_FIELD_BARCODE_LETTER,
     S1_FIELD_SPEED_VALID, S1_FIELD_BARCODE_BLACK, S1_FIELD_BARCODE_WHITE,
     S1_FIELD_MAP_RECEIVED, /* #38: 1 once a letter map has been applied */
+    S1_FIELD_LEFT_TICKS, S1_FIELD_RIGHT_TICKS, /* #41: raw encoder counts */
     S1_FIELD_COUNT
 } S1_FIELD;
 
@@ -36,6 +37,10 @@ typedef enum {
 /* 0 = no decode yet, 1..26 = A..Z. */
 #define S1_BARCODE_LETTER_MAX 26
 #define S1_BARCODE_COUNT_MAX 65535U
+/* #41: low 16 bits of S2's signed cumulative encoder count (two's
+ * complement, wraps). A receiver takes the int16 difference of two packets;
+ * this works for any S2 counter of 16 bits or more (widths: #52). */
+#define S1_TICKS_MASK 0xFFFFU
 #define S1_HUMP_MIN 0
 #define S1_HUMP_MAX 255
 #define S1_OBSTACLE_MIN 0
