@@ -231,7 +231,7 @@ is to measure real data.
 |---|---|---|
 | SYS-01 | Full course, start to finish | 3 runs in a row with no touches |
 | SYS-02 | Every barcode on the course is obeyed | all correct in SYS-01 runs |
-| SYS-03 | Highest hump reported over MQTT matches the measured height | within S4-U10's tolerance |
+| SYS-03 | Highest hump reported over MQTT matches the measured height | **Dropped 23 Nov:** the track has no hump. Hump detection and height are covered by S4-U09/U10 on the 10 mm ramp (PASS 23 Nov) |
 | SYS-04 | Obstacle avoided and line reacquired during a full run | passes in the SYS-01 runs |
 | SYS-05 | Telemetry continuous for a whole run | no gap over 3 s; final state = finished |
 | SYS-06 | Demo video | one uncut run with the console/MQTT view, linked in `videos/README.md` |
@@ -247,7 +247,7 @@ is to measure real data.
 3. **Bench (L3), in parallel:** S1-U11–U15, S2-U05–U07/U10–U11, S3-U28/U34,
    S4-U08/U11, S5-U02/U06/U43.
 4. **Integrated (L4):** INT-07–INT-10, then each buddy's L4 tests.
-5. **Track (L5) and SYS:** only after L4 passes, then SYS-01–SYS-06.
+5. **Track (L5) and SYS:** only after L4 passes, then SYS-01–SYS-06 (SYS-03 dropped: no hump on the track).
 
 At each weekly check-in, move `STATUS.md` cells only for tests that have a
 Results row with a commit hash and a saved log.
