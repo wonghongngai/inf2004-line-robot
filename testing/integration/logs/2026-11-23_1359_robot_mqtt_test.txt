@@ -1,0 +1,19 @@
+13:59:26.307  robot_mqtt_test.py broker=172.20.10.2:1883 client=group17-robot
+13:59:26.364  repo commit 8487fc2 (record the firmware's commit in TEST_LOG)
+13:59:26.370  == S1-U16 barcode result events: 5 barcodes on <id>/barcode ==
+14:00:26.437  OPERATOR: done: Boot the robot (integrated), wait for Wi-Fi + MQTT, and keep the serial console captured.
+14:00:41.967  barcode #1: 0100a603 frame=1 letter=F runs=29
+14:01:10.299  barcode #2: 0200a603 frame=2 letter=F runs=29
+14:01:29.006  barcode #3: 0300a603 frame=3 letter=F runs=29
+14:01:45.841  barcode #4: 0400a603 frame=4 letter=F runs=29
+14:02:03.367  barcode #5: 0500a603 frame=5 letter=F runs=29
+14:02:25.293  OPERATOR: done: Drive the robot over 5 barcodes (START, or push it by hand).
+14:02:25.294  waiting 5 s for late events (QoS 1 retries)
+14:02:30.329  received 5 events: 5 distinct frames (expect 5), 0 QoS 1 duplicates, 0 undecodable
+14:02:30.330  frames 1..5, letters FFFFF (? = rejected capture)
+14:02:30.331  letters expected FFFFF: match
+14:03:47.279  OPERATOR: Did the console show 5 '[S1:MQTT] barcode acked frame=' lines and no '[S3:BARCODE] ERR MQTT enqueue=' line? -> yes
+14:03:47.280  S1-U16 PASS (expect 5/5 events, frame IDs consecutive, every packet valid)
+
+14:03:47.312  SUMMARY: S1-U16 PASS
+14:03:47.312  log saved to C:\Users\Hong Ngai\Desktop\Y2S1\INF2004 Embedded Systems Programming\Project\inf2004-line-robot\testing\integration\logs\2026-11-23_1359_robot_mqtt_test.txt

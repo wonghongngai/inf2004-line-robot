@@ -45,11 +45,16 @@ are per boot, not globally unique.
 
 The dedicated queue holds four waiting events plus the radio's pending event.
 Events wait for connectivity. A full queue rejects new events and logs
-`[BARCODE MQTT] enqueue=<negative error> frame=<id>`; a successful enqueue
-is silent. Queued events are lost on reboot. Each broker acknowledgement
-logs `[BARCODE MQTT] acked frame=<id>`; it does not confirm that a
-subscriber processed the message. Builds without MQTT skip the queue
-silently. The dashboard does not subscribe to this topic yet.
+`[S3:BARCODE] ERR MQTT enqueue=<negative error> frame=<id> (queue full or
+invalid)`; a successful enqueue is silent. Queued events are lost on reboot.
+Each broker acknowledgement logs `[S1:MQTT] barcode acked frame=<id>`; it
+does not confirm that a subscriber processed the message. Builds without
+MQTT skip the queue silently. The dashboard (`tools/mqtt_dashboard.py`)
+subscribes to this topic too (`--barcode-topic` overrides it).
+
+Since S3 numbers only the results it hands to S1, a subscriber should see
+every frame number exactly once, each one more than the last (plus QoS 1
+repeats). A skipped number means an event was lost on the robot.
 
 The original #3 design used JSON text. It was changed to this binary packet
 so that every topic follows protocol v1.
@@ -60,4 +65,11 @@ Host tests (build flags live in `testing/run_host_tests.sh`):
 sh testing/run_host_tests.sh s1/   # queue, C codec, Python decoder
 ```
 
-Broker delivery still requires a connected hardware test.
+Broker delivery is tested on the robot as S1-U16 (#16):
+
+```sh
+python3 tools/robot_mqtt_test.py --broker BROKER --only S1-U16   # 5 barcodes
+```
+
+It counts distinct frames, flags gaps, reordering and undecodable packets,
+and with `--letters` checks the decoded letters in order.

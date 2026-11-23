@@ -149,5 +149,67 @@ class ProtocolTests(unittest.TestCase):
         self.assertIn(b'Rejected packet', result.stderr)
 
 
+# S1-U16 verdict (#16) in tools/robot_mqtt_test.py, fed with made-up events.
+sys.path.insert(0, str(TOOL.parent))
+spec = importlib.util.spec_from_file_location('robot_mqtt_test', ROOT / 'tools/robot_mqtt_test.py')
+robot = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(robot)
+
+
+def barcode_events(*items):
+    """(frame, letter) pairs, or a raw hex string for a bad payload."""
+    out = []
+    for item in items:
+        if isinstance(item, str):
+            try:
+                out.append((item, codec.decode_barcode(bytes.fromhex(item)), None))
+            except ValueError as error:
+                out.append((item, None, str(error)))
+        else:
+            payload = codec.encode_barcode(item[0], item[1], 29 if item[1] else 12).hex()
+            out.append((payload, codec.decode_barcode(bytes.fromhex(payload)), None))
+    return out
+
+
+class BarcodeEventCheckTests(unittest.TestCase):
+    def check(self, events, expected=3, letters=None):
+        return robot.check_barcode_events(events, expected, letters)
+
+    def test_consecutive_pass(self):
+        ok, lines = self.check(barcode_events((4, 'A'), (5, 'Z'), (6, None)), 3, 'AZ?')
+        self.assertTrue(ok, lines)
+
+    def test_wrap_and_duplicate_pass(self):
+        ok, lines = self.check(barcode_events((65535, 'A'), (65535, 'A'), (0, 'B'), (1, 'C')))
+        self.assertTrue(ok, lines)
+        self.assertIn('1 QoS 1 duplicates', lines[0])
+
+    def test_gap_fails(self):
+        ok, lines = self.check(barcode_events((1, 'A'), (3, 'A'), (4, 'A')))
+        self.assertFalse(ok)
+        self.assertTrue(any('GAP: frame 1 -> 3 (1 event(s) lost)' in l for l in lines), lines)
+
+    def test_out_of_order_fails(self):
+        ok, lines = self.check(barcode_events((2, 'A'), (1, 'A'), (3, 'A')))
+        self.assertFalse(ok)
+        self.assertTrue(any('OUT OF ORDER' in l for l in lines), lines)
+
+    def test_missing_and_extra_fail(self):
+        self.assertFalse(self.check(barcode_events((1, 'A'), (2, 'A')))[0])
+        self.assertFalse(self.check(barcode_events((1, 'A'), (2, 'A'), (3, 'A'), (4, 'A')))[0])
+
+    def test_bad_payload_and_conflict_fail(self):
+        self.assertFalse(self.check(barcode_events((1, 'A'), '0100ba', (2, 'A'), (3, 'A')))[0])
+        self.assertFalse(self.check(barcode_events((1, 'A'), '010000fc', (2, 'A'), (3, 'A')))[0])
+        ok, lines = self.check(barcode_events((1, 'A'), (1, 'B'), (2, 'A'), (3, 'A')))
+        self.assertFalse(ok)
+        self.assertTrue(any('CONFLICT: frame 1' in l for l in lines), lines)
+
+    def test_letter_mismatch_fails(self):
+        ok, lines = self.check(barcode_events((1, 'A'), (2, 'B'), (3, 'C')), 3, 'ABD')
+        self.assertFalse(ok)
+        self.assertIn('MISMATCH', lines[-1])
+
+
 if __name__ == '__main__':
     unittest.main()
