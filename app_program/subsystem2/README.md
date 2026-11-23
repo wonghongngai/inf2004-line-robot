@@ -11,7 +11,7 @@ and in the `integrated` image it also runs the Vehicle Controller
 | `drv_encoder.c/.h` | Wheel encoder input driver |
 | `wheel_odometry.h` | Ticks to millimetres, shared by the motor-owning tasks |
 | `motion_control.c/.h` | Hardware-independent motion logic (moves, pivots, PID, stall checks) |
-| `motion_protocol.h` | S2 interface v1: packed command/status bytes |
+| `motion_protocol.h` | S2 interface v2: 5-byte command, 12-byte status (field widths from measurements, #52); the width constants are the reference for any packet carrying S2 numbers |
 | `task_motion.c` | The motion RTOS task: motor writes, encoder reads, command queue |
 | `robot_control.c/.h` | Vehicle Controller for the `integrated` image |
 | `subsystem2.c/.h` | Kernel objects, public API (`subsystem2_send_command()`), calibration constants |

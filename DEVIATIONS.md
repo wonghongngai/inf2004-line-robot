@@ -42,7 +42,7 @@ Three requirement changes came from the instructor after Week 6; only the minimu
 | --- | --- | --- | --- | --- | --- |
 | M1 | WU p3: barcodes A to D map to fixed commands; W6 FR3-3 decodes "navigation barcodes" | Prof, 13 Nov: decode all A to Z in both directions; store the letter; act at the next cross-junction; the 4-letter map is sent PC to car over MQTT just before the demo and must not be hard-coded | Decoder handles A to Z both ways and "store, act at junction" (host tests S3-U07, S3-U26). Map hard-coded: integrated A,B,C,Z; all_test A,F,Z,W and logs "MQTT map ignored" | Partial | #38 |
 | M2 | WU p8, W6 FR4-3: detect collision with the IMU; W6 system statechart: collision triggers Emergency Stop | Prof, 13 Nov: IMU collision detection removed; lifting the robot must stop the motors; no detailed lift or overturn classification | Collision detection removed (21 Nov). Lift check: 200 ms average of the Z deviation from the baseline ≥ 200 mg for 60 ms; it stops the robot in both builds and the stop latches. Host tests pass; S4-U12 on the robot passed 21 Nov (7/7 lifts stopped, 0 false stops in 6 hump runs) | Matches | #53 |
-| M3 | W6 data passed as plain structs and floats | PT curveball: minimum-bit data representation (CR1) | Done for S1 telemetry (80 bits), S3 messages (3 bytes), S2 motion protocol (5-byte command), S5 request word; S4 still the "PRE" version; S2 numeric widths provisional | Partial | #25 (S4-U14), #52. S5 distance: 9-bit cm on the wire, mm inside S5 (#54, decided 20 Nov) |
+| M3 | W6 data passed as plain structs and floats | PT curveball: minimum-bit data representation (CR1) | Done for S1 telemetry (80 bits), S3 messages (3 bytes), S2 motion protocol (5-byte command, 12-byte status with widths decided from measurements 23 Nov, #52), S5 request word; S4 still the "PRE" version | Partial | #25 (S4-U14), #52. S5 distance: 9-bit cm on the wire, mm inside S5 (#54, decided 20 Nov) |
 
 For M1, the team decided that before a map arrives the robot goes straight at junctions.
 
@@ -89,7 +89,7 @@ Motor and encoder drivers follow the PT design, but PID control is not tuned, re
 | B2-4 | FR2-3 / NFR2-1 straight-line correction | Encoder trim in `all_buddies_test.c` only (`ab62be5`); not in the integrated controller | Partial | #8, #19 (S2-U08) |
 | B2-5 | FR2-4 forward, turn, stop; WU p6 required APIs include `moveBackward(distance)` | Commands: FORWARD_CM, TURN_LEFT_DEG, TURN_RIGHT_DEG, STOP, RESET_FAULT, FOLLOW_LINE. "There is intentionally no backwards command" (W6 §8.1 dropped it on AI advice) | Changed, now reversed by team decision | #39 |
 | B2-6 | NFR2-1 to NFR2-3 measurable tolerances (W6 gap marked "Fixed") | Thresholds agreed 20 Nov in `TEST_PLAN.md` (S2-U07 to U13); NFR2 wording itself not yet updated | Partial | #6 (`DECISIONS.md`) |
-| B2-7 | PT: encoder counter widths decided from measured range (CR1) | `motion_protocol.h` widths marked provisional; other subsystems not yet migrated to the packed status | Partial | #52 |
+| B2-7 | PT: encoder counter widths decided from measured range (CR1) | Done 23 Nov (#52, S2-U14): widths from the robot logs, status 30 → 12 bytes, "provisional" removed. Other subsystems not yet migrated to the packed status | Partial | #52 (widths); migration open |
 | B2-8 | WU deliverables: motion library, PID tuning report, motion accuracy evaluation | Library exists; no report or evaluation | Missing | #56 |
 
 ## Buddy 3: Line following and barcode
