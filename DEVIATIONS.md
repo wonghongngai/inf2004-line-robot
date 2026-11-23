@@ -25,7 +25,7 @@ The source documents are not in this repo. Each row gives the planned item, what
 | --- | --- | --- | --- |
 | 1 | Barcode letter-to-movement map: no longer hard-coded; both builds apply the MQTT map and go straight until it arrives; telemetry bit 86 reports it (21 Nov, host-tested). A–Z on the robot not tested by decision (21 Nov, `DECISIONS.md`): only A was scanned on the robot | Partial | #38 |
 | 2 | IMU collision detection removed and the lift-stop built (#53, 21 Nov); host-tested; S4-U12 passed on the robot 21 Nov | Mandated | #53 |
-| 3 | Obstacle detection distance is 20 cm, NFR5-1 requires at least 30 cm | Changed, decided 20 Nov: keep 20 cm | #64 (`DECISIONS.md`); S5-U40 in #31 |
+| 3 | Obstacle detection distance is 20 cm, NFR5-1 requires at least 30 cm | Changed, decided 20 Nov: keep 20 cm | #64 (`DECISIONS.md`); S5-U48 in #31 |
 | 4 | All recent tuning lives in `all_test`; the `integrated` firmware (the Week 6 architecture) is untested on the robot | Changed | Decided 13 Nov: integrated is final (#4); port the tuning (#8) |
 | 5 | Task priorities inverted: Week 6 made S5 the highest, the code makes it the lowest (20) | Changed, decided 20 Nov: keep | #66 (`DECISIONS.md`); S1-U17 PASS 22 Nov (#15), S2-U12 still to record (#19) |
 | 6 | No reverse motion, though WU requires `moveBackward` and the S5 planner can choose REVERSE | Missing | #39 |
@@ -131,14 +131,14 @@ The full scan, profile, plan and bypass pipeline exists, but the detection dista
 | ID | Requirement (source) | Current code | Type | Follow-up |
 | --- | --- | --- | --- | --- |
 | B5-1 | FR5-1 coarse scan at 30, 60, 90, 120, 150 deg (W6, WU) | 50, 70, 90, 110, 130 deg; scan range narrowed to 50 to 130 deg on 5 Nov because the sensor holder cannot reach 30 or 150 deg. Decided 20 Nov: FR5-1 updated to match. The S5 test log says NFR5-2/NFR5-3 were dropped; they were not, and must be re-measured | Changed | #65 (`DECISIONS.md`); NFR5-2 re-test in #29 |
-| B5-2 | NFR5-1 detect at 30 cm or more, rest at least 10 cm away | `D_DETECT_MM` 200 mm since 7 Nov, for the turn-and-box bypass. Decided 20 Nov: keep 20 cm; NFR5-1 becomes detect at 20 cm or more, rest at least 10 cm away. Buddy 5 still has to record the original reason | Changed | #64 (`DECISIONS.md`); S5-U40 (#31) |
+| B5-2 | NFR5-1 detect at 30 cm or more, rest at least 10 cm away | `D_DETECT_MM` 200 mm since 7 Nov, for the turn-and-box bypass. Decided 20 Nov: keep 20 cm; NFR5-1 becomes detect at 20 cm or more, rest at least 10 cm away. Buddy 5 still has to record the original reason | Changed | #64 (`DECISIONS.md`); S5-U48 (#31) |
 | B5-3 | FR5-2 return to the region and scan in 5 deg steps | Smooth glide with a ping every 5 deg, window capped by `FINE_BUDGET_POINTS` | Matches | None |
 | B5-4 | NFR5-3 detection to action within 2 s | Limit dropped for a smooth fine scan in the 5 Nov scan rework (the `FINE_BUDGET_POINTS` cap is gone); S5-U06 retired 22 Nov by the S5 owner (#29). Last result FAIL, 2299 ms (1 Nov). The bench image prints the time for information | Dropped | — |
 | B5-5 | NFR5-6 closest point within 2 cm over 5 to 100 cm | Hardware-timed echo since 27 Oct. Decided 22 Nov by the S5 owner (#29): S5-U02 checks 5 / 15 / 30 / 45 / 60 cm only (100 cm dropped) and passes when > 90 % of readings are within ±5 cm. PASS on that rule; ±2 cm is not met (5 cm spikes, ~2 cm short at 45 cm) | Changed (range and tolerance) | — |
 | B5-6 | FR5-3 profile location, width, closest point, side clearances | Implemented; on-target tests S5-U31 to U38 written, no recorded results | Unverified | #28 |
 | B5-6a | FR5-3 width of the obstacle | S5-U07 (22 Nov): closest point and centre correct, but flat boxes under-read (160 mm → 35–100 mm); marked done by the S5 owner because the test box has angled sides | Accepted (owner) | — |
 | B5-7 | FR5-4 choose avoidance moves; WU p9 options include reverse and reattempt | Turn-and-box bypass (S5-U35). Planner can choose REVERSE (`MAX_RETRIES` 2), but S5 can only request forward and turn moves | Partial | #39 |
-| B5-8 | FR5-5 / NFR5-4 reacquire the line within 50 cm and hand back | Recovery implemented; distance never measured; works in all_test only | Unverified | #31 (S5-U42), #8 |
+| B5-8 | FR5-5 / NFR5-4 reacquire the line within 50 cm and hand back | Recovery implemented; distance never measured; works in all_test only | Unverified | #31 (S5-U41, U42), #8 |
 | B5-9 | W6 A5-1: only objects inside the robot's corridor count | Corridor filter exists, with `ROBOT_WIDTH_MM` 150 and `PASS_MARGIN_MM` 50 left unmeasured: decided 22 Nov by the S5 owner that the track will be open, so there is no corridor to calibrate (#45 closed, not planned) | Accepted (owner) | — |
 | B5-10 | W6 A5-2 and PT next actions: ignore readings while tilted, hold after tilt clears, check distance rate of change | S5 never reads the IMU | Missing | #44 |
 | B5-11 | W6 statechart 5: CALIBRATE self-test; SAFE_STOP faults CAL_FAIL, NO_PATH, LINE_LOST sent to telemetry | Self-test done (#47). CAL_FAIL, NO_PATH and LINE_LOST are sent in a 3-bit telemetry field at bits 8–10 (23 Nov, #46). The battery field was removed to make room (nothing measured it); the barcode counters stay 16 bits. Host-tested only; not yet seen on the robot | Changed, host-tested | #46, #47 |
@@ -175,7 +175,7 @@ The evidence rules from the template are mostly not followed yet, and two assess
 Each "Changed" row needs either a recorded justification for Tribunal 2 or a return to the original plan. These ten need a team decision first. The reasons for each decision are in [DECISIONS.md](DECISIONS.md):
 
 - [x] Final firmware: `integrated` (the Week 6 architecture) or `all_test` (A4, #4). Decided 13 Nov: integrated is final; all_test is a test harness only
-- [x] Obstacle detection at 20 cm or back to the required 30 cm (B5-2, #64). Decided 20 Nov: keep 20 cm, if S5-U40 shows a rest ≥ 10 cm away
+- [x] Obstacle detection at 20 cm or back to the required 30 cm (B5-2, #64). Decided 20 Nov: keep 20 cm, if S5-U48 shows a rest ≥ 10 cm away
 - [x] Update FR5-1 to the 50 to 130 deg scan, or restore 30 to 150 deg (B5-1, #65). Decided 20 Nov: FR5-1 updated to 50 to 130 deg
 - [x] Record why S5 is now the lowest-priority task and the Wi-Fi service the highest (A1, B1-6, #66). Decided 20 Nov: keep; loop lateness measured 22 Nov (S1-U17: 0 late), S2-U12 still to record
 - [x] Tilt: stop the robot, or report only as `TRIBUNAL_STATUS.md` says (B4-6, #67). Decided 20 Nov: report only

@@ -198,14 +198,14 @@ is to measure real data.
 | ID | What | Level | How | Pass when |
 |---|---|---|---|---|
 | S5-U45 | Obstacle logic on the PC (was listed here as S5-U39, but that ID is the telemetry word in the TEST_LOG) | L1 | Host test `s5/obstacle_logic`: the real `subsystem5_test.c` + `obstacle_logic.c` + `drv_servo.c`, kernel and PWM stubbed (`testing/subsystem5/s5_host_stubs.h`) | same checks as on target; runs in seconds. **PASS 22 Nov (#30)** |
-| S5-U40 | Detect at ≥ 30 cm and stop ≥ 10 cm from the obstacle (NFR5-1) | L4 | 10 approaches to a box at cruise speed | 10/10 detected at ≥ 30 cm, stopped ≥ 10 cm away |
-| S5-U41 | Avoids a box | L4 | Box centred, offset left and offset right, 5 runs each | 15/15 pass without touching it |
+| S5-U48 | Detect at ≥ 20 cm and stop ≥ 10 cm from the obstacle (NFR5-1 as changed by #64, 20 Nov; was ≥ 30 cm). Was listed here as S5-U40, but that ID is the obstacle-telemetry test in the TEST_LOG (#40, PASS 22 Nov) | L4 | 10 approaches to a box on the line at cruise speed, `integrated` image; read the detection distance from `OBSTACLE at … mm`, measure the rest distance by hand | 10/10 detected at ≥ 20 cm, at rest ≥ 10 cm from the box. If it fails: restore 30 cm and set `BYPASS_MIN_GAP_MM` to 150 (`DECISIONS.md` #64), then re-run U48 and U41 |
+| S5-U41 | Avoids a box (replaces INT-S5-01's bypass part in `integrated`) | L4 | Box centred, offset 5 cm left and 5 cm right, 5 runs each, filmed, `integrated` image | 15/15 pass without touching it and hand back (`RESUME line following`) |
 | S5-U42 | Reacquires the line within 50 cm (NFR5-4) | L4 | Same runs as U41; mark where the line is reacquired | 15/15 within 50 cm |
 | S5-U43 | Ignores invalid readings (NFR5-5) | L3 | Point at open space and very close (< 2 cm); the soft-target case was retired 22 Nov (#29) | never the only basis of a decision; logged as invalid |
 | S5-U46 / U47 | Start-up self-test (#47, W6 CALIBRATE → CAL_FAIL → SAFE_STOP): decision logic, then 9 boots on the robot (wired, open space, unplugged, replugged) | L1 + L3 | `run_host_tests.sh s5/`; bench with `integrated` | unplugged sensor → SAFE STOP and no wheel motion after START. **PASS 22 Nov** |
 | S5-U44 | Hump is not treated as an obstacle (A5-2) | L4 | 10 hump passes with S5 active | 0 false obstacle stops. **Dropped 22 Nov (#44):** the hump is too small to matter and the ultrasonic sits above its height |
 
-**Done when:** U01–U44 pass, and avoidance works in integrated mode (INT-10).
+**Done when:** U01–U48 pass (except retired or dropped ones), and avoidance works in integrated mode (INT-10).
 
 ---
 
