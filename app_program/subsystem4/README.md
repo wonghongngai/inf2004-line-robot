@@ -27,8 +27,9 @@ telemetry.
   one-side ramp: every decision uses the 200 ms (10-sample) average of the
   forward axis; a hump starts when it holds >= 30 mg for 200 ms while the
   wheels turn, the climb is counted from the last level sample, and it ends
-  after 200 ms within +-20 mg (timeout 5 s). The height factor is a
-  provisional 1/1 until refitted on the robot (#27 step 5). The tilt
+  after 200 ms within +-20 mg (timeout 5 s). The height factor is
+  4/3, refitted on the robot from eight climbs (#27 step 5); no hump may start
+  for 500 ms after the wheels start from a standstill. The tilt
   threshold `S4_TILT_DELTA_MG` is still a placeholder (S4-U08, issue #25).
 - The hump height estimator keeps the climb height after the descent; the
   host test `s4/hump_height` expects 0. Decision pending (#5).

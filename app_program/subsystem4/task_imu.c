@@ -27,6 +27,12 @@
    before: braking at a stop jolts the forward axis while the 100 ms
    movement hold still says "moving" (4 false humps at PAUSE, 23 Nov). */
 #define S4_HUMP_ENTRY_MOVING_SAMPLES 2U
+/* Pulling away from rest tips the robot back: the 200 ms average went to
+   -40..-59 mg for ~14 samples after START and gave false humps on 2 of 3
+   flat runs (23 Nov, 17:57 and 17:58). No hump may start for 500 ms after
+   the wheels start turning from a standstill (no distance for the
+   100 ms movement hold). */
+#define S4_HUMP_START_BLANK_SAMPLES 25U   /* 500 ms */
 #define S4_HUMP_FILTER_SAMPLES 10U        /* 200 ms moving average (was 3) */
 #define S4_HUMP_EXIT_FLAT_MG S4_HUMP_SETTLE_MG
 #define S4_HUMP_EXIT_FLAT_SAMPLES 10U     /* 200 ms (was 4: noise dips ended humps mid-climb) */
@@ -34,11 +40,16 @@
  * Height factor. 25/11 was fitted when the detector measured only the middle
  * of the climb (it confirmed late and ended early); with the climb counted
  * from level ground to level ground the raw rise of the 10 mm ramp already
- * came to 7.6-9.4 mm before the old events fired. Provisional 1/1: refit on
- * the robot (#27 step 5) before S4-U10 is scored.
+ * came to 7.6-9.4 mm before the old events fired. Reset to 1/1, then refitted
+ * on the robot (#27 step 5, 23 Nov): three whole climbs of the 10 mm ramp
+ * read 6, 6, 8 mm at 1/1 (17:54-17:57) and five earlier climbs, cut short
+ * by the recording, at least 7, 7, 8, 9, 7 mm. Mean 7.25 mm -> 1.38; 4/3
+ * puts all eight within +-2 mm in the PC replay (3/2, fitted on the last
+ * three alone, is +4 on one earlier climb). S4-U10 is scored on fresh
+ * passes with this factor.
  */
-#define S4_HEIGHT_CAL_NUM 1
-#define S4_HEIGHT_CAL_DEN 1
+#define S4_HEIGHT_CAL_NUM 4
+#define S4_HEIGHT_CAL_DEN 3
 typedef enum {
     HUMP_IDLE = 0,
     HUMP_FIRST_SLOPE,
@@ -74,6 +85,7 @@ LOCAL BOOL hump_armed;
 LOCAL UW hump_rearm_count;
 LOCAL UW movement_hold_samples;
 LOCAL UW entry_moving_samples;   /* S4_HUMP_ENTRY_MOVING_SAMPLES hold */
+LOCAL UW start_blank_samples;    /* S4_HUMP_START_BLANK_SAMPLES after a start */
 LOCAL int64_t hump_entry_height_milli_mm;   /* climb since level ground, before entry */
 LOCAL INT hump_climb_sign;                  /* its direction, 0 on level ground */
 
@@ -1088,6 +1100,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
     hump_rearm_count = 0U;
     movement_hold_samples = 0U;
     entry_moving_samples = 0U;
+    start_blank_samples = 0U;
     reset_hump_detector();
     reset_height_tracker();
     reset_lift_detector();
@@ -1120,6 +1133,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
             hump_rearm_count = 0U;
             movement_hold_samples = 0U;
             entry_moving_samples = 0U;
+            start_blank_samples = 0U;
             hump_sum = 0;
             hump_next = 0U;
             hump_count = 0U;
@@ -1174,7 +1188,14 @@ EXPORT void imu_task(INT stacd, void *exinf)
             pitch_deg = estimate_pitch_deg(dy);
 
             distance_mm = subsystem4_take_distance_mm();
+            if (start_blank_samples > 0U) {
+                start_blank_samples--;
+            }
             if (distance_mm > 0U) {
+                if (movement_hold_samples == 0U) {
+                    /* Starting from a standstill: blank hump starts. */
+                    start_blank_samples = S4_HUMP_START_BLANK_SAMPLES;
+                }
                 movement_hold_samples = S4_MOVEMENT_HOLD_SAMPLES;
                 entry_moving_samples = S4_HUMP_ENTRY_MOVING_SAMPLES;
             } else {
@@ -1238,7 +1259,8 @@ EXPORT void imu_task(INT stacd, void *exinf)
 #endif
                 hump_completed = update_hump(
                     hump_dy,
-                    entry_moving_samples > 0U,
+                    (entry_moving_samples > 0U &&
+                     start_blank_samples == 0U) ? TRUE : FALSE,
                     distance_mm,
                     &completed_hump_peak);
                 hump_is_active = (hump_state.phase != HUMP_IDLE);

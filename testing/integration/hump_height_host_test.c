@@ -172,6 +172,11 @@ static void hump_detector_checks(void)
     assert(S4_HUMP_ENTRY_CONFIRM_SAMPLES > 4u);
     assert(S4_HUMP_EXIT_FLAT_SAMPLES >= 10u);
     assert(S4_HUMP_TIMEOUT_SAMPLES * S4_SAMPLE_PERIOD_MS >= 2000u);
+    /* Pulling away from rest read -40..-59 mg for ~14 samples (280 ms)
+       on the 17:57/17:58 flat runs: the start blank must outlast it. */
+    assert(S4_HUMP_START_BLANK_SAMPLES * S4_SAMPLE_PERIOD_MS >= 400u);
+    /* Refit 23 Nov from eight climbs of the 10 mm ramp (mean 7.25 mm at 1/1). */
+    assert(S4_HEIGHT_CAL_NUM == 4 && S4_HEIGHT_CAL_DEN == 3);
 
     /* Entry needs the average at >= S4_HUMP_ENTRY_MG for the whole
        confirmation count: one sample short is not a hump. */
