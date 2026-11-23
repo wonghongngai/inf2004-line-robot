@@ -144,6 +144,108 @@ static void lift_checks(void)
     assert(!update_lift(BASE_Z, BASE_Z, NULL) && !lift_reported && lift_confirm == 0u);
 }
 
+/* #27 (23 Nov): hump detector rules tuned on the 10 mm one-side ramp.
+   update_hump() takes the 10-sample average; values here stand for it. */
+static void hump_fresh(void)
+{
+    hump_armed = TRUE; hump_rearm_count = 0U;
+    reset_hump_detector(); reset_height_tracker();
+}
+
+static BOOL feed(unsigned count, W mg, BOOL moving, UW dist)
+{
+    W peak = 0;
+    BOOL done = FALSE;
+    for (unsigned i = 0; i < count; ++i)
+        done = update_hump(mg, moving, dist, &peak) || done;
+    return done;
+}
+
+static void hump_detector_checks(void)
+{
+    /* Bounds measured from the 23 Nov S4_TRACE logs (testing/subsystem4/logs/
+       2026-11-23_hump_capture_S4.txt, _s4u09_ramp_passes_S4.txt, _s4u09_ramp_flat_S4.txt):
+       on 16 s of flat driving the 10-sample average stayed >= 30 mg for at
+       most 4 samples; ramp climbs held 40-90 mg for 59-89 samples (1.2-1.8 s). */
+    assert(S4_HUMP_FILTER_SAMPLES >= 10u);
+    assert(S4_HUMP_ENTRY_MG <= 40);
+    assert(S4_HUMP_ENTRY_CONFIRM_SAMPLES > 4u);
+    assert(S4_HUMP_EXIT_FLAT_SAMPLES >= 10u);
+    assert(S4_HUMP_TIMEOUT_SAMPLES * S4_SAMPLE_PERIOD_MS >= 2000u);
+    /* Pulling away from rest read -40..-59 mg for ~14 samples (280 ms)
+       on the 17:57/17:58 flat runs: the start blank must outlast it. */
+    assert(S4_HUMP_START_BLANK_SAMPLES * S4_SAMPLE_PERIOD_MS >= 400u);
+    /* Refit 23 Nov from eight climbs of the 10 mm ramp (mean 7.25 mm at 1/1). */
+    assert(S4_HEIGHT_CAL_NUM == 4 && S4_HEIGHT_CAL_DEN == 3);
+
+    /* Entry needs the average at >= S4_HUMP_ENTRY_MG for the whole
+       confirmation count: one sample short is not a hump. */
+    hump_fresh();
+    assert(!feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES - 1u, 60, TRUE, 2));
+    assert(hump_state.phase == HUMP_IDLE);
+    feed(1, 0, TRUE, 2);
+    assert(!feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES - 1u, 60, TRUE, 2));
+    assert(hump_state.phase == HUMP_IDLE);
+    feed(1, 60, TRUE, 2);
+    assert(hump_state.phase == HUMP_FIRST_SLOPE && hump_state.first_sign == 1);
+
+    /* Only while the wheels turn: braking at a stop (no distance) never
+       starts one, however long the jolt lasts. */
+    hump_fresh();
+    assert(!feed(50, 400, FALSE, 0));
+    assert(hump_state.phase == HUMP_IDLE);
+
+    /* The climb is counted from the last level sample, not from the
+       confirmation: 20 samples at 25 mg (below entry) then the 10 that
+       confirm at 60 mg, 2 mm each. */
+    hump_fresh();
+    feed(20, 25, TRUE, 2);
+    feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES, 60, TRUE, 2);
+    assert(hump_state.phase == HUMP_FIRST_SLOPE);
+    assert(hump_entry_height_milli_mm ==
+           20 * 2 * 25 + (int64_t)S4_HUMP_ENTRY_CONFIRM_SAMPLES * 2 * 60);
+
+    /* ... and restarts on level ground (|avg| <= S4_HUMP_SETTLE_MG) ... */
+    hump_fresh();
+    feed(20, 25, TRUE, 2);
+    feed(1, S4_HUMP_SETTLE_MG, TRUE, 2);
+    feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES, 60, TRUE, 2);
+    assert(hump_entry_height_milli_mm ==
+           (int64_t)S4_HUMP_ENTRY_CONFIRM_SAMPLES * 2 * 60);
+
+    /* ... or when the slope changes direction. */
+    hump_fresh();
+    feed(20, -25, TRUE, 2);
+    feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES, 60, TRUE, 2);
+    assert(hump_entry_height_milli_mm ==
+           (int64_t)S4_HUMP_ENTRY_CONFIRM_SAMPLES * 2 * 60);
+
+    /* The end needs S4_HUMP_EXIT_FLAT_SAMPLES level samples in a row: a
+       noise dip on the climb (the 6 mm pass, 23 Nov) does not end it. */
+    hump_fresh();
+    feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES, 60, TRUE, 2);
+    assert(!feed(S4_HUMP_EXIT_FLAT_SAMPLES - 1u, 15, TRUE, 2));
+    assert(!feed(1, 50, TRUE, 2));
+    assert(hump_state.phase == HUMP_FIRST_SLOPE);
+    assert(!feed(S4_HUMP_EXIT_FLAT_SAMPLES - 1u, 15, TRUE, 2));
+    assert(feed(1, 15, TRUE, 2));
+    assert(hump_state.phase == HUMP_IDLE && !hump_armed);
+
+    /* Not re-armed until S4_HUMP_REARM_FLAT_SAMPLES level samples. */
+    assert(!feed(S4_HUMP_REARM_FLAT_SAMPLES - 1u, 0, TRUE, 2) && !hump_armed);
+    feed(1, 0, TRUE, 2);
+    assert(hump_armed);
+
+    /* A climb that never levels off (robot stalled on the ramp) times out
+       after S4_HUMP_TIMEOUT_SAMPLES with no event. */
+    hump_fresh();
+    feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES, 60, TRUE, 2);
+    assert(!feed(S4_HUMP_TIMEOUT_SAMPLES, 60, FALSE, 0));
+    assert(hump_state.phase == HUMP_FIRST_SLOPE);
+    assert(!feed(1, 60, FALSE, 0));
+    assert(hump_state.phase == HUMP_IDLE && !hump_armed);
+}
+
 int main(void)
 {
     reset_hump_detector(); reset_height_tracker();
@@ -288,6 +390,8 @@ int main(void)
     dly_result = E_OK;
     puts("IMU dropout (S4-U17): exponential back-off, bus recovery every 3rd failure, ~1 error line/s, data invalid, spin-wait when the kernel cannot block PASS");
 
+    hump_detector_checks();
+    puts("Hump detector (#27): 200 ms entry confirmation, only while moving, climb counted from level ground, 200 ms level to end, re-arm, stall timeout PASS");
     puts("Hump height/odometry: fractional rise, descent, sign, bounds, missing calibration and validity PASS");
     puts("IMU lift (#53): vibration and single spikes ignored; pick-up and tilted hold detected after the filter and confirmation delay; window warm-up; release re-arms PASS");
     return 0;

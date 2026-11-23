@@ -21,13 +21,35 @@
 #endif
 /* Sample counts at S4_SAMPLE_PERIOD_MS = 20 ms (halved 20 Nov from the 10 ms values). */
 #define S4_HUMP_REARM_FLAT_SAMPLES 25U     /* 500 ms */
-#define S4_HUMP_ENTRY_CONFIRM_SAMPLES 3U  /* 60 ms (5 at 10 ms) */
+#define S4_HUMP_ENTRY_CONFIRM_SAMPLES 10U /* 200 ms (was 3: noise passed it) */
 #define S4_MOVEMENT_HOLD_SAMPLES 5U       /* 100 ms */
-#define S4_HUMP_FILTER_SAMPLES 3U         /* 60 ms moving average (5 at 10 ms) */
-#define S4_HUMP_EXIT_FLAT_MG 40
-#define S4_HUMP_EXIT_FLAT_SAMPLES 4U      /* 80 ms */
-#define S4_HEIGHT_CAL_NUM 25
-#define S4_HEIGHT_CAL_DEN 11
+/* A hump may only start while the wheels turned this sample or the one
+   before: braking at a stop jolts the forward axis while the 100 ms
+   movement hold still says "moving" (4 false humps at PAUSE, 23 Nov). */
+#define S4_HUMP_ENTRY_MOVING_SAMPLES 2U
+/* Pulling away from rest tips the robot back: the 200 ms average went to
+   -40..-59 mg for ~14 samples after START and gave false humps on 2 of 3
+   flat runs (23 Nov, 17:57 and 17:58). No hump may start for 500 ms after
+   the wheels start turning from a standstill (no distance for the
+   100 ms movement hold). */
+#define S4_HUMP_START_BLANK_SAMPLES 25U   /* 500 ms */
+#define S4_HUMP_FILTER_SAMPLES 10U        /* 200 ms moving average (was 3) */
+#define S4_HUMP_EXIT_FLAT_MG S4_HUMP_SETTLE_MG
+#define S4_HUMP_EXIT_FLAT_SAMPLES 10U     /* 200 ms (was 4: noise dips ended humps mid-climb) */
+/*
+ * Height factor. 25/11 was fitted when the detector measured only the middle
+ * of the climb (it confirmed late and ended early); with the climb counted
+ * from level ground to level ground the raw rise of the 10 mm ramp already
+ * came to 7.6-9.4 mm before the old events fired. Reset to 1/1, then refitted
+ * on the robot (#27 step 5, 23 Nov): three whole climbs of the 10 mm ramp
+ * read 6, 6, 8 mm at 1/1 (17:54-17:57) and five earlier climbs, cut short
+ * by the recording, at least 7, 7, 8, 9, 7 mm. Mean 7.25 mm -> 1.38; 4/3
+ * puts all eight within +-2 mm in the PC replay (3/2, fitted on the last
+ * three alone, is +4 on one earlier climb). S4-U10 is scored on fresh
+ * passes with this factor.
+ */
+#define S4_HEIGHT_CAL_NUM 4
+#define S4_HEIGHT_CAL_DEN 3
 typedef enum {
     HUMP_IDLE = 0,
     HUMP_FIRST_SLOPE,
@@ -62,7 +84,10 @@ LOCAL BOOL tilt_reported;
 LOCAL BOOL hump_armed;
 LOCAL UW hump_rearm_count;
 LOCAL UW movement_hold_samples;
-LOCAL int64_t hump_entry_height_milli_mm;
+LOCAL UW entry_moving_samples;   /* S4_HUMP_ENTRY_MOVING_SAMPLES hold */
+LOCAL UW start_blank_samples;    /* S4_HUMP_START_BLANK_SAMPLES after a start */
+LOCAL int64_t hump_entry_height_milli_mm;   /* climb since level ground, before entry */
+LOCAL INT hump_climb_sign;                  /* its direction, 0 on level ground */
 
 /* Lift check (#53): moving average of the clipped Z deviation and the
  * consecutive-sample count. */
@@ -103,6 +128,7 @@ LOCAL void reset_hump_detector(void)
     hump_state.entry_sign = 0;
     hump_state.entry_samples = 0U;
     hump_entry_height_milli_mm = 0;
+    hump_climb_sign = 0;
 }
 
 LOCAL void reset_height_tracker(void)
@@ -112,6 +138,166 @@ LOCAL void reset_height_tracker(void)
     current_height_milli_mm = 0;
     height_distance_seen = FALSE;
 }
+
+/*
+ * Hump capture build (#27 step 2, `sh build.sh integrated S4_TRACE=1`).
+ *
+ * Every calibrated sample goes into a RAM ring. When a hump measurement ends
+ * (event, timeout, or a lift) the last S4_TRACE_LEN samples are copied out
+ * and printed S4_TRACE_PER_LINE per cycle, so nothing is printed while the
+ * hump is being measured. While moving on level ground a noise line is
+ * printed every S4_PRINT_PERIOD_SAMPLES samples (S4-U08 driving noise).
+ * Off (0) in every normal build; the per-sample HUMP ACTIVE / HUMP DEBUG
+ * lines are left out of trace builds because the trace already holds them.
+ *
+ *   HT#k <why> len=N cols=n,ph,mv,raw,f,d,h,s,cyc
+ *   HT#k n,ph,mv,raw,f,d,h,s,cyc;...    (oldest first)
+ *   HT noise n=50 f=min..max |f|=mean raw=min..max
+ *
+ * n = sample number (low 16 bits), ph = hump phase after the sample
+ * (0 idle, 1 first slope, 2 opposite, 3 settling, 8 not armed, 9 lifted),
+ * mv = moving, raw = forward dy (mg), f = filtered dy (or the lift deviation
+ * when ph = 9), d = wheel distance this sample (mm), h = peak height (mm),
+ * s = settle count, cyc = previous cycle time (ms).
+ */
+#ifndef S4_HUMP_TRACE
+#define S4_HUMP_TRACE 0
+#endif
+#if S4_HUMP_TRACE
+#define S4_TRACE_LEN 128U       /* 2.56 s: covers the 1.5 s timeout + entry */
+#define S4_TRACE_PER_LINE 4U
+#define S4_TRACE_PH_UNARMED 8U
+#define S4_TRACE_PH_LIFTED 9U
+
+typedef struct {
+    uint16_t n;
+    uint8_t phase;
+    uint8_t moving;
+    int16_t raw;
+    int16_t filt;
+    uint16_t dist;
+    uint8_t height;
+    uint8_t settle;
+    uint8_t cyc;
+} S4_TRACE_REC;
+
+LOCAL S4_TRACE_REC trace_ring[S4_TRACE_LEN];
+LOCAL UW trace_next;
+LOCAL UW trace_count;
+LOCAL S4_TRACE_REC trace_out[S4_TRACE_LEN];
+LOCAL UW trace_out_len;
+LOCAL UW trace_out_pos;
+LOCAL UW trace_id;
+LOCAL UW trace_last_cycle_ms;
+
+LOCAL W noise_fmin, noise_fmax, noise_rmin, noise_rmax;
+LOCAL W noise_abs_sum;
+LOCAL UW noise_n;
+
+LOCAL int16_t trace_clamp16(W v)
+{
+    return (int16_t)((v > 32767) ? 32767 : ((v < -32768) ? -32768 : v));
+}
+
+LOCAL uint8_t trace_clamp8(UW v)
+{
+    return (uint8_t)((v > 255U) ? 255U : v);
+}
+
+LOCAL void trace_record(UW n, UW phase, BOOL moving, W raw, W filt, UW dist)
+{
+    S4_TRACE_REC *r = &trace_ring[trace_next];
+
+    r->n = (uint16_t)n;
+    r->phase = (uint8_t)phase;
+    r->moving = moving ? 1U : 0U;
+    r->raw = trace_clamp16(raw);
+    r->filt = trace_clamp16(filt);
+    r->dist = (uint16_t)((dist > 65535U) ? 65535U : dist);
+    r->height = trace_clamp8(peak_height_mm);
+    r->settle = trace_clamp8(hump_state.settle_samples);
+    r->cyc = trace_clamp8(trace_last_cycle_ms);
+
+    trace_next = (trace_next + 1U) % S4_TRACE_LEN;
+    if (trace_count < S4_TRACE_LEN) {
+        trace_count++;
+    }
+}
+
+/* Copy the ring out for printing; a dump still printing is replaced. */
+LOCAL void trace_freeze(const char *why)
+{
+    UW i;
+    UW start = (trace_next + S4_TRACE_LEN - trace_count) % S4_TRACE_LEN;
+    BOOL cut = (trace_out_pos < trace_out_len) ? TRUE : FALSE;
+
+    for (i = 0U; i < trace_count; i++) {
+        trace_out[i] = trace_ring[(start + i) % S4_TRACE_LEN];
+    }
+    trace_out_len = trace_count;
+    trace_out_pos = 0U;
+    trace_id++;
+
+    LOG_INFO(TAG_S4_IMU, "HT#%u %s len=%u cols=n,ph,mv,raw,f,d,h,s,cyc%s",
+             trace_id, why, trace_out_len,
+             cut ? " (previous dump cut short)" : "");
+}
+
+/* Print at most one line of the frozen trace per cycle. */
+LOCAL void trace_dump_step(void)
+{
+    /* One record is at most 9 fields x 6 chars + 9 separators = 63. */
+    static UB line[32 + S4_TRACE_PER_LINE * 64U];
+    const S4_TRACE_REC *r;
+    INT len;
+    UW k;
+
+    if (trace_out_pos >= trace_out_len) {
+        return;
+    }
+
+    /* Built in one buffer and printed once, so other tasks cannot split it. */
+    len = tm_sprintf(line, (UB*)"[" TAG_S4_IMU "] HT#%u ", trace_id);
+    for (k = 0U; k < S4_TRACE_PER_LINE && trace_out_pos < trace_out_len; k++) {
+        r = &trace_out[trace_out_pos++];
+        len += tm_sprintf(&line[len], (UB*)"%s%u,%u,%u,%d,%d,%u,%u,%u,%u",
+                          (k == 0U) ? "" : ";",
+                          (UW)r->n, (UW)r->phase, (UW)r->moving,
+                          (W)r->raw, (W)r->filt, (UW)r->dist,
+                          (UW)r->height, (UW)r->settle, (UW)r->cyc);
+    }
+    tm_printf((UB*)"%s\n", line);
+}
+
+/* Level-ground noise while moving (S4-U08); partial windows are dropped. */
+LOCAL void trace_noise(BOOL moving, BOOL hump_idle, W raw, W filt)
+{
+    W a = abs_w(filt);
+
+    if (!moving || !hump_idle) {
+        noise_n = 0U;
+        return;
+    }
+    if (noise_n == 0U) {
+        noise_fmin = noise_fmax = filt;
+        noise_rmin = noise_rmax = raw;
+        noise_abs_sum = 0;
+    }
+    if (filt < noise_fmin) noise_fmin = filt;
+    if (filt > noise_fmax) noise_fmax = filt;
+    if (raw < noise_rmin) noise_rmin = raw;
+    if (raw > noise_rmax) noise_rmax = raw;
+    noise_abs_sum += a;
+    noise_n++;
+
+    if (noise_n >= S4_PRINT_PERIOD_SAMPLES) {
+        LOG_INFO(TAG_S4_IMU, "HT noise n=%u f=%d..%d |f|=%d raw=%d..%d",
+                 noise_n, noise_fmin, noise_fmax,
+                 (W)(noise_abs_sum / (W)noise_n), noise_rmin, noise_rmax);
+        noise_n = 0U;
+    }
+}
+#endif /* S4_HUMP_TRACE */
 
 /*
  * Estimate pitch for logging/telemetry without floating-point trigonometry.
@@ -660,49 +846,50 @@ LOCAL BOOL update_hump(W forward_mg,
 
     case HUMP_IDLE:
     {
-        INT current_sign;
+        INT current_sign = sign_w(forward_mg);
+
+        /*
+         * Climb since level ground (#27): the rise is counted from the last
+         * level sample, not from the confirmation, because the ramp climbs
+         * gently for ~0.5 s before the average reaches the entry level.
+         * Reset on level ground or when the slope changes direction.
+         */
+        if (abs_forward <= S4_HUMP_SETTLE_MG ||
+            current_sign != hump_climb_sign) {
+            hump_entry_height_milli_mm = 0;
+            hump_climb_sign = (abs_forward <= S4_HUMP_SETTLE_MG)
+                              ? 0 : current_sign;
+        }
+        if (hump_climb_sign != 0) {
+            hump_entry_height_milli_mm +=
+                (int64_t)distance_mm * (int64_t)abs_forward;
+            if (hump_entry_height_milli_mm >
+                (int64_t)S4_MAX_RAMP_HEIGHT_MM * 1000) {
+                hump_entry_height_milli_mm =
+                    (int64_t)S4_MAX_RAMP_HEIGHT_MM * 1000;
+            }
+        }
 
         /*
          * A hump may only begin when:
-         *   1. the robot has moved recently, and
-         *   2. the filtered forward-axis tilt reaches the entry threshold.
-         *
-         * Consecutive same-direction samples are required so a
-         * short motor-start vibration does not become a hump.
+         *   1. the wheels are turning now (`moving`: this sample or the
+         *      one before, so braking at a stop cannot start one), and
+         *   2. the 200 ms average stays at the entry level, in one
+         *      direction, for the confirmation count.
          */
         if (moving && abs_forward >= S4_HUMP_ENTRY_MG) {
 
-            current_sign = sign_w(forward_mg);
-
-            if (hump_state.entry_samples == 0U) {
+            if (hump_state.entry_samples == 0U ||
+                current_sign != hump_state.entry_sign) {
                 hump_state.entry_sign = current_sign;
                 hump_state.entry_samples = 1U;
                 hump_state.peak_mg = abs_forward;
-
-                hump_entry_height_milli_mm =
-                    (int64_t)distance_mm * (int64_t)abs_forward;
-
-            } else if (current_sign == hump_state.entry_sign) {
+            } else {
                 hump_state.entry_samples++;
-
-                hump_entry_height_milli_mm +=
-                    (int64_t)distance_mm * (int64_t)abs_forward;
 
                 if (abs_forward > hump_state.peak_mg) {
                     hump_state.peak_mg = abs_forward;
                 }
-
-            } else {
-                /*
-                 * Direction changed before confirmation, so restart the
-                 * candidate sequence using this new direction.
-                 */
-                hump_state.entry_sign = current_sign;
-                hump_state.entry_samples = 1U;
-                hump_state.peak_mg = abs_forward;
-
-                hump_entry_height_milli_mm =
-                    (int64_t)distance_mm * (int64_t)abs_forward;
             }
 
             if (hump_state.entry_samples >=
@@ -723,10 +910,10 @@ LOCAL BOOL update_hump(W forward_mg,
             }
 
         } else {
+            /* The climb integral is kept: only level ground resets it. */
             hump_state.entry_sign = 0;
             hump_state.entry_samples = 0U;
             hump_state.peak_mg = 0;
-            hump_entry_height_milli_mm = 0;
         }
 
         break;
@@ -734,12 +921,14 @@ LOCAL BOOL update_hump(W forward_mg,
 
     case HUMP_FIRST_SLOPE:
 
+#if !S4_HUMP_TRACE
         LOG_INFO(TAG_S4_IMU,
             "HUMP ACTIVE: forward=%d abs=%d dist=%u height=%u",
             forward_mg,
             abs_forward,
             distance_mm,
             peak_height_mm);
+#endif
 
         if (abs_forward > hump_state.peak_mg) {
             hump_state.peak_mg = abs_forward;
@@ -910,6 +1099,8 @@ EXPORT void imu_task(INT stacd, void *exinf)
     hump_armed = TRUE;
     hump_rearm_count = 0U;
     movement_hold_samples = 0U;
+    entry_moving_samples = 0U;
+    start_blank_samples = 0U;
     reset_hump_detector();
     reset_height_tracker();
     reset_lift_detector();
@@ -941,6 +1132,8 @@ EXPORT void imu_task(INT stacd, void *exinf)
             hump_armed = TRUE;
             hump_rearm_count = 0U;
             movement_hold_samples = 0U;
+            entry_moving_samples = 0U;
+            start_blank_samples = 0U;
             hump_sum = 0;
             hump_next = 0U;
             hump_count = 0U;
@@ -995,10 +1188,23 @@ EXPORT void imu_task(INT stacd, void *exinf)
             pitch_deg = estimate_pitch_deg(dy);
 
             distance_mm = subsystem4_take_distance_mm();
+            if (start_blank_samples > 0U) {
+                start_blank_samples--;
+            }
             if (distance_mm > 0U) {
+                if (movement_hold_samples == 0U) {
+                    /* Starting from a standstill: blank hump starts. */
+                    start_blank_samples = S4_HUMP_START_BLANK_SAMPLES;
+                }
                 movement_hold_samples = S4_MOVEMENT_HOLD_SAMPLES;
-            } else if (movement_hold_samples > 0U) {
-                movement_hold_samples--;
+                entry_moving_samples = S4_HUMP_ENTRY_MOVING_SAMPLES;
+            } else {
+                if (movement_hold_samples > 0U) {
+                    movement_hold_samples--;
+                }
+                if (entry_moving_samples > 0U) {
+                    entry_moving_samples--;
+                }
             }
 
             completed_hump_peak = 0;
@@ -1006,6 +1212,15 @@ EXPORT void imu_task(INT stacd, void *exinf)
             /* Lift is the safety event (#53): highest classification
                priority. A hump in progress is abandoned. */
             if (update_lift(sample.az_mg, baseline_z, &lift_delta_mg)) {
+#if S4_HUMP_TRACE
+                trace_record(local_sample_count, S4_TRACE_PH_LIFTED,
+                             movement_hold_samples > 0U, dy, lift_delta_mg,
+                             distance_mm);
+                if (!lift_reported) {
+                    trace_freeze((hump_state.phase != HUMP_IDLE)
+                                 ? "lift (hump abandoned)" : "lift");
+                }
+#endif
                 motion = IMU_MOTION_LIFTED;
                 hump_sum = 0;
                 hump_next = 0U;
@@ -1033,6 +1248,7 @@ EXPORT void imu_task(INT stacd, void *exinf)
                 W hump_dy = hump_sum / (W)hump_count;
 
                 hump_was_active = (hump_state.phase != HUMP_IDLE);
+#if !S4_HUMP_TRACE
                 if (!hump_was_active && hump_armed &&
                     abs_w(hump_dy) >= S4_HUMP_OPPOSITE_MG) {
                     LOG_INFO(TAG_S4_IMU,
@@ -1040,12 +1256,30 @@ EXPORT void imu_task(INT stacd, void *exinf)
                               dy, hump_dy, movement_hold_samples > 0U,
                               distance_mm, hump_state.entry_samples);
                 }
+#endif
                 hump_completed = update_hump(
                     hump_dy,
-                    movement_hold_samples > 0U,
+                    (entry_moving_samples > 0U &&
+                     start_blank_samples == 0U) ? TRUE : FALSE,
                     distance_mm,
                     &completed_hump_peak);
                 hump_is_active = (hump_state.phase != HUMP_IDLE);
+#if S4_HUMP_TRACE
+                /* Height is not updated yet for this sample; the next
+                   record shows it. Good enough for a capture. */
+                trace_record(local_sample_count,
+                             hump_armed || hump_is_active || hump_completed
+                                 ? (UW)hump_state.phase : S4_TRACE_PH_UNARMED,
+                             movement_hold_samples > 0U, dy, hump_dy,
+                             distance_mm);
+                trace_noise(movement_hold_samples > 0U,
+                            (!hump_was_active && !hump_is_active &&
+                             hump_armed) ? TRUE : FALSE,
+                            dy, hump_dy);
+                if (hump_was_active && !hump_is_active && !hump_completed) {
+                    trace_freeze("timeout");
+                }
+#endif
 
                 if (!hump_was_active && hump_is_active) {
                     /*
@@ -1081,22 +1315,29 @@ EXPORT void imu_task(INT stacd, void *exinf)
                     motion = IMU_MOTION_HUMP;
                 }
 
-                if (hump_completed) {
+                if (hump_completed && !height_distance_seen) {
+                    /* No wheel distance during the whole hump: the robot
+                       was not driving over anything (handled, or braking),
+                       so this is not a hump (#27). */
+                    LOG_INFO(TAG_S4_IMU, "hump discarded: no wheel distance (peak=%d mg)",
+                              completed_hump_peak);
+#if S4_HUMP_TRACE
+                    trace_freeze("discarded");
+#endif
+                } else if (hump_completed) {
                     motion = IMU_MOTION_HUMP;
                     event = IMU_EVENT_HUMP;
                     last_hump_peak = completed_hump_peak;
-                    if (height_distance_seen) {
-                        if (peak_height_mm > last_ramp_height) {
-                            last_ramp_height = peak_height_mm;
-                            last_ramp_height_valid = TRUE;
-                        }
-                        LOG_INFO(TAG_S4_IMU,
-                                  "EVENT HUMP height=%u mm highest=%u mm peak=%d mg",
-                                  peak_height_mm, last_ramp_height, last_hump_peak);
-                    } else {
-                        LOG_INFO(TAG_S4_IMU, "EVENT HUMP height=unavailable (no wheel distance) peak=%d mg",
-                                  last_hump_peak);
+                    if (peak_height_mm > last_ramp_height) {
+                        last_ramp_height = peak_height_mm;
+                        last_ramp_height_valid = TRUE;
                     }
+                    LOG_INFO(TAG_S4_IMU,
+                              "EVENT HUMP height=%u mm highest=%u mm peak=%d mg",
+                              peak_height_mm, last_ramp_height, last_hump_peak);
+#if S4_HUMP_TRACE
+                    trace_freeze("event");
+#endif
                 } else {
                     /* A normal ramp should not be misclassified as severe tilt. */
                     tilt_now = update_tilt(dx, dy, hump_is_active);
@@ -1139,6 +1380,9 @@ EXPORT void imu_task(INT stacd, void *exinf)
                                 last_ramp_height,
                                 last_ramp_height_valid,
                                 local_sample_count);
+#if S4_HUMP_TRACE
+            trace_dump_step();
+#endif
         }
 
         wedge_followup();
@@ -1146,6 +1390,9 @@ EXPORT void imu_task(INT stacd, void *exinf)
         /* Maintain the configured interval between task cycles. */
         tk_get_tim(&cycle_end);
         cycle_ms = cycle_end.lo - cycle_start.lo;
+#if S4_HUMP_TRACE
+        trace_last_cycle_ms = cycle_ms;
+#endif
 
         if (cycle_ms < S4_SAMPLE_PERIOD_MS) {
             s4_delay((TMO)(S4_SAMPLE_PERIOD_MS - cycle_ms));

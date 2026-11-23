@@ -1,0 +1,62 @@
+Hump detector tuning (#27 step 3), 23 Nov 2026: 2a21560 + uncommitted test/s4-integrated-27 changes
+Replay: the real imu_task loop on the PC (task_imu.c compiled with host stubs), 60 still samples for calibration,
+then each recorded segment's raw forward value and wheel distance per sample, from the S4_TRACE dumps of
+testing/subsystem5/logs/2026-11-23_170244/172331/173136_console.txt (merged per boot by sample number).
+Z is held at 1 g, so lifts are not replayed (segments with a lift show the hump entry the lift's tilt causes).
+
+== Old detector (from the logs): ramp passes gave 6-12 mm, entry 15-40 samples into the climb, end while still climbing;
+   one ramp missed; braking at PAUSE gave a false event in 4 of 7 paused runs.
+
+== New detector, each segment as recorded (segments end at the OLD event, mid-climb):
+seg  2 boot 17:07:14 [drive + lift], 128 samples: -- end: phase=0 climb=0 height=0 mm peak_h=0
+seg  3 boot 17:07:14 [flat, handled after PAUSE], 128 samples: -- end: phase=0 climb=0 height=0 mm peak_h=0
+seg  4 boot 17:09:43 [ramp, robot stalled], 128 samples: hump entry confirmed sign=1 peak=50mg | -- end: phase=1 climb=0 height=4 mm peak_h=4
+seg  5 boot 17:09:43 [ramp, robot stalled], 128 samples: hump entry confirmed sign=1 peak=61mg | -- end: phase=1 climb=1 height=3 mm peak_h=3
+seg  6 boot 17:09:43 [RAMP], 128 samples: hump entry confirmed sign=1 peak=50mg | -- end: phase=1 climb=0 height=7 mm peak_h=7
+seg  7 boot 17:13:24 [drive + lift], 128 samples: -- end: phase=0 climb=0 height=0 mm peak_h=0
+seg  8 boot 17:16:18 [drive + lift], 222 samples: hump entry confirmed sign=-1 peak=100mg | -- end: phase=1 climb=1 height=6 mm peak_h=6
+seg 12 boot 17:23:36 [RAMP], 128 samples: hump entry confirmed sign=1 peak=43mg | -- end: phase=1 climb=0 height=7 mm peak_h=7
+seg 13 boot 17:23:36 [flat + PAUSE (old: false event)], 128 samples: -- end: phase=0 climb=0 height=0 mm peak_h=0
+seg 14 boot 17:24:44 [RAMP], 128 samples: hump entry confirmed sign=1 peak=57mg | -- end: phase=1 climb=1 height=7 mm peak_h=7
+seg 17 boot 17:25:52 [RAMP], 128 samples: hump entry confirmed sign=1 peak=41mg | -- end: phase=1 climb=0 height=9 mm peak_h=9
+seg 18 boot 17:25:52 [flat + PAUSE (old: false event)], 128 samples: -- end: phase=0 climb=0 height=0 mm peak_h=0
+seg 20 boot 17:34:53 [RAMP], 128 samples: hump entry confirmed sign=1 peak=40mg | -- end: phase=1 climb=0 height=7 mm peak_h=7
+seg 21 boot 17:34:53 [flat + PAUSE (old: false event) + lift], 238 samples: -- end: phase=0 climb=0 height=0 mm peak_h=0
+seg 22 boot 17:35:40 [flat + PAUSE (old: false event)], 128 samples: -- end: phase=0 climb=0 height=0 mm peak_h=0
+
+== New detector, each ramp climb followed by 100 samples of recorded flat driving (17:35:40 or 17:23:36):
+seg  6 boot 17:09:43: EVENT HUMP height=7 mm highest=7 mm peak=84 mg  //  EVENT HUMP height=7 mm highest=7 mm peak=84 mg
+seg 12 boot 17:23:36: EVENT HUMP height=7 mm highest=7 mm peak=86 mg  //  EVENT HUMP height=7 mm highest=7 mm peak=86 mg
+seg 14 boot 17:24:44: EVENT HUMP height=8 mm highest=8 mm peak=97 mg  //  EVENT HUMP height=7 mm highest=7 mm peak=97 mg
+seg 17 boot 17:25:52: EVENT HUMP height=9 mm highest=9 mm peak=90 mg  //  EVENT HUMP height=9 mm highest=9 mm peak=90 mg
+seg 20 boot 17:34:53: EVENT HUMP height=7 mm highest=7 mm peak=72 mg  //  EVENT HUMP height=7 mm highest=7 mm peak=72 mg
+   Heights are lower bounds with the provisional factor 1/1: the recordings stop before each climb ended.
+
+== Host tests
+================ summary ================
+PASS   s4/hump_height               
+-----------------------------------------
+1 passed, 0 failed, 0 known failures, 0 skipped
+Mutations (each must fail s4/hump_height): CONFIRM 10->3, EXIT_FLAT 10->4, FILTER 10->3 (pinned bounds), entry without the moving check, climb not reset on level ground: all 5 fail as expected.
+
+== Full host suite
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s2/loop_timing               
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/line_service              
+PASS   s4/hump_height               
+PASS   s5/obstacle_logic            
+PASS   int/robot_control            
+PASS   int/robot_avoidance          
+PASS   int/bad_commands             
+PASS   int/line_service             
+PASS   int/steering_ramp            
+PASS   int/event_bits               
+-----------------------------------------
+17 passed, 0 failed, 0 known failures, 0 skipped

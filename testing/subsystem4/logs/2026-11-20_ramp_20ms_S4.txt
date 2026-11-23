@@ -1,6 +1,7 @@
 # Ramp test, 20 ms IMU period: build_make/robot-all_test-offline.uf2 (sh build.sh all_test_offline), built 20 Nov 17:41
 # from 65ba452 plus the uncommitted chore/m0-housekeeping changes (S4_SAMPLE_PERIOD_MS = 20, sample counts halved).
 # Track: a 5 mm ramp under the right wheels. Operator reported 5 ramp passes then 2 flat runs; the log has 10 boots
+# Correction 23 Nov: the ramp is 10 mm, not 5 mm (typing error by the operator); one side of the robot only.
 # (each '=== COM5 connected' is one boot), and which boot was which pass was not recorded. The robot often stuck on
 # the ramp (left IR sensor GP28 scraping the floor) and was handled/lifted, which also shows up as TILT events.
 # Trimmed copy of the gitignored raw capture 2026-11-20_174328_console.txt: kept boot headers, every 'Buddy4' line

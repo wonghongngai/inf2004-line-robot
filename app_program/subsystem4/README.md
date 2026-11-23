@@ -23,9 +23,14 @@ telemetry.
 
 ## Status (13 Nov 2026)
 
-- Detection thresholds in `subsystem4.h` (`S4_TILT_DELTA_MG`,
-  `S4_HUMP_ENTRY_MG`, …) are **placeholders**: tune them from logged IMU data
-  before treating them as final (S4-U08, issue #25).
+- **Hump thresholds tuned 23 Nov (#27)** from `S4_TRACE` captures of the 10 mm
+  one-side ramp: every decision uses the 200 ms (10-sample) average of the
+  forward axis; a hump starts when it holds >= 30 mg for 200 ms while the
+  wheels turn, the climb is counted from the last level sample, and it ends
+  after 200 ms within +-20 mg (timeout 5 s). The height factor is
+  4/3, refitted on the robot from eight climbs (#27 step 5); no hump may start
+  for 500 ms after the wheels start from a standstill. The tilt
+  threshold `S4_TILT_DELTA_MG` is still a placeholder (S4-U08, issue #25).
 - The hump height estimator keeps the climb height after the descent; the
   host test `s4/hump_height` expects 0. Decision pending (#5).
 - Collision detection was **removed** on the instructor's instructions

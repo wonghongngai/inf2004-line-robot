@@ -1,0 +1,1981 @@
+# S4-U09 and S4-U10, scored runs, 23 Nov 2026 18:04-18:11, 10 mm ramp under one side of the robot.
+# Image: build_make/robot-integrated-s4trace.uf2 built 18:02 (sh build.sh integrated S4_TRACE=1) from 36f29fc plus the
+# uncommitted start-up blank (500 ms) and height factor 4/3 changes in app_program/subsystem4/task_imu.c;
+# that firmware code was committed unchanged as 6742cae.
+# Copy of the gitignored raw testing/subsystem5/logs/2026-11-23_180458_console.txt, unchanged below this header.
+# Operator: 5 ramp passes, then runs without the ramp; one reboot each. Analysis (Claude):
+#   18:04:58  RAMP  `EVENT HUMP height=8 mm highest=8 mm peak=84 mg`    (-2 mm)
+#   18:05:27  RAMP  `EVENT HUMP height=10 mm highest=10 mm peak=72 mg`  ( 0 mm)
+#   18:05:54  RAMP  `EVENT HUMP height=9 mm highest=9 mm peak=66 mg`    (-1 mm)
+#   18:06:24  RAMP  `EVENT HUMP height=9 mm highest=9 mm peak=65 mg`    (-1 mm)
+#   18:06:55  RAMP  `EVENT HUMP height=7 mm highest=7 mm peak=65 mg`    (-3 mm)
+#   18:08:09, 18:08:35, 18:09:06, 18:09:40, 18:10:13, 18:10:37  FLAT  no hump activity (6 runs)
+#             18:09:06: the S5 obstacle HOLD mid-run is not a real obstacle: the serial-monitor cable hung in
+#             front of the ultrasonic sensor (operator, 23 Nov). Ignored; the run still counts as flat
+# Every hump ended on level ground after the climb (200 ms average back within +-20 mg).
+# No false events at START or PAUSE in any of the 11 runs, and no LIFT event in any of them.
+# The lift run that followed is in a separate raw log: see 2026-11-23_s4u12_lift_final_S4.txt.
+=== COM5 connected 18:04:58.636 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-34,28,922) mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=100 acc=(-37,28,921)mg delta=(x:-3,y:0)mg mag=(557,-264,151) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 568 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=150 acc=(-39,27,926)mg delta=(x:-5,y:-1)mg mag=(557,-260,151) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=10 loop_max=2 ms
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3 t=4316 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S4:IMU] n=200 acc=(-31,30,922)mg delta=(x:3,y:2)mg mag=(557,-263,152) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=250 acc=(-38,33,921)mg delta=(x:-4,y:5)mg mag=(558,-262,150) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=300 acc=(-32,27,918)mg delta=(x:2,y:-1)mg mag=(556,-261,151) pitch=0 height=0mm height_valid=0 state=0
+[S1:MQTT] connected to 172.20.10.2 t=6830 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=350 acc=(-37,25,926)mg delta=(x:-3,y:-3)mg mag=(559,-264,151) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=400 acc=(-33,25,918)mg delta=(x:1,y:-3)mg mag=(559,-259,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=450 acc=(-29,28,915)mg delta=(x:5,y:0)mg mag=(559,-263,154) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=500 acc=(-36,28,918)mg delta=(x:-2,y:0)mg mag=(558,-259,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=550 acc=(-29,30,919)mg delta=(x:5,y:2)mg mag=(560,-258,153) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=600 acc=(-32,28,923)mg delta=(x:2,y:0)mg mag=(556,-260,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1300 gap_max=10 loop_max=2 ms
+[S4:IMU] n=650 acc=(-33,29,918)mg delta=(x:1,y:1)mg mag=(557,-259,151) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=700 acc=(-36,24,922)mg delta=(x:-2,y:-4)mg mag=(556,-262,151) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=750 acc=(-34,29,922)mg delta=(x:0,y:1)mg mag=(556,-262,151) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1600 gap_max=10 loop_max=2 ms
+[S4:IMU] n=800 acc=(-34,25,921)mg delta=(x:0,y:-3)mg mag=(559,-265,156) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1700 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] n=850 acc=(-30,-36,892)mg delta=(x:4,y:-64)mg mag=(555,-257,154) pitch=-5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=105 R=92 PWM=15/19
+[S2:MOTION] ctrl late=0/1798 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-42..6 |f|=13 raw=-188..123
+[S2:MOTION] state=2 fault=0 ticks L=1085 R=1157 PWM=15/19
+[S2:MOTION] ctrl late=0/1893 gap_max=12 loop_max=4 ms
+[S4:IMU] n=900 acc=(-40,18,924)mg delta=(x:-6,y:-10)mg mag=(551,-323,149) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=471 sens none=420 R=51 C=0 both=0 act straight=391 right=80 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-29..15 |f|=11 raw=-139..110
+[S2:MOTION] state=2 fault=0 ticks L=2066 R=2092 PWM=15/19
+[S2:MOTION] ctrl late=0/1988 gap_max=12 loop_max=4 ms
+[S4:IMU] n=950 acc=(-35,-44,949)mg delta=(x:-1,y:-72)mg mag=(572,-312,117) pitch=-5 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=473 sens none=430 R=43 C=0 both=0 act straight=402 right=71 left=0 watch max=0mm bias=1
+[S2:MOTION] state=2 fault=0 ticks L=3032 R=3083 PWM=15/19
+[S2:MOTION] ctrl late=0/2082 gap_max=11 loop_max=4 ms
+[S4:IMU] HT noise n=50 f=-24..23 |f|=7 raw=-181..130
+[S4:IMU] n=1000 acc=(-24,7,921)mg delta=(x:10,y:-21)mg mag=(568,-275,105) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=472 sens none=452 R=20 C=0 both=0 act straight=438 right=34 left=0 watch max=0mm bias=1
+[S2:MOTION] state=2 fault=0 ticks L=3997 R=4054 PWM=17/5
+[S2:MOTION] ctrl late=0/2177 gap_max=12 loop_max=3 ms
+[S4:IMU] HT noise n=50 f=-30..27 |f|=9 raw=-149..198
+[S4:IMU] n=1050 acc=(-30,22,948)mg delta=(x:4,y:-6)mg mag=(576,-261,60) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=473 sens none=454 R=19 C=0 both=0 act straight=439 right=34 left=0 watch max=0mm bias=1
+[S2:MOTION] state=2 fault=0 ticks L=4994 R=5042 PWM=15/19
+[S2:MOTION] ctrl late=0/2272 gap_max=13 loop_max=5 ms
+[S4:IMU] HT noise n=50 f=-16..19 |f|=7 raw=-83..90
+[S4:IMU] n=1100 acc=(-59,31,921)mg delta=(x:-25,y:3)mg mag=(611,-201,-51) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=5933 R=5916 PWM=15/20
+[S2:MOTION] ctrl late=0/2367 gap_max=12 loop_max=4 ms
+[S4:IMU] hump entry confirmed sign=1 peak=42mg
+[S4:IMU] n=1150 acc=(-131,13,930)mg delta=(x:-97,y:-15)mg mag=(629,-61,-42) pitch=0 height=0mm height_valid=0 state=1
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=-4
+[S2:MOTION] state=2 fault=0 ticks L=6907 R=7009 PWM=15/19
+[S2:MOTION] ctrl late=0/2462 gap_max=13 loop_max=5 ms
+[S4:IMU] n=1200 acc=(-104,-94,940)mg delta=(x:-70,y:-122)mg mag=(610,-20,12) pitch=-5 height=0mm height_valid=0 state=1
+[S2:ROBOT] steer n=467 sens none=389 R=78 C=0 both=0 act straight=346 right=121 left=0 watch max=0mm bias=-4
+[S2:MOTION] state=2 fault=0 ticks L=7916 R=8004 PWM=15/19
+[S2:MOTION] ctrl late=0/2557 gap_max=12 loop_max=4 ms
+[S4:IMU] EVENT HUMP height=8 mm highest=8 mm peak=84 mg
+[S4:IMU] HT#1 event len=128 cols=n,ph,mv,raw,f,d,h,s,cyc
+[S4:IMU] HT#1 1114,0,1,42,32,1,0,0,9;1115,0,1,42,34,2,0,0,9;1116,0,1,-20,25,2,0,0,9;1117,0,1,47,30,1,0,0,10
+[S4:IMU] HT#1 1118,0,1,-44,20,2,0,0,9;1119,0,1,91,32,1,0,0,10;1120,0,1,12,31,2,0,0,8;1121,0,1,52,35,2,0,0,8
+[S4:IMU] HT#1 1122,0,1,37,31,1,0,0,9;1123,0,1,14,27,2,0,0,9;1124,0,1,34,26,2,0,0,9;1125,0,1,-17,20,1,0,0,10
+[S4:IMU] HT#1 1126,0,1,87,31,2,0,0,9;1127,0,1,15,28,2,0,0,9;1128,0,1,28,35,1,0,0,8;1129,0,1,23,28,2,0,0,9
+[S4:IMU] HT#1 1130,0,1,50,32,2,0,0,9;1131,0,1,70,34,1,0,0,9;1132,0,1,84,38,2,0,0,9;1133,0,1,31,40,2,0,0,9
+[S4:IMU] HT#1 1134,0,1,-4,36,1,0,0,9;1135,0,1,38,42,2,0,0,9;1136,0,1,12,34,2,0,0,10;1137,0,1,55,38,1,0,0,9
+[S4:IMU] HT#1 1138,0,1,49,40,2,0,0,9;1139,1,1,27,41,2,0,0,9;1140,1,1,84,44,2,1,0,10;1141,1,1,19,39,1,1,0,9
+[S4:IMU] HT#1 1142,1,1,67,37,2,1,0,9;1143,1,1,75,42,1,1,0,9;1144,1,1,69,49,2,1,0,9;1145,1,1,61,51,2,1,0,9
+[S4:IMU] HT#1 1146,1,1,102,60,2,1,0,9;1147,1,1,41,59,2,1,0,8;1148,1,1,53,59,1,2,0,9;1149,1,1,53,62,2,2,0,9
+[S4:IMU] n=1250 acc=(-5,-4,924)mg delta=(x:29,y:-32)mg mag=(584,-46,77) pitch=0 height=8mm height_valid=1 state=0
+[S4:IMU] HT#1 1150,1,1,-15,52,2,2,0,9;1151,1,1,145,65,2,2,0,9;1152,1,1,9,59,2,2,0,9;1153,1,1,125,64,2,2,0,9
+[S4:IMU] HT#1 1154,1,1,-55,51,2,2,0,9;1155,1,1,153,61,2,3,0,9;1156,1,1,41,55,2,3,0,9;1157,1,1,27,53,2,3,0,9
+[S4:IMU] HT#1 1158,1,1,192,67,2,3,0,10;1159,1,1,224,84,2,3,0,10;1160,1,1,-49,81,2,3,0,10;1161,1,1,85,75,2,4,0,10
+[S4:IMU] HT#1 1162,1,1,-27,71,2,4,0,9;1163,1,1,72,66,2,4,0,8;1164,1,1,14,73,3,4,0,8;1165,1,1,72,65,2,4,0,8
+[S4:IMU] HT#1 1166,1,1,-28,58,2,5,0,8;1167,1,1,198,75,2,5,0,8;1168,1,1,6,56,2,5,0,9;1169,1,1,37,38,2,5,0,8
+[S4:IMU] HT#1 1170,1,1,67,49,2,5,0,9;1171,1,1,-1,41,2,5,0,10;1172,1,1,89,52,1,6,0,9;1173,1,1,147,60,2,6,0,9
+[S4:IMU] HT#1 1174,1,1,21,60,1,6,0,8;1175,1,1,89,62,1,6,0,9;1176,1,1,-50,60,2,6,0,9;1177,1,1,-59,34,2,6,0,10
+[S4:IMU] HT#1 1178,1,1,-107,23,1,6,0,8;1179,1,1,136,33,2,6,0,10;1180,1,1,53,31,2,6,0,8;1181,1,1,-16,30,2,6,0,10
+[S4:IMU] HT#1 1182,1,1,41,25,2,6,0,9;1183,3,1,25,13,2,6,1,9;1184,1,1,106,21,2,7,0,10;1185,3,1,25,15,2,7,1,10
+[S4:IMU] HT#1 1186,1,1,41,24,2,7,0,9;1187,1,1,-24,28,2,7,0,9;1188,1,1,58,44,2,7,0,8;1189,1,1,-30,27,2,7,0,9
+[S4:IMU] HT#1 1190,1,1,39,26,2,7,0,9;1191,1,1,34,31,1,7,0,9;1192,1,1,33,30,2,7,0,9;1193,1,1,81,36,1,7,0,9
+[S4:IMU] HT#1 1194,1,1,2,25,2,7,0,9;1195,1,1,77,31,2,7,0,9;1196,3,1,-106,16,2,7,1,9;1197,1,1,108,29,1,7,0,11
+[S4:IMU] HT#1 1198,1,1,5,24,2,7,0,9;1199,1,1,-39,23,2,7,0,9;1200,3,1,-122,7,2,8,1,8;1201,3,1,24,6,2,8,2,10
+[S4:IMU] HT#1 1202,3,1,-61,-3,2,8,3,9;1203,3,1,-3,-11,2,8,4,10;1204,1,1,-132,-24,2,8,0,10;1205,1,1,28,-29,2,8,0,8
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=-4
+[S4:IMU] HT#1 1206,1,1,-39,-23,2,8,0,10;1207,1,1,54,-28,2,8,0,9;1208,1,1,-121,-41,2,8,0,8;1209,1,1,71,-30,2,8,0,9
+[S4:IMU] HT#1 1210,1,1,-70,-24,2,8,0,9;1211,1,1,21,-25,1,8,0,8;1212,1,1,-86,-27,2,8,0,9;1213,1,1,15,-25,1,8,0,9
+[S4:IMU] HT#1 1214,3,1,-13,-14,2,8,1,9;1215,1,1,-63,-23,1,8,0,8;1216,1,1,-250,-44,2,8,0,9;1217,1,1,176,-32,1,8,0,10
+[S4:IMU] HT#1 1218,3,1,-10,-20,2,8,1,9;1219,1,1,11,-26,2,8,0,9;1220,1,1,-122,-32,2,8,0,8;1221,1,1,30,-31,1,8,0,9
+[S4:IMU] HT#1 1222,1,1,-144,-37,2,8,0,9;1223,1,1,-1,-38,2,8,0,9;1224,1,1,-74,-44,2,8,0,9;1225,1,1,66,-31,2,8,0,9
+[S4:IMU] HT#1 1226,3,1,-141,-20,1,8,1,9;1227,1,1,119,-26,2,8,0,9;1228,1,1,-45,-30,2,8,0,9;1229,1,1,17,-29,2,8,0,9
+[S4:IMU] HT#1 1230,1,1,-90,-26,1,8,0,9;1231,1,1,72,-22,3,8,0,8;1232,3,1,-110,-18,1,8,1,9;1233,3,1,48,-13,2,8,2,8
+[S4:IMU] HT#1 1234,3,1,-65,-12,2,8,3,8;1235,3,1,27,-16,2,8,4,9;1236,3,1,-46,-7,2,8,5,8;1237,3,1,-15,-20,1,8,6,9
+[S4:IMU] HT#1 1238,3,1,-16,-17,2,8,7,9;1239,3,1,-4,-19,2,8,8,9;1240,3,1,-36,-14,2,8,9,9;1241,0,1,49,-16,2,8,0,10
+[S2:MOTION] state=2 fault=0 ticks L=8891 R=9020 PWM=15/19
+[S2:MOTION] ctrl late=0/2652 gap_max=12 loop_max=4 ms
+[S4:IMU] hump detector re-armed
+[S4:IMU] n=1300 acc=(-22,140,929)mg delta=(x:12,y:112)mg mag=(623,-75,108) pitch=5 height=8mm height_valid=1 state=0
+[S2:ROBOT] steer n=469 sens none=458 R=11 C=0 both=0 act straight=444 right=25 left=0 watch max=0mm bias=-4
+[S2:MOTION] state=2 fault=0 ticks L=9890 R=10001 PWM=15/19
+[S2:MOTION] ctrl late=0/2747 gap_max=12 loop_max=4 ms
+[S4:IMU] HT noise n=50 f=-20..16 |f|=6 raw=-145..112
+[S4:IMU] n=1350 acc=(-65,82,900)mg delta=(x:-31,y:54)mg mag=(754,-48,124) pitch=5 height=8mm height_valid=1 state=0
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=-5
+[S2:MOTION] state=2 fault=0 ticks L=10887 R=10995 PWM=15/20
+[S2:MOTION] ctrl late=0/2842 gap_max=12 loop_max=4 ms
+[S4:IMU] HT noise n=50 f=-22..49 |f|=11 raw=-120..156
+[S4:IMU] n=1400 acc=(-75,51,897)mg delta=(x:-41,y:23)mg mag=(906,14,129) pitch=0 height=8mm height_valid=1 state=0
+[S2:ROBOT] steer n=469 sens none=398 R=71 C=0 both=0 act straight=369 right=100 left=0 watch max=0mm bias=-7
+[S2:MOTION] state=2 fault=0 ticks L=11857 R=11699 PWM=17/5
+[S2:MOTION] ctrl late=0/2937 gap_max=11 loop_max=3 ms
+[S4:IMU] HT noise n=50 f=-26..47 |f|=16 raw=-141..195
+[S4:IMU] n=1450 acc=(-68,94,902)mg delta=(x:-34,y:66)mg mag=(975,248,153) pitch=5 height=8mm height_valid=1 state=0
+[S2:ROBOT] steer n=473 sens none=280 R=193 C=0 both=0 act straight=222 right=251 left=0 watch max=0mm bias=-7
+[S2:MOTION] state=2 fault=0 ticks L=12823 R=12191 PWM=15/19
+[S2:MOTION] ctrl late=0/3032 gap_max=12 loop_max=4 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S4:IMU] n=1500 acc=(-39,24,918)mg delta=(x:-5,y:-4)mg mag=(940,374,187) pitch=0 height=8mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12869 R=12238 PWM=0/0
+[S2:MOTION] ctrl late=0/3132 gap_max=12 loop_max=3 ms
+[S4:IMU] n=1550 acc=(-28,-30,928)mg delta=(x:6,y:-58)mg mag=(936,377,189) pitch=-5 height=8mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12869 R=12247 PWM=0/0
+[S2:MOTION] ctrl late=0/3232 gap_max=10 loop_max=4 ms
+[S4:IMU] EVENT TILT roll=-10 deg lateral=-203 mg
+[S4:IMU] EVENT TILT roll=0 deg lateral=-24 mg
+[S4:IMU] n=1600 acc=(-80,-487,746)mg delta=(x:-46,y:-515)mg mag=(558,-213,81) pitch=-30 height=8mm height_valid=1 state=2
+[S2:MOTION] state=5 fault=0 ticks L=12868 R=12249 PWM=0/0
+[S2:MOTION] ctrl late=0/3332 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=0 deg lateral=-35 mg
+[S4:IMU] n=1650 acc=(-147,114,942)mg delta=(x:-113,y:86)mg mag=(554,-273,148) pitch=5 height=8mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12868 R=12246 PWM=0/0
+[S2:MOTION] ctrl late=0/3432 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1700 acc=(-31,16,923)mg delta=(x:3,y:-12)mg mag=(553,-274,148) pitch=0 height=8mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12868 R=12244 PWM=0/0
+[S2:MOTION] ctrl late=0/3532 gap_max=10 loop_max=4 ms
+[S4:IMU] n=1750 acc=(-36,24,924)mg delta=(x:-2,y:-4)mg mag=(553,-270,150) pitch=0 height=8mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12868 R=12244 PWM=0/0
+[S2:MOTION] ctrl late=0/3632 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1800 acc=(-46,67,926)mg delta=(x:-12,y:39)mg mag=(552,-266,150) pitch=0 height=8mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12868 R=12244 PWM=0/0
+[S2:MOTION] ctrl late=0/3732 gap_max=11 loop_max=3 ms
+=== COM5 connected 18:05:27.147 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-35,27,920) mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=100 acc=(-36,25,923)mg delta=(x:-1,y:-2)mg mag=(555,-273,150) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 609 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=150 acc=(-37,26,924)mg delta=(x:-2,y:-1)mg mag=(559,-277,146) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+wifi: link up, ip=172.20.10.3 t=4148 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S1:MQTT] connected to 172.20.10.2 t=4262 ms
+[S4:IMU] n=200 acc=(-37,20,922)mg delta=(x:-2,y:-7)mg mag=(555,-273,152) pitch=0 height=0mm height_valid=0 state=0
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=250 acc=(-37,24,919)mg delta=(x:-2,y:-3)mg mag=(556,-277,149) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=300 acc=(-34,25,921)mg delta=(x:1,y:-2)mg mag=(556,-273,149) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=350 acc=(-42,25,926)mg delta=(x:-7,y:-2)mg mag=(557,-273,152) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=10 loop_max=2 ms
+[S4:IMU] n=400 acc=(-36,26,920)mg delta=(x:-1,y:-1)mg mag=(556,-276,149) pitch=0 height=0mm height_valid=0 state=0
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:MOTION] state=2 fault=0 ticks L=26 R=5 PWM=14/14
+[S2:MOTION] ctrl late=0/898 gap_max=12 loop_max=3 ms
+[S4:IMU] n=450 acc=(-31,84,883)mg delta=(x:4,y:57)mg mag=(533,-310,156) pitch=5 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=473 sens none=469 R=4 C=0 both=0 act straight=469 right=4 left=0 watch max=0mm bias=1
+[S2:MOTION] state=2 fault=0 ticks L=980 R=1011 PWM=15/19
+[S2:MOTION] ctrl late=0/993 gap_max=12 loop_max=3 ms
+[S4:IMU] HT noise n=50 f=-51..28 |f|=15 raw=-198..207
+[S4:IMU] n=500 acc=(-14,0,881)mg delta=(x:21,y:-27)mg mag=(548,-335,147) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=470 sens none=399 R=71 C=0 both=0 act straight=357 right=113 left=0 watch max=0mm bias=1
+[S2:MOTION] state=2 fault=0 ticks L=1941 R=1938 PWM=15/19
+[S2:MOTION] ctrl late=0/1089 gap_max=12 loop_max=5 ms
+[S4:IMU] HT noise n=50 f=-33..27 |f|=10 raw=-262..205
+[S4:IMU] n=550 acc=(-4,77,910)mg delta=(x:31,y:50)mg mag=(565,-304,112) pitch=5 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=471 sens none=438 R=33 C=0 both=0 act straight=423 right=48 left=0 watch max=0mm bias=1
+[S2:MOTION] state=2 fault=0 ticks L=2927 R=2876 PWM=15/19
+[S2:MOTION] ctrl late=0/1184 gap_max=11 loop_max=3 ms
+[S4:IMU] HT noise n=50 f=-27..28 |f|=10 raw=-176..161
+[S4:IMU] n=600 acc=(-52,106,904)mg delta=(x:-17,y:79)mg mag=(558,-268,106) pitch=5 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=471 sens none=467 R=4 C=0 both=0 act straight=452 right=19 left=0 watch max=0mm bias=1
+[S2:MOTION] state=2 fault=0 ticks L=3886 R=3876 PWM=15/19
+[S2:MOTION] ctrl late=0/1279 gap_max=12 loop_max=4 ms
+[S4:IMU] HT noise n=50 f=-25..12 |f|=4 raw=-165..230
+[S4:IMU] n=650 acc=(-52,31,923)mg delta=(x:-17,y:4)mg mag=(577,-271,19) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=471 sens none=454 R=17 C=0 both=0 act straight=439 right=32 left=0 watch max=0mm bias=1
+[S2:MOTION] state=2 fault=0 ticks L=4886 R=4881 PWM=15/19
+[S2:MOTION] ctrl late=0/1374 gap_max=11 loop_max=3 ms
+[S4:IMU] HT noise n=50 f=-52..34 |f|=15 raw=-311..140
+[S2:ROBOT] steer n=470 sens none=454 R=16 C=0 both=0 act straight=440 right=30 left=0 watch max=0mm bias=0
+[S4:IMU] n=700 acc=(-99,69,886)mg delta=(x:-64,y:42)mg mag=(635,-157,-60) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=5845 R=5751 PWM=15/20
+[S2:MOTION] ctrl late=0/1469 gap_max=14 loop_max=5 ms
+[S4:IMU] hump entry confirmed sign=1 peak=45mg
+[S2:ROBOT] steer n=467 sens none=467 R=0 C=0 both=0 act straight=467 right=0 left=0 watch max=0mm bias=-5
+[S4:IMU] n=750 acc=(-129,51,972)mg delta=(x:-94,y:24)mg mag=(628,-49,-24) pitch=0 height=0mm height_valid=0 state=1
+[S2:MOTION] state=2 fault=0 ticks L=6807 R=6852 PWM=15/19
+[S2:MOTION] ctrl late=0/1564 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=463 sens none=395 R=68 C=0 both=0 act straight=366 right=97 left=0 watch max=0mm bias=-5
+[S4:IMU] n=800 acc=(-8,-222,959)mg delta=(x:27,y:-249)mg mag=(592,-27,26) pitch=-15 height=0mm height_valid=0 state=1
+[S2:MOTION] state=2 fault=0 ticks L=7823 R=7839 PWM=15/19
+[S2:MOTION] ctrl late=0/1659 gap_max=12 loop_max=4 ms
+[S4:IMU] EVENT HUMP height=10 mm highest=10 mm peak=72 mg
+[S4:IMU] HT#1 event len=128 cols=n,ph,mv,raw,f,d,h,s,cyc
+[S4:IMU] HT#1 695,0,1,-28,24,2,0,0,8;696,0,1,42,26,2,0,0,8;697,0,1,44,24,1,0,0,9;698,0,1,57,33,2,0,0,10
+[S4:IMU] HT#1 699,0,1,8,31,2,0,0,9;700,0,1,42,34,1,0,0,8;701,0,1,-18,22,2,0,0,12;702,0,1,94,33,2,0,0,8
+[S4:IMU] HT#1 703,0,1,-42,25,1,0,0,8;704,0,1,102,30,2,0,0,8;705,0,1,62,39,2,0,0,9;706,0,1,58,40,2,0,0,9
+[S4:IMU] HT#1 707,0,1,64,42,1,0,0,10;708,0,1,36,40,2,0,0,10;709,0,1,26,42,1,0,0,8;710,0,1,34,41,2,0,0,8
+[S4:IMU] HT#1 711,0,1,5,43,2,0,0,7;712,0,1,-3,34,1,0,0,9;713,1,1,68,45,2,0,0,9;714,1,1,19,36,2,2,0,9
+[S4:IMU] HT#1 715,1,1,67,37,1,2,0,9;716,1,1,23,33,2,2,0,9;717,1,1,60,33,2,2,0,9;718,1,1,42,34,1,2,0,10
+[S4:IMU] HT#1 719,1,1,57,37,2,2,0,8;720,1,1,65,40,2,2,0,10;721,1,1,60,45,2,2,0,8;722,1,1,80,54,1,2,0,8
+[S4:IMU] HT#1 723,1,1,33,50,2,3,0,9;724,1,1,74,56,2,3,0,9;725,1,1,60,55,1,3,0,9;726,1,1,113,64,2,3,0,9
+[S4:IMU] HT#1 727,1,1,39,62,2,3,0,9;728,1,1,98,67,1,3,0,9;729,1,1,27,64,2,3,0,9;730,1,1,44,62,2,3,0,9
+[S4:IMU] HT#1 731,1,1,48,61,2,4,0,9;732,1,1,91,62,1,4,0,8;733,1,1,35,62,2,4,0,9;734,1,1,126,68,2,4,0,9
+[S4:IMU] HT#1 735,1,1,-10,61,1,4,0,8;736,1,1,172,67,2,4,0,8;737,1,1,-38,59,2,4,0,9;738,1,1,154,64,2,5,0,10
+[S4:IMU] HT#1 739,1,1,-48,57,2,5,0,8;740,1,1,191,72,2,5,0,9;741,1,1,29,70,2,5,0,9;742,1,1,31,64,2,5,0,9
+[S4:IMU] HT#1 743,1,1,-11,59,2,6,0,9;744,1,1,87,55,2,6,0,9;745,1,1,0,56,2,6,0,9;746,1,1,106,50,2,6,0,9
+[S4:IMU] HT#1 747,1,1,-11,52,3,6,0,9;748,1,1,88,46,2,6,0,9;749,1,1,65,57,2,6,0,8;750,1,1,24,40,2,7,0,9
+[S4:IMU] HT#1 751,1,1,45,42,2,7,0,10;752,1,1,40,43,3,7,0,9;753,1,1,119,56,2,7,0,9;754,1,1,-22,45,2,7,0,8
+[S4:IMU] HT#1 755,1,1,44,49,2,7,0,8;756,1,1,122,51,3,7,0,9;757,1,1,-27,49,2,8,0,9;758,1,1,112,52,2,8,0,9
+[S4:IMU] HT#1 759,1,1,6,46,2,8,0,10;760,1,1,108,54,2,8,0,8;761,1,1,-31,47,2,8,0,9;762,1,1,209,64,2,8,0,10
+[S4:IMU] HT#1 763,1,1,-31,49,1,8,0,10;764,1,1,54,56,2,8,0,9;765,1,1,105,62,1,9,0,9;766,1,1,-95,41,2,9,0,9
+[S4:IMU] HT#1 767,1,1,88,52,2,9,0,8;768,1,1,8,42,2,9,0,10;769,1,1,120,53,2,9,0,9;770,1,1,29,45,2,9,0,9
+[S4:IMU] HT#1 771,1,1,-27,46,2,9,0,9;772,1,1,24,27,2,9,0,8;773,1,1,80,38,2,10,0,9;774,1,1,-87,24,2,10,0,8
+[S2:ROBOT] steer n=471 sens none=463 R=8 C=0 both=0 act straight=448 right=23 left=0 watch max=0mm bias=-5
+[S4:IMU] HT#1 775,3,1,-4,13,2,10,1,9;776,1,1,91,32,2,10,0,10;777,1,1,34,26,1,10,0,8;778,1,1,80,34,2,10,0,11
+[S4:IMU] HT#1 779,1,1,14,23,2,10,0,10;780,1,1,84,28,1,10,0,9;781,1,1,232,54,2,10,0,9;782,1,1,-292,23,1,10,0,11
+[S4:IMU] HT#1 783,3,1,51,20,1,10,1,10;784,3,1,-172,11,2,10,2,10;785,1,1,159,28,2,10,0,9;786,3,1,-44,14,2,10,1,9
+[S4:IMU] HT#1 787,3,1,-148,-3,2,10,2,8;788,3,1,83,-3,1,10,3,8;789,3,1,-31,-7,3,10,4,8;790,3,1,41,-12,1,10,5,9
+[S4:IMU] HT#1 791,1,1,-151,-50,3,10,0,8;792,3,1,32,-18,1,10,1,9;793,1,1,-16,-24,2,10,0,8;794,3,1,26,-4,2,10,1,9
+[S4:IMU] hump detector re-armed
+[S4:IMU] HT#1 795,3,1,88,-12,2,10,2,10;796,3,1,102,2,1,10,3,9;797,3,1,-32,14,1,10,4,8;798,3,1,89,14,2,10,5,9
+[S4:IMU] HT#1 799,3,1,-218,-3,1,10,6,9;800,1,1,-249,-32,2,10,0,10;801,3,1,234,5,1,10,1,9;802,3,1,4,2,2,10,2,9
+[S4:IMU] HT#1 803,3,1,-188,-14,2,10,3,12;804,3,1,49,-12,2,10,4,8;805,1,1,-28,-23,1,10,0,8;806,1,1,-63,-40,2,10,0,10
+[S2:MOTION] state=2 fault=0 ticks L=8817 R=8831 PWM=15/19
+[S2:MOTION] ctrl late=0/1754 gap_max=12 loop_max=4 ms
+[S4:IMU] n=850 acc=(-1,-108,946)mg delta=(x:34,y:-135)mg mag=(574,-62,89) pitch=-10 height=10mm height_valid=1 state=0
+[S4:IMU] HT#1 807,1,1,24,-34,2,10,0,9;808,1,1,-16,-45,2,10,0,8;809,1,1,-23,-25,2,10,0,8;810,3,1,-11,-1,2,10,1,9
+[S4:IMU] HT#1 811,3,1,53,-19,2,10,2,8;812,1,1,-14,-21,1,10,0,9;813,3,1,-27,-5,2,10,1,9;814,3,1,-16,-12,2,10,2,9
+[S4:IMU] HT#1 815,3,1,-13,-10,2,10,3,10;816,3,1,-28,-7,2,10,4,8;817,3,1,-9,-10,2,10,5,9;818,3,1,-5,-9,2,10,6,9
+[S4:IMU] HT#1 819,3,1,-59,-12,2,10,7,9;820,3,1,32,-8,1,10,8,9;821,3,1,-66,-20,2,10,9,9;822,0,1,16,-17,2,10,0,9
+[S2:ROBOT] steer n=466 sens none=452 R=14 C=0 both=0 act straight=437 right=29 left=0 watch max=0mm bias=-5
+[S4:IMU] HT noise n=50 f=-28..29 |f|=8 raw=-222..296
+[S2:MOTION] state=2 fault=0 ticks L=9812 R=9887 PWM=15/19
+[S2:MOTION] ctrl late=0/1849 gap_max=12 loop_max=4 ms
+[S4:IMU] n=900 acc=(-43,90,905)mg delta=(x:-8,y:63)mg mag=(648,-89,97) pitch=5 height=10mm height_valid=1 state=0
+[S2:ROBOT] steer n=471 sens none=454 R=17 C=0 both=0 act straight=439 right=32 left=0 watch max=0mm bias=-5
+[S2:MOTION] state=2 fault=0 ticks L=10806 R=10873 PWM=15/19
+[S2:MOTION] ctrl late=0/1945 gap_max=12 loop_max=4 ms
+[S4:IMU] HT noise n=50 f=-29..25 |f|=8 raw=-277..92
+[S4:IMU] n=950 acc=(-45,39,914)mg delta=(x:-10,y:12)mg mag=(796,-68,128) pitch=0 height=10mm height_valid=1 state=0
+[S2:ROBOT] steer n=472 sens none=393 R=79 C=0 both=0 act straight=350 right=122 left=0 watch max=0mm bias=-6
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=11767 R=11614 PWM=0/0
+[S2:MOTION] ctrl late=0/2040 gap_max=12 loop_max=4 ms
+[S4:IMU] n=1000 acc=(-32,2,920)mg delta=(x:3,y:-25)mg mag=(939,38,132) pitch=0 height=10mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=11769 R=11613 PWM=0/0
+[S2:MOTION] ctrl late=0/2140 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1050 acc=(-33,35,918)mg delta=(x:2,y:8)mg mag=(936,41,130) pitch=0 height=10mm height_valid=1 state=0
+[S4:IMU] EVENT TILT roll=10 deg lateral=133 mg
+[S2:MOTION] state=5 fault=0 ticks L=11770 R=11614 PWM=0/0
+[S2:MOTION] ctrl late=0/2240 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1100 acc=(-80,7,782)mg delta=(x:-45,y:-20)mg mag=(549,-117,44) pitch=0 height=10mm height_valid=1 state=0
+[S4:IMU] EVENT TILT roll=5 deg lateral=46 mg
+[S2:MOTION] state=5 fault=0 ticks L=11770 R=11614 PWM=0/0
+[S2:MOTION] ctrl late=0/2340 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1150 acc=(-81,-59,801)mg delta=(x:-46,y:-86)mg mag=(564,-265,145) pitch=-5 height=10mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=11769 R=11614 PWM=0/0
+[S2:MOTION] ctrl late=0/2440 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1200 acc=(-35,34,927)mg delta=(x:0,y:7)mg mag=(561,-259,155) pitch=0 height=10mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=11769 R=11614 PWM=0/0
+[S2:MOTION] ctrl late=0/2540 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1250 acc=(-38,26,918)mg delta=(x:-3,y:-1)mg mag=(564,-258,155) pitch=0 height=10mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=11769 R=11614 PWM=0/0
+[S2:MOTION] ctrl late=0/2640 gap_max=11 loop_max=3 ms
+=== COM5 connected 18:05:54.539 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-38,32,922) mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=100 acc=(-37,30,923)mg delta=(x:1,y:-2)mg mag=(565,-257,156) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 649 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=150 acc=(-35,32,924)mg delta=(x:3,y:0)mg mag=(565,-256,157) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+wifi: link status -> joined AP, no IP yet (2)
+[S4:IMU] n=200 acc=(-38,33,921)mg delta=(x:0,y:1)mg mag=(563,-257,155) pitch=0 height=0mm height_valid=0 state=0
+wifi: link up, ip=172.20.10.3 t=4586 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S1:MQTT] connected to 172.20.10.2 t=4957 ms
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S4:IMU] n=250 acc=(-33,30,921)mg delta=(x:5,y:-2)mg mag=(559,-255,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=300 acc=(-38,28,922)mg delta=(x:0,y:-4)mg mag=(563,-257,156) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=350 acc=(-38,34,920)mg delta=(x:0,y:2)mg mag=(562,-257,157) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] n=400 acc=(-33,31,917)mg delta=(x:5,y:-1)mg mag=(564,-254,153) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=227 R=254 PWM=15/19
+[S2:MOTION] ctrl late=0/897 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=1
+[S4:IMU] n=450 acc=(-27,97,891)mg delta=(x:11,y:65)mg mag=(550,-313,156) pitch=5 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-39..2 |f|=13 raw=-167..131
+[S2:MOTION] state=2 fault=0 ticks L=1291 R=1349 PWM=15/19
+[S2:MOTION] ctrl late=0/992 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=472 sens none=441 R=31 C=0 both=0 act straight=412 right=60 left=0 watch max=0mm bias=2
+[S4:IMU] n=500 acc=(-3,-26,911)mg delta=(x:35,y:-58)mg mag=(573,-305,123) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-31..9 |f|=13 raw=-202..198
+[S2:MOTION] state=2 fault=0 ticks L=2282 R=2352 PWM=15/19
+[S2:MOTION] ctrl late=0/1088 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=472 sens none=451 R=21 C=0 both=0 act straight=436 right=36 left=0 watch max=0mm bias=2
+[S4:IMU] n=550 acc=(37,100,897)mg delta=(x:75,y:68)mg mag=(569,-270,104) pitch=5 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-37..14 |f|=8 raw=-145..102
+[S2:MOTION] state=2 fault=0 ticks L=3285 R=3370 PWM=15/19
+[S2:MOTION] ctrl late=0/1182 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=470 sens none=459 R=11 C=0 both=0 act straight=444 right=26 left=0 watch max=0mm bias=2
+[S4:IMU] n=600 acc=(-63,0,933)mg delta=(x:-25,y:-32)mg mag=(568,-267,61) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-22..28 |f|=10 raw=-161..175
+[S2:MOTION] state=2 fault=0 ticks L=4277 R=4346 PWM=15/19
+[S2:MOTION] ctrl late=0/1278 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=2
+[S4:IMU] n=650 acc=(-79,44,965)mg delta=(x:-41,y:12)mg mag=(607,-198,-39) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-9..26 |f|=9 raw=-139..94
+[S2:MOTION] state=2 fault=0 ticks L=5279 R=5304 PWM=15/19
+[S2:MOTION] ctrl late=0/1373 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=-1
+[S4:IMU] hump entry confirmed sign=1 peak=49mg
+[S4:IMU] n=700 acc=(-149,90,894)mg delta=(x:-111,y:58)mg mag=(623,-69,-47) pitch=5 height=0mm height_valid=0 state=1
+[S2:MOTION] state=2 fault=0 ticks L=6237 R=6286 PWM=15/20
+[S2:MOTION] ctrl late=0/1468 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=463 sens none=432 R=31 C=0 both=0 act straight=418 right=45 left=0 watch max=0mm bias=-4
+[S4:IMU] n=750 acc=(-6,-165,1088)mg delta=(x:32,y:-197)mg mag=(607,-43,5) pitch=-10 height=0mm height_valid=0 state=1
+[S2:MOTION] state=2 fault=0 ticks L=7237 R=7363 PWM=15/19
+[S2:MOTION] ctrl late=0/1564 gap_max=12 loop_max=4 ms
+[S4:IMU] EVENT HUMP height=9 mm highest=9 mm peak=66 mg
+[S4:IMU] HT#1 event len=128 cols=n,ph,mv,raw,f,d,h,s,cyc
+[S4:IMU] HT#1 644,0,1,73,-8,2,0,0,8;645,0,1,-7,4,1,0,0,7;646,0,1,-18,-6,2,0,0,8;647,0,1,-23,0,1,0,0,8
+[S4:IMU] HT#1 648,0,1,-28,-7,2,0,0,8;649,0,1,31,3,2,0,0,9;650,0,1,12,-3,2,0,0,9;651,0,1,17,3,1,0,0,11
+[S4:IMU] HT#1 652,0,1,88,7,2,0,0,9;653,0,1,22,16,1,0,0,8;654,0,1,-4,9,2,0,0,8;655,0,1,13,11,2,0,0,8
+[S4:IMU] HT#1 656,0,1,66,19,1,0,0,7;657,0,1,-42,17,2,0,0,9;658,0,1,64,26,2,0,0,9;659,0,1,7,24,1,0,0,9
+[S4:IMU] HT#1 660,0,1,-46,18,2,0,0,9;661,0,1,112,28,2,0,0,9;662,0,1,-25,16,1,0,0,11;663,0,1,102,24,2,0,0,8
+[S4:IMU] HT#1 664,0,1,-32,21,2,0,0,8;665,0,1,83,28,1,0,0,7;666,0,1,13,23,2,0,0,9;667,0,1,35,31,2,0,0,9
+[S4:IMU] HT#1 668,0,1,-8,24,1,0,0,10;669,0,1,82,31,2,0,0,10;670,0,1,18,38,2,0,0,10;671,0,1,16,28,1,0,0,8
+[S4:IMU] HT#1 672,0,1,81,39,2,0,0,9;673,0,1,-44,24,2,0,0,9;674,0,1,90,36,1,0,0,10;675,0,1,-38,24,2,0,0,9
+[S4:IMU] HT#1 676,0,1,62,29,2,0,0,8;677,0,1,39,29,1,0,0,8;678,0,1,69,37,2,0,0,8;679,0,1,28,32,2,0,0,9
+[S4:IMU] HT#1 680,0,1,116,41,2,0,0,9;681,0,1,16,41,1,0,0,8;682,0,1,77,41,2,0,0,9;683,0,1,40,49,2,0,0,9
+[S4:IMU] HT#1 684,0,1,65,47,1,0,0,10;685,0,1,-13,49,2,0,0,8;686,0,1,46,48,2,0,0,10;687,1,1,27,47,2,0,0,9
+[S2:ROBOT] steer n=466 sens none=426 R=40 C=0 both=0 act straight=397 right=69 left=0 watch max=0mm bias=-4
+[S4:IMU] HT#1 688,1,1,72,47,2,1,0,12;689,1,1,-15,43,1,2,0,9;690,1,1,84,39,2,2,0,9;691,1,1,41,42,2,2,0,9
+[S4:IMU] HT#1 692,1,1,67,41,2,2,0,9;693,1,1,52,42,1,2,0,10;694,1,1,44,40,2,2,0,9;695,1,1,143,56,2,2,0,9
+[S4:IMU] HT#1 696,1,1,57,57,1,2,0,9;697,1,1,69,61,2,2,0,9;698,1,1,15,55,2,3,0,9;699,1,1,58,63,2,3,0,10
+[S4:IMU] HT#1 700,1,1,58,60,2,3,0,10;701,1,1,38,60,1,3,0,10;702,1,1,59,59,2,3,0,8;703,1,1,123,66,2,3,0,10
+[S4:IMU] HT#1 704,1,1,47,66,2,3,0,9;705,1,1,72,59,2,4,0,9;706,1,1,25,56,2,4,0,10;707,1,1,55,55,2,4,0,9
+[S4:IMU] HT#1 708,1,1,19,55,2,4,0,9;709,1,1,52,54,2,4,0,9;710,1,1,79,56,2,4,0,8;711,1,1,72,60,2,5,0,9
+[S4:IMU] HT#1 712,1,1,8,55,2,5,0,10;713,1,1,36,46,2,5,0,12;714,1,1,61,47,2,5,0,10;715,1,1,40,44,2,5,0,8
+[S4:IMU] HT#1 716,1,1,75,49,2,5,0,10;717,1,1,96,53,2,5,0,9;718,1,1,107,62,2,5,0,13;719,1,1,-38,53,2,6,0,8
+[S4:IMU] HT#1 720,1,1,21,47,2,6,0,11;721,1,1,62,46,2,6,0,8;722,1,1,74,53,2,6,0,9;723,1,1,10,50,2,6,0,9
+[S4:IMU] HT#1 724,1,1,99,54,2,6,0,9;725,1,1,53,55,2,6,0,9;726,1,1,34,51,2,7,0,9;727,1,1,108,53,2,7,0,9
+[S4:IMU] HT#1 728,1,1,54,47,2,7,0,9;729,1,1,-18,49,2,7,0,9;730,1,1,97,57,2,7,0,9;731,1,1,89,60,1,7,0,9
+[S4:IMU] HT#1 732,1,1,-3,52,2,7,0,9;733,1,1,33,54,1,7,0,9;734,1,1,125,57,2,8,0,9;735,1,1,-177,34,1,8,0,9
+[S4:IMU] HT#1 736,1,1,-61,24,2,8,0,9;737,1,1,160,29,2,8,0,9;738,1,1,39,28,2,8,0,9;739,1,1,-68,23,2,8,0,9
+[S4:IMU] HT#1 740,3,1,24,16,2,8,1,8;741,3,1,56,12,2,8,2,9;742,3,1,-4,12,2,8,3,9;743,3,1,-55,3,2,8,4,9
+[S4:IMU] HT#1 744,3,1,2,-8,2,8,5,9;745,3,1,97,19,2,8,6,8;746,3,1,-115,13,2,8,7,8;747,3,1,96,7,1,8,8,9
+[S4:IMU] HT#1 748,3,1,170,20,2,8,9,8;749,1,1,221,49,2,8,0,10;750,1,1,-197,27,1,8,0,9;751,1,1,-3,21,1,8,0,12
+[S4:IMU] HT#1 752,3,1,-104,11,2,8,1,9;753,3,1,-32,13,1,9,2,9;754,3,1,-103,3,2,9,3,9;755,3,1,93,2,2,9,4,10
+[S4:IMU] HT#1 756,3,1,-69,7,2,9,5,11;757,3,1,-66,-9,2,9,6,10;758,1,1,-46,-30,2,9,0,10;759,1,1,65,-46,2,9,0,8
+[S4:IMU] n=800 acc=(9,76,923)mg delta=(x:47,y:44)mg mag=(580,-44,79) pitch=5 height=9mm height_valid=1 state=0
+[S4:IMU] HT#1 760,1,1,0,-26,2,9,0,8;761,1,1,-10,-27,1,9,0,8;762,3,1,-26,-19,2,9,1,8;763,3,1,3,-15,2,9,2,8
+[S4:IMU] HT#1 764,3,1,10,-4,2,9,3,9;765,3,1,-40,-17,2,9,4,10;766,3,1,-11,-12,2,9,5,9;767,3,1,115,6,2,9,6,10
+[S4:IMU] HT#1 768,3,1,-47,5,2,9,7,9;769,3,1,60,5,2,9,8,9;770,3,1,-84,-3,1,9,9,9;771,0,1,61,4,2,9,0,8
+[S2:MOTION] state=2 fault=0 ticks L=8233 R=8379 PWM=15/19
+[S2:MOTION] ctrl late=0/1659 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=464 sens none=464 R=0 C=0 both=0 act straight=464 right=0 left=0 watch max=0mm bias=-4
+[S4:IMU] hump detector re-armed
+[S2:MOTION] state=2 fault=0 ticks L=9221 R=9389 PWM=15/19
+[S2:MOTION] ctrl late=0/1754 gap_max=12 loop_max=4 ms
+[S4:IMU] n=850 acc=(-69,36,923)mg delta=(x:-31,y:4)mg mag=(615,-79,105) pitch=0 height=9mm height_valid=1 state=0
+[S2:ROBOT] steer n=470 sens none=458 R=12 C=0 both=0 act straight=444 right=26 left=0 watch max=0mm bias=-5
+[S4:IMU] HT noise n=50 f=-38..0 |f|=17 raw=-116..94
+[S2:MOTION] state=2 fault=0 ticks L=10204 R=10362 PWM=15/19
+[S2:MOTION] ctrl late=0/1849 gap_max=12 loop_max=4 ms
+[S4:IMU] n=900 acc=(-8,30,858)mg delta=(x:30,y:-2)mg mag=(739,-69,119) pitch=0 height=9mm height_valid=1 state=0
+[S2:ROBOT] steer n=470 sens none=444 R=26 C=0 both=0 act straight=430 right=40 left=0 watch max=0mm bias=-5
+[S4:IMU] HT noise n=50 f=-22..32 |f|=10 raw=-204..162
+[S2:MOTION] state=2 fault=0 ticks L=11199 R=11219 PWM=15/19
+[S2:MOTION] ctrl late=0/1944 gap_max=12 loop_max=3 ms
+[S4:IMU] n=950 acc=(-29,74,921)mg delta=(x:9,y:42)mg mag=(907,-8,128) pitch=0 height=9mm height_valid=1 state=0
+[S2:ROBOT] steer n=472 sens none=374 R=98 C=0 both=0 act straight=331 right=141 left=0 watch max=0mm bias=-6
+[S4:IMU] HT noise n=50 f=-46..57 |f|=15 raw=-202..144
+[S2:MOTION] state=2 fault=0 ticks L=12180 R=11881 PWM=19/5
+[S2:MOTION] ctrl late=0/2039 gap_max=12 loop_max=4 ms
+[S4:IMU] n=1000 acc=(-53,-105,936)mg delta=(x:-15,y:-137)mg mag=(975,248,149) pitch=-10 height=9mm height_valid=1 state=0
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=12659 R=12113 PWM=0/0
+[S2:MOTION] ctrl late=0/2136 gap_max=12 loop_max=4 ms
+[S4:IMU] n=1050 acc=(-32,19,917)mg delta=(x:6,y:-13)mg mag=(957,343,173) pitch=0 height=9mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12659 R=12113 PWM=0/0
+[S2:MOTION] ctrl late=0/2236 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1100 acc=(-17,47,943)mg delta=(x:21,y:15)mg mag=(950,341,177) pitch=0 height=9mm height_valid=1 state=0
+[S4:IMU] EVENT TILT roll=0 deg lateral=-31 mg
+[S2:MOTION] state=5 fault=0 ticks L=12663 R=12114 PWM=0/0
+[S2:MOTION] ctrl late=0/2336 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1150 acc=(-178,-159,866)mg delta=(x:-140,y:-191)mg mag=(552,16,69) pitch=-10 height=9mm height_valid=1 state=0
+[S4:IMU] EVENT TILT roll=10 deg lateral=131 mg
+[S4:IMU] EVENT TILT roll=0 deg lateral=-6 mg
+[S2:MOTION] state=5 fault=0 ticks L=12663 R=12114 PWM=0/0
+[S2:MOTION] ctrl late=0/2436 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1200 acc=(11,-14,934)mg delta=(x:49,y:-46)mg mag=(546,-291,167) pitch=-5 height=9mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12663 R=12114 PWM=0/0
+[S2:MOTION] ctrl late=0/2536 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1250 acc=(-47,35,920)mg delta=(x:-9,y:3)mg mag=(559,-279,146) pitch=0 height=9mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12662 R=12114 PWM=0/0
+[S2:MOTION] ctrl late=0/2636 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1300 acc=(-33,27,922)mg delta=(x:5,y:-5)mg mag=(557,-279,146) pitch=0 height=9mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12662 R=12114 PWM=0/0
+[S2:MOTION] ctrl late=0/2736 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1350 acc=(-37,26,918)mg delta=(x:1,y:-6)mg mag=(555,-277,148) pitch=0 height=9mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12662 R=12114 PWM=0/0
+[S2:MOTION] ctrl late=0/2836 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1400 acc=(-33,26,918)mg delta=(x:5,y:-6)mg mag=(556,-279,145) pitch=0 height=9mm height_valid=1 state=0
+=== COM5 connected 18:06:24.748 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-37,28,922) mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=100 acc=(-38,30,929)mg delta=(x:-1,y:2)mg mag=(563,-280,147) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 635 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=150 acc=(-37,27,919)mg delta=(x:0,y:-1)mg mag=(554,-278,146) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=10 loop_max=2 ms
+wifi: link up, ip=172.20.10.3 t=4271 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S4:IMU] n=200 acc=(-34,36,917)mg delta=(x:3,y:8)mg mag=(557,-281,146) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=250 acc=(-36,30,917)mg delta=(x:1,y:2)mg mag=(558,-276,149) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=300 acc=(-37,28,917)mg delta=(x:0,y:0)mg mag=(557,-281,151) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=11 loop_max=3 ms
+[S1:MQTT] connected to 172.20.10.2 t=7330 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S4:IMU] n=350 acc=(-38,33,922)mg delta=(x:-1,y:5)mg mag=(556,-278,144) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=400 acc=(-34,28,921)mg delta=(x:3,y:0)mg mag=(557,-277,148) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=10 loop_max=4 ms
+[S4:IMU] n=450 acc=(-37,29,915)mg delta=(x:0,y:1)mg mag=(558,-278,147) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1000 gap_max=10 loop_max=2 ms
+[S4:IMU] n=500 acc=(-36,27,917)mg delta=(x:1,y:-1)mg mag=(556,-278,149) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1100 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] n=550 acc=(-43,-76,925)mg delta=(x:-6,y:-104)mg mag=(548,-286,148) pitch=-5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=403 R=491 PWM=16/19
+[S2:MOTION] ctrl late=0/1197 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=473 sens none=451 R=22 C=0 both=0 act straight=437 right=36 left=0 watch max=0mm bias=2
+[S4:IMU] HT noise n=50 f=-42..35 |f|=15 raw=-171..121
+[S4:IMU] n=600 acc=(-91,-57,901)mg delta=(x:-54,y:-85)mg mag=(542,-330,152) pitch=-5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=1422 R=1468 PWM=15/19
+[S2:MOTION] ctrl late=0/1292 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=469 sens none=420 R=49 C=0 both=0 act straight=391 right=78 left=0 watch max=0mm bias=2
+[S4:IMU] HT noise n=50 f=-41..13 |f|=12 raw=-291..135
+[S4:IMU] n=650 acc=(-28,41,919)mg delta=(x:9,y:13)mg mag=(571,-312,120) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=2393 R=2388 PWM=15/19
+[S2:MOTION] ctrl late=0/1387 gap_max=12 loop_max=5 ms
+[S2:ROBOT] steer n=470 sens none=447 R=23 C=0 both=0 act straight=432 right=38 left=0 watch max=0mm bias=2
+[S4:IMU] HT noise n=50 f=-31..19 |f|=10 raw=-184..126
+[S4:IMU] n=700 acc=(-47,56,909)mg delta=(x:-10,y:28)mg mag=(563,-271,106) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=3379 R=3386 PWM=16/5
+[S2:MOTION] ctrl late=0/1482 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=470 sens none=444 R=26 C=0 both=0 act straight=416 right=54 left=0 watch max=0mm bias=2
+[S4:IMU] HT noise n=50 f=-22..29 |f|=9 raw=-205..239
+[S4:IMU] n=750 acc=(2,-14,902)mg delta=(x:39,y:-42)mg mag=(562,-279,66) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=4356 R=4324 PWM=15/19
+[S2:MOTION] ctrl late=0/1577 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=467 sens none=450 R=17 C=0 both=0 act straight=435 right=32 left=0 watch max=0mm bias=2
+[S4:IMU] HT noise n=50 f=-23..54 |f|=13 raw=-150..138
+[S4:IMU] n=800 acc=(-48,97,898)mg delta=(x:-11,y:69)mg mag=(620,-199,-37) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=5348 R=5282 PWM=15/19
+[S2:MOTION] ctrl late=0/1672 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=469 sens none=455 R=14 C=0 both=0 act straight=440 right=29 left=0 watch max=0mm bias=0
+[S4:IMU] hump entry confirmed sign=1 peak=65mg
+[S2:MOTION] state=2 fault=0 ticks L=6301 R=6237 PWM=15/20
+[S2:MOTION] ctrl late=0/1768 gap_max=14 loop_max=5 ms
+[S4:IMU] n=850 acc=(-130,65,900)mg delta=(x:-93,y:37)mg mag=(625,-65,-49) pitch=0 height=0mm height_valid=0 state=1
+[S2:ROBOT] steer n=467 sens none=467 R=0 C=0 both=0 act straight=467 right=0 left=0 watch max=0mm bias=-4
+[S2:MOTION] state=2 fault=0 ticks L=7298 R=7381 PWM=17/5
+[S2:MOTION] ctrl late=0/1863 gap_max=12 loop_max=4 ms
+[S4:IMU] n=900 acc=(19,222,889)mg delta=(x:56,y:194)mg mag=(598,-36,1) pitch=10 height=0mm height_valid=0 state=1
+[S2:ROBOT] steer n=469 sens none=411 R=58 C=0 both=0 act straight=383 right=86 left=0 watch max=0mm bias=-3
+[S2:MOTION] state=2 fault=0 ticks L=8301 R=8347 PWM=15/19
+[S2:MOTION] ctrl late=0/1958 gap_max=12 loop_max=4 ms
+[S4:IMU] EVENT HUMP height=9 mm highest=9 mm peak=65 mg
+[S4:IMU] HT#1 event len=128 cols=n,ph,mv,raw,f,d,h,s,cyc
+[S4:IMU] HT#1 822,0,1,11,47,2,0,0,9;823,0,1,93,47,2,0,0,9;824,0,1,75,52,1,0,0,10;825,0,1,20,51,2,0,0,9
+[S4:IMU] n=950 acc=(-31,41,916)mg delta=(x:6,y:13)mg mag=(571,-48,73) pitch=0 height=9mm height_valid=1 state=0
+[S4:IMU] HT#1 826,0,1,112,65,2,0,0,10;827,0,1,29,63,1,0,0,9;828,0,1,59,62,2,0,0,9;829,1,1,5,57,2,0,0,9
+[S4:IMU] HT#1 830,1,1,42,57,1,1,0,9;831,1,1,87,53,2,1,0,9;832,1,1,58,58,2,1,0,9;833,1,1,98,58,2,1,0,9
+[S4:IMU] HT#1 834,1,1,-3,50,1,1,0,9;835,1,1,64,55,2,1,0,9;836,1,1,41,48,2,2,0,9;837,1,1,36,48,1,2,0,9
+[S4:IMU] HT#1 838,1,1,65,49,2,2,0,10;839,1,1,92,58,2,2,0,8;840,1,1,38,57,2,2,0,8;841,1,1,59,54,1,2,0,8
+[S4:IMU] HT#1 842,1,1,55,54,2,2,0,8;843,1,1,141,58,2,2,0,8;844,1,1,3,59,2,3,0,8;845,1,1,21,55,2,3,0,9
+[S4:IMU] HT#1 846,1,1,33,54,1,3,0,10;847,1,1,50,55,2,3,0,8;848,1,1,26,51,2,3,0,9;849,1,1,79,50,1,3,0,9
+[S4:IMU] HT#1 850,1,1,37,50,2,3,0,9;851,1,1,87,53,2,3,0,12;852,1,1,-14,46,1,4,0,8;853,1,1,-1,32,2,4,0,8
+[S4:IMU] HT#1 854,1,1,42,36,2,4,0,10;855,1,1,40,37,2,4,0,8;856,1,1,101,44,2,4,0,10;857,1,1,-6,39,2,4,0,9
+[S4:IMU] HT#1 858,1,1,53,41,2,4,0,10;859,1,1,98,43,2,4,0,9;860,1,1,94,49,2,4,0,9;861,1,1,36,44,2,4,0,11
+[S4:IMU] HT#1 862,1,1,119,57,2,5,0,9;863,1,1,26,60,2,5,0,9;864,1,1,82,64,2,5,0,9;865,1,1,21,62,2,5,0,9
+[S4:IMU] HT#1 866,1,1,49,57,2,5,0,9;867,1,1,29,60,2,5,0,9;868,1,1,83,63,2,6,0,10;869,1,1,24,56,2,6,0,9
+[S4:IMU] HT#1 870,1,1,13,48,2,6,0,10;871,1,1,48,49,2,6,0,9;872,1,1,45,42,2,6,0,8;873,1,1,87,48,2,6,0,9
+[S4:IMU] HT#1 874,1,1,76,47,3,6,0,9;875,1,1,41,49,1,7,0,10;876,1,1,85,53,3,7,0,8;877,1,1,27,52,1,7,0,10
+[S4:IMU] HT#1 878,1,1,44,49,3,7,0,8;879,1,1,-9,45,1,7,0,10;880,1,1,119,56,2,7,0,8;881,1,1,7,52,2,7,0,9
+[S2:ROBOT] steer n=470 sens none=456 R=14 C=0 both=0 act straight=441 right=29 left=0 watch max=0mm bias=-4
+[S4:IMU] HT#1 882,1,1,95,57,1,7,0,9;883,1,1,80,56,2,8,0,9;884,1,1,-62,42,1,8,0,9;885,1,1,-45,34,2,8,0,8
+[S4:IMU] HT#1 886,1,1,41,29,1,8,0,8;887,1,1,94,36,2,8,0,8;888,1,1,102,42,2,8,0,8;889,1,1,-103,32,2,8,0,8
+[S4:IMU] HT#1 890,1,1,42,25,2,8,0,9;891,1,1,109,35,2,8,0,9;892,1,1,-21,23,2,8,0,10;893,3,1,29,18,2,8,1,9
+[S4:IMU] HT#1 894,1,1,0,24,2,8,0,8;895,1,1,13,30,2,8,0,9;896,1,1,63,32,2,9,0,8;897,3,1,-91,14,2,9,1,10
+[S4:IMU] HT#1 898,3,1,116,15,2,9,2,8;899,1,1,39,29,1,9,0,11;900,1,1,194,45,2,9,0,9;901,1,1,25,36,1,9,0,10
+[S4:IMU] HT#1 902,1,1,-91,29,2,9,0,10;903,3,1,-89,17,1,9,1,9;904,3,1,-113,6,2,9,2,9;905,1,1,206,25,1,9,0,9
+[S4:IMU] HT#1 906,3,1,-37,15,2,9,1,8;907,3,1,-130,12,2,9,2,8;908,3,1,19,2,2,9,3,9;909,3,1,-35,-5,2,9,4,11
+[S4:IMU] HT#1 910,1,1,35,-21,2,9,0,8;911,1,1,-102,-33,2,9,0,9;912,3,1,39,-20,2,9,1,9;913,3,1,-82,-20,2,9,2,9
+[S4:IMU] HT#1 914,3,1,77,-1,2,9,3,11;915,1,1,-67,-28,2,9,0,9;916,3,1,100,-14,2,9,1,8;917,3,1,-24,-4,1,9,2,8
+[S4:IMU] HT#1 918,3,1,15,-4,2,9,3,8;919,3,1,27,1,2,9,4,8;920,3,1,20,0,2,9,5,10;921,3,1,-52,5,2,9,6,10
+[S4:IMU] hump detector re-armed
+[S4:IMU] HT#1 922,3,1,125,13,1,9,7,9;923,1,1,4,22,2,9,0,10;924,1,1,69,21,1,9,0,9;925,1,1,-27,25,1,9,0,9
+[S4:IMU] HT#1 926,3,1,-250,-9,2,9,1,8;927,3,1,67,0,2,9,2,9;928,3,1,13,0,1,9,3,9;929,3,1,-76,-10,2,9,4,8
+[S4:IMU] HT#1 930,3,1,-75,-20,2,9,5,9;931,3,1,-43,-19,2,9,6,10;932,1,1,46,-27,1,9,0,8;933,1,1,-96,-37,2,9,0,10
+[S4:IMU] HT#1 934,1,1,63,-37,2,9,0,9;935,1,1,-41,-39,2,9,0,9;936,3,1,58,-8,2,9,1,9;937,1,1,-74,-22,2,9,0,10
+[S4:IMU] HT#1 938,3,1,51,-18,2,9,1,8;939,1,1,-107,-21,1,9,0,8;940,3,1,21,-12,2,9,1,9;941,3,1,-38,-11,2,9,2,9
+[S4:IMU] HT#1 942,3,1,8,-15,2,9,3,10;943,3,1,115,5,2,9,4,8;944,3,1,-71,-7,2,9,5,9;945,3,1,63,2,2,9,6,9
+[S4:IMU] HT#1 946,3,1,-122,-15,2,9,7,11;947,3,1,-10,-9,2,9,8,8;948,3,1,-4,-14,2,9,9,9;949,0,1,-2,-4,1,9,0,10
+[S2:MOTION] state=2 fault=0 ticks L=9287 R=9331 PWM=15/19
+[S2:MOTION] ctrl late=0/2053 gap_max=12 loop_max=4 ms
+[S4:IMU] n=1000 acc=(-58,73,955)mg delta=(x:-21,y:45)mg mag=(617,-76,103) pitch=5 height=9mm height_valid=1 state=0
+[S2:ROBOT] steer n=471 sens none=452 R=19 C=0 both=0 act straight=438 right=33 left=0 watch max=0mm bias=-4
+[S4:IMU] HT noise n=50 f=-20..11 |f|=6 raw=-83..87
+[S2:MOTION] state=2 fault=0 ticks L=10277 R=10361 PWM=15/19
+[S2:MOTION] ctrl late=0/2148 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1050 acc=(10,-70,931)mg delta=(x:47,y:-98)mg mag=(736,-74,110) pitch=-5 height=9mm height_valid=1 state=0
+[S2:ROBOT] steer n=474 sens none=474 R=0 C=0 both=0 act straight=474 right=0 left=0 watch max=0mm bias=-4
+[S4:IMU] HT noise n=50 f=-35..20 |f|=10 raw=-177..131
+[S2:MOTION] state=2 fault=0 ticks L=11281 R=11232 PWM=15/19
+[S2:MOTION] ctrl late=0/2243 gap_max=13 loop_max=5 ms
+[S4:IMU] n=1100 acc=(-5,114,926)mg delta=(x:32,y:86)mg mag=(909,-11,128) pitch=5 height=9mm height_valid=1 state=0
+[S2:ROBOT] steer n=469 sens none=387 R=82 C=0 both=0 act straight=345 right=124 left=0 watch max=0mm bias=-5
+[S4:IMU] HT noise n=50 f=-28..47 |f|=15 raw=-193..176
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=12140 R=11859 PWM=0/0
+[S2:MOTION] ctrl late=0/2339 gap_max=12 loop_max=3 ms
+[S4:IMU] n=1150 acc=(-37,28,919)mg delta=(x:0,y:0)mg mag=(977,111,133) pitch=0 height=9mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12140 R=11859 PWM=0/0
+[S2:MOTION] ctrl late=0/2439 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1200 acc=(-55,4,921)mg delta=(x:-18,y:-24)mg mag=(976,118,131) pitch=0 height=9mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12141 R=11864 PWM=0/0
+[S2:MOTION] ctrl late=0/2539 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=10 deg lateral=132 mg
+[S4:IMU] n=1250 acc=(-26,282,985)mg delta=(x:11,y:254)mg mag=(684,47,89) pitch=15 height=9mm height_valid=1 state=2
+[S4:IMU] EVENT TILT roll=-5 deg lateral=-90 mg
+[S2:MOTION] state=5 fault=0 ticks L=12141 R=11864 PWM=0/0
+[S2:MOTION] ctrl late=0/2639 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1300 acc=(-160,127,951)mg delta=(x:-123,y:99)mg mag=(537,-263,189) pitch=5 height=9mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12141 R=11864 PWM=0/0
+[S2:MOTION] ctrl late=0/2739 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1350 acc=(107,192,894)mg delta=(x:144,y:164)mg mag=(561,-275,144) pitch=10 height=9mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12140 R=11864 PWM=0/0
+[S2:MOTION] ctrl late=0/2839 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1400 acc=(-35,27,924)mg delta=(x:2,y:-1)mg mag=(552,-279,148) pitch=0 height=9mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=12140 R=11864 PWM=0/0
+[S2:MOTION] ctrl late=0/2939 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1450 acc=(-48,17,928)mg delta=(x:-11,y:-11)mg mag=(551,-279,150) pitch=0 height=9mm height_valid=1 state=0
+=== COM5 connected 18:06:55.729 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-35,31,923) mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=100 acc=(-35,30,913)mg delta=(x:0,y:-1)mg mag=(552,-279,144) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 592 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=150 acc=(-30,32,915)mg delta=(x:5,y:1)mg mag=(552,-277,145) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3 t=4052 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=200 acc=(-34,29,921)mg delta=(x:1,y:-2)mg mag=(555,-281,145) pitch=0 height=0mm height_valid=0 state=0
+[S1:MQTT] connected to 172.20.10.2 t=4350 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=250 acc=(-27,32,920)mg delta=(x:8,y:1)mg mag=(551,-282,146) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=300 acc=(-34,30,919)mg delta=(x:1,y:-1)mg mag=(555,-280,145) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=10 loop_max=4 ms
+[S4:IMU] n=350 acc=(-36,33,914)mg delta=(x:-1,y:2)mg mag=(553,-279,145) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] n=400 acc=(2,-6,902)mg delta=(x:37,y:-37)mg mag=(536,-299,148) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=730 R=764 PWM=15/19
+[S2:MOTION] ctrl late=0/895 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=468 sens none=440 R=28 C=0 both=0 act straight=425 right=43 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-49..17 |f|=16 raw=-190..183
+[S4:IMU] n=450 acc=(-40,91,899)mg delta=(x:-5,y:60)mg mag=(545,-323,155) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=1695 R=1710 PWM=15/19
+[S2:MOTION] ctrl late=0/990 gap_max=14 loop_max=5 ms
+[S2:ROBOT] steer n=476 sens none=404 R=72 C=0 both=0 act straight=376 right=100 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-31..23 |f|=12 raw=-163..119
+[S4:IMU] n=500 acc=(-40,-54,916)mg delta=(x:-5,y:-85)mg mag=(568,-312,115) pitch=-5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=2679 R=2660 PWM=19/5
+[S2:MOTION] ctrl late=0/1085 gap_max=13 loop_max=4 ms
+[S2:ROBOT] steer n=471 sens none=409 R=62 C=0 both=0 act straight=368 right=103 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-28..19 |f|=10 raw=-181..164
+[S4:IMU] n=550 acc=(-15,89,903)mg delta=(x:20,y:58)mg mag=(563,-271,104) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=3660 R=3607 PWM=15/19
+[S2:MOTION] ctrl late=0/1181 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=473 sens none=454 R=19 C=0 both=0 act straight=440 right=33 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-34..37 |f|=12 raw=-217..230
+[S4:IMU] n=600 acc=(-57,-26,911)mg delta=(x:-22,y:-57)mg mag=(567,-273,50) pitch=-5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=4652 R=4617 PWM=15/19
+[S2:MOTION] ctrl late=0/1276 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=467 sens none=450 R=17 C=0 both=0 act straight=436 right=31 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-14..23 |f|=6 raw=-120..114
+[S4:IMU] n=650 acc=(-70,6,921)mg delta=(x:-35,y:-25)mg mag=(617,-204,-52) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=5653 R=5574 PWM=15/19
+[S2:MOTION] ctrl late=0/1371 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-3..42 |f|=18 raw=-75..101
+[S4:IMU] hump entry confirmed sign=1 peak=42mg
+[S4:IMU] n=700 acc=(-165,138,877)mg delta=(x:-130,y:107)mg mag=(636,-62,-39) pitch=5 height=0mm height_valid=0 state=1
+[S2:MOTION] state=2 fault=0 ticks L=6615 R=6585 PWM=15/20
+[S2:MOTION] ctrl late=0/1466 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=-6
+[S4:IMU] n=750 acc=(-21,-21,926)mg delta=(x:14,y:-52)mg mag=(614,-22,18) pitch=-5 height=0mm height_valid=0 state=1
+[S2:MOTION] state=2 fault=0 ticks L=7648 R=7686 PWM=15/19
+[S2:MOTION] ctrl late=0/1561 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=468 sens none=399 R=69 C=0 both=0 act straight=370 right=98 left=0 watch max=0mm bias=-6
+[S4:IMU] EVENT HUMP height=7 mm highest=7 mm peak=65 mg
+[S4:IMU] HT#1 event len=128 cols=n,ph,mv,raw,f,d,h,s,cyc
+[S4:IMU] HT#1 638,0,1,64,13,2,0,0,9;639,0,1,-75,8,1,0,0,10;640,0,1,96,17,2,0,0,8;641,0,1,-20,17,2,0,0,9
+[S4:IMU] HT#1 642,0,1,-22,6,1,0,0,9;643,0,1,29,10,2,0,0,10;644,0,1,-61,0,1,0,0,8;645,0,1,6,2,2,0,0,9
+[S4:IMU] HT#1 646,0,1,46,6,2,0,0,9;647,0,1,-28,3,1,0,0,9;648,0,1,51,2,2,0,0,9;649,0,1,7,10,2,0,0,9
+[S4:IMU] HT#1 650,0,1,-25,-1,1,0,0,9;651,0,1,-36,-3,2,0,0,8;652,0,1,2,0,2,0,0,9;653,0,1,47,0,1,0,0,10
+[S4:IMU] HT#1 654,0,1,-29,4,2,0,0,9;655,0,1,69,10,2,0,0,9;656,0,1,-10,4,1,0,0,9;657,0,1,28,10,2,0,0,10
+[S4:IMU] HT#1 658,0,1,-21,3,2,0,0,9;659,0,1,6,3,1,0,0,9;660,0,1,36,9,2,0,0,10;661,0,1,22,15,2,0,0,11
+[S4:IMU] HT#1 662,0,1,67,21,1,0,0,9;663,0,1,8,17,2,0,0,9;664,0,1,20,22,2,0,0,10;665,0,1,73,22,1,0,0,9
+[S4:IMU] HT#1 666,0,1,91,33,2,0,0,9;667,0,1,-23,27,1,0,0,8;668,0,1,28,32,2,0,0,9;669,0,1,47,36,1,0,0,10
+[S4:IMU] HT#1 670,0,1,37,37,2,0,0,9;671,0,1,69,41,2,0,0,8;672,0,1,54,40,1,0,0,10;673,0,1,-53,34,2,0,0,10
+[S4:IMU] HT#1 674,0,1,73,39,2,0,0,8;675,0,1,-1,32,1,0,0,10;676,0,1,-3,22,2,0,0,8;677,0,1,84,33,2,0,0,9
+[S4:IMU] HT#1 678,0,1,11,31,1,0,0,9;679,0,1,18,28,2,0,0,9;680,0,1,64,31,2,0,0,10;681,0,1,-17,23,2,0,0,9
+[S4:IMU] HT#1 682,0,1,62,23,1,0,0,8;683,0,1,34,32,2,0,0,8;684,0,1,101,35,2,0,0,9;685,0,1,-12,34,2,0,0,10
+[S4:IMU] HT#1 686,0,1,78,42,1,0,0,9;687,0,1,20,35,2,0,0,10;688,0,1,52,40,2,0,0,8;689,0,1,-24,35,1,0,0,8
+[S4:IMU] HT#1 690,0,1,54,34,2,0,0,10;691,0,1,30,39,2,0,0,10;692,1,1,25,35,2,0,0,9;693,1,1,70,39,1,2,0,9
+[S4:IMU] HT#1 694,1,1,14,30,2,2,0,10;695,1,1,96,41,2,2,0,10;696,1,1,-1,33,2,2,0,9;697,1,1,84,40,2,2,0,9
+[S4:IMU] HT#1 698,1,1,29,37,1,2,0,9;699,1,1,127,52,2,2,0,10;700,1,1,107,58,2,2,0,8;701,1,1,-31,52,2,2,0,10
+[S4:IMU] HT#1 702,1,1,57,55,2,3,0,9;703,1,1,135,61,2,3,0,9;704,1,1,-24,57,2,3,0,9;705,1,1,121,60,3,3,0,10
+[S4:IMU] HT#1 706,1,1,43,64,2,3,0,10;707,1,1,36,60,2,3,0,9;708,1,1,79,65,2,4,0,10;709,1,1,-29,49,2,4,0,11
+[S4:IMU] HT#1 710,1,1,10,39,2,4,0,8;711,1,1,47,47,3,4,0,8;712,1,1,50,46,2,4,0,9;713,1,1,65,39,2,4,0,9
+[S4:IMU] HT#1 714,1,1,-49,37,2,4,0,9;715,1,1,142,39,2,5,0,9;716,1,1,-17,33,3,5,0,9;717,1,1,2,30,2,5,0,9
+[S4:IMU] HT#1 718,1,1,68,28,2,5,0,9;719,1,1,41,35,2,5,0,10;720,1,1,58,40,3,5,0,10;721,1,1,15,37,2,5,0,9
+[S4:IMU] HT#1 722,1,1,113,43,2,5,0,9;723,1,1,30,40,2,5,0,10;724,1,1,-72,38,2,5,0,8;725,1,1,184,42,1,6,0,8
+[S4:IMU] HT#1 726,1,1,31,47,2,6,0,8;727,1,1,55,52,1,6,0,9;728,1,1,-8,44,2,6,0,9;729,1,1,-122,28,2,6,0,9
+[S4:IMU] HT#1 730,1,1,62,28,1,6,0,9;731,1,1,-22,25,2,6,0,10;732,3,1,28,16,2,6,1,10;733,3,1,26,16,2,6,2,9
+[S4:IMU] HT#1 734,1,1,6,24,2,6,0,10;735,3,1,47,10,2,6,1,9;736,3,1,-6,6,2,6,2,10;737,3,1,-48,-3,2,6,3,9
+[S4:IMU] HT#1 738,3,1,78,4,2,6,4,9;739,3,1,-38,13,2,6,5,9;740,3,1,45,11,2,6,6,9;741,1,1,114,25,2,6,0,10
+[S4:IMU] HT#1 742,1,1,146,37,1,6,0,9;743,1,1,32,37,2,7,0,9;744,1,1,15,38,1,7,0,10;745,1,1,-126,21,1,7,0,10
+[S4:IMU] HT#1 746,1,1,20,23,2,7,0,9;747,3,1,-204,8,1,7,1,8;748,3,1,91,9,2,7,2,8;749,3,1,-106,2,2,7,3,9
+[S4:IMU] HT#1 750,3,1,-52,-7,2,7,4,9;751,3,1,-15,-19,2,7,5,9;752,1,1,61,-28,2,7,0,9;753,1,1,-98,-41,2,7,0,9
+[S4:IMU] HT#1 754,1,1,23,-40,2,7,0,8;755,1,1,51,-22,2,7,0,10;756,3,1,46,-20,2,7,1,9;757,3,1,-76,-7,2,7,2,9
+[S4:IMU] HT#1 758,3,1,43,-12,1,7,3,9;759,3,1,-77,-9,2,7,4,7;760,3,1,80,3,2,7,5,9;761,3,1,-77,-2,2,7,6,9
+[S4:IMU] HT#1 762,3,1,46,-3,2,7,7,9;763,3,1,-79,-2,2,7,8,10;764,3,1,9,-3,2,7,9,9;765,0,1,2,-8,2,7,0,10
+[S4:IMU] n=800 acc=(-79,87,951)mg delta=(x:-44,y:56)mg mag=(582,-45,84) pitch=5 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=8640 R=8671 PWM=15/19
+[S2:MOTION] ctrl late=0/1656 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=468 sens none=460 R=8 C=0 both=0 act straight=446 right=22 left=0 watch max=0mm bias=-6
+[S4:IMU] hump detector re-armed
+[S2:MOTION] state=2 fault=0 ticks L=9646 R=9677 PWM=15/19
+[S2:MOTION] ctrl late=0/1751 gap_max=12 loop_max=3 ms
+[S4:IMU] n=850 acc=(-46,31,916)mg delta=(x:-11,y:0)mg mag=(626,-73,104) pitch=0 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=472 sens none=453 R=19 C=0 both=0 act straight=438 right=34 left=0 watch max=0mm bias=-6
+[S4:IMU] HT noise n=50 f=-25..34 |f|=9 raw=-228..179
+[S2:MOTION] state=2 fault=0 ticks L=10644 R=10684 PWM=15/19
+[S2:MOTION] ctrl late=0/1846 gap_max=12 loop_max=4 ms
+[S4:IMU] n=900 acc=(-27,-41,912)mg delta=(x:8,y:-72)mg mag=(758,-60,124) pitch=-5 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=470 sens none=452 R=18 C=0 both=0 act straight=437 right=33 left=0 watch max=0mm bias=-6
+[S4:IMU] HT noise n=50 f=-31..25 |f|=12 raw=-288..162
+[S2:MOTION] state=2 fault=0 ticks L=11630 R=11532 PWM=15/19
+[S2:MOTION] ctrl late=0/1941 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=469 sens none=374 R=95 C=0 both=0 act straight=344 right=125 left=0 watch max=0mm bias=-7
+[S4:IMU] n=950 acc=(-18,71,914)mg delta=(x:17,y:40)mg mag=(932,25,130) pitch=0 height=7mm height_valid=1 state=0
+[S4:IMU] HT noise n=50 f=-32..44 |f|=14 raw=-171..137
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=1 fault=0 ticks L=12620 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/2037 gap_max=12 loop_max=4 ms
+[S4:IMU] n=1000 acc=(-34,1,922)mg delta=(x:1,y:-30)mg mag=(982,249,151) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/2137 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1050 acc=(-35,26,921)mg delta=(x:0,y:-5)mg mag=(981,248,155) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/2237 gap_max=10 loop_max=4 ms
+[S4:IMU] n=1100 acc=(-26,31,924)mg delta=(x:9,y:0)mg mag=(982,250,152) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/2337 gap_max=10 loop_max=4 ms
+[S4:IMU] n=1150 acc=(-39,23,917)mg delta=(x:-4,y:-8)mg mag=(983,247,156) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/2437 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1200 acc=(-38,23,926)mg delta=(x:-3,y:-8)mg mag=(981,249,152) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/2537 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1250 acc=(-33,26,921)mg delta=(x:2,y:-5)mg mag=(984,248,152) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/2637 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1300 acc=(-33,26,919)mg delta=(x:2,y:-5)mg mag=(981,249,151) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/2737 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1350 acc=(-28,25,918)mg delta=(x:7,y:-6)mg mag=(981,248,153) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/2837 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1400 acc=(-27,27,917)mg delta=(x:8,y:-4)mg mag=(980,250,151) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/2937 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1450 acc=(-34,28,921)mg delta=(x:1,y:-3)mg mag=(982,249,157) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/3037 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1500 acc=(-28,22,921)mg delta=(x:7,y:-9)mg mag=(981,249,155) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/3137 gap_max=10 loop_max=4 ms
+[S4:IMU] n=1550 acc=(-33,27,921)mg delta=(x:2,y:-4)mg mag=(983,252,154) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/3237 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1600 acc=(-31,24,919)mg delta=(x:4,y:-7)mg mag=(981,254,152) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/3337 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1650 acc=(-31,29,920)mg delta=(x:4,y:-2)mg mag=(985,247,150) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/3437 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1700 acc=(-25,27,919)mg delta=(x:10,y:-4)mg mag=(983,250,156) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/3537 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1750 acc=(-33,27,921)mg delta=(x:2,y:-4)mg mag=(982,249,154) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/3637 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1800 acc=(-29,22,920)mg delta=(x:6,y:-9)mg mag=(980,250,155) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/3737 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/3837 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1850 acc=(-32,27,922)mg delta=(x:3,y:-4)mg mag=(984,248,153) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/3937 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1900 acc=(-32,28,918)mg delta=(x:3,y:-3)mg mag=(982,251,152) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/4037 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1950 acc=(-29,55,895)mg delta=(x:6,y:24)mg mag=(985,250,151) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/4137 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2000 acc=(-32,30,918)mg delta=(x:3,y:-1)mg mag=(977,250,151) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/4237 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2050 acc=(-52,21,926)mg delta=(x:-17,y:-10)mg mag=(980,246,158) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/4337 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2100 acc=(-30,12,922)mg delta=(x:5,y:-19)mg mag=(981,243,157) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/4437 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2150 acc=(-33,11,924)mg delta=(x:2,y:-20)mg mag=(980,246,157) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/4537 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2200 acc=(-27,13,916)mg delta=(x:8,y:-18)mg mag=(982,247,158) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/4637 gap_max=10 loop_max=2 ms
+[S4:IMU] n=2250 acc=(-28,11,920)mg delta=(x:7,y:-20)mg mag=(982,246,158) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/4737 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2300 acc=(-29,12,921)mg delta=(x:6,y:-19)mg mag=(984,249,158) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/4837 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2350 acc=(-30,12,921)mg delta=(x:5,y:-19)mg mag=(980,247,159) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/4937 gap_max=10 loop_max=2 ms
+[S4:IMU] n=2400 acc=(-31,14,917)mg delta=(x:4,y:-17)mg mag=(981,246,157) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/5037 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2450 acc=(-34,8,912)mg delta=(x:1,y:-23)mg mag=(981,249,156) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/5137 gap_max=10 loop_max=2 ms
+[S4:IMU] n=2500 acc=(-28,17,920)mg delta=(x:7,y:-14)mg mag=(983,247,160) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/5237 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2550 acc=(-30,14,921)mg delta=(x:5,y:-17)mg mag=(984,248,156) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/5337 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2600 acc=(-34,12,923)mg delta=(x:1,y:-19)mg mag=(982,246,158) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/5437 gap_max=10 loop_max=2 ms
+[S4:IMU] n=2650 acc=(-30,11,922)mg delta=(x:5,y:-20)mg mag=(982,246,158) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/5537 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2700 acc=(-32,14,918)mg delta=(x:3,y:-17)mg mag=(982,247,158) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/5637 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2750 acc=(-34,12,918)mg delta=(x:1,y:-19)mg mag=(981,247,156) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/5737 gap_max=10 loop_max=2 ms
+[S4:IMU] n=2800 acc=(-34,10,922)mg delta=(x:1,y:-21)mg mag=(982,247,157) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/5837 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2850 acc=(-26,12,923)mg delta=(x:9,y:-19)mg mag=(982,249,158) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/5937 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/6037 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2900 acc=(-35,11,923)mg delta=(x:0,y:-20)mg mag=(982,246,157) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/6137 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2950 acc=(-31,8,925)mg delta=(x:4,y:-23)mg mag=(981,246,159) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/6237 gap_max=10 loop_max=2 ms
+[S4:IMU] n=3000 acc=(-34,12,921)mg delta=(x:1,y:-19)mg mag=(982,248,156) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/6337 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3050 acc=(-36,10,916)mg delta=(x:-1,y:-21)mg mag=(985,247,156) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/6437 gap_max=10 loop_max=4 ms
+[S4:IMU] n=3100 acc=(-28,15,922)mg delta=(x:7,y:-16)mg mag=(979,247,159) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/6537 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3150 acc=(-31,13,918)mg delta=(x:4,y:-18)mg mag=(981,246,158) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/6637 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3200 acc=(-32,11,923)mg delta=(x:3,y:-20)mg mag=(983,250,160) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/6737 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3250 acc=(-34,21,908)mg delta=(x:1,y:-10)mg mag=(979,252,153) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/6837 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3300 acc=(-36,18,931)mg delta=(x:-1,y:-13)mg mag=(975,246,153) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12618 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/6937 gap_max=10 loop_max=4 ms
+[S4:IMU] n=3350 acc=(-16,41,906)mg delta=(x:19,y:10)mg mag=(981,251,162) pitch=0 height=7mm height_valid=1 state=0
+[S4:IMU] EVENT TILT roll=15 deg lateral=234 mg
+[S4:IMU] EVENT TILT roll=-15 deg lateral=-228 mg
+[S2:MOTION] state=1 fault=0 ticks L=12622 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/7037 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3400 acc=(-59,248,979)mg delta=(x:-24,y:217)mg mag=(581,-263,176) pitch=15 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12622 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/7137 gap_max=10 loop_max=2 ms
+[S4:IMU] n=3450 acc=(-37,27,918)mg delta=(x:-2,y:-4)mg mag=(557,-289,158) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=1 fault=0 ticks L=12622 R=12097 PWM=0/0
+[S2:MOTION] ctrl late=0/7237 gap_max=11 loop_max=3 ms
+=== COM5 connected 18:08:09.162 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-37,29,923) mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=100 acc=(-36,24,925)mg delta=(x:1,y:-5)mg mag=(559,-286,157) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 664 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=150 acc=(-33,28,921)mg delta=(x:4,y:-1)mg mag=(561,-288,157) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3 t=4105 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=200 acc=(-36,25,922)mg delta=(x:1,y:-4)mg mag=(562,-289,156) pitch=0 height=0mm height_valid=0 state=0
+[S1:MQTT] connected to 172.20.10.2 t=4555 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=250 acc=(-35,23,923)mg delta=(x:2,y:-6)mg mag=(557,-287,158) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=300 acc=(-38,23,926)mg delta=(x:-1,y:-6)mg mag=(558,-288,156) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=350 acc=(-37,29,916)mg delta=(x:0,y:0)mg mag=(562,-286,158) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=10 loop_max=2 ms
+[S4:IMU] n=400 acc=(-32,23,923)mg delta=(x:5,y:-6)mg mag=(559,-289,160) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=10 loop_max=4 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] n=450 acc=(-33,29,921)mg delta=(x:4,y:0)mg mag=(559,-285,158) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=234 R=205 PWM=15/19
+[S2:MOTION] ctrl late=0/998 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=-1
+[S4:IMU] n=500 acc=(-13,89,903)mg delta=(x:24,y:60)mg mag=(567,-331,147) pitch=5 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-52..9 |f|=14 raw=-213..77
+[S2:MOTION] state=2 fault=0 ticks L=1277 R=1269 PWM=15/19
+[S2:MOTION] ctrl late=0/1093 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=-3
+[S4:IMU] n=550 acc=(-12,-17,940)mg delta=(x:25,y:-46)mg mag=(577,-307,112) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-20..17 |f|=6 raw=-84..85
+[S2:MOTION] state=2 fault=0 ticks L=2310 R=2307 PWM=15/19
+[S2:MOTION] ctrl late=0/1188 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=-5
+[S4:IMU] n=600 acc=(-22,63,894)mg delta=(x:15,y:34)mg mag=(563,-286,104) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-22..6 |f|=6 raw=-93..75
+[S2:MOTION] state=2 fault=0 ticks L=3303 R=3350 PWM=15/19
+[S2:MOTION] ctrl late=0/1283 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=469 sens none=450 R=19 C=0 both=0 act straight=436 right=33 left=0 watch max=0mm bias=-5
+[S4:IMU] n=650 acc=(-21,36,924)mg delta=(x:16,y:7)mg mag=(594,-271,37) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-25..32 |f|=8 raw=-169..166
+[S2:MOTION] state=2 fault=0 ticks L=4250 R=4296 PWM=15/19
+[S2:MOTION] ctrl late=0/1378 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=470 sens none=451 R=19 C=0 both=0 act straight=436 right=34 left=0 watch max=0mm bias=-5
+[S4:IMU] n=700 acc=(4,85,913)mg delta=(x:41,y:56)mg mag=(649,-189,-70) pitch=5 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-30..31 |f|=10 raw=-211..171
+[S2:MOTION] state=2 fault=0 ticks L=5220 R=5216 PWM=15/19
+[S2:MOTION] ctrl late=0/1473 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=470 sens none=434 R=36 C=0 both=0 act straight=405 right=65 left=0 watch max=0mm bias=-5
+[S4:IMU] n=750 acc=(-42,86,924)mg delta=(x:-5,y:57)mg mag=(666,-75,-63) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=6112 R=6111 PWM=15/19
+[S2:MOTION] ctrl late=0/1569 gap_max=12 loop_max=4 ms
+[S4:IMU] HT noise n=50 f=-24..25 |f|=8 raw=-171..139
+[S2:ROBOT] steer n=467 sens none=427 R=40 C=0 both=0 act straight=398 right=69 left=0 watch max=0mm bias=-5
+[S4:IMU] n=800 acc=(-61,-2,898)mg delta=(x:-24,y:-31)mg mag=(617,-23,14) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=7001 R=7039 PWM=19/5
+[S2:MOTION] ctrl late=0/1664 gap_max=12 loop_max=4 ms
+[S4:IMU] HT noise n=50 f=-21..29 |f|=8 raw=-174..157
+[S2:ROBOT] steer n=468 sens none=424 R=44 C=0 both=0 act straight=396 right=72 left=0 watch max=0mm bias=-5
+[S2:MOTION] state=2 fault=0 ticks L=7926 R=7953 PWM=15/19
+[S2:MOTION] ctrl late=0/1759 gap_max=12 loop_max=3 ms
+[S4:IMU] n=850 acc=(-22,29,906)mg delta=(x:15,y:0)mg mag=(589,-34,83) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-52..30 |f|=16 raw=-212..228
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=1 fault=0 ticks L=8478 R=8502 PWM=0/0
+[S2:MOTION] ctrl late=0/1857 gap_max=11 loop_max=5 ms
+[S4:IMU] n=900 acc=(-36,24,923)mg delta=(x:1,y:-5)mg mag=(600,-54,99) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=8478 R=8502 PWM=0/0
+[S2:MOTION] ctrl late=0/1957 gap_max=10 loop_max=2 ms
+[S4:IMU] n=950 acc=(-30,28,916)mg delta=(x:7,y:-1)mg mag=(601,-52,98) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=8478 R=8502 PWM=0/0
+[S2:MOTION] ctrl late=0/2057 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1000 acc=(-30,56,916)mg delta=(x:7,y:27)mg mag=(604,-49,100) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] EVENT TILT roll=5 deg lateral=55 mg
+[S2:MOTION] state=1 fault=0 ticks L=8478 R=8502 PWM=0/0
+[S2:MOTION] ctrl late=0/2157 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=0 deg lateral=-32 mg
+[S4:IMU] n=1050 acc=(-159,-173,865)mg delta=(x:-122,y:-202)mg mag=(577,-250,177) pitch=-10 height=0mm height_valid=0 state=0
+[S4:IMU] EVENT TILT roll=25 deg lateral=387 mg
+[S2:MOTION] state=1 fault=0 ticks L=8478 R=8502 PWM=0/0
+[S2:MOTION] ctrl late=0/2257 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1100 acc=(6,37,938)mg delta=(x:43,y:8)mg mag=(551,-283,156) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=8472 R=8501 PWM=0/0
+[S2:MOTION] ctrl late=0/2357 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1150 acc=(-34,31,922)mg delta=(x:3,y:2)mg mag=(550,-286,156) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=8472 R=8501 PWM=0/0
+[S2:MOTION] ctrl late=0/2457 gap_max=10 loop_max=4 ms
+[S4:IMU] n=1200 acc=(-33,27,919)mg delta=(x:4,y:-2)mg mag=(555,-284,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=8472 R=8501 PWM=0/0
+[S2:MOTION] ctrl late=0/2557 gap_max=11 loop_max=3 ms
+=== COM5 connected 18:08:35.606 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-36,17,920) mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=100 acc=(-36,25,923)mg delta=(x:0,y:8)mg mag=(551,-286,153) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 57 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=150 acc=(-36,30,923)mg delta=(x:0,y:13)mg mag=(550,-282,152) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+wifi: link up, ip=172.20.10.3 t=4296 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S4:IMU] n=200 acc=(-33,31,920)mg delta=(x:3,y:14)mg mag=(549,-287,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=250 acc=(-34,26,926)mg delta=(x:2,y:9)mg mag=(549,-282,156) pitch=0 height=0mm height_valid=0 state=0
+[S1:MQTT] connected to 172.20.10.2 t=5416 ms
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S4:IMU] n=300 acc=(-34,22,919)mg delta=(x:2,y:5)mg mag=(552,-284,151) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=350 acc=(-36,26,922)mg delta=(x:0,y:9)mg mag=(552,-285,152) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=10 loop_max=4 ms
+[S4:IMU] n=400 acc=(-37,25,923)mg delta=(x:-1,y:8)mg mag=(550,-287,154) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=450 acc=(-35,24,927)mg delta=(x:1,y:7)mg mag=(552,-282,154) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=500 acc=(-38,27,925)mg delta=(x:-2,y:10)mg mag=(552,-284,152) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1100 gap_max=10 loop_max=4 ms
+[S4:IMU] n=550 acc=(-38,24,920)mg delta=(x:-2,y:7)mg mag=(551,-284,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=600 acc=(-37,27,922)mg delta=(x:-1,y:10)mg mag=(549,-283,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=650 acc=(-38,26,919)mg delta=(x:-2,y:9)mg mag=(550,-285,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1400 gap_max=10 loop_max=4 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] n=700 acc=(-23,117,968)mg delta=(x:13,y:100)mg mag=(532,-314,155) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=375 R=407 PWM=15/19
+[S2:MOTION] ctrl late=0/1496 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=474 sens none=395 R=79 C=0 both=0 act straight=366 right=108 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-58..35 |f|=17 raw=-217..153
+[S4:IMU] n=750 acc=(-20,53,920)mg delta=(x:16,y:36)mg mag=(562,-335,145) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=1314 R=1302 PWM=15/19
+[S2:MOTION] ctrl late=0/1591 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=471 sens none=370 R=101 C=0 both=0 act straight=327 right=144 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-19..26 |f|=9 raw=-141..127
+[S4:IMU] n=800 acc=(-29,66,950)mg delta=(x:7,y:49)mg mag=(575,-313,111) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=2267 R=2267 PWM=15/19
+[S2:MOTION] ctrl late=0/1686 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=470 sens none=426 R=44 C=0 both=0 act straight=399 right=71 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-14..26 |f|=9 raw=-96..141
+[S4:IMU] n=850 acc=(-21,54,920)mg delta=(x:15,y:37)mg mag=(581,-271,97) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=3224 R=3184 PWM=15/19
+[S2:MOTION] ctrl late=0/1781 gap_max=13 loop_max=5 ms
+[S2:ROBOT] steer n=467 sens none=447 R=20 C=0 both=0 act straight=433 right=34 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-26..36 |f|=12 raw=-236..317
+[S2:MOTION] state=2 fault=0 ticks L=4189 R=4181 PWM=15/19
+[S2:MOTION] ctrl late=0/1876 gap_max=12 loop_max=4 ms
+[S4:IMU] n=900 acc=(-25,137,912)mg delta=(x:11,y:120)mg mag=(590,-283,40) pitch=5 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=471 sens none=438 R=33 C=0 both=0 act straight=409 right=62 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-6..36 |f|=16 raw=-140..151
+[S2:MOTION] state=2 fault=0 ticks L=5181 R=5178 PWM=15/19
+[S2:MOTION] ctrl late=0/1972 gap_max=11 loop_max=4 ms
+[S4:IMU] n=950 acc=(-42,73,899)mg delta=(x:-6,y:56)mg mag=(642,-194,-68) pitch=5 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=472 sens none=460 R=12 C=0 both=0 act straight=445 right=27 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-1..31 |f|=13 raw=-153..171
+[S2:MOTION] state=2 fault=0 ticks L=6148 R=6149 PWM=15/19
+[S2:MOTION] ctrl late=0/2067 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1000 acc=(-20,33,935)mg delta=(x:16,y:16)mg mag=(659,-74,-65) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=474 sens none=453 R=21 C=0 both=0 act straight=439 right=35 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-7..37 |f|=13 raw=-198..139
+[S2:MOTION] state=2 fault=0 ticks L=7111 R=7128 PWM=15/19
+[S2:MOTION] ctrl late=0/2161 gap_max=12 loop_max=3 ms
+[S4:IMU] n=1050 acc=(-33,22,928)mg delta=(x:3,y:5)mg mag=(613,-16,24) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=467 sens none=450 R=17 C=0 both=0 act straight=436 right=31 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-37..44 |f|=11 raw=-366..180
+[S2:MOTION] state=2 fault=0 ticks L=8084 R=8084 PWM=15/19
+[S2:MOTION] ctrl late=0/2256 gap_max=12 loop_max=4 ms
+[S4:IMU] n=1100 acc=(-19,18,898)mg delta=(x:17,y:1)mg mag=(594,-38,88) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=9045 R=9055 PWM=15/19
+[S2:MOTION] ctrl late=0/2351 gap_max=12 loop_max=4 ms
+[S4:IMU] HT noise n=50 f=-15..19 |f|=4 raw=-170..94
+[S4:IMU] n=1150 acc=(-34,-10,931)mg delta=(x:2,y:-27)mg mag=(638,-65,102) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=469 sens none=455 R=14 C=0 both=0 act straight=441 right=28 left=0 watch max=0mm bias=0
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=9429 R=9447 PWM=0/0
+[S2:MOTION] ctrl late=0/2449 gap_max=12 loop_max=5 ms
+[S4:IMU] n=1200 acc=(-34,25,924)mg delta=(x:2,y:8)mg mag=(651,-64,104) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=9429 R=9447 PWM=0/0
+[S2:MOTION] ctrl late=0/2549 gap_max=10 loop_max=2 ms
+[S4:IMU] EVENT TILT roll=15 deg lateral=223 mg
+[S4:IMU] n=1250 acc=(-120,-107,771)mg delta=(x:-84,y:-124)mg mag=(568,-149,35) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] EVENT TILT roll=0 deg lateral=-19 mg
+[S2:MOTION] state=5 fault=0 ticks L=9429 R=9447 PWM=0/0
+[S2:MOTION] ctrl late=0/2649 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1300 acc=(-45,41,918)mg delta=(x:-9,y:24)mg mag=(570,-254,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=9428 R=9447 PWM=0/0
+[S2:MOTION] ctrl late=0/2749 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1350 acc=(-37,29,920)mg delta=(x:-1,y:12)mg mag=(558,-266,156) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=9428 R=9447 PWM=0/0
+[S2:MOTION] ctrl late=0/2849 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1400 acc=(-34,32,920)mg delta=(x:2,y:15)mg mag=(559,-264,157) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=9428 R=9447 PWM=0/0
+[S2:MOTION] ctrl late=0/2949 gap_max=11 loop_max=3 ms
+=== COM5 connected 18:09:06.517 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-37,31,924) mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=100 acc=(-31,28,923)mg delta=(x:6,y:-3)mg mag=(563,-265,152) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 896 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=150 acc=(-41,31,927)mg delta=(x:-4,y:0)mg mag=(562,-268,154) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+wifi: link up, ip=172.20.10.3 t=4147 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S4:IMU] n=200 acc=(-34,30,920)mg delta=(x:3,y:-1)mg mag=(559,-261,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=250 acc=(-30,34,919)mg delta=(x:7,y:3)mg mag=(561,-264,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=10 loop_max=2 ms
+[S4:IMU] n=300 acc=(-37,37,920)mg delta=(x:0,y:6)mg mag=(558,-264,154) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=350 acc=(-34,31,917)mg delta=(x:3,y:0)mg mag=(560,-265,153) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=10 loop_max=2 ms
+[S1:MQTT] connected to 172.20.10.2 t=8366 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S4:IMU] n=400 acc=(-39,27,922)mg delta=(x:-2,y:-4)mg mag=(559,-265,153) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=450 acc=(-37,34,926)mg delta=(x:0,y:3)mg mag=(559,-265,154) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=500 acc=(-38,28,921)mg delta=(x:-1,y:-3)mg mag=(559,-267,155) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=550 acc=(-34,30,923)mg delta=(x:3,y:-1)mg mag=(561,-265,154) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1200 gap_max=10 loop_max=4 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] n=600 acc=(-21,15,896)mg delta=(x:16,y:-16)mg mag=(548,-274,158) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=393 R=451 PWM=15/19
+[S2:MOTION] ctrl late=0/1297 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=472 sens none=403 R=69 C=0 both=0 act straight=374 right=98 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-47..40 |f|=18 raw=-233..247
+[S4:IMU] n=650 acc=(-39,141,939)mg delta=(x:-2,y:110)mg mag=(561,-313,156) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=1361 R=1424 PWM=15/19
+[S2:MOTION] ctrl late=0/1392 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=473 sens none=416 R=57 C=0 both=0 act straight=387 right=86 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-47..22 |f|=15 raw=-214..110
+[S4:IMU] n=700 acc=(-38,-19,900)mg delta=(x:-1,y:-50)mg mag=(580,-330,123) pitch=-5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=2307 R=2337 PWM=19/5
+[S2:MOTION] ctrl late=0/1487 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=470 sens none=423 R=47 C=0 both=0 act straight=395 right=75 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-33..19 |f|=10 raw=-176..149
+[S4:IMU] n=750 acc=(-56,4,932)mg delta=(x:-19,y:-27)mg mag=(586,-282,104) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=3258 R=3313 PWM=15/19
+[S2:MOTION] ctrl late=0/1582 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=472 sens none=430 R=42 C=0 both=0 act straight=401 right=71 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-33..7 |f|=12 raw=-144..140
+[S4:IMU] n=800 acc=(-20,-2,955)mg delta=(x:17,y:-33)mg mag=(577,-279,75) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=4202 R=4273 PWM=15/19
+[S2:MOTION] ctrl late=0/1677 gap_max=12 loop_max=5 ms
+[S2:ROBOT] steer n=469 sens none=450 R=19 C=0 both=0 act straight=436 right=33 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-22..15 |f|=6 raw=-196..112
+[S2:MOTION] state=2 fault=0 ticks L=5194 R=5228 PWM=15/19
+[S2:MOTION] ctrl late=0/1772 gap_max=12 loop_max=3 ms
+[S4:IMU] n=850 acc=(-44,-15,925)mg delta=(x:-7,y:-46)mg mag=(620,-241,-30) pitch=-5 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=468 sens none=452 R=16 C=0 both=0 act straight=437 right=31 left=0 watch max=0mm bias=1
+[S5:OBS] OBSTACLE at 45 mm -> HOLD
+[S2:ROBOT] obstacle: S5 has control
+[S2:MOTION] state=1 fault=0 ticks L=5895 R=5963 PWM=0/0
+[S2:MOTION] ctrl late=0/1869 gap_max=12 loop_max=4 ms
+[S4:IMU] n=900 acc=(-13,85,914)mg delta=(x:24,y:54)mg mag=(659,-152,-76) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=5895 R=5963 PWM=0/0
+[S2:MOTION] ctrl late=0/1969 gap_max=11 loop_max=3 ms
+[S4:IMU] n=950 acc=(-44,37,914)mg delta=(x:-7,y:6)mg mag=(662,-151,-80) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=5895 R=5963 PWM=0/0
+[S2:MOTION] ctrl late=0/2069 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1000 acc=(-34,18,919)mg delta=(x:3,y:-13)mg mag=(661,-151,-76) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=5895 R=5963 PWM=0/0
+[S2:MOTION] ctrl late=0/2169 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1050 acc=(-36,48,914)mg delta=(x:1,y:17)mg mag=(661,-155,-77) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=5895 R=5963 PWM=0/0
+[S2:MOTION] ctrl late=0/2269 gap_max=11 loop_max=3 ms
+[S5:OBS] coarse  50 deg    0  no-echo
+[S5:OBS] coarse  70 deg 1141  ok
+[S5:OBS] coarse  90 deg 1097  ok
+[S5:OBS] coarse 110 deg 1097  ok
+[S5:OBS] coarse 130 deg  406  ok
+[S5:OBS] fine 110..130 deg, 5 points, scan 4144 ms
+[S5:OBS] 110 deg  raw 1107  med 1107  ok
+[S5:OBS] 115 deg  raw  427  med 1107  ok
+[S5:OBS] 120 deg  raw 1108  med  427  ok
+[S5:OBS] 125 deg  raw  411  med  411  ok
+[S5:OBS] 130 deg  raw  406  med  406  ok
+[S5:OBS] closest 406 mm at 130 deg (x 310)
+[S5:OBS] centre y 310 mm, width 0 mm
+[S5:OBS] clear L 9998 mm, R 9999 mm (9999 = open, 9998 = not seen: the box runs past the scan)
+[S5:OBS] PLAN CONTINUE, shift 0 mm
+[S5:OBS] RESUME line following
+[S2:ROBOT] obstacle handled, line following
+[S2:ROBOT] steer n=155 sens none=155 R=0 C=0 both=0 act straight=155 right=0 left=0 watch max=0mm bias=1
+[S4:IMU] n=1100 acc=(-79,8,944)mg delta=(x:-42,y:-23)mg mag=(654,-149,-79) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=6606 R=6668 PWM=15/19
+[S2:MOTION] ctrl late=0/2365 gap_max=11 loop_max=3 ms
+[S5:OBS] MONITORING
+[S2:ROBOT] steer n=470 sens none=457 R=13 C=0 both=0 act straight=442 right=28 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-46..24 |f|=13 raw=-147..132
+[S4:IMU] n=1150 acc=(-5,101,924)mg delta=(x:32,y:70)mg mag=(651,-48,-48) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=7564 R=7646 PWM=15/19
+[S2:MOTION] ctrl late=0/2460 gap_max=12 loop_max=5 ms
+[S2:ROBOT] steer n=467 sens none=448 R=19 C=0 both=0 act straight=434 right=33 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-31..12 |f|=9 raw=-166..173
+[S4:IMU] n=1200 acc=(-33,-1,927)mg delta=(x:4,y:-32)mg mag=(601,-18,40) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=8540 R=8599 PWM=15/19
+[S2:MOTION] ctrl late=0/2555 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=468 sens none=456 R=12 C=0 both=0 act straight=441 right=27 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-37..18 |f|=10 raw=-181..128
+[S4:IMU] n=1250 acc=(46,1,946)mg delta=(x:83,y:-30)mg mag=(595,-49,96) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=9494 R=9590 PWM=15/19
+[S2:MOTION] ctrl late=0/2650 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-27..5 |f|=13 raw=-105..90
+[S4:IMU] n=1300 acc=(-70,-168,921)mg delta=(x:-33,y:-199)mg mag=(657,-60,104) pitch=-10 height=0mm height_valid=0 state=0
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=10167 R=10252 PWM=0/0
+[S2:MOTION] ctrl late=0/2746 gap_max=12 loop_max=4 ms
+[S4:IMU] n=1350 acc=(-28,26,925)mg delta=(x:9,y:-5)mg mag=(693,-56,105) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10167 R=10253 PWM=0/0
+[S2:MOTION] ctrl late=0/2846 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=5 deg lateral=91 mg
+[S4:IMU] n=1400 acc=(-65,237,749)mg delta=(x:-28,y:206)mg mag=(560,-118,50) pitch=10 height=0mm height_valid=0 state=0
+[S4:IMU] EVENT TILT roll=0 deg lateral=-17 mg
+[S2:MOTION] state=5 fault=0 ticks L=10167 R=10253 PWM=0/0
+[S2:MOTION] ctrl late=0/2946 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1450 acc=(30,-122,874)mg delta=(x:67,y:-153)mg mag=(561,-262,153) pitch=-10 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10166 R=10253 PWM=0/0
+[S2:MOTION] ctrl late=0/3046 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1500 acc=(-34,23,924)mg delta=(x:3,y:-8)mg mag=(560,-263,149) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10166 R=10253 PWM=0/0
+[S2:MOTION] ctrl late=0/3146 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1550 acc=(-36,28,923)mg delta=(x:1,y:-3)mg mag=(557,-264,152) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10166 R=10253 PWM=0/0
+[S2:MOTION] ctrl late=0/3246 gap_max=11 loop_max=3 ms
+=== COM5 connected 18:09:40.462 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-35,31,921) mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=100 acc=(-31,39,920)mg delta=(x:4,y:8)mg mag=(560,-261,152) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 585 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=10 loop_max=2 ms
+[S4:IMU] n=150 acc=(-36,33,918)mg delta=(x:-1,y:2)mg mag=(563,-261,154) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3 t=4052 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=200 acc=(-36,37,919)mg delta=(x:-1,y:6)mg mag=(561,-260,154) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=10 loop_max=4 ms
+[S4:IMU] n=250 acc=(-33,30,919)mg delta=(x:2,y:-1)mg mag=(557,-260,153) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=300 acc=(-38,30,920)mg delta=(x:-3,y:-1)mg mag=(558,-261,152) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=350 acc=(-38,30,924)mg delta=(x:-3,y:-1)mg mag=(558,-260,152) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=400 acc=(-36,31,927)mg delta=(x:-1,y:0)mg mag=(561,-264,152) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=450 acc=(-36,31,920)mg delta=(x:-1,y:0)mg mag=(559,-259,153) pitch=0 height=0mm height_valid=0 state=0
+[S1:MQTT] connected to 172.20.10.2 t=9686 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/999 gap_max=11 loop_max=3 ms
+[S4:IMU] n=500 acc=(-30,33,923)mg delta=(x:5,y:2)mg mag=(557,-261,152) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1099 gap_max=12 loop_max=4 ms
+[S4:IMU] n=550 acc=(-33,34,918)mg delta=(x:2,y:3)mg mag=(560,-262,154) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1199 gap_max=11 loop_max=3 ms
+[S4:IMU] n=600 acc=(-34,33,919)mg delta=(x:1,y:2)mg mag=(558,-262,154) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1299 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] n=650 acc=(-38,28,916)mg delta=(x:-3,y:-3)mg mag=(557,-257,158) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=101 R=122 PWM=15/19
+[S2:MOTION] ctrl late=0/1398 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=1
+[S4:IMU] n=700 acc=(-50,54,915)mg delta=(x:-15,y:23)mg mag=(550,-306,159) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-36..13 |f|=13 raw=-153..137
+[S2:MOTION] state=2 fault=0 ticks L=1137 R=1207 PWM=15/19
+[S2:MOTION] ctrl late=0/1492 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=469 sens none=464 R=5 C=0 both=0 act straight=449 right=20 left=0 watch max=0mm bias=4
+[S4:IMU] n=750 acc=(2,-56,945)mg delta=(x:37,y:-87)mg mag=(570,-320,125) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-24..20 |f|=9 raw=-109..151
+[S2:MOTION] state=2 fault=0 ticks L=2150 R=2212 PWM=15/19
+[S2:MOTION] ctrl late=0/1587 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=470 sens none=454 R=16 C=0 both=0 act straight=440 right=30 left=0 watch max=0mm bias=4
+[S4:IMU] n=800 acc=(-24,-48,879)mg delta=(x:11,y:-79)mg mag=(569,-257,103) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-46..19 |f|=11 raw=-219..201
+[S2:MOTION] state=2 fault=0 ticks L=3148 R=3183 PWM=15/19
+[S2:MOTION] ctrl late=0/1683 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=3
+[S4:IMU] n=850 acc=(-47,21,895)mg delta=(x:-12,y:-10)mg mag=(552,-264,66) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=4124 R=4176 PWM=15/19
+[S2:MOTION] ctrl late=0/1778 gap_max=12 loop_max=5 ms
+[S4:IMU] HT noise n=50 f=-32..9 |f|=10 raw=-152..199
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=2
+[S2:MOTION] state=2 fault=0 ticks L=5134 R=5197 PWM=15/19
+[S2:MOTION] ctrl late=0/1873 gap_max=12 loop_max=4 ms
+[S4:IMU] n=900 acc=(-48,5,952)mg delta=(x:-13,y:-26)mg mag=(575,-228,-46) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-19..28 |f|=9 raw=-109..122
+[S2:ROBOT] steer n=468 sens none=468 R=0 C=0 both=0 act straight=468 right=0 left=0 watch max=0mm bias=1
+[S2:MOTION] state=2 fault=0 ticks L=6127 R=6196 PWM=15/19
+[S2:MOTION] ctrl late=0/1968 gap_max=12 loop_max=4 ms
+[S4:IMU] n=950 acc=(-62,-34,894)mg delta=(x:-27,y:-65)mg mag=(625,-121,-87) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-15..12 |f|=6 raw=-100..141
+[S2:ROBOT] steer n=467 sens none=451 R=16 C=0 both=0 act straight=437 right=30 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=7107 R=7160 PWM=15/19
+[S2:MOTION] ctrl late=0/2063 gap_max=12 loop_max=4 ms
+[S4:IMU] n=1000 acc=(-56,49,910)mg delta=(x:-21,y:18)mg mag=(615,-33,-13) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-9..29 |f|=8 raw=-138..181
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=8102 R=8177 PWM=15/19
+[S2:MOTION] ctrl late=0/2158 gap_max=12 loop_max=4 ms
+[S4:IMU] n=1050 acc=(-111,-4,912)mg delta=(x:-76,y:-35)mg mag=(585,-44,70) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-24..3 |f|=7 raw=-129..109
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=9077 R=9155 PWM=15/19
+[S2:MOTION] ctrl late=0/2254 gap_max=12 loop_max=3 ms
+[S4:IMU] n=1100 acc=(-93,32,1007)mg delta=(x:-58,y:1)mg mag=(613,-70,106) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-27..6 |f|=10 raw=-121..106
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=-1
+[S2:MOTION] state=2 fault=0 ticks L=10056 R=10175 PWM=15/19
+[S2:MOTION] ctrl late=0/2349 gap_max=12 loop_max=4 ms
+[S4:IMU] n=1150 acc=(-11,-49,921)mg delta=(x:24,y:-80)mg mag=(718,-60,118) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HT noise n=50 f=-22..3 |f|=8 raw=-137..133
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=10441 R=10552 PWM=0/0
+[S2:MOTION] ctrl late=0/2447 gap_max=11 loop_max=4 ms
+[S4:IMU] n=1200 acc=(-36,26,922)mg delta=(x:-1,y:-5)mg mag=(745,-59,116) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10441 R=10552 PWM=0/0
+[S2:MOTION] ctrl late=0/2547 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1250 acc=(-36,28,917)mg delta=(x:-1,y:-3)mg mag=(742,-56,115) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10441 R=10552 PWM=0/0
+[S2:MOTION] ctrl late=0/2647 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1300 acc=(-34,29,916)mg delta=(x:1,y:-2)mg mag=(744,-60,112) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10441 R=10552 PWM=0/0
+[S2:MOTION] ctrl late=0/2747 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=0 deg lateral=7 mg
+[S4:IMU] n=1350 acc=(81,193,927)mg delta=(x:116,y:162)mg mag=(575,-57,74) pitch=10 height=0mm height_valid=0 state=0
+[S4:IMU] EVENT TILT roll=-10 deg lateral=-188 mg
+[S2:MOTION] state=5 fault=0 ticks L=10441 R=10552 PWM=0/0
+[S2:MOTION] ctrl late=0/2847 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1400 acc=(-75,78,963)mg delta=(x:-40,y:47)mg mag=(564,-252,160) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10441 R=10552 PWM=0/0
+[S2:MOTION] ctrl late=0/2947 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1450 acc=(-38,30,918)mg delta=(x:-3,y:-1)mg mag=(560,-259,147) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10441 R=10552 PWM=0/0
+[S2:MOTION] ctrl late=0/3047 gap_max=10 loop_max=4 ms
+[S4:IMU] n=1500 acc=(-40,34,922)mg delta=(x:-5,y:3)mg mag=(560,-257,151) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10441 R=10552 PWM=0/0
+[S2:MOTION] ctrl late=0/3147 gap_max=10 loop_max=2 ms
+=== COM5 connected 18:10:13.466 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-38,32,924) mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=100 acc=(-33,33,921)mg delta=(x:5,y:1)mg mag=(564,-261,151) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 593 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=150 acc=(-37,35,915)mg delta=(x:1,y:3)mg mag=(564,-260,151) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+wifi: link up, ip=172.20.10.3 t=4244 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S1:MQTT] connected to 172.20.10.2 t=4305 ms
+[S4:IMU] n=200 acc=(-41,32,922)mg delta=(x:-3,y:0)mg mag=(564,-262,147) pitch=0 height=0mm height_valid=0 state=0
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=250 acc=(-40,30,918)mg delta=(x:-2,y:-2)mg mag=(563,-260,153) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=10 loop_max=4 ms
+[S4:IMU] n=300 acc=(-39,36,925)mg delta=(x:-1,y:4)mg mag=(566,-264,148) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=350 acc=(-33,28,919)mg delta=(x:5,y:-4)mg mag=(563,-260,151) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=11 loop_max=3 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] n=400 acc=(-51,62,880)mg delta=(x:-13,y:30)mg mag=(560,-276,150) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=711 R=797 PWM=16/19
+[S2:MOTION] ctrl late=0/895 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=2
+[S4:IMU] HT noise n=50 f=-47..12 |f|=21 raw=-165..149
+[S4:IMU] n=450 acc=(-27,29,962)mg delta=(x:11,y:-3)mg mag=(552,-331,147) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=1812 R=1914 PWM=16/19
+[S2:MOTION] ctrl late=0/991 gap_max=13 loop_max=4 ms
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=7
+[S4:IMU] HT noise n=50 f=-24..4 |f|=11 raw=-111..58
+[S4:IMU] n=500 acc=(-71,71,901)mg delta=(x:-33,y:39)mg mag=(564,-301,109) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=2925 R=2987 PWM=15/19
+[S2:MOTION] ctrl late=0/1086 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=9
+[S4:IMU] HT noise n=50 f=-22..13 |f|=6 raw=-99..112
+[S4:IMU] n=550 acc=(-25,-49,907)mg delta=(x:13,y:-81)mg mag=(564,-262,95) pitch=-5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=3965 R=4014 PWM=15/19
+[S2:MOTION] ctrl late=0/1180 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=9
+[S4:IMU] HT noise n=50 f=-36..20 |f|=13 raw=-181..204
+[S4:IMU] n=600 acc=(-30,63,890)mg delta=(x:8,y:31)mg mag=(577,-258,5) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=5012 R=5071 PWM=15/19
+[S2:MOTION] ctrl late=0/1276 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=8
+[S4:IMU] HT noise n=50 f=-13..16 |f|=7 raw=-121..80
+[S4:IMU] n=650 acc=(-36,19,916)mg delta=(x:2,y:-13)mg mag=(637,-146,-74) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=6031 R=6099 PWM=15/19
+[S2:MOTION] ctrl late=0/1371 gap_max=12 loop_max=5 ms
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=6
+[S4:IMU] HT noise n=50 f=-12..14 |f|=5 raw=-98..103
+[S4:IMU] n=700 acc=(-58,32,908)mg delta=(x:-20,y:0)mg mag=(626,-60,-39) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=7035 R=7142 PWM=15/19
+[S2:MOTION] ctrl late=0/1466 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=5
+[S4:IMU] HT noise n=50 f=-15..23 |f|=6 raw=-124..109
+[S4:IMU] n=750 acc=(-27,102,888)mg delta=(x:11,y:70)mg mag=(588,-38,57) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=8056 R=8166 PWM=15/19
+[S2:MOTION] ctrl late=0/1561 gap_max=12 loop_max=5 ms
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=3
+[S4:IMU] HT noise n=50 f=-38..-1 |f|=16 raw=-138..96
+[S4:IMU] n=800 acc=(-49,48,910)mg delta=(x:-11,y:16)mg mag=(602,-71,99) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=9048 R=9167 PWM=15/19
+[S2:MOTION] ctrl late=0/1655 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=466 sens none=449 R=17 C=0 both=0 act straight=435 right=31 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-28..8 |f|=11 raw=-231..141
+[S2:MOTION] state=2 fault=0 ticks L=10035 R=10136 PWM=15/19
+[S2:MOTION] ctrl late=0/1750 gap_max=12 loop_max=4 ms
+[S4:IMU] n=850 acc=(-77,-58,926)mg delta=(x:-39,y:-90)mg mag=(688,-65,108) pitch=-5 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=0
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=10654 R=10749 PWM=0/0
+[S2:MOTION] ctrl late=0/1847 gap_max=11 loop_max=4 ms
+[S4:IMU] n=900 acc=(-39,19,926)mg delta=(x:-1,y:-13)mg mag=(786,-47,128) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10656 R=10749 PWM=0/0
+[S2:MOTION] ctrl late=0/1947 gap_max=11 loop_max=3 ms
+[S4:IMU] n=950 acc=(566,104,1205)mg delta=(x:604,y:72)mg mag=(788,-45,124) pitch=5 height=0mm height_valid=0 state=0
+[S4:IMU] EVENT TILT roll=10 deg lateral=203 mg
+[S4:IMU] EVENT TILT roll=5 deg lateral=83 mg
+[S2:MOTION] state=5 fault=0 ticks L=10654 R=10749 PWM=0/0
+[S2:MOTION] ctrl late=0/2047 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1000 acc=(71,-206,900)mg delta=(x:109,y:-238)mg mag=(619,-244,146) pitch=-15 height=0mm height_valid=0 state=2
+[S2:MOTION] state=5 fault=0 ticks L=10654 R=10748 PWM=0/0
+[S2:MOTION] ctrl late=0/2147 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1050 acc=(-38,46,919)mg delta=(x:0,y:14)mg mag=(557,-254,156) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10654 R=10748 PWM=0/0
+[S2:MOTION] ctrl late=0/2247 gap_max=12 loop_max=4 ms
+[S4:IMU] n=1100 acc=(-34,25,925)mg delta=(x:4,y:-7)mg mag=(555,-250,156) pitch=0 height=0mm height_valid=0 state=0
+=== COM5 connected 18:10:37.167 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-38,29,923) mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=100 acc=(-37,28,923)mg delta=(x:1,y:-1)mg mag=(558,-259,156) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 1578 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=150 acc=(-34,23,913)mg delta=(x:4,y:-6)mg mag=(555,-256,158) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=11 loop_max=3 ms
+wifi: link up, ip=172.20.10.3 t=4274 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S4:IMU] n=200 acc=(-35,28,923)mg delta=(x:3,y:-1)mg mag=(556,-260,158) pitch=0 height=0mm height_valid=0 state=0
+[S1:MQTT] connected to 172.20.10.2 t=4449 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=250 acc=(-37,27,919)mg delta=(x:1,y:-2)mg mag=(555,-257,158) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=300 acc=(-37,29,925)mg delta=(x:1,y:0)mg mag=(561,-257,160) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=350 acc=(-37,31,921)mg delta=(x:1,y:2)mg mag=(556,-256,159) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=10 loop_max=4 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] n=400 acc=(-18,119,917)mg delta=(x:20,y:90)mg mag=(548,-268,154) pitch=5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=728 R=808 PWM=16/19
+[S2:MOTION] ctrl late=0/895 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=472 sens none=461 R=11 C=0 both=0 act straight=461 right=11 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-46..15 |f|=13 raw=-219..140
+[S4:IMU] n=450 acc=(-68,-69,962)mg delta=(x:-30,y:-98)mg mag=(560,-305,159) pitch=-5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=1716 R=1772 PWM=15/19
+[S2:MOTION] ctrl late=0/990 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=469 sens none=423 R=46 C=0 both=0 act straight=393 right=76 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-22..22 |f|=7 raw=-185..149
+[S4:IMU] n=500 acc=(-44,-45,914)mg delta=(x:-6,y:-74)mg mag=(573,-319,121) pitch=-5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=2706 R=2718 PWM=15/19
+[S2:MOTION] ctrl late=0/1084 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=471 sens none=441 R=30 C=0 both=0 act straight=411 right=60 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-39..15 |f|=10 raw=-151..250
+[S4:IMU] n=550 acc=(3,46,895)mg delta=(x:41,y:17)mg mag=(579,-265,105) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=3696 R=3740 PWM=15/19
+[S2:MOTION] ctrl late=0/1179 gap_max=11 loop_max=5 ms
+[S2:ROBOT] steer n=473 sens none=459 R=14 C=0 both=0 act straight=445 right=28 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-23..27 |f|=7 raw=-150..262
+[S4:IMU] n=600 acc=(-44,30,915)mg delta=(x:-6,y:1)mg mag=(581,-260,65) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=4688 R=4711 PWM=15/19
+[S2:MOTION] ctrl late=0/1274 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=472 sens none=454 R=18 C=0 both=0 act straight=440 right=32 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-8..53 |f|=9 raw=-111..154
+[S4:IMU] n=650 acc=(-15,21,899)mg delta=(x:23,y:-8)mg mag=(614,-216,-49) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=5703 R=5749 PWM=15/19
+[S2:MOTION] ctrl late=0/1368 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-10..16 |f|=5 raw=-98..86
+[S4:IMU] n=700 acc=(-73,49,913)mg delta=(x:-35,y:20)mg mag=(639,-88,-66) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=6714 R=6789 PWM=15/19
+[S2:MOTION] ctrl late=0/1464 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=1
+[S4:IMU] HT noise n=50 f=-15..17 |f|=7 raw=-91..90
+[S4:IMU] n=750 acc=(-67,-54,980)mg delta=(x:-29,y:-83)mg mag=(608,-20,6) pitch=-5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=7714 R=7789 PWM=15/19
+[S2:MOTION] ctrl late=0/1559 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-32..9 |f|=12 raw=-153..206
+[S4:IMU] n=800 acc=(-39,18,918)mg delta=(x:-1,y:-11)mg mag=(583,-50,84) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=2 fault=0 ticks L=8714 R=8797 PWM=15/19
+[S2:MOTION] ctrl late=0/1655 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=0
+[S4:IMU] HT noise n=50 f=-16..14 |f|=4 raw=-79..82
+[S2:MOTION] state=2 fault=0 ticks L=9711 R=9802 PWM=15/19
+[S2:MOTION] ctrl late=0/1750 gap_max=12 loop_max=4 ms
+[S4:IMU] n=850 acc=(-21,38,940)mg delta=(x:17,y:9)mg mag=(633,-77,99) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] steer n=474 sens none=474 R=0 C=0 both=0 act straight=474 right=0 left=0 watch max=0mm bias=-1
+[S4:IMU] HT noise n=50 f=-27..15 |f|=8 raw=-145..120
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=10499 R=10608 PWM=0/0
+[S2:MOTION] ctrl late=0/1846 gap_max=12 loop_max=4 ms
+[S4:IMU] n=900 acc=(-35,40,918)mg delta=(x:3,y:11)mg mag=(733,-62,118) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10499 R=10608 PWM=0/0
+[S2:MOTION] ctrl late=0/1946 gap_max=11 loop_max=3 ms
+[S4:IMU] n=950 acc=(-35,21,919)mg delta=(x:3,y:-8)mg mag=(732,-63,115) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10499 R=10608 PWM=0/0
+[S2:MOTION] ctrl late=0/2046 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1000 acc=(-31,26,920)mg delta=(x:7,y:-3)mg mag=(734,-62,114) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10499 R=10608 PWM=0/0
+[S2:MOTION] ctrl late=0/2146 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1050 acc=(-38,27,921)mg delta=(x:0,y:-2)mg mag=(733,-65,116) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10499 R=10608 PWM=0/0
+[S2:MOTION] ctrl late=0/2246 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1100 acc=(-35,26,925)mg delta=(x:3,y:-3)mg mag=(733,-64,114) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=5 fault=0 ticks L=10499 R=10608 PWM=0/0
+[S2:MOTION] ctrl late=0/2346 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1150 acc=(-36,27,917)mg delta=(x:2,y:-2)mg mag=(732,-63,116) pitch=0 height=0mm height_valid=0 state=0
