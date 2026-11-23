@@ -106,6 +106,20 @@ typedef struct
  */
 IMPORT ER subsystem5_get_obstacle(S5_OBSTACLE_INFO * p_info);
 
+/* ---- S5 -> telemetry: safe-stop faults (#46, W6 statechart 5) ----
+ * One bit per cause, set by the S5 task just before it enters SAFE_STOP and
+ * never cleared (SAFE_STOP lasts until reboot).  Same values as the S1
+ * wire field S1_FIELD_S5_FAULTS. */
+#define S5_FAULT_CAL_FAIL  (1U << 0) /* start-up self-test failed        */
+#define S5_FAULT_NO_PATH   (1U << 1) /* no way round the obstacle        */
+#define S5_FAULT_LINE_LOST (1U << 2) /* line not found within 50 cm      */
+#define S5_FAULT_MASK      (7U)
+
+/**
+ * Read the S5 fault bits.  Any task; never blocks.  0 = no S5 fault.
+ */
+IMPORT UW subsystem5_get_faults(void);
+
 IMPORT void obstacle_task(INT stacd, void * exinf);
 
 #endif /* SUBSYSTEM5_H */

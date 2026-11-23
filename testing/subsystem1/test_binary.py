@@ -15,10 +15,11 @@ spec.loader.exec_module(codec)
 class ProtocolTests(unittest.TestCase):
     def test_boundary_fixture(self):
         values = dict(zip((f[0] for f in codec.FIELDS),
-                          [7, 31, 100, -123, 65535, 7, 4, 255, 400, 180, 400, 6, 1, 15, 14, 1,
+                          [7, 31, 7, -123, 65535, 7, 4, 255, 400, 180, 400, 6, 1, 65535, 65535, 1,
                            0x1234, 0xFEDC]))
-        # byte 10 bit 6 = map (#38); bytes 15-18 = left/right ticks (#41)
-        wire = bytes.fromhex('ffe426ffffe73f645ac8660f000e003412dcfe')
+        # bits 8-10 = S5 faults (#46); byte 10 bit 6 = map (#38); bytes 11-14 = two
+        # 16-bit counters; bytes 15-18 = left/right ticks (#41)
+        wire = bytes.fromhex('ff8726ffffe73f645ac866ffffffff3412dcfe')
         self.assertEqual(codec.encode_telemetry(values), wire)
         self.assertEqual(codec.decode_telemetry(wire), values)
         del values["left_ticks"]
@@ -35,7 +36,26 @@ class ProtocolTests(unittest.TestCase):
         del values["map_received"]
         self.assertEqual(codec.decode_telemetry(wire[:-1]), values)
         with self.assertRaises(ValueError):
-            codec.decode_telemetry(wire[:-1] + b"\xe6")
+            codec.decode_telemetry(wire[:-1] + b"\x1f")  # letter 31 > 26
+
+    def test_s5_faults_and_reserved_bits(self):
+        # #46: bits 8-10 = CAL_FAIL, NO_PATH, LINE_LOST; bits 11-14 and 87 reserved
+        for value in range(8):
+            wire = codec.encode_telemetry({'s5_faults': value})
+            self.assertEqual(int.from_bytes(wire, 'little') >> 8 & 7, value)
+            self.assertEqual(codec.decode_telemetry(wire)['s5_faults'], value)
+        with self.assertRaises(ValueError):
+            codec.encode_telemetry({'s5_faults': 8})
+        with self.assertRaises(ValueError):
+            codec.encode_telemetry({'barcode_black': 65536})
+        wire = codec.encode_telemetry({'barcode_black': 1, 'barcode_white': 2})
+        self.assertEqual(int.from_bytes(wire, 'little') >> 88, 1 | 2 << 16)
+        for length in (15, codec.TELEMETRY_BYTES):
+            for bit in (11, 12, 13, 14, 87):
+                raw = bytearray(length)
+                raw[bit // 8] |= 1 << (bit % 8)
+                with self.assertRaises(ValueError):
+                    codec.decode_telemetry(bytes(raw))
 
     def test_invalid_lengths_and_fields(self):
         for length in (0, 1, 9, 12, 16, 18, 20):
@@ -123,7 +143,7 @@ class ProtocolTests(unittest.TestCase):
 
     def test_display_stream(self):
         result = subprocess.run([sys.executable, str(TOOL), 'stream'],
-                                input=b'ffe426ffffe73f645ac8\ninvalid\n',
+                                input=b'ff8726ffffe73f645ac8\ninvalid\n',
                                 check=True, capture_output=True)
         self.assertIn(b'"speed_cms": -123', result.stdout)
         self.assertIn(b'Rejected packet', result.stderr)

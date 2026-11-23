@@ -7,7 +7,7 @@ import sys
 # name, absolute bit offset, width, logical minimum, logical maximum
 FIELDS = (
     ("state", 0, 3, 0, 7), ("faults", 3, 5, 0, 31),
-    ("battery_percent", 8, 7, 0, 100), ("speed_cms", 15, 9, -200, 200),
+    ("s5_faults", 8, 3, 0, 7), ("speed_cms", 15, 9, -200, 200),
     ("distance_cm", 24, 16, 0, 65535), ("line_sensors", 40, 3, 0, 7),
     ("barcode", 43, 3, 0, 4), ("highest_hump_mm", 46, 8, 0, 255),
     ("obstacle_cm", 54, 9, 0, 400), ("scan_deg", 63, 8, 0, 180),
@@ -36,7 +36,8 @@ def encode_mapping(letters):
 def decode_telemetry(payload):
     if len(payload) not in (10, 11, 15, TELEMETRY_BYTES):
         raise ValueError("telemetry must be 10, 11, 15 or 19 bytes")
-    if len(payload) >= 11 and payload[10] & 0x80:  # bit 87 reserved; 86 = map
+    # Reserved: bits 11-14 (old battery bits) and bit 87. s5_faults (bits 8-10): 0 CAL_FAIL, 1 NO_PATH, 2 LINE_LOST (#46)
+    if payload[1] & 0x78 or (len(payload) >= 11 and payload[10] & 0x80):
         raise ValueError("reserved telemetry bits must be zero")
     packed = int.from_bytes(payload, "little")
     result = {}

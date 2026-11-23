@@ -10,7 +10,8 @@
 
 /* Logical field identifiers, never transmitted as enums or C structs. */
 typedef enum {
-    S1_FIELD_STATE, S1_FIELD_FAULTS, S1_FIELD_BATTERY_PERCENT,
+    S1_FIELD_STATE, S1_FIELD_FAULTS,
+    S1_FIELD_S5_FAULTS, /* #46: S5 safe-stop causes, 3 bits (S1_S5_FAULT_*); took the battery's slot */
     S1_FIELD_SPEED_CMS, S1_FIELD_DISTANCE_CM, S1_FIELD_LINE_SENSORS,
     S1_FIELD_BARCODE, S1_FIELD_HIGHEST_HUMP_MM, S1_FIELD_OBSTACLE_CM,
     S1_FIELD_SCAN_DEG, S1_FIELD_OBSTACLE_WIDTH_CM, S1_FIELD_BARCODE_LETTER,
@@ -24,8 +25,6 @@ typedef enum {
 #define S1_STATE_MAX 7
 #define S1_FAULTS_MIN 0
 #define S1_FAULTS_MAX 31
-#define S1_BATTERY_MIN 0
-#define S1_BATTERY_MAX 100
 #define S1_SPEED_MIN (-200)
 #define S1_SPEED_MAX 200
 #define S1_DISTANCE_MIN 0
@@ -37,6 +36,8 @@ typedef enum {
 /* 0 = no decode yet, 1..26 = A..Z. */
 #define S1_BARCODE_LETTER_MAX 26
 #define S1_BARCODE_COUNT_MAX 65535U
+#define S1_S5_FAULTS_MIN 0
+#define S1_S5_FAULTS_MAX 7
 /* #41: low 16 bits of S2's signed cumulative encoder count (two's
  * complement, wraps). A receiver takes the int16 difference of two packets;
  * this works for any S2 counter of 16 bits or more (widths: #52). */
@@ -63,6 +64,10 @@ typedef enum {
 #define S1_FAULT_IMU (1U << 2)
 #define S1_FAULT_NO_ECHO (1U << 3)
 #define S1_FAULT_WIFI_LOSS (1U << 4)
+/* #46: bits of S1_FIELD_S5_FAULTS (same values as S5_FAULT_* in subsystem5.h) */
+#define S1_S5_FAULT_CAL_FAIL (1U << 0)
+#define S1_S5_FAULT_NO_PATH (1U << 1)
+#define S1_S5_FAULT_LINE_LOST (1U << 2)
 #define S1_BARCODE_NONE 0
 #define S1_BARCODE_LEFT 1
 #define S1_BARCODE_RIGHT 2

@@ -318,13 +318,14 @@ map (decided 21 Nov). Resend the map after every reboot.
 
 **`integrated` over MQTT (#72).** It publishes telemetry once a second (state,
 faults, speed, distance, line sensors, last barcode letter and its mapped
-direction, barcode counts, highest hump; battery and obstacle fields are still
-0). Commands: **Start** leaves Ready (#48); **Pause** stops at once and blocks
+direction, barcode counts, highest hump; the obstacle fields are still
+0 until a scan finds one). Commands: **Start** leaves Ready (#48); **Pause** stops at once and blocks
 the automatic line re-arm; **Resume** continues only with the centre and right
 sensors on the line and a healthy IMU; a safety stop still needs a reboot.
 
-**Telemetry fields not filled yet:** battery, and obstacle distance, scan
-angle and width (issue #40). They read as zero placeholders, not measurements.
+**Telemetry fields:** the battery field was removed (#46); its bits now carry
+S5's safe-stop faults. Obstacle distance, scan angle and width (issue #40)
+read as zero until a scan finds an obstacle.
 
 ### 3.3 Host tests
 

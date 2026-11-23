@@ -16,7 +16,7 @@ No standalone SDK main, duplicate driver, or second network task is needed.
 
 ## Representation table
 
-Telemetry uses 151 information bits in 19 bytes. Bit 86 is the letter-map flag (#38); bit 87 is reserved and must be zero. Older 10-byte packets end at bit 79 and omit the decoded letter and speed validity. Older 11-byte packets omit the barcode counts. Older 15-byte packets (before #41) omit the encoder counts.
+Telemetry uses 147 information bits in 19 bytes. Bits 8–10 are the S5 safe-stop faults (#46: bit 0 CAL_FAIL, bit 1 NO_PATH, bit 2 LINE_LOST); they took the place of the battery field, which was removed (nothing measured it). Bit 86 is the letter-map flag (#38). Bits 11–14 and bit 87 are reserved and must be zero. The barcode counters are 16 bits (bits 88–103 black, 104–119 white); bits 120–151 are the left/right encoder counts (#41). Older 10-byte packets end at bit 79 and omit the decoded letter and speed validity; older 11-byte packets omit the barcode counts; older 15-byte packets (before #41) omit the encoder counts. Packets from firmware older than #46 carry a battery value at bits 8–14, which the new decoders reject: update the robot and the PC tools together.
 Bit 0 is the least significant bit of byte 0. Each field's least significant
 bit is stored at the listed offset. Multi-byte fields follow the same little
 endian bit ordering. No native C bitfield ABI or struct cast is used.
@@ -25,7 +25,7 @@ endian bit ordering. No native C bitfield ABI or struct cast is used.
 | --- | --- | ---: | ---: |
 | Robot state | 0–7 | 3 | 0 |
 | Shared faults | 0–31, five independent flags | 5 | 3 |
-| Battery | 0–100 percent | 7 | 8 |
+| S5 safe-stop faults (#46) | 0–7: bit 0 CAL_FAIL, bit 1 NO_PATH, bit 2 LINE_LOST | 3 | 8 |
 | Signed speed | -200–200 cm/s, stored as speed + 200 | 9 | 15 |
 | Distance travelled | 0–65535 cm | 16 | 24 |
 | Line sensors | Three binary readings, 0–7 | 3 | 40 |

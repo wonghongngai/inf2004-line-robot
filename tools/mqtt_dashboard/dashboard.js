@@ -1,5 +1,6 @@
 const states = ["Idle", "Following", "Turning", "Scanning", "Avoiding", "Recovering", "Finished", "Fault"];
 const faults = ["Motor stall", "Encoder fault", "IMU fault", "No echo", "Wi-Fi loss"];
+const s5Faults = ["S5 self-test failed (CAL_FAIL)", "S5 no path (NO_PATH)", "S5 line lost (LINE_LOST)"];
 const directions = ["None", "Left", "Right", "Straight", "U-turn"];
 const sensorIds = ["left", "centre", "right"];
 const empty = "—";
@@ -35,7 +36,9 @@ function render(snapshot) {
   else connection("Waiting for telemetry", "");
 
   put("state", states[data?.state] ?? empty);
-  put("faults", data ? faults.filter((name, bit) => hasFault(bit)).join(", ") || "None" : empty);
+  const s5Bits = data?.s5_faults ?? 0;
+  put("faults", data ? [...faults.filter((name, bit) => hasFault(bit)),
+                        ...s5Faults.filter((name, bit) => s5Bits & (1 << bit))].join(", ") || "None" : empty);
   put("received", snapshot.telemetry_at == null ? empty : new Date(snapshot.telemetry_at * 1000).toLocaleTimeString());
   put("distance", hasFault(1) ? "Unreliable" : measure(data?.distance_cm, "cm"));
   put("speed", !data ? empty : hasFault(1) ? "Unreliable" :

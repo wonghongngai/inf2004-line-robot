@@ -483,6 +483,8 @@ static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now,
     (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE, (int)letter_direction());
     (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_LETTER, (int)last_letter);
     (void)s1_telemetry_set(&packet, S1_FIELD_MAP_RECEIVED, map_received ? 1 : 0);
+    /* #46: S5's safe-stop causes (CAL_FAIL, NO_PATH, LINE_LOST), latched until reboot */
+    (void)s1_telemetry_set(&packet, S1_FIELD_S5_FAULTS, (int)(subsystem5_get_faults() & S5_FAULT_MASK));
     (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_BLACK,
                            black > S1_BARCODE_COUNT_MAX ? (int)S1_BARCODE_COUNT_MAX : (int)black);
     (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_WHITE,
@@ -499,7 +501,7 @@ static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now,
         (void)s1_telemetry_set(&packet, S1_FIELD_SCAN_DEG, (int)obstacle.angle_deg);
         (void)s1_telemetry_set(&packet, S1_FIELD_OBSTACLE_WIDTH_CM, (int)obstacle.width_cm);
     }
-    /* Battery stays a 0 placeholder: nothing measures it. */
+    /* No battery field: nothing measures it (removed from the packet, #46). */
     er = subsystem1_publish_telemetry(&packet);
     if (er != telemetry_error && er != E_NOSPT) {
         LOG_INFO(TAG_S2_ROBOT, "telemetry queue %s (%d)",

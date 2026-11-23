@@ -79,6 +79,20 @@ EXPORT ER subsystem5_get_obstacle(S5_OBSTACLE_INFO * p_info)
     return s5_obstacle_unpack(g_s5_obstacle, p_info) ? E_OK : E_PAR;
 }
 
+/* ---- S5 -> telemetry: safe-stop faults (#46) -------------------------
+ * Only this task writes it (read-modify-write is safe: one writer). */
+static volatile UW g_s5_faults = 0U;
+
+EXPORT UW subsystem5_get_faults(void)
+{
+    return g_s5_faults & S5_FAULT_MASK;
+}
+
+static void s5_raise_fault(UW fault)
+{
+    g_s5_faults |= fault;
+}
+
 /* Keep a scan's result for telemetry; a scan that found nothing keeps the
  * previous result, so a false alarm can't wipe a real one. */
 static void s5_publish_obstacle(const obstacle_profile_t * p_profile)
@@ -780,6 +794,7 @@ static BOOL bypass_obstacle(const plan_t *             p_plan,
         {
             if (0U == (result & S5_EVT_LINE_FOUND))
             {
+                s5_raise_fault(S5_FAULT_LINE_LOST);
                 LOG_WARN(TAG_S5_OBS, "LINE LOST after %u %s (NFR5-4)",
                           step.value,
                           (S5_MOVE_FWD == step.move) ? "cm" : "deg");
@@ -919,6 +934,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
      * the VC latches the moment it would arm, so the robot never moves */
     if (!s5_selftest())
     {
+        s5_raise_fault(S5_FAULT_CAL_FAIL);
         state = S5_SAFE_STOP;
     }
     else
@@ -1015,6 +1031,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 {
                     /* REVERSE (S2 has no reverse) or STOP: NO PATH */
                     LOG_WARN(TAG_S5_OBS, "NO PATH");
+                    s5_raise_fault(S5_FAULT_NO_PATH);
                     state = S5_SAFE_STOP;
                 }
                 break;
@@ -1023,6 +1040,12 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 LOG_INFO(TAG_S5_OBS, "BYPASS %s", plan_name(plan.decision));
                 if (!bypass_obstacle(&plan, &profile))
                 {
+                    /* LINE_LOST is raised inside; any other failure of the
+                     * bypass means there was no usable path round the box */
+                    if (0U == subsystem5_get_faults())
+                    {
+                        s5_raise_fault(S5_FAULT_NO_PATH);
+                    }
                     servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
                     state = S5_SAFE_STOP;
                     break;
