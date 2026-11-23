@@ -1,0 +1,8 @@
+12:59:19.829  robot_mqtt_test.py broker=172.20.10.2:1883 client=group17-robot
+12:59:19.857  repo commit fb8d46c (record the firmware's commit in TEST_LOG)
+12:59:19.864  == S1-U12 telemetry for 5.0 min ==
+13:04:20.104  packets=300 rate=1.00/s max_gap=2.20s invalid=0 not_19_bytes=0
+13:04:20.104  S1-U12 PASS (expect ~1/s, all 19 bytes and valid, no gap > 3 s)
+
+13:04:20.106  SUMMARY: S1-U12 PASS
+13:04:20.106  log saved to testing\integration\logs\2026-11-23_S1-U12_19byte_robot_mqtt_test.txt

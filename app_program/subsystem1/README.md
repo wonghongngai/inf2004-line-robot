@@ -16,7 +16,7 @@ No standalone SDK main, duplicate driver, or second network task is needed.
 
 ## Representation table
 
-Telemetry uses 115 information bits in 15 bytes. Bits 8–10 are the S5 safe-stop faults (#46: bit 0 CAL_FAIL, bit 1 NO_PATH, bit 2 LINE_LOST); they took the place of the battery field, which was removed (nothing measured it). Bit 86 is the letter-map flag (#38). Bits 11–14 and bit 87 are reserved and must be zero. The barcode counters are 16 bits again (bits 88–103 black, 104–119 white). Older 10-byte packets end at bit 79 and omit the decoded letter and speed validity; older 11-byte packets omit the barcode counts. Packets from firmware older than #46 carry a battery value at bits 8–14, which the new decoders reject: update the robot and the PC tools together.
+Telemetry uses 147 information bits in 19 bytes. Bits 8–10 are the S5 safe-stop faults (#46: bit 0 CAL_FAIL, bit 1 NO_PATH, bit 2 LINE_LOST); they took the place of the battery field, which was removed (nothing measured it). Bit 86 is the letter-map flag (#38). Bits 11–14 and bit 87 are reserved and must be zero. The barcode counters are 16 bits (bits 88–103 black, 104–119 white); bits 120–151 are the left/right encoder counts (#41). Older 10-byte packets end at bit 79 and omit the decoded letter and speed validity; older 11-byte packets omit the barcode counts; older 15-byte packets (before #41) omit the encoder counts. Packets from firmware older than #46 carry a battery value at bits 8–14, which the new decoders reject: update the robot and the PC tools together.
 Bit 0 is the least significant bit of byte 0. Each field's least significant
 bit is stored at the listed offset. Multi-byte fields follow the same little
 endian bit ordering. No native C bitfield ABI or struct cast is used.
@@ -39,6 +39,20 @@ endian bit ordering. No native C bitfield ABI or struct cast is used.
 | Letter map received (#38) | 0 waiting for map (straight at junctions), 1 a map has been applied | 1 | 86 |
 | Barcode black bars | 0–65535, saturating session count | 16 | 88 |
 | Barcode internal white gaps | 0–65535, saturating session count | 16 | 104 |
+| Left encoder count (#41) | low 16 bits of S2's signed cumulative tick count, wraps | 16 | 120 |
+| Right encoder count (#41) | low 16 bits of S2's signed cumulative tick count, wraps | 16 | 136 |
+
+**Encoder counts (#41).** The robot sends the raw counts it used for distance
+in the same step, truncated to their low 16 bits (two's complement). Read a
+field as int16 (`tools/mqtt_binary.py`: `ticks_signed`), and take the
+difference of two packets modulo 2^16 (`ticks_delta`). That is correct while a
+wheel moves less than 32767 ticks between packets: about 2.8 m at the
+interrupt encoder's ~118 ticks/cm (`S2_ENC_*_TICKS_PER_CM`). Packets are 1 s
+apart and the top speed is 200 cm/s, so that never happens. The raw value
+itself wraps about every 2.8 m of travel, which is why the PC takes
+differences. 16 bits works for any S2 counter of 16 bits or more,
+so it does not depend on the widths #52 will choose. Motor speed is the
+existing signed speed field (average of the two wheels).
 
 States: idle, following, turning, scanning, avoiding, recovering, finished,
 fault (0–7 in that order). Fault bits 0–4: motor stall, encoder fault, IMU

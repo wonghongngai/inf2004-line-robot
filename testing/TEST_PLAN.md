@@ -65,7 +65,7 @@ something that hasn't passed on the bench (L3).
 | ID | What | Level | How | Pass when |
 |---|---|---|---|---|
 | S1-U11 | Wi-Fi joins after boot | L3 | Power on 5×, read `t=` (ms since boot) on the `wifi: link up` and `[S1:MQTT] connected` lines | connects 5/5 within 15 s |
-| S1-U12 | Telemetry publish rate and validity | L3 | Broker from `tools/mosquitto-local.conf`; subscribe and decode with `tools/mqtt_binary.py` for 5 min, or run `tools/robot_mqtt_test.py --only S1-U12` | ~1 packet/s, every packet is 15 bytes and decodes valid, no gaps over 3 s |
+| S1-U12 | Telemetry publish rate and validity | L3 | Broker from `tools/mosquitto-local.conf`; subscribe and decode with `tools/mqtt_binary.py` for 5 min, or run `tools/robot_mqtt_test.py --only S1-U12` | ~1 packet/s, every packet is 19 bytes (15 before #41) and decodes valid, no gaps over 3 s |
 | S1-U13 | Reconnect after broker restart and after AP off/on | L3 | Stop the broker for 30 s, then restart it; repeat with the hotspot. `tools/robot_mqtt_test.py --only S1-U13` guides both and times the return of telemetry | publishing resumes within 10 s; motors unaffected (Wi-Fi loss must not stop driving) |
 | S1-U14 | PAUSE / RESUME / STATUS from the laptop | L3→L4 | Send each command 10×, film the wheels with the console visible; `tools/robot_mqtt_test.py --only S1-U14` sends them and checks telemetry | 10/10 obey; PAUSE stops within 500 ms |
 | S1-U15 | Letter-to-movement map sent from the PC over MQTT: valid, duplicate letters, reserved bits set | L3 | Publish 3 maps to `<id>/mapping` from the PC, then drive over a mapped barcode and junction (`tools/robot_mqtt_test.py --only S1-U15` guides this) | valid map **applied** (robot does the mapped move), both invalid rejected, old map kept (#38; pairs with S3-U27) |
@@ -106,6 +106,7 @@ their line-stop re-arm checks now live in `int/robot_control`. Every L4 test run
 | S2-U11 | STOP latency | L3 | STOP command → motor outputs off, timed by the firmware (1 ms loop); wheel stop time recorded alongside | ≤ 100 ms to outputs off (was: to wheels stopped; changed 22 Nov, see `testing/subsystem2/TEST_LOG.md`) |
 | S2-U12 | Control loop timing | L4 | 5 min integrated run; read the late-control count that `motion_task` prints | 0 late cycles; max work time recorded |
 | S2-U13 | Reverse by distance (`moveBackward`, #39) | L3 | Reverse 10 / 20 / 30 cm, 3× each, measure on the floor | within ±2 cm; stops cleanly; works for both encoder polarities |
+| S2-U14 | Status field widths from measurements (#52, CR1) | L1 | Host `s2/motion_protocol`: 12-byte layout, 16-bit tick wrap and `s2_tick_delta`, saturation at each limit, rejects | PASS on the PC; widths justified from the robot logs (`subsystem2/TEST_LOG.md`) |
 | INT-13 | Host test of the S5 avoidance hand-over | L1 | New `int/robot_avoidance`: `robot_control.c` + the real `s5_executor.c`, kernel flags stubbed | VC hands control to S5, takes it back, and safe-stops on failure. **PASS 22 Nov (#20)**, 994 checks |
 
 **Done when:** U05–U12 pass with calibration recorded, and the VC passes
@@ -222,6 +223,7 @@ is to measure real data.
 | INT-12 | Host suite clean | L1 | `sh testing/run_host_tests.sh` all PASS before each merge to `main` |
 | INT-13 | VC ↔ S5 hand-over on the PC | L1 | see Buddy 2. **PASS 22 Nov (#20)**: `int/robot_avoidance` |
 | INT-14 | Event-bit table matches the code (#50) | L1 | `int/event_bits`: no file outside TEAM.md §5's producer/consumer columns sets, clears, waits on, sends to or reads an event object |
+| INT-15 | Invalid or corrupted commands, S1 → VC → S2 (#51, PT A7) | L1 + L4 | L1: `int/bad_commands` (real S1 MQTT callbacks and command buffer in front of the real VC and motion controller). L4: `python3 tools/robot_mqtt_test.py --broker <ip> --only INT-15` in `integrated`: wrong-length, reserved-code and reserved-bit payloads in Ready, while following and while paused. Pass: none has any effect, valid START / PAUSE / RESUME still work straight after, and the console's `invalid=` equals the number sent. **L1 PASS 23 Nov; L4 PASS 23 Nov** (`invalid=26`) |
 
 ## System (`testing/system/`): the whole robot against the brief
 

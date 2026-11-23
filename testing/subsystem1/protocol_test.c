@@ -3,8 +3,12 @@
 #include <string.h>
 #include "communication_protocol.h"
 
-static const int minima[] = {0,0,0,-200,0,0,0,0,0,0,0,0,0,0,0,0};
-static const int maxima[] = {7,31,7,200,65535,7,4,255,400,180,400,26,1,65535,65535,1};
+static const int minima[] = {0,0,0,-200,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+static const int maxima[] = {7,31,7,200,65535,7,4,255,400,180,400,26,1,65535,65535,1,
+                             65535,65535};
+_Static_assert(sizeof minima / sizeof minima[0] == S1_FIELD_COUNT &&
+               sizeof maxima / sizeof maxima[0] == S1_FIELD_COUNT,
+               "one range per telemetry field");
 
 int main(void)
 {
@@ -36,14 +40,33 @@ int main(void)
         assert(memcmp(&packet, &before, sizeof packet) == 0);
     }
     {
-        /* S5 faults (#46) bits 8-10; map received (#38) bit 86; two 16-bit counters. */
-        static const int values[] = {7,31,7,-123,65535,7,4,255,400,180,400,6,1,65535,65535,1};
-        static const unsigned char expected[] = {0xff,0x87,0x26,0xff,0xff,0xe7,0x3f,0x64,0x5a,0xc8,0x66,0xff,0xff,0xff,0xff};
+        /* S5 faults (#46) bits 8-10; map received (#38) bit 86; two 16-bit
+         * counters; then left/right ticks (#41) in bytes 15-18. Same
+         * fixture as test_binary.py. */
+        static const int values[] = {7,31,7,-123,65535,7,4,255,400,180,400,6,1,65535,65535,1,
+                                     0x1234,0xfedc};
+        static const unsigned char expected[] = {0xff,0x87,0x26,0xff,0xff,0xe7,0x3f,0x64,0x5a,0xc8,0x66,0xff,0xff,0xff,0xff,
+                                                 0x34,0x12,0xdc,0xfe};
+        assert(sizeof expected == S1_TELEMETRY_BYTES);
         s1_telemetry_init(&packet);
         for (field = 0; field < S1_FIELD_COUNT; ++field) {
             assert(s1_telemetry_set(&packet, (S1_FIELD)field, values[field]));
         }
         assert(memcmp(packet.bytes, expected, sizeof expected) == 0);
+    }
+    {
+        /* #41: a signed int32 count goes on the wire as its low 16 bits. */
+        static const long counts[] = {0L, 1L, -1L, -292L, 32767L, -32768L, 70000L, 2147483647L};
+        unsigned int k;
+        for (k = 0; k < sizeof counts / sizeof counts[0]; ++k) {
+            int raw = (int)((unsigned long)counts[k] & S1_TICKS_MASK);
+            s1_telemetry_init(&packet);
+            assert(s1_telemetry_set(&packet, S1_FIELD_RIGHT_TICKS, raw));
+            assert(s1_telemetry_get(&packet, S1_FIELD_RIGHT_TICKS, &decoded) && decoded == raw);
+            assert(packet.bytes[17] == (unsigned char)(raw & 0xff) &&
+                   packet.bytes[18] == (unsigned char)(raw >> 8));
+            assert(s1_telemetry_get(&packet, S1_FIELD_LEFT_TICKS, &decoded) && decoded == 0);
+        }
     }
     for (code = 0; code < 256; ++code) {
         command.bytes[0] = (unsigned char)code;

@@ -1,0 +1,1085 @@
+# Console of the S1-U12 / #41 wheel-check boot: robot-integrated.uf2 built 12:57 from fb8d46c + uncommitted #41 changes. SSID redacted.
+=== COM5 connected 12:59:08.448 (flashed 12:59:07) ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "<SSID>" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-128,56,925) mg
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=100 acc=(-128,58,928)mg delta=(x:0,y:2)mg mag=(119,-499,-215) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 359 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=150 acc=(-122,55,921)mg delta=(x:6,y:-1)mg mag=(121,-503,-216) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+wifi: link up, ip=172.20.10.3 t=4043 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/400 gap_max=10 loop_max=2 ms
+[S1:MQTT] connected to 172.20.10.2 t=4327 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S4:IMU] n=200 acc=(-122,56,921)mg delta=(x:6,y:0)mg mag=(120,-500,-214) pitch=0 height=0mm height_valid=0 state=0
+[S1:MQTT] subscribed to group17-robot/mapping
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=250 acc=(-131,60,924)mg delta=(x:-3,y:4)mg mag=(123,-499,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/600 gap_max=10 loop_max=4 ms
+[S4:IMU] n=300 acc=(-130,57,919)mg delta=(x:-2,y:1)mg mag=(121,-497,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=350 acc=(-127,58,928)mg delta=(x:1,y:2)mg mag=(122,-500,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=400 acc=(-136,57,934)mg delta=(x:-8,y:1)mg mag=(121,-499,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=450 acc=(-122,56,925)mg delta=(x:6,y:0)mg mag=(119,-499,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=500 acc=(-128,58,932)mg delta=(x:0,y:2)mg mag=(120,-499,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=550 acc=(-122,57,924)mg delta=(x:6,y:1)mg mag=(121,-499,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=600 acc=(-123,52,922)mg delta=(x:5,y:-4)mg mag=(121,-497,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=650 acc=(-127,57,923)mg delta=(x:1,y:1)mg mag=(122,-498,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=700 acc=(-126,58,924)mg delta=(x:2,y:2)mg mag=(122,-498,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1500 gap_max=10 loop_max=2 ms
+[S4:IMU] n=750 acc=(-129,57,921)mg delta=(x:-1,y:1)mg mag=(120,-499,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=800 acc=(-128,57,922)mg delta=(x:0,y:1)mg mag=(120,-501,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=850 acc=(-125,56,932)mg delta=(x:3,y:0)mg mag=(118,-497,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1800 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/1900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=900 acc=(-126,57,921)mg delta=(x:2,y:1)mg mag=(119,-502,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=950 acc=(-124,53,919)mg delta=(x:4,y:-3)mg mag=(121,-501,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1000 acc=(-124,56,917)mg delta=(x:4,y:0)mg mag=(121,-498,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1050 acc=(-128,56,922)mg delta=(x:0,y:0)mg mag=(120,-499,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1100 acc=(-129,55,924)mg delta=(x:-1,y:-1)mg mag=(120,-500,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1150 acc=(-127,52,921)mg delta=(x:1,y:-4)mg mag=(122,-499,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1200 acc=(-122,52,929)mg delta=(x:6,y:-4)mg mag=(122,-497,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2600 gap_max=10 loop_max=4 ms
+[S4:IMU] n=1250 acc=(-131,55,925)mg delta=(x:-3,y:-1)mg mag=(122,-504,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1300 acc=(-128,57,924)mg delta=(x:0,y:1)mg mag=(124,-497,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1350 acc=(-127,58,921)mg delta=(x:1,y:2)mg mag=(120,-498,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/2900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1400 acc=(-135,55,924)mg delta=(x:-7,y:-1)mg mag=(122,-498,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1450 acc=(-130,64,921)mg delta=(x:-2,y:8)mg mag=(120,-500,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1500 acc=(-132,55,929)mg delta=(x:-4,y:-1)mg mag=(122,-498,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1550 acc=(-126,58,928)mg delta=(x:2,y:2)mg mag=(119,-498,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1600 acc=(-128,60,926)mg delta=(x:0,y:4)mg mag=(123,-498,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1650 acc=(-122,55,917)mg delta=(x:6,y:-1)mg mag=(121,-498,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3500 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1700 acc=(-125,55,926)mg delta=(x:3,y:-1)mg mag=(120,-499,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1750 acc=(-129,60,933)mg delta=(x:-1,y:4)mg mag=(122,-501,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1800 acc=(-130,57,934)mg delta=(x:-2,y:1)mg mag=(123,-499,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1850 acc=(-129,56,921)mg delta=(x:-1,y:0)mg mag=(120,-499,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/3900 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1900 acc=(-128,60,927)mg delta=(x:0,y:4)mg mag=(120,-499,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1950 acc=(-124,55,921)mg delta=(x:4,y:-1)mg mag=(123,-497,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2000 acc=(-124,61,924)mg delta=(x:4,y:5)mg mag=(119,-500,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4300 gap_max=10 loop_max=4 ms
+[S4:IMU] n=2050 acc=(-124,59,919)mg delta=(x:4,y:3)mg mag=(121,-499,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2100 acc=(-127,61,928)mg delta=(x:1,y:5)mg mag=(120,-501,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2150 acc=(-124,58,930)mg delta=(x:4,y:2)mg mag=(120,-501,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4600 gap_max=10 loop_max=2 ms
+[S4:IMU] n=2200 acc=(-130,58,925)mg delta=(x:-2,y:2)mg mag=(121,-497,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2250 acc=(-132,52,937)mg delta=(x:-4,y:-4)mg mag=(119,-499,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2300 acc=(-127,57,929)mg delta=(x:1,y:1)mg mag=(125,-499,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=2350 acc=(-126,58,929)mg delta=(x:2,y:2)mg mag=(119,-498,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5000 gap_max=10 loop_max=4 ms
+[S4:IMU] n=2400 acc=(-128,60,930)mg delta=(x:0,y:4)mg mag=(120,-498,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2450 acc=(-130,59,927)mg delta=(x:-2,y:3)mg mag=(121,-500,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2500 acc=(-126,57,932)mg delta=(x:2,y:1)mg mag=(122,-499,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2550 acc=(-128,55,923)mg delta=(x:0,y:-1)mg mag=(119,-500,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2600 acc=(-130,59,926)mg delta=(x:-2,y:3)mg mag=(120,-497,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2650 acc=(-126,56,929)mg delta=(x:2,y:0)mg mag=(121,-498,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2700 acc=(-127,60,923)mg delta=(x:1,y:4)mg mag=(122,-497,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2750 acc=(-126,59,926)mg delta=(x:2,y:3)mg mag=(120,-499,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2800 acc=(-124,54,923)mg delta=(x:4,y:-2)mg mag=(122,-498,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2850 acc=(-129,56,931)mg delta=(x:-1,y:0)mg mag=(122,-501,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6000 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=2900 acc=(-129,60,924)mg delta=(x:-1,y:4)mg mag=(122,-499,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2950 acc=(-126,57,925)mg delta=(x:2,y:1)mg mag=(124,-499,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6300 gap_max=10 loop_max=2 ms
+[S4:IMU] n=3000 acc=(-122,62,926)mg delta=(x:6,y:6)mg mag=(123,-498,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3050 acc=(-127,58,926)mg delta=(x:1,y:2)mg mag=(122,-498,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3100 acc=(-129,56,924)mg delta=(x:-1,y:0)mg mag=(121,-499,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6600 gap_max=10 loop_max=2 ms
+[S4:IMU] n=3150 acc=(-131,57,921)mg delta=(x:-3,y:1)mg mag=(122,-500,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3200 acc=(-129,57,926)mg delta=(x:-1,y:1)mg mag=(121,-498,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3250 acc=(-127,57,927)mg delta=(x:1,y:1)mg mag=(119,-499,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/6900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=3300 acc=(-128,56,931)mg delta=(x:0,y:0)mg mag=(120,-498,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3350 acc=(-128,57,928)mg delta=(x:0,y:1)mg mag=(121,-496,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3400 acc=(-126,60,925)mg delta=(x:2,y:4)mg mag=(122,-498,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=3450 acc=(-125,65,921)mg delta=(x:3,y:9)mg mag=(120,-500,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3500 acc=(-144,47,922)mg delta=(x:-16,y:-9)mg mag=(121,-499,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7400 gap_max=10 loop_max=2 ms
+[S4:IMU] n=3550 acc=(-212,45,934)mg delta=(x:-84,y:-11)mg mag=(121,-499,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3600 acc=(-116,55,923)mg delta=(x:12,y:-1)mg mag=(122,-499,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3650 acc=(-124,56,925)mg delta=(x:4,y:0)mg mag=(117,-499,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=3700 acc=(-143,47,931)mg delta=(x:-15,y:-9)mg mag=(120,-495,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=295 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3750 acc=(-178,-66,910)mg delta=(x:-50,y:-122)mg mag=(117,-496,-211) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=5 filtered=-62 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=361 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/7900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3800 acc=(-150,52,922)mg delta=(x:-22,y:-4)mg mag=(119,-496,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=746 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3850 acc=(-100,81,910)mg delta=(x:28,y:25)mg mag=(118,-498,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1060 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3900 acc=(-117,51,924)mg delta=(x:11,y:-5)mg mag=(114,-494,-208) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1255 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8200 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=1300 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3950 acc=(-77,32,930)mg delta=(x:51,y:-24)mg mag=(113,-498,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1449 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8400 gap_max=10 loop_max=4 ms
+[S4:IMU] n=4000 acc=(-85,84,926)mg delta=(x:43,y:28)mg mag=(105,-497,-207) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=-234 filtered=-86 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-142 filtered=-122 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=181 filtered=112 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-7 filtered=157 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=1673 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=4050 acc=(-152,75,917)mg delta=(x:-24,y:19)mg mag=(106,-497,-208) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1828 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=4100 acc=(-122,65,931)mg delta=(x:6,y:9)mg mag=(107,-497,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1967 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=4150 acc=(-111,56,923)mg delta=(x:17,y:0)mg mag=(107,-495,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2103 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=4200 acc=(-126,60,928)mg delta=(x:2,y:4)mg mag=(110,-497,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2132 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/8900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=4250 acc=(-131,77,919)mg delta=(x:-3,y:21)mg mag=(136,-505,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2166 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=4300 acc=(-126,80,911)mg delta=(x:2,y:24)mg mag=(130,-503,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2166 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=4350 acc=(-131,51,925)mg delta=(x:-3,y:-5)mg mag=(129,-502,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2473 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=4400 acc=(-133,58,920)mg delta=(x:-5,y:2)mg mag=(128,-497,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9300 gap_max=10 loop_max=4 ms
+[S4:IMU] n=4450 acc=(-133,65,915)mg delta=(x:-5,y:9)mg mag=(127,-499,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9400 gap_max=10 loop_max=2 ms
+[S4:IMU] n=4500 acc=(-131,58,923)mg delta=(x:-3,y:2)mg mag=(133,-496,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=4550 acc=(-132,57,922)mg delta=(x:-4,y:1)mg mag=(132,-497,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9600 gap_max=10 loop_max=2 ms
+[S4:IMU] n=4600 acc=(-128,58,927)mg delta=(x:0,y:2)mg mag=(135,-497,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=4650 acc=(-132,60,924)mg delta=(x:-4,y:4)mg mag=(135,-501,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=4700 acc=(-151,41,924)mg delta=(x:-23,y:-15)mg mag=(224,-516,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/9900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=4750 acc=(-125,49,923)mg delta=(x:3,y:-7)mg mag=(449,-478,-208) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=4800 acc=(-126,48,929)mg delta=(x:2,y:-8)mg mag=(448,-480,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10100 gap_max=10 loop_max=4 ms
+[S4:IMU] n=4850 acc=(-127,50,920)mg delta=(x:1,y:-6)mg mag=(447,-477,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=4900 acc=(-89,72,926)mg delta=(x:39,y:16)mg mag=(448,-479,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/10300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=143 PWM=0/0
+[S2:MOTION] ctrl late=0/10400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=4950 acc=(-117,46,926)mg delta=(x:11,y:-10)mg mag=(450,-484,-220) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=475 PWM=0/0
+[S2:MOTION] ctrl late=0/10500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5000 acc=(-128,38,921)mg delta=(x:0,y:-18)mg mag=(449,-481,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=873 PWM=0/0
+[S2:MOTION] ctrl late=0/10600 gap_max=10 loop_max=4 ms
+[S4:IMU] n=5050 acc=(-115,58,926)mg delta=(x:13,y:2)mg mag=(447,-479,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=1186 PWM=0/0
+[S2:MOTION] ctrl late=0/10700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=5100 acc=(-111,43,923)mg delta=(x:17,y:-13)mg mag=(451,-485,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=1666 PWM=0/0
+[S2:MOTION] ctrl late=0/10800 gap_max=10 loop_max=2 ms
+[S4:IMU] n=5150 acc=(-132,59,924)mg delta=(x:-4,y:3)mg mag=(452,-478,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=2019 PWM=0/0
+[S2:MOTION] ctrl late=0/10900 gap_max=10 loop_max=4 ms
+[S4:IMU] n=5200 acc=(-91,14,941)mg delta=(x:37,y:-42)mg mag=(464,-475,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=2349 PWM=0/0
+[S2:MOTION] ctrl late=0/11000 gap_max=10 loop_max=2 ms
+[S4:IMU] n=5250 acc=(-138,45,922)mg delta=(x:-10,y:-11)mg mag=(468,-475,-218) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/11100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5300 acc=(-126,48,925)mg delta=(x:2,y:-8)mg mag=(456,-475,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/11200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5350 acc=(-122,50,923)mg delta=(x:6,y:-6)mg mag=(460,-475,-211) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=-24 filtered=-60 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-22 filtered=-61 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/11300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5400 acc=(-132,54,924)mg delta=(x:-4,y:-2)mg mag=(160,-511,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/11400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5450 acc=(-131,51,925)mg delta=(x:-3,y:-5)mg mag=(160,-510,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/11500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5500 acc=(-134,51,931)mg delta=(x:-6,y:-5)mg mag=(159,-504,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/11600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5550 acc=(-135,56,926)mg delta=(x:-7,y:0)mg mag=(159,-509,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2591 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/11700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5600 acc=(-131,47,931)mg delta=(x:-3,y:-9)mg mag=(155,-507,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2478 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/11800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5650 acc=(-146,89,921)mg delta=(x:-18,y:33)mg mag=(154,-509,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2311 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/11900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5700 acc=(-143,55,930)mg delta=(x:-15,y:-1)mg mag=(152,-507,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=2016 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/12000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5750 acc=(-133,54,931)mg delta=(x:-5,y:-2)mg mag=(150,-507,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1693 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/12100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5800 acc=(-22,30,924)mg delta=(x:106,y:-26)mg mag=(126,-498,-217) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=-65 filtered=-65 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-48 filtered=-62 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=1503 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/12200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=5850 acc=(-38,19,922)mg delta=(x:90,y:-37)mg mag=(121,-498,-219) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1233 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/12300 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-201 filtered=-90 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-156 filtered=-117 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-34 filtered=-130 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-56 filtered=-82 moving=0 dist=0 entry=0
+[S4:IMU] n=5900 acc=(-106,11,911)mg delta=(x:22,y:-45)mg mag=(124,-497,-220) pitch=-5 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=928 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/12400 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=592 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/12500 gap_max=10 loop_max=2 ms
+[S4:IMU] n=5950 acc=(-111,24,927)mg delta=(x:17,y:-32)mg mag=(132,-500,-219) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=332 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/12600 gap_max=10 loop_max=4 ms
+[S4:IMU] n=6000 acc=(-113,53,934)mg delta=(x:15,y:-3)mg mag=(136,-503,-220) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-21 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/12700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6050 acc=(-112,42,929)mg delta=(x:16,y:-14)mg mag=(136,-501,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-36 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/12800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6100 acc=(-130,48,930)mg delta=(x:-2,y:-8)mg mag=(140,-503,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-36 R=2539 PWM=0/0
+[S2:MOTION] ctrl late=0/12900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6150 acc=(-128,41,930)mg delta=(x:0,y:-15)mg mag=(139,-504,-220) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=-147 filtered=-72 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-256 filtered=-111 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-251 filtered=-93 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=81 filtered=-104 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-159 filtered=-73 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/13000 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=-104 filtered=-60 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=57 filtered=-68 moving=0 dist=0 entry=0
+[S4:IMU] n=6200 acc=(-147,53,931)mg delta=(x:-19,y:-3)mg mag=(160,-508,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/13100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6250 acc=(-140,56,934)mg delta=(x:-12,y:0)mg mag=(158,-505,-220) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/13200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6300 acc=(-126,53,924)mg delta=(x:2,y:-3)mg mag=(160,-509,-221) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/13300 gap_max=10 loop_max=2 ms
+[S4:IMU] n=6350 acc=(-135,50,928)mg delta=(x:-7,y:-6)mg mag=(160,-510,-221) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/13400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6400 acc=(-134,61,920)mg delta=(x:-6,y:5)mg mag=(159,-511,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/13500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6450 acc=(-136,50,930)mg delta=(x:-8,y:-6)mg mag=(155,-508,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/13600 gap_max=10 loop_max=2 ms
+[S4:IMU] n=6500 acc=(-138,54,938)mg delta=(x:-10,y:-2)mg mag=(158,-509,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/13700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6550 acc=(-133,54,918)mg delta=(x:-5,y:-2)mg mag=(159,-507,-218) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/13800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6600 acc=(-132,51,924)mg delta=(x:-4,y:-5)mg mag=(157,-509,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/13900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=6650 acc=(-133,48,922)mg delta=(x:-5,y:-8)mg mag=(156,-509,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/14000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6700 acc=(-134,46,930)mg delta=(x:-6,y:-10)mg mag=(156,-509,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/14100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6750 acc=(-130,53,926)mg delta=(x:-2,y:-3)mg mag=(156,-511,-218) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/14200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6800 acc=(-134,49,925)mg delta=(x:-6,y:-7)mg mag=(156,-511,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/14300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6850 acc=(-135,49,925)mg delta=(x:-7,y:-7)mg mag=(151,-509,-220) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/14400 gap_max=10 loop_max=4 ms
+[S4:IMU] n=6900 acc=(-131,50,929)mg delta=(x:-3,y:-6)mg mag=(152,-508,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/14500 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/14600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6950 acc=(-139,54,927)mg delta=(x:-11,y:-2)mg mag=(152,-509,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/14700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=7000 acc=(-133,52,921)mg delta=(x:-5,y:-4)mg mag=(153,-510,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/14800 gap_max=10 loop_max=4 ms
+[S4:IMU] n=7050 acc=(-129,52,919)mg delta=(x:-1,y:-4)mg mag=(155,-509,-221) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/14900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7100 acc=(-135,48,931)mg delta=(x:-7,y:-8)mg mag=(153,-512,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/15000 gap_max=10 loop_max=2 ms
+[S4:IMU] n=7150 acc=(-136,48,932)mg delta=(x:-8,y:-8)mg mag=(154,-514,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/15100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7200 acc=(-135,51,926)mg delta=(x:-7,y:-5)mg mag=(156,-510,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/15200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=7250 acc=(-136,51,929)mg delta=(x:-8,y:-5)mg mag=(155,-510,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/15300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7300 acc=(-132,48,922)mg delta=(x:-4,y:-8)mg mag=(157,-513,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/15400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7350 acc=(-133,53,924)mg delta=(x:-5,y:-3)mg mag=(156,-511,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/15500 gap_max=10 loop_max=2 ms
+[S4:IMU] n=7400 acc=(-135,49,929)mg delta=(x:-7,y:-7)mg mag=(155,-510,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/15600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7450 acc=(-138,51,933)mg delta=(x:-10,y:-5)mg mag=(157,-509,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/15700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7500 acc=(-135,54,929)mg delta=(x:-7,y:-2)mg mag=(153,-509,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/15800 gap_max=10 loop_max=2 ms
+[S4:IMU] n=7550 acc=(-133,49,930)mg delta=(x:-5,y:-7)mg mag=(158,-509,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/15900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7600 acc=(-134,53,925)mg delta=(x:-6,y:-3)mg mag=(156,-510,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/16000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7650 acc=(-133,52,923)mg delta=(x:-5,y:-4)mg mag=(154,-508,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/16100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=7700 acc=(-128,51,927)mg delta=(x:0,y:-5)mg mag=(154,-509,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/16200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7750 acc=(-139,50,927)mg delta=(x:-11,y:-6)mg mag=(153,-508,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/16300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7800 acc=(-132,53,929)mg delta=(x:-4,y:-3)mg mag=(155,-507,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/16400 gap_max=10 loop_max=2 ms
+[S4:IMU] n=7850 acc=(-130,48,923)mg delta=(x:-2,y:-8)mg mag=(153,-511,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/16500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7900 acc=(-136,50,926)mg delta=(x:-8,y:-6)mg mag=(157,-511,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/16600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/16700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=7950 acc=(-132,52,926)mg delta=(x:-4,y:-4)mg mag=(154,-510,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/16800 gap_max=10 loop_max=4 ms
+[S4:IMU] n=8000 acc=(-133,52,925)mg delta=(x:-5,y:-4)mg mag=(156,-511,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/16900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=8050 acc=(-132,50,926)mg delta=(x:-4,y:-6)mg mag=(156,-511,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/17000 gap_max=10 loop_max=2 ms
+[S4:IMU] n=8100 acc=(-140,53,924)mg delta=(x:-12,y:-3)mg mag=(156,-511,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/17100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8150 acc=(-137,47,934)mg delta=(x:-9,y:-9)mg mag=(152,-508,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/17200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=8200 acc=(-134,50,928)mg delta=(x:-6,y:-6)mg mag=(153,-511,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/17300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8250 acc=(-137,52,927)mg delta=(x:-9,y:-4)mg mag=(153,-511,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/17400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8300 acc=(-132,50,924)mg delta=(x:-4,y:-6)mg mag=(154,-514,-218) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/17500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8350 acc=(-129,54,932)mg delta=(x:-1,y:-2)mg mag=(154,-508,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/17600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8400 acc=(-128,51,925)mg delta=(x:0,y:-5)mg mag=(154,-512,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/17700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8450 acc=(-130,51,927)mg delta=(x:-2,y:-5)mg mag=(156,-507,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/17800 gap_max=10 loop_max=2 ms
+[S4:IMU] n=8500 acc=(-138,49,923)mg delta=(x:-10,y:-7)mg mag=(155,-514,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/17900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8550 acc=(-129,48,922)mg delta=(x:-1,y:-8)mg mag=(154,-508,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/18000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8600 acc=(-136,50,929)mg delta=(x:-8,y:-6)mg mag=(153,-511,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/18100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=8650 acc=(-136,53,930)mg delta=(x:-8,y:-3)mg mag=(155,-510,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/18200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8700 acc=(-134,48,923)mg delta=(x:-6,y:-8)mg mag=(152,-508,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/18300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8750 acc=(-135,49,927)mg delta=(x:-7,y:-7)mg mag=(155,-508,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/18400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8800 acc=(-132,53,928)mg delta=(x:-4,y:-3)mg mag=(152,-508,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/18500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8850 acc=(-133,50,924)mg delta=(x:-5,y:-6)mg mag=(153,-508,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/18600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8900 acc=(-137,49,923)mg delta=(x:-9,y:-7)mg mag=(154,-508,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/18700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=8950 acc=(-139,47,923)mg delta=(x:-11,y:-9)mg mag=(158,-509,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/18800 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/18900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9000 acc=(-137,44,931)mg delta=(x:-9,y:-12)mg mag=(156,-508,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/19000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9050 acc=(-134,44,929)mg delta=(x:-6,y:-12)mg mag=(157,-510,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/19100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9100 acc=(-140,50,929)mg delta=(x:-12,y:-6)mg mag=(159,-507,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/19200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9150 acc=(-136,52,927)mg delta=(x:-8,y:-4)mg mag=(157,-509,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/19300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9200 acc=(-137,48,932)mg delta=(x:-9,y:-8)mg mag=(158,-508,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/19400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9250 acc=(-136,49,930)mg delta=(x:-8,y:-7)mg mag=(158,-511,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/19500 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9300 acc=(-137,50,926)mg delta=(x:-9,y:-6)mg mag=(159,-508,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/19600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9350 acc=(-134,52,927)mg delta=(x:-6,y:-4)mg mag=(156,-508,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/19700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9400 acc=(-128,49,926)mg delta=(x:0,y:-7)mg mag=(158,-507,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/19800 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9450 acc=(-131,48,926)mg delta=(x:-3,y:-8)mg mag=(158,-510,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/19900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9500 acc=(-140,53,923)mg delta=(x:-12,y:-3)mg mag=(157,-510,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/20000 gap_max=10 loop_max=4 ms
+[S4:IMU] n=9550 acc=(-132,50,923)mg delta=(x:-4,y:-6)mg mag=(158,-510,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/20100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9600 acc=(-137,50,926)mg delta=(x:-9,y:-6)mg mag=(159,-508,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/20200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9650 acc=(-133,48,925)mg delta=(x:-5,y:-8)mg mag=(158,-511,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/20300 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9700 acc=(-136,50,923)mg delta=(x:-8,y:-6)mg mag=(157,-509,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/20400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9750 acc=(-147,51,925)mg delta=(x:-19,y:-5)mg mag=(156,-509,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/20500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9800 acc=(-134,54,922)mg delta=(x:-6,y:-2)mg mag=(158,-509,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/20600 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9850 acc=(-137,52,924)mg delta=(x:-9,y:-4)mg mag=(157,-510,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/20700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9900 acc=(-133,52,922)mg delta=(x:-5,y:-4)mg mag=(157,-511,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/20800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9950 acc=(-133,50,917)mg delta=(x:-5,y:-6)mg mag=(157,-508,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/20900 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/21000 gap_max=10 loop_max=4 ms
+[S4:IMU] n=10000 acc=(-133,46,926)mg delta=(x:-5,y:-10)mg mag=(158,-506,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/21100 gap_max=10 loop_max=4 ms
+[S4:IMU] n=10050 acc=(-136,51,923)mg delta=(x:-8,y:-5)mg mag=(156,-510,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/21200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10100 acc=(-137,48,930)mg delta=(x:-9,y:-8)mg mag=(155,-510,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/21300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10150 acc=(-139,49,929)mg delta=(x:-11,y:-7)mg mag=(158,-507,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/21400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10200 acc=(-129,51,925)mg delta=(x:-1,y:-5)mg mag=(157,-512,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/21500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10250 acc=(-139,49,930)mg delta=(x:-11,y:-7)mg mag=(156,-506,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/21600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10300 acc=(-137,51,932)mg delta=(x:-9,y:-5)mg mag=(159,-512,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/21700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=10350 acc=(-136,53,927)mg delta=(x:-8,y:-3)mg mag=(156,-510,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/21800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10400 acc=(-137,48,932)mg delta=(x:-9,y:-8)mg mag=(156,-509,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/21900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10450 acc=(-142,51,938)mg delta=(x:-14,y:-5)mg mag=(155,-509,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/22000 gap_max=10 loop_max=2 ms
+[S4:IMU] n=10500 acc=(-139,50,929)mg delta=(x:-11,y:-6)mg mag=(157,-512,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/22100 gap_max=10 loop_max=4 ms
+[S4:IMU] n=10550 acc=(-138,51,937)mg delta=(x:-10,y:-5)mg mag=(157,-508,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/22200 gap_max=10 loop_max=4 ms
+[S4:IMU] n=10600 acc=(-138,50,936)mg delta=(x:-10,y:-6)mg mag=(156,-509,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/22300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10650 acc=(-140,52,937)mg delta=(x:-12,y:-4)mg mag=(158,-512,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/22400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10700 acc=(-143,48,929)mg delta=(x:-15,y:-8)mg mag=(156,-510,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/22500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10750 acc=(-140,51,931)mg delta=(x:-12,y:-5)mg mag=(155,-508,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/22600 gap_max=10 loop_max=2 ms
+[S4:IMU] n=10800 acc=(-135,52,927)mg delta=(x:-7,y:-4)mg mag=(156,-509,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/22700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10850 acc=(-135,46,925)mg delta=(x:-7,y:-10)mg mag=(157,-509,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/22800 gap_max=10 loop_max=2 ms
+[S4:IMU] n=10900 acc=(-136,51,925)mg delta=(x:-8,y:-5)mg mag=(157,-506,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/22900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10950 acc=(-134,54,928)mg delta=(x:-6,y:-2)mg mag=(158,-511,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/23000 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/23100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=11000 acc=(-139,51,928)mg delta=(x:-11,y:-5)mg mag=(158,-510,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/23200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11050 acc=(-133,52,929)mg delta=(x:-5,y:-4)mg mag=(156,-510,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/23300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11100 acc=(-132,51,924)mg delta=(x:-4,y:-5)mg mag=(158,-510,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/23400 gap_max=10 loop_max=2 ms
+[S4:IMU] n=11150 acc=(-133,48,925)mg delta=(x:-5,y:-8)mg mag=(159,-508,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/23500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11200 acc=(-131,48,924)mg delta=(x:-3,y:-8)mg mag=(157,-506,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/23600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11250 acc=(-133,49,921)mg delta=(x:-5,y:-7)mg mag=(157,-506,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/23700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=11300 acc=(-136,50,917)mg delta=(x:-8,y:-6)mg mag=(156,-509,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/23800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11350 acc=(-128,53,922)mg delta=(x:0,y:-3)mg mag=(157,-512,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/23900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11400 acc=(-134,52,923)mg delta=(x:-6,y:-4)mg mag=(159,-507,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/24000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11450 acc=(-137,50,926)mg delta=(x:-9,y:-6)mg mag=(157,-509,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/24100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11500 acc=(-135,52,916)mg delta=(x:-7,y:-4)mg mag=(159,-507,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/24200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11550 acc=(-134,51,917)mg delta=(x:-6,y:-5)mg mag=(156,-507,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/24300 gap_max=10 loop_max=2 ms
+[S4:IMU] n=11600 acc=(-133,51,917)mg delta=(x:-5,y:-5)mg mag=(157,-508,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/24400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11650 acc=(-135,58,928)mg delta=(x:-7,y:2)mg mag=(157,-509,-207) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/24500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11700 acc=(-136,54,922)mg delta=(x:-8,y:-2)mg mag=(159,-508,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/24600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11750 acc=(-136,52,926)mg delta=(x:-8,y:-4)mg mag=(155,-509,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/24700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11800 acc=(-138,51,928)mg delta=(x:-10,y:-5)mg mag=(154,-507,-208) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/24800 gap_max=10 loop_max=2 ms
+[S4:IMU] n=11850 acc=(-136,54,928)mg delta=(x:-8,y:-2)mg mag=(158,-505,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/24900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11900 acc=(-136,53,922)mg delta=(x:-8,y:-3)mg mag=(155,-507,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/25000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11950 acc=(-135,52,925)mg delta=(x:-7,y:-4)mg mag=(155,-510,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/25100 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/25200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12000 acc=(-135,51,924)mg delta=(x:-7,y:-5)mg mag=(157,-509,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/25300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12050 acc=(-130,51,922)mg delta=(x:-2,y:-5)mg mag=(154,-510,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/25400 gap_max=10 loop_max=2 ms
+[S4:IMU] n=12100 acc=(-120,53,923)mg delta=(x:8,y:-3)mg mag=(158,-509,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/25500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12150 acc=(-138,56,916)mg delta=(x:-10,y:0)mg mag=(155,-511,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/25600 gap_max=10 loop_max=4 ms
+[S4:IMU] n=12200 acc=(-131,51,925)mg delta=(x:-3,y:-5)mg mag=(158,-510,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/25700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=12250 acc=(-130,51,921)mg delta=(x:-2,y:-5)mg mag=(156,-507,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/25800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12300 acc=(-133,59,920)mg delta=(x:-5,y:3)mg mag=(160,-509,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/25900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=12350 acc=(-138,56,925)mg delta=(x:-10,y:0)mg mag=(155,-508,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/26000 gap_max=10 loop_max=2 ms
+[S4:IMU] n=12400 acc=(-133,49,926)mg delta=(x:-5,y:-7)mg mag=(155,-508,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/26100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12450 acc=(-134,53,929)mg delta=(x:-6,y:-3)mg mag=(155,-508,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/26200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=12500 acc=(-135,53,922)mg delta=(x:-7,y:-3)mg mag=(156,-510,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/26300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12550 acc=(-135,52,927)mg delta=(x:-7,y:-4)mg mag=(159,-509,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/26400 gap_max=10 loop_max=4 ms
+[S4:IMU] n=12600 acc=(-133,55,921)mg delta=(x:-5,y:-1)mg mag=(157,-509,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/26500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12650 acc=(-137,48,932)mg delta=(x:-9,y:-8)mg mag=(158,-509,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/26600 gap_max=10 loop_max=4 ms
+[S4:IMU] n=12700 acc=(-133,54,922)mg delta=(x:-5,y:-2)mg mag=(153,-511,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/26700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12750 acc=(-139,55,927)mg delta=(x:-11,y:-1)mg mag=(156,-510,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/26800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12800 acc=(-132,56,920)mg delta=(x:-4,y:0)mg mag=(156,-510,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/26900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12850 acc=(-133,48,923)mg delta=(x:-5,y:-8)mg mag=(158,-508,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/27000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12900 acc=(-131,49,924)mg delta=(x:-3,y:-7)mg mag=(157,-509,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/27100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=12950 acc=(-134,53,924)mg delta=(x:-6,y:-3)mg mag=(157,-508,-207) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/27200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13000 acc=(-130,54,923)mg delta=(x:-2,y:-2)mg mag=(155,-510,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/27300 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/27400 gap_max=10 loop_max=2 ms
+[S4:IMU] n=13050 acc=(-137,48,923)mg delta=(x:-9,y:-8)mg mag=(156,-510,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/27500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13100 acc=(-132,52,917)mg delta=(x:-4,y:-4)mg mag=(159,-512,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/27600 gap_max=10 loop_max=2 ms
+[S4:IMU] n=13150 acc=(-131,54,919)mg delta=(x:-3,y:-2)mg mag=(155,-508,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/27700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13200 acc=(-131,48,919)mg delta=(x:-3,y:-8)mg mag=(156,-511,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/27800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13250 acc=(-135,54,922)mg delta=(x:-7,y:-2)mg mag=(157,-509,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/27900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13300 acc=(-138,56,927)mg delta=(x:-10,y:0)mg mag=(157,-509,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/28000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13350 acc=(-133,51,923)mg delta=(x:-5,y:-5)mg mag=(159,-509,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/28100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13400 acc=(-130,52,925)mg delta=(x:-2,y:-4)mg mag=(154,-507,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/28200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=13450 acc=(-132,49,927)mg delta=(x:-4,y:-7)mg mag=(153,-511,-218) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/28300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13500 acc=(-140,49,921)mg delta=(x:-12,y:-7)mg mag=(155,-506,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/28400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13550 acc=(-127,46,926)mg delta=(x:1,y:-10)mg mag=(155,-508,-219) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/28500 gap_max=10 loop_max=2 ms
+[S4:IMU] n=13600 acc=(-132,48,925)mg delta=(x:-4,y:-8)mg mag=(155,-509,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/28600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13650 acc=(-135,47,925)mg delta=(x:-7,y:-9)mg mag=(156,-511,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/28700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13700 acc=(-128,53,922)mg delta=(x:0,y:-3)mg mag=(152,-507,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/28800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13750 acc=(-136,50,924)mg delta=(x:-8,y:-6)mg mag=(153,-508,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/28900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13800 acc=(-133,51,922)mg delta=(x:-5,y:-5)mg mag=(154,-510,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/29000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13850 acc=(-127,47,922)mg delta=(x:1,y:-9)mg mag=(156,-510,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/29100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=13900 acc=(-133,49,922)mg delta=(x:-5,y:-7)mg mag=(153,-508,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/29200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=13950 acc=(-131,52,925)mg delta=(x:-3,y:-4)mg mag=(154,-508,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/29300 gap_max=10 loop_max=2 ms
+[S4:IMU] n=14000 acc=(-129,48,922)mg delta=(x:-1,y:-8)mg mag=(155,-508,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/29400 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/29500 gap_max=10 loop_max=4 ms
+[S4:IMU] n=14050 acc=(-136,52,924)mg delta=(x:-8,y:-4)mg mag=(156,-509,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/29600 gap_max=10 loop_max=2 ms
+[S4:IMU] n=14100 acc=(-132,54,917)mg delta=(x:-4,y:-2)mg mag=(156,-510,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/29700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=14150 acc=(-138,52,923)mg delta=(x:-10,y:-4)mg mag=(153,-510,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/29800 gap_max=10 loop_max=4 ms
+[S4:IMU] n=14200 acc=(-132,48,927)mg delta=(x:-4,y:-8)mg mag=(156,-509,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/29900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=14250 acc=(-131,53,924)mg delta=(x:-3,y:-3)mg mag=(156,-510,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/30000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=14300 acc=(-134,46,930)mg delta=(x:-6,y:-10)mg mag=(155,-512,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/30100 gap_max=10 loop_max=4 ms
+[S4:IMU] n=14350 acc=(-130,55,926)mg delta=(x:-2,y:-1)mg mag=(155,-507,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/30200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=14400 acc=(-128,49,918)mg delta=(x:0,y:-7)mg mag=(157,-511,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/30300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=14450 acc=(-133,52,924)mg delta=(x:-5,y:-4)mg mag=(157,-511,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/30400 gap_max=10 loop_max=2 ms
+[S4:IMU] n=14500 acc=(-130,50,926)mg delta=(x:-2,y:-6)mg mag=(155,-507,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/30500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=14550 acc=(-131,52,923)mg delta=(x:-3,y:-4)mg mag=(155,-510,-208) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/30600 gap_max=10 loop_max=4 ms
+[S4:IMU] n=14600 acc=(-132,54,912)mg delta=(x:-4,y:-2)mg mag=(151,-509,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/30700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=14650 acc=(-136,56,929)mg delta=(x:-8,y:0)mg mag=(153,-509,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/30800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=14700 acc=(-137,54,922)mg delta=(x:-9,y:-2)mg mag=(153,-506,-218) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/30900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=14750 acc=(-131,50,925)mg delta=(x:-3,y:-6)mg mag=(151,-509,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/31000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=14800 acc=(-134,57,923)mg delta=(x:-6,y:1)mg mag=(153,-508,-218) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/31100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=14850 acc=(-135,54,923)mg delta=(x:-7,y:-2)mg mag=(152,-508,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/31200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=14900 acc=(-128,52,921)mg delta=(x:0,y:-4)mg mag=(154,-513,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/31300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=14950 acc=(-130,48,920)mg delta=(x:-2,y:-8)mg mag=(153,-511,-220) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/31400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15000 acc=(-134,52,916)mg delta=(x:-6,y:-4)mg mag=(155,-507,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/31500 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/31600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15050 acc=(-130,52,926)mg delta=(x:-2,y:-4)mg mag=(151,-508,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/31700 gap_max=10 loop_max=4 ms
+[S4:IMU] n=15100 acc=(-130,52,922)mg delta=(x:-2,y:-4)mg mag=(156,-511,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/31800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15150 acc=(-130,46,920)mg delta=(x:-2,y:-10)mg mag=(155,-509,-209) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/31900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15200 acc=(-134,52,922)mg delta=(x:-6,y:-4)mg mag=(156,-510,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/32000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15250 acc=(-134,52,920)mg delta=(x:-6,y:-4)mg mag=(152,-508,-211) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/32100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=15300 acc=(-135,52,923)mg delta=(x:-7,y:-4)mg mag=(153,-510,-210) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/32200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15350 acc=(-132,52,923)mg delta=(x:-4,y:-4)mg mag=(153,-510,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/32300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15400 acc=(-138,48,922)mg delta=(x:-10,y:-8)mg mag=(153,-508,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/32400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15450 acc=(-134,54,926)mg delta=(x:-6,y:-2)mg mag=(157,-509,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/32500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15500 acc=(-139,46,923)mg delta=(x:-11,y:-10)mg mag=(152,-511,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/32600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15550 acc=(-133,50,927)mg delta=(x:-5,y:-6)mg mag=(155,-512,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/32700 gap_max=10 loop_max=2 ms
+[S4:IMU] n=15600 acc=(-136,48,927)mg delta=(x:-8,y:-8)mg mag=(154,-508,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/32800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15650 acc=(-135,50,928)mg delta=(x:-7,y:-6)mg mag=(154,-511,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/32900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=15700 acc=(-139,45,925)mg delta=(x:-11,y:-11)mg mag=(158,-508,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/33000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15750 acc=(-136,50,928)mg delta=(x:-8,y:-6)mg mag=(154,-510,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/33100 gap_max=10 loop_max=4 ms
+[S4:IMU] n=15800 acc=(-136,51,923)mg delta=(x:-8,y:-5)mg mag=(152,-512,-213) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/33200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=15850 acc=(-138,48,923)mg delta=(x:-10,y:-8)mg mag=(154,-509,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/33300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15900 acc=(-133,49,925)mg delta=(x:-5,y:-7)mg mag=(153,-511,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/33400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=15950 acc=(-134,50,932)mg delta=(x:-6,y:-6)mg mag=(154,-508,-215) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/33500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=16000 acc=(-138,44,932)mg delta=(x:-10,y:-12)mg mag=(153,-510,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/33600 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/33700 gap_max=10 loop_max=4 ms
+[S4:IMU] n=16050 acc=(-137,52,930)mg delta=(x:-9,y:-4)mg mag=(154,-510,-214) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/33800 gap_max=10 loop_max=2 ms
+[S4:IMU] n=16100 acc=(-138,53,927)mg delta=(x:-10,y:-3)mg mag=(157,-510,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/33900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=16150 acc=(-134,52,921)mg delta=(x:-6,y:-4)mg mag=(156,-511,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/34000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=16200 acc=(-136,51,928)mg delta=(x:-8,y:-5)mg mag=(151,-511,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/34100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=16250 acc=(-135,49,930)mg delta=(x:-7,y:-7)mg mag=(153,-511,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/34200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=16300 acc=(-137,47,928)mg delta=(x:-9,y:-9)mg mag=(153,-512,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/34300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=16350 acc=(-139,48,921)mg delta=(x:-11,y:-8)mg mag=(156,-508,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/34400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=16400 acc=(-136,50,926)mg delta=(x:-8,y:-6)mg mag=(155,-509,-218) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/34500 gap_max=11 loop_max=3 ms
+[S4:IMU] n=16450 acc=(-132,50,926)mg delta=(x:-4,y:-6)mg mag=(154,-510,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/34600 gap_max=10 loop_max=2 ms
+[S4:IMU] n=16500 acc=(-134,45,922)mg delta=(x:-6,y:-11)mg mag=(154,-510,-216) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/34700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=16550 acc=(-136,50,925)mg delta=(x:-8,y:-6)mg mag=(152,-509,-217) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/34800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=16600 acc=(-130,45,923)mg delta=(x:-2,y:-11)mg mag=(156,-509,-212) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=-34 R=2540 PWM=0/0
+[S2:MOTION] ctrl late=0/34900 gap_max=11 loop_max=3 ms

@@ -16,6 +16,13 @@ motion_protocol.h uses explicit little-endian bytes, not compiler padding:
   2 bytes. Remaining bytes retain encoder int32 and numeric binary32 precision.
 
 Numeric widths remain provisional until maximum range/resolution is measured.
+
+**Update 23 Nov (#52): widths decided.** Status is now 12 bytes (95 bits):
+ticks 16-bit wrapping (read deltas with `s2_tick_delta`), speed int8 cm/s,
+distance int16 cm, PWM 11-bit in 0.1 % steps, all saturating; an
+`s2_status_unpack` was added. Measurements and arithmetic: S2-U14 in
+`TEST_LOG.md`. The command stays 5 bytes.
+
 Internal structs/floats remain for control calculations and diagnostics.
 The queue now carries S2_PACKED_COMMAND. Use subsystem2_send_command rather
 than writing raw structs to mbf_motion_cmd. Existing full status API remains;
@@ -49,8 +56,10 @@ are not WCET proof or end-to-end stop latency. Use trace/GPIO on hardware.
 - Re-measure distance and both pivots before relying on integrated motion.
   S2_CALIBRATION_READY retains its previous value; it is not new evidence.
 - Tune PID (currently zero), motor floors, tolerances and response deadlines.
-- Derive numeric/encoder widths; signed counter overflow and coherent cross-
-  core reset/read snapshots still need an explicit policy and verification.
+- Derive numeric/encoder widths (done 23 Nov, #52: the wire count wraps at
+  16 bits by design; the int32 counter itself lasts about 12 days at the
+  highest measured rate). Coherent cross-core reset/read snapshots still need
+  an explicit policy and verification.
 - Agree request IDs and completion retention before changing that interface.
 - S4 packed-output migration and shared TEAM.md corrections are outside scope.
 - Record MQTT-under-motion timing, lift stop latency and tilt event logging, simultaneous

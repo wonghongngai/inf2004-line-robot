@@ -43,6 +43,12 @@ function render(snapshot) {
   put("distance", hasFault(1) ? "Unreliable" : measure(data?.distance_cm, "cm"));
   put("speed", !data ? empty : hasFault(1) ? "Unreliable" :
       data.speed_valid ? measure(data.speed_cms, "cm/s") : "Not published");
+  /* #41: low 16 bits of each signed count, shown as int16 (wraps at ±32768). */
+  for (const [id, raw] of [["left-ticks", data?.left_ticks],
+                           ["right-ticks", data?.right_ticks]]) {
+    put(id, !data ? empty : raw == null ? "Not published" :
+        `${raw >= 32768 ? raw - 65536 : raw} ticks`);
+  }
   sensorIds.forEach((id, bit) => {
     const value = data ? (data.line_sensors >> bit) & 1 : empty;
     put(id, value).dataset.active = value;

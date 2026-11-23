@@ -15,10 +15,16 @@ spec.loader.exec_module(codec)
 class ProtocolTests(unittest.TestCase):
     def test_boundary_fixture(self):
         values = dict(zip((f[0] for f in codec.FIELDS),
-                          [7, 31, 7, -123, 65535, 7, 4, 255, 400, 180, 400, 6, 1, 65535, 65535, 1]))
-        # bits 8-10 = S5 faults (#46); byte 10 bit 6 = map (#38); bytes 11-14 = two 16-bit counters
-        wire = bytes.fromhex('ff8726ffffe73f645ac866ffffffff')
+                          [7, 31, 7, -123, 65535, 7, 4, 255, 400, 180, 400, 6, 1, 65535, 65535, 1,
+                           0x1234, 0xFEDC]))
+        # bits 8-10 = S5 faults (#46); byte 10 bit 6 = map (#38); bytes 11-14 = two
+        # 16-bit counters; bytes 15-18 = left/right ticks (#41)
+        wire = bytes.fromhex('ff8726ffffe73f645ac866ffffffff3412dcfe')
         self.assertEqual(codec.encode_telemetry(values), wire)
+        self.assertEqual(codec.decode_telemetry(wire), values)
+        del values["left_ticks"]
+        del values["right_ticks"]
+        wire = wire[:15]                                   # 15-byte packet before #41
         self.assertEqual(codec.decode_telemetry(wire), values)
         del values["barcode_black"]
         del values["barcode_white"]
@@ -44,14 +50,15 @@ class ProtocolTests(unittest.TestCase):
             codec.encode_telemetry({'barcode_black': 65536})
         wire = codec.encode_telemetry({'barcode_black': 1, 'barcode_white': 2})
         self.assertEqual(int.from_bytes(wire, 'little') >> 88, 1 | 2 << 16)
-        for bit in (11, 12, 13, 14, 87):
-            raw = bytearray(15)
-            raw[bit // 8] |= 1 << (bit % 8)
-            with self.assertRaises(ValueError):
-                codec.decode_telemetry(bytes(raw))
+        for length in (15, codec.TELEMETRY_BYTES):
+            for bit in (11, 12, 13, 14, 87):
+                raw = bytearray(length)
+                raw[bit // 8] |= 1 << (bit % 8)
+                with self.assertRaises(ValueError):
+                    codec.decode_telemetry(bytes(raw))
 
     def test_invalid_lengths_and_fields(self):
-        for length in (0, 1, 9, 12):
+        for length in (0, 1, 9, 12, 16, 18, 20):
             with self.assertRaises(ValueError):
                 codec.decode_telemetry(bytes(length))
         with self.assertRaises(ValueError):
@@ -62,6 +69,18 @@ class ProtocolTests(unittest.TestCase):
             codec.encode_telemetry({'unknown': 1})
         with self.assertRaises(ValueError):
             codec.decode_telemetry(bytes.fromhex('007f0000000000000000'))
+
+    def test_ticks_wrap(self):
+        # #41: the PC reads 16-bit counts as int16 and differences them mod 2^16.
+        self.assertEqual(codec.ticks_signed(0xFEDC), -292)
+        self.assertEqual(codec.ticks_signed(0x7FFF), 32767)
+        self.assertEqual(codec.ticks_signed(0x8000), -32768)
+        self.assertEqual(codec.ticks_delta(0xFFF0, 0x0010), 32)     # forward wrap
+        self.assertEqual(codec.ticks_delta(0x0010, 0xFFF0), -32)    # reverse wrap
+        self.assertEqual(codec.ticks_delta(100, 2400), 2300)
+        for count in (-70000, -1, 0, 1, 40000, 2**31 - 1):
+            wire = codec.encode_telemetry({"left_ticks": count & 0xFFFF})
+            self.assertEqual(codec.decode_telemetry(wire)["left_ticks"], count & 0xFFFF)
 
     def test_raw_zero_command(self):
         result = subprocess.run([sys.executable, str(TOOL), 'command', 'status'],

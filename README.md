@@ -201,7 +201,7 @@ Topics are prefixed with `MQTT_CLIENT_ID` from `config/wifi_secrets.h`:
 
 | Topic | Direction | Payload |
 | --- | --- | --- |
-| `<id>/telemetry` | car → PC | 15-byte binary packet once a second (layout in `app_program/subsystem1/README.md`) |
+| `<id>/telemetry` | car → PC | 19-byte binary packet once a second (layout in `app_program/subsystem1/README.md`) |
 | `<id>/command` | PC → car | 1 raw byte: STATUS, PAUSE, RESUME, START. RESET_STATS and REVERSE are defined by the protocol and currently unsupported in `all_test`. `integrated` handles STATUS, PAUSE, RESUME and START (#48, #72) |
 | `<id>/mapping` | PC → car | 3-byte letter-to-movement map (left, right, straight, U-turn) |
 | `<id>/barcode` | car → PC | 4-byte result per finished scan: frame, letter (or rejected), runs ([BARCODE_MQTT.md](testing/subsystem1/BARCODE_MQTT.md)) |
