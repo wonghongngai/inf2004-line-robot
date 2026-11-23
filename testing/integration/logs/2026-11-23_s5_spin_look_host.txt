@@ -1,0 +1,51 @@
+# host tests on 4b043de (test/s5-integrated-31): spin-in-place looks (IF-10 bit 29, MOTION_PROFILE_SPIN). Working tree: only TEST_PLAN.md / TEST_LOG.md edits, no code. 2026-11-23 19:51
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: 4b043de + uncommitted changes
+
+s1/protocol                  PASS
+s1/barcode_queue             PASS
+s1/binary_cli                PASS
+s2/motion_protocol           PASS
+s2/motor_pwm                 PASS
+s2/loop_timing               PASS
+s3/line_barcode              PASS
+s3/pptx_samples              PASS
+s3/line_service              PASS
+s4/hump_height               PASS
+s5/obstacle_logic            PASS
+int/robot_control            PASS
+int/robot_avoidance          PASS
+int/bad_commands             PASS
+int/line_service             PASS
+int/steering_ramp            PASS
+int/event_bits               PASS
+
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s2/loop_timing               
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/line_service              
+PASS   s4/hump_height               
+PASS   s5/obstacle_logic            
+PASS   int/robot_control            
+PASS   int/robot_avoidance          
+PASS   int/bad_commands             
+PASS   int/line_service             
+PASS   int/steering_ramp            
+PASS   int/event_bits               
+-----------------------------------------
+17 passed, 0 failed, 0 known failures, 0 skipped
+exit=0
+
+# counts
+S5 checks passed: 120
+S5 checks failed: 0 (3 S5-U46 PASS lines describe a self-test FAIL case)
+robot host tests: 1046 checks passed
+robot host tests: 1130 checks passed
+
+# mutations (planted, restored): spin direction flipped in run_spin -> int/robot_control FAIL; VC ignoring the spin bit -> int/robot_control FAIL

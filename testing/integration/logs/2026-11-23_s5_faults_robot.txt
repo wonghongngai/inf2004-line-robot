@@ -1,0 +1,77 @@
+# #46 S5 safe-stop faults on the robot. Image robot-integrated.uf2 built 18:35 from 7898f2f (test/s5-integrated-31), integrated.
+# Raw console: testing/subsystem5/logs/2026-11-23_183946_console.txt (gitignored). Telemetry read with mosquitto_sub -t group17-robot/# -F '%t %x', decoded with tools/mqtt_binary.py decode.
+
+## (1) CAL_FAIL: Grove 4 sensor cable unplugged at the Robo Pico, USB replugged, START sent
+# Note: an ECHO-wire-only pull at 18:40:43 still gave echo 5/5 (2238 mm), so the whole cable was pulled instead.
+=== COM5 connected 18:45:48.352 ===
+[S5:OBS] ERR SELF-TEST FAIL (CAL_FAIL): echo 0/5 pings, need 2: check the HC-SR04P wiring (GP16 TRIG, GP17 ECHO, 3V3)
+[S5:OBS] WARN SAFE STOP (reboot to re-arm)
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S1:MQTT] connected to 172.20.10.2 t=11025 ms
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:ROBOT] WARN stopped: obstacle: no path, line lost or bad S5 request; reboot to re-arm
+[S1:MQTT] RX command=5
+[S2:ROBOT] WARN START ignored: already started (safety stop: reboot to retry)
+# S2:MOTION lines after this boot: 120 ; with ticks or PWM non-zero: 0
+# telemetry at 18:47:46:
+group17-robot/telemetry 07016400000000000000200000000000000000
+{"state": 7, "faults": 0, "s5_faults": 1, "speed_cms": 0, "distance_cm": 0, "line_sensors": 0, "barcode": 0, "highest_hump_mm": 0, "obstacle_cm": 0, "scan_deg": 0, "obstacle_width_cm": 0, "barcode_letter": 0, "speed_valid": 1, "barcode_black": 0, "barcode_white": 0, "map_received": 0, "left_ticks": 0, "right_ticks": 0}
+
+## (2) NO_PATH: Grove cable back in, box on the line with a box either side, ~10 cm gaps, START sent
+=== COM5 connected 18:51:57.830 ===
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 481 mm)
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S5:OBS] OBSTACLE at 186 mm -> HOLD
+[S2:ROBOT] obstacle: S5 has control
+[S5:OBS] coarse  50 deg  301  ok
+[S5:OBS] coarse  70 deg  301  ok
+[S5:OBS] coarse  90 deg  247  ok
+[S5:OBS] coarse 110 deg  291  ok
+[S5:OBS] coarse 130 deg  265  ok
+[S5:OBS] fine 50..130 deg, 17 points, scan 5649 ms
+[S5:OBS] closest 180 mm at 75 deg (x 173)
+[S5:OBS] centre y -39 mm, width 0 mm
+[S5:OBS] clear L 59 mm, R 80 mm (9999 = open, 9998 = not seen: the box runs past the scan)
+[S5:OBS] PLAN STOP (no path), shift 0 mm
+[S5:OBS] WARN NO PATH
+[S5:OBS] WARN SAFE STOP (reboot to re-arm)
+[S2:ROBOT] WARN stopped: obstacle: no path, line lost or bad S5 request; reboot to re-arm
+[S2:ROBOT] WARN PAUSE ignored: already in a safety stop
+[S2:ROBOT] WARN PAUSE ignored: already in a safety stop
+# S2:MOTION lines after the stop with PWM non-zero: 0
+# telemetry at 18:52:51:
+group17-robot/telemetry 070264200000808425002000000000de0e340f
+{"state": 7, "faults": 0, "s5_faults": 2, "speed_cms": 0, "distance_cm": 32, "line_sensors": 0, "barcode": 0, "highest_hump_mm": 0, "obstacle_cm": 18, "scan_deg": 75, "obstacle_width_cm": 0, "barcode_letter": 0, "speed_valid": 1, "barcode_black": 0, "barcode_white": 0, "map_received": 0, "left_ticks": 3806, "right_ticks": 3892}
+
+## (3) LINE_LOST: box at the end of a line, both sides open, START sent
+=== COM5 connected 18:57:24.409 ===
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 383 mm)
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S5:OBS] OBSTACLE at 180 mm -> HOLD
+[S2:ROBOT] obstacle: S5 has control
+[S5:OBS] closest 183 mm at 80 deg (x 180)
+[S5:OBS] centre y -14 mm, width 0 mm
+[S5:OBS] clear L 286 mm, R 9999 mm (9999 = open, 9998 = not seen: the box runs past the scan)
+[S5:OBS] PLAN PASS LEFT, shift 111 mm
+[S5:OBS] BYPASS PASS LEFT
+[S5:OBS] step 1/8: turn L 90 deg
+[S5:OBS] step 2/8: forward 12 cm
+[S5:OBS] step 3/8: turn R 90 deg
+[S5:OBS] step 4/8: forward 80 cm (at most, watching the box)
+[S5:OBS] box not seen in 34 cm (shallow)
+[S5:OBS] step 5/8: turn R 90 deg
+[S5:OBS] step 6/8: forward 50 cm (until the line)
+[S5:OBS] line found
+[S5:OBS] step 7/8: forward 4 cm
+[S5:OBS] step 8/8: turn L 120 deg (until the line)
+[S5:OBS] WARN LINE LOST after 120 deg (NFR5-4)
+[S5:OBS] WARN SAFE STOP (reboot to re-arm)
+[S2:ROBOT] WARN stopped: obstacle: no path, line lost or bad S5 request; reboot to re-arm
+# S2:MOTION lines after the stop with PWM non-zero: 0 of 28
+# telemetry at 18:58:25:
+group17-robot/telemetry 0704647100008004280020000000003d32a135
+{"state": 7, "faults": 0, "s5_faults": 4, "speed_cms": 0, "distance_cm": 113, "line_sensors": 0, "barcode": 0, "highest_hump_mm": 0, "obstacle_cm": 18, "scan_deg": 80, "obstacle_width_cm": 0, "barcode_letter": 0, "speed_valid": 1, "barcode_black": 0, "barcode_white": 0, "map_received": 0, "left_ticks": 12861, "right_ticks": 13729}
