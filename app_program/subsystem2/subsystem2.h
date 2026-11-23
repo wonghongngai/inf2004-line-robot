@@ -114,17 +114,20 @@
 #define S2_UTURN_LEFT_PWM_PERCENT            (-18.0f)  /* was -12.5; right wheel stalled at 15, 22 Nov */
 #define S2_UTURN_RIGHT_PWM_PERCENT           20.0f  /* was 15.0 */
 /* S5 avoidance: forward legs hold the heading by cutting the leading wheel
-   by KP per cm ahead; pivots drive one wheel at 20 % around the other, on
-   an effective radius of S2_AVOID_PIVOT_TRACK_CM. */
+   by KP per cm ahead; pivots drive one wheel at 20 % around the other.
+   Pivot (and spin) angles use S2's measured turn calibration, as the
+   junction pivots do (23 Nov). They used a geometric 11.25 cm effective
+   radius tuned on 7 Nov before the encoder rework: 22.8 / 23.2 ticks per
+   degree, about 6 % short of the 22 Nov calibration, so a commanded 90
+   turned about 85. [VERIFY in the U41 runs] */
 #define S2_AVOID_HEADING_KP                  15.0f  /* PWM points per cm */
 #define S2_AVOID_PIVOT_PWM_PERCENT           20.0f
-#define S2_AVOID_PIVOT_TRACK_CM              11.25f
+#define S2_AVOID_LEFT_TURN_TICKS_PER_DEGREE  S2_LEFT_TURN_TICKS_PER_DEGREE  /* left wheel, right pivot */
+#define S2_AVOID_RIGHT_TURN_TICKS_PER_DEGREE S2_RIGHT_TURN_TICKS_PER_DEGREE /* right wheel, left pivot */
 /* S5 spin-in-place turns (23 Nov, MOTION_PROFILE_SPIN): both wheels at this
    PWM, one in reverse, as the U-turn (which needed 18-20 % on 22 Nov). Each
    wheel covers half the pivot arc. [VERIFY on the floor: 90 deg spins] */
 #define S2_AVOID_SPIN_PWM_PERCENT            20.0f
-#define S2_AVOID_TURN_TICKS_PER_DEGREE(ticks_per_cm) \
-    (3.14159265f / 180.0f * S2_AVOID_PIVOT_TRACK_CM * (ticks_per_cm))
 
 /* Receiver-owned command message buffer: Vehicle Controller -> Buddy 2. */
 IMPORT ID mbf_motion_cmd;

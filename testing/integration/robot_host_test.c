@@ -442,8 +442,8 @@ static MOTION_CONFIG alltest_config(void)
     c.avoid_heading_kp = S2_AVOID_HEADING_KP;
     c.avoid_pivot_pwm_percent = S2_AVOID_PIVOT_PWM_PERCENT;
     c.avoid_spin_pwm_percent = S2_AVOID_SPIN_PWM_PERCENT;
-    c.avoid_left_turn_ticks_per_degree = S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_LEFT_TICKS_PER_CM);
-    c.avoid_right_turn_ticks_per_degree = S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_RIGHT_TICKS_PER_CM);
+    c.avoid_left_turn_ticks_per_degree = S2_AVOID_LEFT_TURN_TICKS_PER_DEGREE;
+    c.avoid_right_turn_ticks_per_degree = S2_AVOID_RIGHT_TURN_TICKS_PER_DEGREE;
     return c;
 }
 
@@ -1208,7 +1208,7 @@ static void alltest_motion_tests(void)
     now = msteps(&m, now, 50, 50, 0);
     EXPECT(NEAR(m.status.left_pwm_percent, S2_AVOID_PIVOT_PWM_PERCENT));
     {
-        float tpd = S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_LEFT_TICKS_PER_CM);
+        float tpd = S2_AVOID_LEFT_TURN_TICKS_PER_DEGREE;  /* measured calibration (23 Nov) */
         now = msteps(&m, now, 1, (int32_t)(90.0f * tpd) - 5, 0);
         EXPECT(m.status.state == MOTION_STATE_TURNING_RIGHT);   /* S2 calibration would be done */
         now = msteps(&m, now, 1, (int32_t)(90.0f * tpd) + 1, 0);
@@ -1232,8 +1232,8 @@ static void alltest_motion_tests(void)
            NEAR(m.status.left_pwm_percent, -S2_AVOID_SPIN_PWM_PERCENT) &&
            NEAR(m.status.right_pwm_percent, S2_AVOID_SPIN_PWM_PERCENT));
     {
-        int32_t l90 = (int32_t)(45.0f * S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_LEFT_TICKS_PER_CM)) + 1;
-        int32_t r90 = (int32_t)(45.0f * S2_AVOID_TURN_TICKS_PER_DEGREE(S2_ENC_RIGHT_TICKS_PER_CM)) + 1;
+        int32_t l90 = (int32_t)(45.0f * S2_AVOID_LEFT_TURN_TICKS_PER_DEGREE) + 1;
+        int32_t r90 = (int32_t)(45.0f * S2_AVOID_RIGHT_TURN_TICKS_PER_DEGREE) + 1;
         now = msteps(&m, now, 1, -(l90 - 3), r90 - 3);
         EXPECT(m.status.state == MOTION_STATE_TURNING_LEFT);      /* half arc: not there yet */
         now = msteps(&m, now, 1, -l90, r90 - 20);
