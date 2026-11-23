@@ -206,6 +206,14 @@ run_c  int/robot_avoidance    $STRICT -DAPP_ROBOT_INTEGRATED=1 -DAPP_TEST=0 -DS2
                               -include $INT/s5_exec_host_stubs.h \
                               $INT/robot_host_test.c app_program/subsystem2/motion_control.c $S1/communication_protocol.c \
                               $S5/s5_executor.c $S5/obstacle_logic.c
+# INT-15 (#51): the same VC test with the REAL S1 receive path in front of it
+# (mqtt_manager.c's MQTT callbacks, subsystem1.c's command buffer); only the
+# kernel message buffers and the lwIP client are faked. Adds bad-command cases.
+run_c  int/bad_commands       $STRICT -DAPP_ROBOT_INTEGRATED=1 -DAPP_TEST=0 -DS2_MOTION_DEMO=0 \
+                              -DS2_LINE_CALIBRATION_READY=1 -include $INT/robot_host_stubs.h \
+                              -include $INT/s1_link_host_stubs.h -I$INT/s1_link_host \
+                              -Ilib/liblwip/sysdepend/pico_rp2040 \
+                              $INT/robot_host_test.c app_program/subsystem2/motion_control.c $S1/communication_protocol.c
 run_c  int/line_service       $STRICT $INT/line_service_host_test.c $S3/line_barcode.c $S1/communication_protocol.c
 run_py int/steering_ramp      $INT/test_steering_ramp.py
 run_py int/event_bits         $INT/test_event_bits.py

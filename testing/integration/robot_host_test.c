@@ -52,8 +52,9 @@ ER line_service_receive(line_barcode_msg_t *msg, TMO timeout)
 }
 
 /* S1 command queue (#48): a FIFO the test fills; the VC polls it. */
-static unsigned char commands[16];
 static unsigned command_head, command_count, command_polls;
+#if !S1_REAL_LINK
+static unsigned char commands[16];
 INT subsystem1_receive_command(S1_COMMAND *command, TMO timeout)
 {
     (void)timeout;
@@ -67,6 +68,143 @@ static void send_command(unsigned code)
 {
     commands[(command_head + command_count++) % 16u] = (unsigned char)code;
 }
+#else
+/* INT-15 (int/bad_commands, #51): the REAL S1 receive path. Commands arrive
+ * as broker bytes in mqtt_manager.c's callbacks, go through s1_deliver_command
+ * and the real command buffer (subsystem1.c), and the VC reads them with the
+ * real subsystem1_receive_command. Telemetry and the letter map keep the
+ * fakes below, so the real versions are renamed out of the way. */
+#define subsystem1_publish_telemetry real_subsystem1_publish_telemetry
+#define subsystem1_receive_mapping real_subsystem1_receive_mapping
+#include "../../app_program/subsystem1/subsystem1.c"
+#undef subsystem1_publish_telemetry
+#undef subsystem1_receive_mapping
+#include "../../app_program/subsystem1/mqtt_manager.c"
+
+/* Message buffers, sized as the kernel sizes them: each message takes
+ * sizeof(INT) for its length plus its payload rounded up to sizeof(INT),
+ * out of bufsz. So the command buffer holds S1_QUEUE_DEPTH messages. */
+#define FAKE_MBFS 4
+#define FAKE_MBF_MSGS 16
+/* Largest message: 19-byte telemetry since #41 (was 15). */
+#define FAKE_MBF_MAXMSZ 32
+static struct {
+    INT bufsz, maxmsz, used, head, count;
+    unsigned char msg[FAKE_MBF_MSGS][FAKE_MBF_MAXMSZ];
+    INT size[FAKE_MBF_MSGS];
+} mbf[FAKE_MBFS];
+static ID mbf_count;
+static INT mbf_cost(INT size)
+{ return (INT)sizeof(INT) + ((size + (INT)sizeof(INT) - 1) / (INT)sizeof(INT)) * (INT)sizeof(INT); }
+ID tk_cre_mbf(const T_CMBF *pk)
+{
+    assert(mbf_count < FAKE_MBFS && pk->maxmsz <= FAKE_MBF_MAXMSZ);
+    memset(&mbf[mbf_count], 0, sizeof(mbf[0]));
+    mbf[mbf_count].bufsz = pk->bufsz; mbf[mbf_count].maxmsz = pk->maxmsz;
+    return ++mbf_count;
+}
+ER tk_del_mbf(ID id) { (void)id; return E_OK; }
+ER tk_snd_mbf(ID id, const void *msg, INT size, TMO tmout)
+{
+    assert(id >= 1 && id <= mbf_count && tmout == TMO_POL);
+    if (size <= 0 || size > mbf[id - 1].maxmsz) return E_PAR;
+    if (mbf[id - 1].used + mbf_cost(size) > mbf[id - 1].bufsz) return E_TMOUT;
+    unsigned slot = (unsigned)(mbf[id - 1].head + mbf[id - 1].count) % FAKE_MBF_MSGS;
+    memcpy(mbf[id - 1].msg[slot], msg, (size_t)size);
+    mbf[id - 1].size[slot] = size;
+    mbf[id - 1].used += mbf_cost(size);
+    ++mbf[id - 1].count;
+    if (id == command_queue) ++command_count;
+    return E_OK;
+}
+INT tk_rcv_mbf(ID id, void *msg, TMO tmout)
+{
+    assert(id >= 1 && id <= mbf_count && tmout == TMO_POL);
+    if (id == command_queue) ++command_polls;
+    if (mbf[id - 1].count == 0) return E_TMOUT;
+    unsigned slot = (unsigned)mbf[id - 1].head % FAKE_MBF_MSGS;
+    INT size = mbf[id - 1].size[slot];
+    memcpy(msg, mbf[id - 1].msg[slot], (size_t)size);
+    mbf[id - 1].head = (mbf[id - 1].head + 1) % FAKE_MBF_MSGS;
+    --mbf[id - 1].count;
+    mbf[id - 1].used -= mbf_cost(size);
+    if (id == command_queue) --command_count;
+    return size;
+}
+
+/* lwIP: one fake client. Connecting captures the callbacks mqtt_manager.c
+ * installs; the test then plays the broker through them. */
+static struct mqtt_client_s { int connected; } fake_client;
+static mqtt_connection_cb_t mqtt_conn_cb;
+static mqtt_incoming_publish_cb_t mqtt_pub_cb;
+static mqtt_incoming_data_cb_t mqtt_data_cb;
+static char subscribed[2][40];
+static unsigned subscribe_count, subscribe_qos_ok;
+int ip4addr_aton(const char *cp, ip4_addr_t *addr) { (void)cp; addr->addr = 1u; return 1; }
+mqtt_client_t *mqtt_client_new(void) { return &fake_client; }
+err_t mqtt_client_connect(mqtt_client_t *c, const ip_addr_t *ip, u16_t port,
+                          mqtt_connection_cb_t cb, void *arg,
+                          const struct mqtt_connect_client_info_t *info)
+{ (void)c; (void)ip; (void)port; (void)arg; (void)info; mqtt_conn_cb = cb; return ERR_OK; }
+void mqtt_disconnect(mqtt_client_t *c) { c->connected = 0; }
+u8_t mqtt_client_is_connected(mqtt_client_t *c) { return (u8_t)c->connected; }
+void mqtt_set_inpub_callback(mqtt_client_t *c, mqtt_incoming_publish_cb_t pub,
+                             mqtt_incoming_data_cb_t data, void *arg)
+{ (void)c; (void)arg; mqtt_pub_cb = pub; mqtt_data_cb = data; }
+err_t mqtt_subscribe(mqtt_client_t *c, const char *topic, u8_t qos,
+                     mqtt_request_cb_t cb, void *arg)
+{
+    (void)c; (void)cb; (void)arg;
+    if (subscribe_count < 2u) snprintf(subscribed[subscribe_count], 40, "%s", topic);
+    ++subscribe_count; subscribe_qos_ok += qos == 1u;
+    return ERR_OK;
+}
+err_t mqtt_publish(mqtt_client_t *c, const char *topic, const void *payload,
+                   u16_t len, u8_t qos, u8_t retain, mqtt_request_cb_t cb, void *arg)
+{ (void)c; (void)topic; (void)payload; (void)len; (void)qos; (void)retain; (void)cb; (void)arg; return ERR_OK; }
+void sys_timeout(u32_t ms, sys_timeout_handler h, void *arg) { (void)ms; (void)h; (void)arg; }
+void sys_untimeout(sys_timeout_handler h, void *arg) { (void)h; (void)arg; }
+u32_t sys_now(void) { return 0u; }
+
+/* The broker delivers one PUBLISH: announced length, then the payload in
+ * chunks of `chunk` bytes (0 = one chunk), the last flagged. */
+static void broker_publish(const char *topic, const unsigned char *data,
+                           unsigned announced, unsigned len, unsigned chunk)
+{
+    mqtt_pub_cb(NULL, topic, announced);
+    if (len == 0u) { mqtt_data_cb(NULL, data, 0u, MQTT_DATA_FLAG_LAST); return; }
+    if (chunk == 0u) chunk = len;
+    for (unsigned at = 0u; at < len; at += chunk) {
+        unsigned n = len - at < chunk ? len - at : chunk;
+        mqtt_data_cb(NULL, data + at, (u16_t)n, at + n >= len ? MQTT_DATA_FLAG_LAST : 0u);
+    }
+}
+static void send_command(unsigned code)
+{
+    unsigned char byte = (unsigned char)code;
+    broker_publish(MQTT_CLIENT_ID "/command", &byte, 1u, 1u, 0u);
+}
+/* Bring the real S1 link up once: queues, then an accepted connection. */
+static void s1_link_up(void)
+{
+    if (mqtt_pub_cb != NULL) return;
+    assert(subsystem1_init() == E_OK);
+    fake_client.connected = 0;
+    mqtt_utk_start();
+    assert(mqtt_conn_cb != NULL);
+    fake_client.connected = 1;
+    mqtt_conn_cb(&fake_client, NULL, MQTT_CONNECT_ACCEPTED);
+    assert(mqtt_pub_cb != NULL && mqtt_data_cb != NULL);
+}
+static void s1_link_reset(void)
+{
+    s1_link_up();
+    for (ID i = 0; i < mbf_count; ++i) { mbf[i].used = mbf[i].head = mbf[i].count = 0; }
+    memset(&command_stats, 0, sizeof(command_stats));
+    command_stats_reported = command_stats;
+    command_log_budget = S1_COMMAND_LOG_BURST;
+}
+#endif
 
 /* S1 letter-map queue and telemetry sink (#72). */
 static S1_MAPPING pending_map;
@@ -324,6 +462,9 @@ static void reset(MOTION_CONTROLLER *ctl)
     auto_start = true;
     start_requested = ready_reported = false;
     command_head = command_count = command_polls = 0u;
+#if S1_REAL_LINK
+    s1_link_reset();
+#endif
     /* #72 state. */
     paused = map_received = status_requested = have_imu = in_avoid = false;
     odo_started = false;
@@ -1111,6 +1252,182 @@ static void s5_handover_tests(void)
 }
 #endif
 
+#if S1_REAL_LINK
+/* ---- INT-15 (#51): invalid or corrupted commands, S1 -> VC -> S2 --------
+ * Every bad message goes in at the broker end of the real S1 receive path.
+ * It must be counted as invalid by S1, never reach the VC's command buffer,
+ * and leave the robot exactly as it was: still waiting in Ready, still
+ * following, or still paused. A valid command straight after must work. */
+#define CMD_TOPIC MQTT_CLIENT_ID "/command"
+typedef struct {
+    const char *name;
+    unsigned char bytes[3];
+    unsigned announced, len, chunk;   /* see broker_publish() */
+} BAD_COMMAND;
+static const BAD_COMMAND bad_commands[] = {
+    {"empty payload",                   {0},          0u, 0u, 0u},
+    {"2 bytes: START + 0",              {5u, 0u},     2u, 2u, 0u},
+    {"2 bytes in 2 chunks: START START",{5u, 5u},     2u, 2u, 1u},
+    {"3 bytes: PAUSE x3",               {1u, 1u, 1u}, 3u, 3u, 0u},
+    {"announced 1 byte, 2 delivered",   {5u, 0u},     1u, 2u, 0u},
+    {"reserved code 6",                 {6u},         1u, 1u, 0u},
+    {"reserved code 7",                 {7u},         1u, 1u, 0u},
+    {"code 8 (bit 3 only)",             {8u},         1u, 1u, 0u},
+    {"START + bit 3 (0x0d)",            {0x0du},      1u, 1u, 0u},
+    {"START + bit 7 (0x85)",            {0x85u},      1u, 1u, 0u},
+    {"PAUSE + bit 7 (0x81)",            {0x81u},      1u, 1u, 0u},
+    {"RESUME + bit 4 (0x12)",           {0x12u},      1u, 1u, 0u},
+    {"all ones (0xff)",                 {0xffu},      1u, 1u, 0u},
+};
+#define BAD_COMMANDS (sizeof(bad_commands) / sizeof(bad_commands[0]))
+
+static S1_COMMAND_STATS stats(void)
+{
+    S1_COMMAND_STATS s; s1_command_stats_get(&s); return s;
+}
+static bool counted(unsigned received, unsigned queued, unsigned invalid)
+{
+    S1_COMMAND_STATS s = stats();
+    return s.received == received && s.queued == queued && s.invalid == invalid &&
+           s.dropped == 0u && s.received == s.queued + s.invalid + s.dropped;
+}
+static void send_bad(const BAD_COMMAND *b)
+{
+    broker_publish(CMD_TOPIC, b->bytes, b->announced, b->len, b->chunk);
+}
+static bool stopped_motors(const MOTION_CONTROLLER *ctl)
+{
+    return ctl->status.left_pwm_percent == 0 && ctl->status.right_pwm_percent == 0;
+}
+
+static void bad_command_tests(void)
+{
+    MOTION_CONTROLLER ctl;
+    unsigned i;
+    uint32_t t;
+
+    /* The link subscribed to the command and map topics at QoS 1. */
+    EXPECT(subscribe_count >= 2u && subscribe_qos_ok >= 2u);
+    EXPECT(strcmp(subscribed[0], CMD_TOPIC) == 0 &&
+           strcmp(subscribed[1], MQTT_CLIENT_ID "/mapping") == 0);
+
+    /* (a) Ready: no bad message starts the robot, not even START with a
+     * reserved bit set. Nothing reaches the VC's buffer; the motors stay 0. */
+    reset(&ctl);
+    auto_start = false;
+    robot_control_step(&ctl, 5000, 0, 0);
+    EXPECT(!armed && ready_reported);
+    t = 5010u;
+    for (i = 0u; i < BAD_COMMANDS; ++i, t += 10u) {
+        send_bad(&bad_commands[i]);
+        EXPECT(command_count == 0u);                       /* rejected by S1 */
+        EXPECT(counted(i + 1u, 0u, i + 1u));
+        fake_imu.sample_count++;
+        robot_control_step(&ctl, t, 0, 0);
+        motion_control_step(&ctl, t + 5u, 0, 0);
+        EXPECT(!armed && !start_requested && !enabled && stopped_motors(&ctl));
+    }
+    send_command(S1_COMMAND_START);                        /* the link still works */
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, t, 0, 0);
+    EXPECT(armed && enabled && counted(BAD_COMMANDS + 1u, 1u, BAD_COMMANDS));
+
+    /* (b) Following: bad messages change nothing (a corrupted PAUSE is not
+     * a PAUSE); a valid PAUSE straight after stops at once. */
+    follow(&ctl);
+    t = 5050u;
+    for (i = 0u; i < BAD_COMMANDS; ++i, t += 10u) {
+        send_bad(&bad_commands[i]);
+        fake_imu.sample_count++;
+        robot_control_step(&ctl, t, 1, 1);
+        motion_control_step(&ctl, t + 5u, 1, 1);
+        EXPECT(!paused && !halted && enabled);
+        EXPECT(ctl.status.active_command == MOTION_CMD_FOLLOW_LINE &&
+               ctl.status.left_pwm_percent > 0);
+    }
+    EXPECT(counted(BAD_COMMANDS, 0u, BAD_COMMANDS));
+    send_command(S1_COMMAND_PAUSE);
+    robot_control_step(&ctl, t, 1, 1);
+    EXPECT(paused && !enabled && stopped_motors(&ctl));
+
+    /* (c) Paused: a corrupted RESUME keeps the robot stopped; a valid
+     * RESUME then restarts line following. */
+    static const unsigned char bad_resume[] = {0x82u, 0x0au, 0x22u, 0x42u};
+    for (i = 0u; i < sizeof(bad_resume); ++i) {
+        broker_publish(CMD_TOPIC, &bad_resume[i], 1u, 1u, 0u);
+        for (uint32_t k = 0u; k < 10u; ++k, t += 10u) {
+            fake_imu.sample_count++;
+            robot_control_step(&ctl, t, 1, 1);
+            motion_control_step(&ctl, t + 5u, 1, 1);
+            EXPECT(paused && !enabled && stopped_motors(&ctl));
+        }
+    }
+    send_command(S1_COMMAND_RESUME);
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, t, 1, 1);
+    EXPECT(!paused && enabled);
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, t + 50u, 1, 1);
+    motion_control_step(&ctl, t + 60u, 2, 2);
+    EXPECT(ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+    EXPECT(counted(BAD_COMMANDS + 2u + sizeof(bad_resume), 2u,
+                   BAD_COMMANDS + sizeof(bad_resume)));
+
+    /* (d) A flood of bad messages takes no buffer slot: a valid PAUSE sent
+     * after 100 of them is queued (not dropped) and applied. */
+    follow(&ctl);
+    for (i = 0u; i < 100u; ++i) send_bad(&bad_commands[i % BAD_COMMANDS]);
+    EXPECT(command_count == 0u);
+    send_command(S1_COMMAND_PAUSE);
+    EXPECT(command_count == 1u && counted(101u, 1u, 100u));
+    robot_control_step(&ctl, 5050, 1, 1);
+    EXPECT(paused && stopped_motors(&ctl));
+
+    /* (e) Bad and valid interleaved in one control period: only the valid
+     * ones reach the VC, in order (STATUS answered, then PAUSE applied). */
+    follow(&ctl);
+    publish_count = 0u;
+    send_bad(&bad_commands[9]);                            /* 0x85 */
+    send_command(S1_COMMAND_STATUS);
+    send_bad(&bad_commands[1]);                            /* 2 bytes */
+    send_command(S1_COMMAND_PAUSE);
+    EXPECT(command_count == 2u && counted(4u, 2u, 2u));
+    robot_control_step(&ctl, 5050, 1, 1);
+    EXPECT(command_count == 0u && paused && stopped_motors(&ctl) && publish_count >= 1u);
+
+    /* (f) Valid on the wire but not supported by the VC (RESET_STATS,
+     * REVERSE): queued, logged, and the robot keeps following. */
+    follow(&ctl);
+    send_command(S1_COMMAND_RESET_STATS);
+    send_command(S1_COMMAND_REVERSE);
+    EXPECT(counted(2u, 2u, 0u));
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, 5050, 1, 1);
+    motion_control_step(&ctl, 5055, 1, 1);
+    EXPECT(command_count == 0u && !paused && !halted &&
+           ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+
+    /* (g) Other topics are not commands: a START byte on a wrong topic, or a
+     * 1-byte message on the map topic, is not counted, queued or applied. */
+    reset(&ctl);
+    auto_start = false;
+    robot_control_step(&ctl, 5000, 0, 0);
+    static const unsigned char start = S1_COMMAND_START;
+    broker_publish(MQTT_CLIENT_ID "/commands", &start, 1u, 1u, 0u);
+    broker_publish(MQTT_CLIENT_ID "/comman", &start, 1u, 1u, 0u);
+    broker_publish("other-robot/command", &start, 1u, 1u, 0u);
+    broker_publish(MQTT_CLIENT_ID "/mapping", &start, 1u, 1u, 0u);
+    EXPECT(command_count == 0u && counted(0u, 0u, 0u));
+    fake_imu.sample_count++;
+    robot_control_step(&ctl, 5010, 0, 0);
+    EXPECT(!armed && !start_requested && stopped_motors(&ctl));
+
+    printf("INT-15 bad commands: %u bad payloads x Ready/following, %u bad RESUMEs, "
+           "flood, interleave, unsupported, wrong topics\n",
+           (unsigned)BAD_COMMANDS, (unsigned)sizeof(bad_resume));
+}
+#endif
+
 int main(void)
 {
     MOTION_CONTROLLER ctl;
@@ -1298,7 +1615,16 @@ int main(void)
     auto_start = false;
     for (unsigned i = 0u; i < 10u; ++i) send_command(S1_COMMAND_STATUS);
     robot_control_step(&ctl, 1000, 0, 0);
+#if S1_REAL_LINK
+    {   /* The real buffer holds S1_QUEUE_DEPTH; S1 drops (and counts) the rest. */
+        S1_COMMAND_STATS s; s1_command_stats_get(&s);
+        EXPECT(s.received == 10u && s.queued == S1_QUEUE_DEPTH &&
+               s.dropped == 10u - S1_QUEUE_DEPTH && s.invalid == 0u);
+        EXPECT(command_count == 0u && command_polls == S1_QUEUE_DEPTH);
+    }
+#else
     EXPECT(command_count == 10u - S1_QUEUE_DEPTH && command_polls == S1_QUEUE_DEPTH);
+#endif
 
     /* ---- #72 MQTT link ------------------------------------------------- */
 
@@ -1477,6 +1803,9 @@ int main(void)
     alltest_robot_tests();
 #if S5_REAL_EXECUTOR
     s5_handover_tests();     /* INT-13, #20 */
+#endif
+#if S1_REAL_LINK
+    bad_command_tests();     /* INT-15, #51 */
 #endif
 
     printf("robot host tests: %u checks passed\n", checks);

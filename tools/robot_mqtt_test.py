@@ -29,6 +29,10 @@ testing/TEST_PLAN.md):
   S1-U17  --flood STATUS commands in about 1 s while following: telemetry keeps
           coming (no gap > 3 s), the robot keeps following, PAUSE still works
           straight after, and the console shows no new late control steps
+  INT-15  (#51) invalid or corrupted commands (wrong length, reserved codes,
+          reserved bits) in Ready, while following and while paused: none
+          has any effect, valid START / PAUSE / RESUME still work, and the
+          console's invalid= count equals the number sent
 
 The firmware side of S1-U11, S1-U13 and S1-U17 is in the serial console:
 'wifi: link up ... t=<ms>' and '[S1:MQTT] connected ... t=<ms>' (ms since
@@ -128,8 +132,9 @@ class Telemetry:
 
 
 def publish(args, topic, payload, host=None):
+    # -n sends a zero-length message; -s sends stdin as the payload.
     subprocess.run(["mosquitto_pub", "-h", host or args.broker, "-p", str(args.port), "-q", "1",
-                    "-t", f"{args.client_id}/{topic}", "-s"],
+                    "-t", f"{args.client_id}/{topic}", "-n" if payload == b"" else "-s"],
                    input=payload, check=True, timeout=5)
 
 
@@ -239,6 +244,7 @@ def test_s1_u14(args, log, telemetry):
     wheels = ask(log, f"Did the wheels stop at every PAUSE (within ~0.5 s) and restart at every RESUME?")
     ok = all(v == args.repeats for v in results.values()) and wheels
     log(f"S1-U14 {'PASS' if ok else 'FAIL'} (expect {args.repeats}/{args.repeats} each; PAUSE stops within 500 ms)")
+    return ok
     return ok
 
 
@@ -571,6 +577,116 @@ def test_s1_u15(args, log, telemetry):
     return ok
 
 
+# INT-15 (#51): every payload here must be rejected by S1 (counted invalid)
+# and never reach the VC. Same set as int/bad_commands on the PC, except the
+# chunked cases, which a broker cannot be made to send.
+BAD_COMMANDS = [
+    ("empty payload", b""),
+    ("2 bytes: START + 0", bytes([5, 0])),
+    ("3 bytes: PAUSE x3", bytes([1, 1, 1])),
+    ("reserved code 6", bytes([6])),
+    ("reserved code 7", bytes([7])),
+    ("code 8 (bit 3 only)", bytes([8])),
+    ("START + bit 3 (0x0d)", bytes([0x0D])),
+    ("START + bit 7 (0x85)", bytes([0x85])),
+    ("PAUSE + bit 7 (0x81)", bytes([0x81])),
+    ("RESUME + bit 4 (0x12)", bytes([0x12])),
+    ("all ones (0xff)", bytes([0xFF])),
+]
+BAD_RESUMES = [bytes([0x82]), bytes([0x0A]), bytes([0x22]), bytes([0x42])]
+
+
+def held(telemetry, args, want, seconds):
+    """STATUS, then every valid packet for `seconds` must satisfy `want`."""
+    telemetry.drain()
+    command(args, "status")
+    states = []
+    end = time.monotonic() + seconds
+    while time.monotonic() < end:
+        try:
+            _, _, data, error = telemetry.packets.get(timeout=0.5)
+        except queue.Empty:
+            continue
+        if error is None:
+            states.append(data)
+    return bool(states) and all(want(d) for d in states), states
+
+
+def test_int_15(args, log, telemetry):
+    log("== INT-15 invalid or corrupted commands, S1 -> VC -> S2 (#51) ==")
+    pause_for(log, "Reboot the robot (integrated, no auto-start) on the line, or with the "
+                   "wheels raised. Wait for Wi-Fi + MQTT; keep the serial console captured.")
+    ready = lambda d: d["state"] == 0 and d["speed_cms"] == 0
+    driving = lambda d: d["state"] in DRIVING
+    sent = 0
+    ok = True
+
+    # (a) Ready: no bad message starts the robot.
+    for name, payload in BAD_COMMANDS:
+        publish(args, "command", payload)
+        sent += 1
+        good, states = held(telemetry, args, ready, 1.5)
+        log(f"Ready  + {name:24s} ({payload.hex() or '-'}) -> "
+            f"{'still Ready, 0 cm/s' if good else 'CHANGED: ' + describe(states[-1]) if states else 'no telemetry'}")
+        ok &= good
+    publish(args, "commands", bytes([COMMANDS["start"]]))   # wrong topic: not a command
+    good, _ = held(telemetry, args, ready, 1.5)
+    log(f"Ready  + START on <id>/commands -> {'still Ready' if good else 'CHANGED'}")
+    ok &= good
+    still = ask(log, "Did the wheels stay still through all of that?")
+    ok &= still
+
+    # The link still works: a valid START starts it.
+    telemetry.drain()
+    command(args, "start")
+    command(args, "status")
+    started = telemetry.wait_for(driving, args.timeout + 1.0) is not None
+    log(f"valid START -> {'driving' if started else 'did NOT start'}")
+    ok &= started
+
+    # (b) Following: bad messages change nothing; a corrupted PAUSE is not a PAUSE.
+    for name, payload in BAD_COMMANDS:
+        publish(args, "command", payload)
+        sent += 1
+    good, states = held(telemetry, args, driving, 3.0)
+    log(f"driving + {len(BAD_COMMANDS)} bad payloads -> "
+        f"{'kept driving' if good else 'STOPPED or changed: ' + str(sorted({STATES[d['state']] for d in states}))}")
+    ok &= good
+    telemetry.drain()
+    t0 = time.monotonic()
+    command(args, "pause")
+    command(args, "status")
+    paused = telemetry.wait_for(lambda d: d["state"] == 0, args.timeout)
+    log(f"valid PAUSE -> {'IDLE after %.0f ms' % ((paused[0] - t0) * 1000) if paused else 'NOT paused'}")
+    ok &= paused is not None
+
+    # (c) Paused: a corrupted RESUME keeps it stopped.
+    for payload in BAD_RESUMES:
+        publish(args, "command", payload)
+        sent += 1
+    good, _ = held(telemetry, args, lambda d: d["state"] == 0, 3.0)
+    log(f"paused + {len(BAD_RESUMES)} corrupted RESUMEs "
+        f"({' '.join(p.hex() for p in BAD_RESUMES)}) -> {'stayed paused' if good else 'RESUMED'}")
+    ok &= good
+    telemetry.drain()
+    command(args, "resume")
+    command(args, "status")
+    resumed = telemetry.wait_for(driving, args.timeout + 1.0) is not None
+    log(f"valid RESUME -> {'driving' if resumed else 'did NOT resume'}")
+    ok &= resumed
+    command(args, "pause")
+
+    wheels = ask(log, "Did the wheels keep turning through the bad payloads while following, stop at "
+                      "the PAUSE, stay stopped through the bad RESUMEs, and restart at RESUME?")
+    invalid = input(f"  >> Type the invalid= value from the last '[S1:CMD] commands' console line "
+                    f"(expect {sent}): ").strip()
+    log(f"OPERATOR: console invalid = {invalid} (sent {sent} bad payloads since boot)")
+    ok &= wheels and invalid == str(sent)
+    log(f"INT-15 {'PASS' if ok else 'FAIL'} (expect every bad payload rejected with no effect in "
+        f"Ready, following and paused; valid START/PAUSE/RESUME still work; invalid = {sent})")
+    return bool(ok)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -633,7 +749,7 @@ def main():
 
 
 TESTS = {"S1-U12": test_s1_u12, "S1-U13": test_s1_u13, "S1-U14": test_s1_u14,
-         "S1-U15": test_s1_u15, "S1-U17": test_s1_u17}
+         "S1-U15": test_s1_u15, "S1-U17": test_s1_u17, "INT-15": test_int_15}
 
 
 if __name__ == "__main__":
