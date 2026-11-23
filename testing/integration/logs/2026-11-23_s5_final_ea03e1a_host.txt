@@ -1,0 +1,47 @@
+# host tests on ea03e1a (test/s5-integrated-31): final S5 firmware for #31/#35 (spin looks, F1 + 120, measured turn calibration, reverse back-off). Working tree: only TEST_LOG.md and new logs, no code. 2026-11-23 20:50
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: ea03e1a + uncommitted changes
+
+s1/protocol                  PASS
+s1/barcode_queue             PASS
+s1/binary_cli                PASS
+s2/motion_protocol           PASS
+s2/motor_pwm                 PASS
+s2/loop_timing               PASS
+s3/line_barcode              PASS
+s3/pptx_samples              PASS
+s3/line_service              PASS
+s4/hump_height               PASS
+s5/obstacle_logic            PASS
+int/robot_control            PASS
+int/robot_avoidance          PASS
+int/bad_commands             PASS
+int/line_service             PASS
+int/steering_ramp            PASS
+int/event_bits               PASS
+
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s2/loop_timing               
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/line_service              
+PASS   s4/hump_height               
+PASS   s5/obstacle_logic            
+PASS   int/robot_control            
+PASS   int/robot_avoidance          
+PASS   int/bad_commands             
+PASS   int/line_service             
+PASS   int/steering_ramp            
+PASS   int/event_bits               
+-----------------------------------------
+17 passed, 0 failed, 0 known failures, 0 skipped
+exit=0
+
+INT-13 int/robot_avoidance: robot host tests: 1140 checks passed
+INT-03 int/robot_control: robot host tests: 1056 checks passed
+[TEST] subsystem5 SUMMARY 125 passed, 0 failed

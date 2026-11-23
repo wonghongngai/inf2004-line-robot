@@ -115,24 +115,18 @@ typedef struct {
 /* ... and a move may take this long: 12.5-15 % PWM moves about
  * 8-10 cm/s, so an 80 cm leg 4 needs about 10 s (2026-11-05 run). */
 #define S5_MOVE_TIMEOUT_MS 20000u
-/* S5 pivots: one wheel drives, the other is stopped, so the moving wheel
- * runs on a circle of radius = the wheel spacing (centre to centre).  A
- * turn of D degrees is D x pi / 180 x S5_PIVOT_TRACK_CM of wheel path, at
- * that wheel's S5_*_TICKS_PER_CM.  This replaces S2's turn calibration x a
- * scale (measured with the old polled encoder): at 127 % it asked for 2618
- * ticks, about 104 deg, and the first turn overshot (2026-11-06).
- * [VERIFY: measure the spacing; turns long -> lower it, short -> raise] */
-/* 12 (a guess) overshot; 10 cm (measured) turned about 10 deg short of
- * 90 (2026-11-07), so 10 x 90 / 80 = 11.25.  It is the effective pivot
- * radius, not the ruler distance: the stopped wheel also slips. */
-#define S5_PIVOT_TRACK_CM S2_AVOID_PIVOT_TRACK_CM
+/* S5 pivots: one wheel drives, the other is stopped.  A turn of D degrees
+ * is D x that wheel's S2_AVOID_*_TURN_TICKS_PER_DEGREE, S2's measured turn
+ * calibration (23 Nov), as in integrated.  History: a geometric radius
+ * (10 cm turned ~10 deg short on 2026-11-07, so 11.25 cm) before the
+ * encoder rework; before that S2's old calibration x 127 % overshot to
+ * about 104 deg (2026-11-06). */
 /* ... at this PWM on the moving wheel.  12.5-15 % stalled mid-turn (the
  * stopped wheel drags sideways): step 3 stopped dead after 2137 ticks and
  * step 1 sat still for about 8 s (2026-11-06).  The 15 % cap only guarded
  * against the old polled encoder miscounting; interrupts count at any
  * speed.  [Tune] */
 #define S5_PIVOT_PWM S2_AVOID_PIVOT_PWM_PERCENT
-#define S5_PI 3.14159265f
 /* Straight legs: the leading wheel's PWM is cut by this much per cm it is
  * ahead.  0.13 % per tick held the heading well before the encoder fix
  * (3 %/cm x 3.3 at 76 ticks/cm); at 117.8 ticks/cm that is 15 %/cm. */
@@ -653,9 +647,9 @@ static float at_right_cm(const ALL_TEST *t)
 }
 
 /* Moving-wheel ticks for an S5 pivot of 'deg' degrees. */
-static float s5_pivot_ticks(UH deg, float ticks_per_cm)
+static float s5_pivot_ticks(UH deg, float ticks_per_degree)
 {
-    return (float)deg * S5_PI / 180.0f * S5_PIVOT_TRACK_CM * ticks_per_cm;
+    return (float)deg * ticks_per_degree;
 }
 
 static UB at_run_move(void *p, const S5_REQUEST *req)
@@ -679,17 +673,36 @@ static UB at_run_move(void *p, const S5_REQUEST *req)
         else left_pwm += err;
         if (left_pwm < 0.0f) left_pwm = 0.0f;
         if (right_pwm < 0.0f) right_pwm = 0.0f;
+        if (req->b_reverse) {           /* S5 back-off (23 Nov): backwards */
+            left_pwm = -left_pwm;
+            right_pwm = -right_pwm;
+        }
         apply_follow_pwm(t, left_pwm, right_pwm, c->now);
+    } else if (req->b_spin) {
+        /* Spin on the spot (23 Nov): both wheels counter-rotate, each over
+           half a pivot's arc; each stops on its own once it has done its
+           share, the turn ends when both have. Left spin: left wheel back. */
+        bool left_spin = req->move == S5_MOVE_TURN_L;
+        bool left_done = (float)tick_delta(t->left_ticks, t->s5_left0) >=
+                         0.5f * s5_pivot_ticks(req->value, S2_AVOID_LEFT_TURN_TICKS_PER_DEGREE);
+        bool right_done = (float)tick_delta(t->right_ticks, t->s5_right0) >=
+                          0.5f * s5_pivot_ticks(req->value, S2_AVOID_RIGHT_TURN_TICKS_PER_DEGREE);
+        float pwm = S2_AVOID_SPIN_PWM_PERCENT;
+        if (left_done && right_done) return S5_EXEC_DONE;
+        if (left_done) t->left = 0.0f;
+        if (right_done) t->right = 0.0f;
+        apply_follow_pwm(t, left_done ? 0.0f : (left_spin ? -pwm : pwm),
+                         right_done ? 0.0f : (left_spin ? pwm : -pwm), c->now);
     } else if (req->move == S5_MOVE_TURN_R) {
         /* Right pivot moves the left wheel (as turn_step). */
         if ((float)tick_delta(t->left_ticks, t->s5_left0) >=
-            s5_pivot_ticks(req->value, S5_LEFT_TICKS_PER_CM)) return S5_EXEC_DONE;
+            s5_pivot_ticks(req->value, S2_AVOID_LEFT_TURN_TICKS_PER_DEGREE)) return S5_EXEC_DONE;
         t->right = 0.0f;
         apply_follow_pwm(t, S5_PIVOT_PWM, 0.0f, c->now);
     } else {
         /* Left pivot moves the right wheel. */
         if ((float)tick_delta(t->right_ticks, t->s5_right0) >=
-            s5_pivot_ticks(req->value, S5_RIGHT_TICKS_PER_CM)) return S5_EXEC_DONE;
+            s5_pivot_ticks(req->value, S2_AVOID_RIGHT_TURN_TICKS_PER_DEGREE)) return S5_EXEC_DONE;
         t->left = 0.0f;
         apply_follow_pwm(t, 0.0f, S5_PIVOT_PWM, c->now);
     }

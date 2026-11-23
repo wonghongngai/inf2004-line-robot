@@ -1,0 +1,58 @@
+# host tests for #31/#35/#46 on 7898f2f (test/s5-integrated-31), 2026-11-23 18:34
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: 7898f2f
+
+s1/protocol                  PASS
+s1/barcode_queue             PASS
+s1/binary_cli                PASS
+s2/motion_protocol           PASS
+s2/motor_pwm                 PASS
+s2/loop_timing               PASS
+s3/line_barcode              PASS
+s3/pptx_samples              PASS
+s3/line_service              PASS
+s4/hump_height               PASS
+s5/obstacle_logic            PASS
+int/robot_control            PASS
+int/robot_avoidance          PASS
+int/bad_commands             PASS
+int/line_service             PASS
+int/steering_ramp            PASS
+int/event_bits               PASS
+
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s2/loop_timing               
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/line_service              
+PASS   s4/hump_height               
+PASS   s5/obstacle_logic            
+PASS   int/robot_control            
+PASS   int/robot_avoidance          
+PASS   int/bad_commands             
+PASS   int/line_service             
+PASS   int/steering_ramp            
+PASS   int/event_bits               
+-----------------------------------------
+17 passed, 0 failed, 0 known failures, 0 skipped
+exit=0
+
+# verbose: int/robot_avoidance (INT-13) and int/robot_control (INT-03, S5 fault bits)
+robot host tests: 1112 checks passed
+================ summary ================
+1 passed, 0 failed, 0 known failures, 0 skipped
+robot host tests: 1028 checks passed
+1 passed, 0 failed, 0 known failures, 0 skipped
+
+# testing/subsystem1/test_binary.py
+..................
+----------------------------------------------------------------------
+Ran 18 tests in 0.896s
+
+OK
+exit=0

@@ -45,6 +45,7 @@ typedef enum
     S5_HOLDING,        /* obstacle confirmed: waiting for the robot to stop */
     S5_SCANNING,       /* robot still: coarse jumps + fine glide, plan    */
     S5_BYPASSING,      /* driving round the box and back to the line      */
+    S5_REVERSING,      /* no room: backing off REVERSE_CM to scan again   */
     S5_SAFE_STOP       /* no path or a failed request: stay put           */
 } s5_state_t;
 
@@ -105,9 +106,11 @@ static void s5_publish_obstacle(const obstacle_profile_t * p_profile)
     }
 }
 
-/* Publish a new request with the next sequence number */
-static void s5_post_line(UB kind, UB move, UW value, BOOL b_stop_on_line,
-                         BOOL b_line_all)
+/* Publish a new request with the next sequence number.  b_spin: a turn on
+ * the spot (TURN moves only); b_reverse: a leg driven backwards (FWD only).
+ * s5_request_pack drops either on any other request. */
+static void s5_post_full(UB kind, UB move, UW value, BOOL b_stop_on_line,
+                         BOOL b_line_all, BOOL b_spin, BOOL b_reverse)
 {
     S5_REQUEST req;
 
@@ -119,8 +122,17 @@ static void s5_post_line(UB kind, UB move, UW value, BOOL b_stop_on_line,
     req.b_stop_on_line = b_stop_on_line;
     req.value = (UH)((value > S5_REQ_VALUE_MAX) ? S5_REQ_VALUE_MAX : value);
     req.b_line_all = (b_stop_on_line && b_line_all) ? TRUE : FALSE;
+    req.b_spin     = b_spin;
+    req.b_reverse  = b_reverse;
 
     g_s5_request = s5_request_pack(&req); /* one store */
+}
+
+/* Publish a request (no spin) */
+static void s5_post_line(UB kind, UB move, UW value, BOOL b_stop_on_line,
+                         BOOL b_line_all)
+{
+    s5_post_full(kind, move, value, b_stop_on_line, b_line_all, FALSE, FALSE);
 }
 
 /* Publish a request whose stop-on-line (if any) needs just one sensor */
@@ -169,6 +181,35 @@ static UINT s5_move(UB move, UW value, BOOL b_stop_on_line)
     }
     return s5_post_and_wait(S5_REQ_MOVE, move, value, b_stop_on_line, wanted,
                             MOVE_TIMEOUT_MS);
+}
+
+/* Post a spin or reverse MOVE and wait for it.
+ * @return TRUE once done; FALSE on a failed or timed-out move. */
+static BOOL s5_special_move(UB move, UW value, BOOL b_spin, BOOL b_reverse)
+{
+    UINT wanted  = S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED;
+    UINT pattern = 0U;
+
+    (void)tk_clr_flg(flg_s5_evt, ~wanted);
+    s5_post_full(S5_REQ_MOVE, move, value, FALSE, FALSE, b_spin, b_reverse);
+    if (E_OK !=
+        tk_wai_flg(flg_s5_evt, wanted, TWF_ORW, &pattern, MOVE_TIMEOUT_MS))
+    {
+        return FALSE;
+    }
+    return (S5_EVT_MOTION_DONE == (pattern & wanted)) ? TRUE : FALSE;
+}
+
+/* Ask the VC to turn on the spot (both wheels counter-rotating) and wait */
+static BOOL s5_spin(UB turn, UW deg)
+{
+    return s5_special_move(turn, deg, TRUE, FALSE);
+}
+
+/* Ask the VC to drive 'cm' straight backwards (heading held) and wait */
+static BOOL s5_reverse(UW cm)
+{
+    return s5_special_move(S5_MOVE_FWD, cm, FALSE, TRUE);
 }
 
 /* Check whether a forward obstacle reading may count right now */
@@ -524,126 +565,6 @@ static UINT forward_watched(const bypass_step_t * p_step)
 }
 
 /*
- * F2, the watched pass: drive on with the sensor turned towards the box
- * until it has been passed, then far enough for the robot's tail to clear
- * its far end (see "Watched pass" in obstacle_logic.h).  Up to two
- * stages: first bypass_pass_plan_cm() (where a box never seen ends it,
- * and which is always driven in full), then on towards PASS_MAX_CM while
- * the box is still beside.  Every side reading is logged.
- * @return TRUE once past; FALSE on a failed or timed-out move, or a box
- *         still beside at PASS_MAX_CM.
- */
-static BOOL watch_pass(const plan_t *             p_plan,
-                       const obstacle_profile_t * p_profile)
-{
-    side_pass_t         side      = {FALSE, 0U};
-    const UW            gap_mm    = bypass_side_gap_mm(p_plan, p_profile);
-    const UW            near_mm   = bypass_side_near_mm(gap_mm);
-    UW                  stage_cm  = bypass_pass_plan_cm(p_profile);
-    UW                  driven_cm = 0U; /* finished stages */
-    UINT                pattern   = 0U;
-    UW                  distance_mm;
-    UW                  t0_us;
-    UW                  extra_cm;
-    ultrasonic_status_t status;
-    BOOL                b_passed = FALSE;
-
-    LOG_INFO(TAG_S5_OBS, "watching the box at %u deg (gap ~%u mm, beside "
-                    "< %u mm), plan %u cm, up to %u cm",
-              bypass_side_deg(p_plan->decision), gap_mm, near_mm, stage_cm,
-              PASS_MAX_CM);
-    servo_glide_to(bypass_side_deg(p_plan->decision));
-
-    while (!b_passed)
-    {
-        /* Start this stage, but don't wait: watch the side meanwhile */
-        (void)tk_clr_flg(flg_s5_evt,
-                         ~(S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED));
-        s5_post(S5_REQ_MOVE, S5_MOVE_FWD, stage_cm, FALSE);
-        t0_us = rp2040_time_us();
-
-        for (;;)
-        {
-            /* The controller may have halted (IMU, safety) and will never
-             * reply */
-            if ((rp2040_time_us() - t0_us) > ((UW)MOVE_TIMEOUT_MS * 1000U))
-            {
-                LOG_WARN(TAG_S5_OBS, "watched leg timed out");
-                return FALSE;
-            }
-
-            pattern = 0U;
-            if (E_OK == tk_wai_flg(flg_s5_evt,
-                                   S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED,
-                                   TWF_ORW, &pattern, TMO_POL))
-            {
-                break; /* this stage ended */
-            }
-
-            status =
-                ultrasonic_measure_mm(ULTRASONIC_WINDOW_SCAN_MS, &distance_mm);
-            LOG_INFO(TAG_S5_OBS, "side %u mm %s", distance_mm,
-                      status_name(status));
-            if (!b_passed &&
-                side_pass_update(&side, status, distance_mm, near_mm))
-            {
-                b_passed = TRUE; /* past the far end (by the side watch) */
-                if (0U != driven_cm)
-                {
-                    break; /* beyond the plan: drive on from here */
-                }
-                /* Inside the planned distance: never stop before it */
-                LOG_INFO(TAG_S5_OBS, "box looks passed inside the plan: "
-                                "finishing the plan's %u cm first",
-                          stage_cm);
-            }
-
-            tk_dly_tsk(MONITOR_GAP_MS); /* sensor needs >= 60 ms per cycle */
-        }
-
-        if (0U != (pattern & S5_EVT_MOVE_FAILED))
-        {
-            LOG_ERR(TAG_S5_OBS, "watched leg failed");
-            return FALSE;
-        }
-        if (b_passed)
-        {
-            break;
-        }
-
-        driven_cm += stage_cm;
-        if (!side.b_seen)
-        {
-            /* Too shallow to reach the beam: the plan's distance will do */
-            LOG_INFO(TAG_S5_OBS, "box not seen in %u cm (shallow)", driven_cm);
-            servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
-            return TRUE;
-        }
-        if (driven_cm >= PASS_MAX_CM)
-        {
-            LOG_WARN(TAG_S5_OBS, "box still beside after %u cm: too long",
-                      driven_cm);
-            return FALSE;
-        }
-
-        /* Box still beside the sensor: carry on towards the limit */
-        stage_cm = PASS_MAX_CM - driven_cm;
-        LOG_INFO(TAG_S5_OBS, "box still beside, up to %u cm more", stage_cm);
-    }
-
-    /* Passed: drive on (a new request cuts the running move short) */
-    extra_cm = bypass_after_clear_cm(gap_mm);
-    LOG_INFO(TAG_S5_OBS, "box passed, %u cm on for the tail", extra_cm);
-    if (S5_EVT_MOTION_DONE != s5_move(S5_MOVE_FWD, extra_cm, FALSE))
-    {
-        LOG_ERR(TAG_S5_OBS, "drive-on failed");
-        return FALSE;
-    }
-    servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
-    return TRUE;
-}
-
-/*
  * After T3 (facing the line, servo at 90): is the box still straight
  * ahead?  Two of three readings that are under 'limit_mm' OR too close to
  * measure (TOO_NEAR: the box is right against the sensor) say yes.  A
@@ -677,6 +598,136 @@ static BOOL ahead_blocked(UW limit_mm)
 static UB opposite_turn(UB move)
 {
     return (S5_MOVE_TURN_L == move) ? S5_MOVE_TURN_R : S5_MOVE_TURN_L;
+}
+
+/*
+ * One look at the box during F2: spin on the spot to face it square on
+ * (servo at 90), take ahead_blocked()'s three readings, spin back.  The
+ * robot ends where it began.
+ * @return TRUE with *p_b_seen set; FALSE if a spin failed.
+ */
+static BOOL look_at_box(UB turn, UW limit_mm, BOOL * p_b_seen)
+{
+    if (!s5_spin(turn, BYPASS_TURN_DEG))
+    {
+        LOG_ERR(TAG_S5_OBS, "look: spin towards the box failed");
+        return FALSE;
+    }
+    *p_b_seen = ahead_blocked(limit_mm);
+    if (!s5_spin(opposite_turn(turn), BYPASS_TURN_DEG))
+    {
+        LOG_ERR(TAG_S5_OBS, "look: spin back failed");
+        return FALSE;
+    }
+    return TRUE;
+}
+
+/*
+ * F2, the looked pass (23 Nov; was the watched pass with the servo turned
+ * to the side): drive on beside the box, stopping to spin round and look
+ * at it square on, until a look finds it gone, then far enough for the
+ * robot's tail to clear it (see "Looked pass" in obstacle_logic.h).
+ * @return TRUE once past; FALSE on a failed move or spin, or a box still
+ *         beside at PASS_MAX_CM.
+ */
+static BOOL look_pass(const plan_t *             p_plan,
+                      const obstacle_profile_t * p_profile)
+{
+    const UW      gap_mm    = bypass_side_gap_mm(p_plan, p_profile);
+    const UW      limit_mm  = bypass_look_limit_mm(gap_mm);
+    const UW      plan_cm   = bypass_pass_plan_cm(p_profile);
+    const UB      turn      = bypass_look_turn(p_plan->decision);
+    bypass_step_t leg       = {S5_MOVE_FWD, 0U, FALSE, FALSE, FALSE, FALSE};
+    UW            driven_cm = 0U;
+    UW            step_cm   = bypass_look_start_cm(p_profile);
+    BOOL          b_ever    = FALSE; /* seen at some look */
+    BOOL          b_seen    = FALSE;
+
+    servo_glide_to(SERVO_ANGLE_CENTRE_DEG); /* looks are straight ahead */
+    if (S5_MOVE_FWD == turn)
+    {
+        return FALSE; /* not a pass */
+    }
+
+    if (!bypass_look_ok(gap_mm))
+    {
+        LOG_WARN(TAG_S5_OBS, "box face only ~%u mm out (< %u): no room to "
+                        "spin, driving the planned %u cm without looking",
+                  gap_mm, LOOK_MIN_GAP_MM, plan_cm);
+        leg.value = (UH)plan_cm;
+        return (S5_EVT_MOTION_DONE == forward_watched(&leg)) ? TRUE : FALSE;
+    }
+
+    LOG_INFO(TAG_S5_OBS, "looking at the box square on (face ~%u mm out, "
+                    "beside < %u mm): first look after %u cm, then every "
+                    "%u cm, up to %u cm",
+              gap_mm, limit_mm, step_cm, LOOK_STEP_CM, PASS_MAX_CM);
+
+    for (;;)
+    {
+        if (0U != step_cm)
+        {
+            leg.value = (UH)step_cm;
+            if (S5_EVT_MOTION_DONE != forward_watched(&leg))
+            {
+                LOG_ERR(TAG_S5_OBS, "pass leg failed");
+                return FALSE;
+            }
+            driven_cm += step_cm;
+        }
+
+        if (!look_at_box(turn, limit_mm, &b_seen))
+        {
+            return FALSE;
+        }
+        LOG_INFO(TAG_S5_OBS, "look at %u cm: box %s", driven_cm,
+                  b_seen ? "beside" : "not there");
+
+        if (b_seen)
+        {
+            b_ever = TRUE;
+        }
+        else if (b_ever)
+        {
+            break; /* seen before, gone now: past the far end */
+        }
+        else if (driven_cm >= plan_cm)
+        {
+            /* Too shallow to look at: the plan's distance will do */
+            LOG_INFO(TAG_S5_OBS, "box not seen in %u cm (shallow)",
+                      driven_cm);
+            return TRUE;
+        }
+        else
+        {
+            /* not reached yet: keep going */
+        }
+
+        if (driven_cm >= PASS_MAX_CM)
+        {
+            LOG_WARN(TAG_S5_OBS, "box still beside after %u cm: too long",
+                      driven_cm);
+            return FALSE;
+        }
+        step_cm = LOOK_STEP_CM;
+        if (!b_ever && ((driven_cm + step_cm) > plan_cm))
+        {
+            step_cm = plan_cm - driven_cm; /* plan_cm > driven_cm here */
+        }
+        if ((driven_cm + step_cm) > PASS_MAX_CM)
+        {
+            step_cm = PASS_MAX_CM - driven_cm;
+        }
+    }
+
+    leg.value = (UH)bypass_after_look_cm();
+    LOG_INFO(TAG_S5_OBS, "box passed, %u cm on for the tail", leg.value);
+    if (S5_EVT_MOTION_DONE != forward_watched(&leg))
+    {
+        LOG_ERR(TAG_S5_OBS, "drive-on failed");
+        return FALSE;
+    }
+    return TRUE;
 }
 
 /*
@@ -728,8 +779,8 @@ static const char * move_name(UB move)
 /*
  * Drive round the box on the turn-and-box path and back onto the line
  * behind it (FR5-4, FR5-5).  See the move list in obstacle_logic.h.  The
- * robot is at rest, servo at 90 (it turns to the box's side only during
- * F2).  Ends facing along the line; the caller then hands back to line
+ * robot is at rest, servo at 90 (it stays there: F2 spins the robot to
+ * look at the box).  Ends facing along the line; the caller then hands back to line
  * following.
  * @return FALSE on any failure (caller stops safely).
  */
@@ -758,13 +809,13 @@ static BOOL bypass_obstacle(const plan_t *             p_plan,
         LOG_INFO(TAG_S5_OBS, "step %u/%u: %s %u %s%s", index + 1U,
                   BYPASS_STEPS, move_name(step.move), step.value,
                   (S5_MOVE_FWD == step.move) ? "cm" : "deg",
-                  step.b_watch_side     ? " (at most, watching the box)"
+                  step.b_watch_side     ? " (at most, looking at the box)"
                   : step.b_stop_on_line ? " (until the line)"
                                         : "");
 
         if (step.b_watch_side)
         {
-            result = watch_pass(p_plan, p_profile) ? S5_EVT_MOTION_DONE : 0U;
+            result = look_pass(p_plan, p_profile) ? S5_EVT_MOTION_DONE : 0U;
         }
         else if (S5_MOVE_FWD == step.move)
         {
@@ -802,6 +853,32 @@ static BOOL bypass_obstacle(const plan_t *             p_plan,
             }
             LOG_INFO(TAG_S5_OBS, "line found");
         }
+    }
+    return TRUE;
+}
+
+/*
+ * PLAN_REVERSE (23 Nov): back off REVERSE_CM straight back along the path
+ * the robot came in on (heading held), so the caller can scan again from
+ * further away.  Nothing watches behind (the sensor faces the obstacle),
+ * but the robot only retraces ground it has just driven over.  Then HOLD,
+ * so it is still for the scan.
+ * @return TRUE once done; FALSE on a failed leg or hold.
+ */
+static BOOL back_off(UW retry)
+{
+    LOG_INFO(TAG_S5_OBS, "REVERSE %u/%u: %u cm straight back, scan again",
+              retry, MAX_RETRIES, REVERSE_CM);
+    servo_glide_to(SERVO_ANGLE_CENTRE_DEG);
+    if (!s5_reverse(REVERSE_CM))
+    {
+        LOG_ERR(TAG_S5_OBS, "reverse: leg failed");
+        return FALSE;
+    }
+    if (!s5_hold())
+    {
+        LOG_ERR(TAG_S5_OBS, "reverse: VC did not stop");
+        return FALSE;
     }
     return TRUE;
 }
@@ -908,6 +985,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
 {
     s5_state_t          state   = S5_MONITORING;
     UB                  history = 0U;
+    UW                  retries = 0U; /* back-offs for this obstacle */
     UW                  distance_mm;
     ultrasonic_status_t status;
     plan_t              plan;
@@ -965,6 +1043,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
 
                 if (obstacle_filter_update(&history, status, distance_mm))
                 {
+                    retries = 0U; /* a new obstacle: no back-offs yet */
 #if S5_HAS_VC
                     LOG_INFO(TAG_S5_OBS, "OBSTACLE at %u mm -> HOLD",
                               distance_mm);
@@ -997,9 +1076,9 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 break;
 
             case S5_SCANNING:
-                /* Retries = MAX_RETRIES: S2 can't reverse, so "blocked"
-                 * means PLAN_STOP (NO PATH) at once */
-                scan_and_plan(MAX_RETRIES, &plan, &profile);
+                /* Blocked on both sides: PLAN_REVERSE (back off and scan
+                 * again, S5_REVERSING) until MAX_RETRIES, then PLAN_STOP */
+                scan_and_plan(retries, &plan, &profile);
                 s5_publish_obstacle(&profile);
 
 #if !S5_HAS_VC
@@ -1027,10 +1106,27 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
                 {
                     state = S5_BYPASSING;
                 }
+                else if (PLAN_REVERSE == plan.decision)
+                {
+                    state = S5_REVERSING;
+                }
                 else
                 {
-                    /* REVERSE (S2 has no reverse) or STOP: NO PATH */
+                    /* STOP: still blocked after MAX_RETRIES back-offs */
                     LOG_WARN(TAG_S5_OBS, "NO PATH");
+                    s5_raise_fault(S5_FAULT_NO_PATH);
+                    state = S5_SAFE_STOP;
+                }
+                break;
+
+            case S5_REVERSING:
+                retries++;
+                if (back_off(retries))
+                {
+                    state = S5_SCANNING;
+                }
+                else
+                {
                     s5_raise_fault(S5_FAULT_NO_PATH);
                     state = S5_SAFE_STOP;
                 }

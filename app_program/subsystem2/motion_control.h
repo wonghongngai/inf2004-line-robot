@@ -194,6 +194,9 @@ typedef struct {
     float avoid_pivot_pwm_percent;
     float avoid_left_turn_ticks_per_degree;  /* left wheel during a right pivot */
     float avoid_right_turn_ticks_per_degree; /* right wheel during a left pivot */
+    /* SPIN profile (S5 spin-in-place turns): both wheels counter-rotate at
+       this PWM magnitude. 0 = no spin turns (they are rejected). */
+    float avoid_spin_pwm_percent;
 
 } MOTION_CONFIG;
 
@@ -207,12 +210,23 @@ typedef struct {
  *           (the caller ends it on the centre sensor, as all_test does)
  * AVOID     all_test's S5 moves: heading-held legs at move_*, pivots at
  *           avoid_pivot with avoid_*_turn_ticks_per_degree
+ * SPIN      S5's spin-in-place turn (23 Nov): TURN_LEFT_DEG / TURN_RIGHT_DEG
+ *           counter-rotate both wheels at avoid_spin_pwm_percent (left spin:
+ *           left wheel back, right forward). Each wheel stops on its own
+ *           once it has covered half its avoid pivot arc (the spin radius is
+ *           half the pivot's), so the robot turns about its centre and ends
+ *           where it began. FORWARD_CM is rejected in this profile.
+ * REVERSE   S5's back-off (23 Nov): FORWARD_CM drives both wheels backwards
+ *           at move_*, heading held as AVOID (the wheel that has gone
+ *           further is slowed); turns are rejected in this profile.
  */
 typedef enum {
     MOTION_PROFILE_BASE = 0,
     MOTION_PROFILE_JUNCTION,
     MOTION_PROFILE_UTURN,
-    MOTION_PROFILE_AVOID
+    MOTION_PROFILE_AVOID,
+    MOTION_PROFILE_SPIN,
+    MOTION_PROFILE_REVERSE
 } MOTION_PROFILE;
 
 /*

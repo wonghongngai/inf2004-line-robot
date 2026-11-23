@@ -1,0 +1,851 @@
+# S5-U41/U42/U48 centred box on 5fd4da5 (spin looks, F1 + 120 mm, measured turn calibration). Trimmed copy of the gitignored testing/subsystem5/logs/2026-11-23_194553_console.txt from the 20:15 boot: session headers, S5:OBS, S2:ROBOT, S2:MOTION lines.
+# 20:15 not counted: the line was taped over where step 6 met it (user), so LINE LOST is set-up. 20:18:07 boot: no obstacle episode (void).
+# Counted: 20:18:57, 20:19:58, 20:21:19. User (video): no contact with the box, step 6 to the line about 30 cm, carried on along the line, pivots square.
+
+=== COM5 connected 20:15:53.182 ===
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 576 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:MOTION] state=2 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:ROBOT] steer n=474 sens none=474 R=0 C=0 both=0 act straight=474 right=0 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=938 R=987 PWM=15/19
+[S2:ROBOT] steer n=476 sens none=476 R=0 C=0 both=0 act straight=476 right=0 left=0 watch max=0mm bias=3
+[S2:MOTION] state=2 fault=0 ticks L=2170 R=2270 PWM=16/19
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=6
+[S2:MOTION] state=2 fault=0 ticks L=3445 R=3529 PWM=15/19
+[S2:MOTION] state=2 fault=0 ticks L=4681 R=4802 PWM=16/19
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=6
+[S2:ROBOT] junction: no barcode, straight on
+[S5:OBS] OBSTACLE at 186 mm -> HOLD
+[S2:ROBOT] obstacle: S5 has control
+[S2:MOTION] state=1 fault=0 ticks L=5080 R=5243 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5080 R=5243 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5080 R=5243 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5080 R=5243 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5080 R=5243 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5080 R=5243 PWM=0/0
+[S5:OBS] coarse  50 deg  199  ok
+[S5:OBS] coarse  70 deg  224  ok
+[S5:OBS] coarse  90 deg  196  ok
+[S5:OBS] coarse 110 deg  196  ok
+[S5:OBS] coarse 130 deg  293  ok
+[S5:OBS] fine 50..130 deg, 17 points, scan 5644 ms
+[S5:OBS]  50 deg  raw  498  med  498  ok
+[S5:OBS]  55 deg  raw  416  med  416  ok
+[S5:OBS]  60 deg  raw  301  med  301  ok
+[S5:OBS]  65 deg  raw  190  med  202  ok
+[S5:OBS]  70 deg  raw  202  med  190  ok
+[S5:OBS]  75 deg  raw  183  med  183  ok
+[S5:OBS]  80 deg  raw  183  med  183  ok
+[S5:OBS]  85 deg  raw  196  med  186  ok
+[S5:OBS]  90 deg  raw  186  med  186  ok
+[S5:OBS]  95 deg  raw  186  med  186  ok
+[S5:OBS] 100 deg  raw  196  med  186  ok
+[S5:OBS] 105 deg  raw  183  med  193  ok
+[S5:OBS] 110 deg  raw  193  med  193  ok
+[S5:OBS] 115 deg  raw  202  med  202  ok
+[S5:OBS] 120 deg  raw  314  med  298  ok
+[S5:OBS] 125 deg  raw  298  med  314  ok
+[S5:OBS] 130 deg  raw 2080  med 2080  ok
+[S5:OBS] closest 183 mm at 75 deg (x 176)
+[S5:OBS] centre y 15 mm, width 198 mm
+[S5:OBS] clear L 9999 mm, R 88 mm (9999 = open, 9998 = not seen: the box runs past the scan)
+[S5:OBS] PLAN PASS LEFT, shift 239 mm
+[S5:OBS] BYPASS PASS LEFT
+[S5:OBS] step 1/8: turn L 90 deg
+[S2:MOTION] state=3 fault=0 ticks L=5080 R=5967 PWM=0/20
+[S2:MOTION] state=3 fault=0 ticks L=5080 R=7084 PWM=0/20
+[S5:OBS] step 2/8: forward 36 cm
+[S2:MOTION] state=2 fault=0 ticks L=5570 R=8003 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=6460 R=8905 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=7353 R=9822 PWM=12/14
+[S2:MOTION] state=2 fault=0 ticks L=8232 R=10714 PWM=12/15
+[S2:MOTION] state=2 fault=0 ticks L=9096 R=11591 PWM=11/15
+[S5:OBS] step 3/8: turn R 90 deg
+[S2:MOTION] state=4 fault=0 ticks L=10159 R=11787 PWM=20/0
+[S5:OBS] step 4/8: forward 80 cm (at most, looking at the box)
+[S5:OBS] looking at the box square on (face ~346 mm out, beside < 366 mm): first look after 19 cm, then every 10 cm, up to 80 cm
+[S2:MOTION] state=2 fault=0 ticks L=11518 R=11788 PWM=6/7
+[S2:MOTION] state=2 fault=0 ticks L=12265 R=12594 PWM=12/15
+[S2:MOTION] state=2 fault=0 ticks L=13120 R=13460 PWM=11/15
+[S2:MOTION] state=4 fault=0 ticks L=13849 R=13930 PWM=20/-20
+[S5:OBS] ahead 242 mm ok
+[S2:MOTION] state=1 fault=0 ticks L=14831 R=12909 PWM=0/0
+[S5:OBS] ahead 247 mm ok
+[S5:OBS] ahead 247 mm ok
+[S2:MOTION] state=3 fault=0 ticks L=13816 R=13842 PWM=-20/20
+[S5:OBS] look at 19 cm: box beside
+[S2:MOTION] state=2 fault=0 ticks L=14222 R=14574 PWM=11/15
+[S2:MOTION] state=4 fault=0 ticks L=14934 R=15216 PWM=17/-17
+[S2:MOTION] state=4 fault=0 ticks L=16012 R=14180 PWM=0/-20
+[S5:OBS] ahead 247 mm ok
+[S5:OBS] ahead 245 mm ok
+[S5:OBS] ahead 247 mm ok
+[S2:MOTION] state=3 fault=0 ticks L=15149 R=14904 PWM=-20/20
+[S5:OBS] look at 29 cm: box beside
+[S2:MOTION] state=2 fault=0 ticks L=15435 R=15768 PWM=11/15
+[S2:MOTION] state=4 fault=0 ticks L=16139 R=16350 PWM=20/-20
+[S2:MOTION] state=4 fault=0 ticks L=17193 R=15302 PWM=0/-20
+[S5:OBS] ahead 293 mm ok
+[S5:OBS] ahead 564 mm ok
+[S5:OBS] ahead 564 mm ok
+[S2:MOTION] state=3 fault=0 ticks L=16282 R=16126 PWM=-20/20
+[S5:OBS] look at 39 cm: box not there
+[S5:OBS] box passed, 22 cm on for the tail
+[S2:MOTION] state=2 fault=0 ticks L=16585 R=16920 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=17343 R=17684 PWM=10/15
+[S2:MOTION] state=2 fault=0 ticks L=18114 R=18471 PWM=10/15
+[S5:OBS] step 5/8: turn R 90 deg
+[S2:MOTION] state=4 fault=0 ticks L=18834 R=19015 PWM=20/0
+[S2:MOTION] state=4 fault=0 ticks L=20309 R=19015 PWM=20/0
+[S5:OBS] ahead 758 mm ok
+[S5:OBS] ahead 734 mm ok
+[S5:OBS] ahead 921 mm ok
+[S5:OBS] step 6/8: forward 50 cm (until the line)
+[S2:MOTION] state=2 fault=0 ticks L=21139 R=19318 PWM=12/13
+[S2:MOTION] state=2 fault=0 ticks L=21968 R=20156 PWM=12/13
+[S2:MOTION] state=2 fault=0 ticks L=22790 R=20988 PWM=12/14
+[S2:MOTION] state=2 fault=0 ticks L=23615 R=21830 PWM=12/14
+[S2:MOTION] state=2 fault=0 ticks L=24436 R=22654 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=25232 R=23463 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=25960 R=24203 PWM=11/15
+[S5:OBS] WARN LINE LOST after 50 cm (NFR5-4)
+[S5:OBS] WARN SAFE STOP (reboot to re-arm)
+[S2:ROBOT] WARN stopped: obstacle: no path, line lost or bad S5 request; reboot to re-arm
+[S2:MOTION] state=5 fault=0 ticks L=26682 R=24943 PWM=0/0
+[S2:ROBOT] WARN RESUME ignored: not paused
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24942 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24942 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24943 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24978 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24978 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24978 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26683 R=24977 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24977 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=26684 R=24977 PWM=0/0
+=== COM5 connected 20:18:07.699 ===
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 556 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+=== COM5 connected 20:18:57.682 ===
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 574 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:MOTION] state=2 fault=0 ticks L=851 R=851 PWM=15/19
+[S2:ROBOT] steer n=474 sens none=444 R=30 C=0 both=0 act straight=429 right=45 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=1994 R=1968 PWM=15/19
+[S2:ROBOT] steer n=476 sens none=413 R=63 C=0 both=0 act straight=384 right=92 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=3148 R=3148 PWM=15/19
+[S2:ROBOT] steer n=475 sens none=451 R=24 C=0 both=0 act straight=437 right=38 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=4287 R=4303 PWM=19/5
+[S2:ROBOT] steer n=476 sens none=429 R=47 C=0 both=0 act straight=400 right=76 left=0 watch max=0mm bias=0
+[S2:ROBOT] junction: no barcode, straight on
+[S5:OBS] OBSTACLE at 199 mm -> HOLD
+[S2:ROBOT] obstacle: S5 has control
+[S2:MOTION] state=1 fault=0 ticks L=5452 R=5347 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5477 R=5371 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5477 R=5371 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5477 R=5371 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5477 R=5371 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5477 R=5371 PWM=0/0
+[S5:OBS] coarse  50 deg  202  ok
+[S5:OBS] coarse  70 deg  429  ok
+[S5:OBS] coarse  90 deg  190  ok
+[S5:OBS] coarse 110 deg  190  ok
+[S5:OBS] coarse 130 deg  304  ok
+[S5:OBS] fine 50..130 deg, 17 points, scan 5643 ms
+[S5:OBS]  50 deg  raw  291  med  291  ok
+[S5:OBS]  55 deg  raw  299  med  299  ok
+[S5:OBS]  60 deg  raw  429  med  299  ok
+[S5:OBS]  65 deg  raw  227  med  227  ok
+[S5:OBS]  70 deg  raw  196  med  199  ok
+[S5:OBS]  75 deg  raw  199  med  199  ok
+[S5:OBS]  80 deg  raw  199  med  199  ok
+[S5:OBS]  85 deg  raw  190  med  190  ok
+[S5:OBS]  90 deg  raw  190  med  190  ok
+[S5:OBS]  95 deg  raw  190  med  190  ok
+[S5:OBS] 100 deg  raw  190  med  190  ok
+[S5:OBS] 105 deg  raw  190  med  190  ok
+[S5:OBS] 110 deg  raw  199  med  199  ok
+[S5:OBS] 115 deg  raw  209  med  209  ok
+[S5:OBS] 120 deg  raw  218  med  218  ok
+[S5:OBS] 125 deg  raw  565  med  565  ok
+[S5:OBS] 130 deg  raw    0  med    0  no-echo
+[S5:OBS] closest 190 mm at 85 deg (x 189)
+[S5:OBS] centre y -73 mm, width 227 mm
+[S5:OBS] clear L 9999 mm, R 9998 mm (9999 = open, 9998 = not seen: the box runs past the scan)
+[S5:OBS] PLAN PASS LEFT, shift 165 mm
+[S5:OBS] BYPASS PASS LEFT
+[S5:OBS] step 1/8: turn L 90 deg
+[S2:MOTION] state=3 fault=0 ticks L=5477 R=5416 PWM=0/20
+[S2:MOTION] state=3 fault=0 ticks L=5477 R=6590 PWM=0/20
+[S5:OBS] step 2/8: forward 29 cm
+[S2:MOTION] state=2 fault=0 ticks L=5535 R=7712 PWM=12/11
+[S2:MOTION] state=2 fault=0 ticks L=6397 R=8565 PWM=12/14
+[S2:MOTION] state=2 fault=0 ticks L=7270 R=9457 PWM=12/14
+[S2:MOTION] state=2 fault=0 ticks L=8141 R=10335 PWM=11/15
+[S5:OBS] step 3/8: turn R 90 deg
+[S2:MOTION] state=4 fault=0 ticks L=8917 R=11077 PWM=15/0
+[S2:MOTION] state=4 fault=0 ticks L=10429 R=11077 PWM=20/0
+[S5:OBS] step 4/8: forward 80 cm (at most, looking at the box)
+[S5:OBS] looking at the box square on (face ~350 mm out, beside < 370 mm): first look after 20 cm, then every 10 cm, up to 80 cm
+[S2:MOTION] state=2 fault=0 ticks L=11386 R=11406 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=12237 R=12272 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=13077 R=13118 PWM=10/15
+[S2:MOTION] state=4 fault=0 ticks L=14080 R=12903 PWM=20/-20
+[S5:OBS] ahead 151 mm ok
+[S5:OBS] ahead 158 mm ok
+[S5:OBS] ahead 158 mm ok
+[S2:MOTION] state=3 fault=0 ticks L=14343 R=12499 PWM=-20/20
+[S5:OBS] look at 20 cm: box beside
+[S2:MOTION] state=2 fault=0 ticks L=13584 R=13566 PWM=10/15
+[S2:MOTION] state=2 fault=0 ticks L=14346 R=14358 PWM=12/15
+[S2:MOTION] state=4 fault=0 ticks L=15457 R=13942 PWM=20/-20
+[S5:OBS] ahead 139 mm ok
+[S5:OBS] ahead 151 mm ok
+[S5:OBS] ahead 142 mm ok
+[S2:MOTION] state=3 fault=0 ticks L=15339 R=13830 PWM=-20/20
+[S5:OBS] look at 30 cm: box beside
+[S2:MOTION] state=2 fault=0 ticks L=14874 R=14852 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=15716 R=15711 PWM=11/15
+[S2:MOTION] state=4 fault=0 ticks L=16920 R=14900 PWM=0/-20
+[S5:OBS] ahead 379 mm ok
+[S5:OBS] ahead 367 mm ok
+[S5:OBS] ahead 372 mm ok
+[S2:MOTION] state=3 fault=0 ticks L=16286 R=15266 PWM=-20/20
+[S5:OBS] look at 40 cm: box not there
+[S5:OBS] box passed, 22 cm on for the tail
+[S2:MOTION] state=2 fault=0 ticks L=16214 R=16166 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=17040 R=17019 PWM=12/14
+[S2:MOTION] state=2 fault=0 ticks L=17932 R=17912 PWM=10/15
+[S5:OBS] step 5/8: turn R 90 deg
+[S2:MOTION] state=4 fault=0 ticks L=18818 R=18387 PWM=20/0
+[S2:MOTION] state=4 fault=0 ticks L=20351 R=18387 PWM=20/0
+[S5:OBS] ahead 1379 mm ok
+[S5:OBS] ahead 1373 mm ok
+[S5:OBS] ahead 1382 mm ok
+[S5:OBS] step 6/8: forward 50 cm (until the line)
+[S2:MOTION] state=2 fault=0 ticks L=21080 R=18866 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=21967 R=19767 PWM=11/15
+[S5:OBS] line found
+[S5:OBS] step 7/8: forward 4 cm
+[S2:MOTION] state=2 fault=0 ticks L=22670 R=20487 PWM=12/15
+[S5:OBS] step 8/8: turn L 120 deg (until the line)
+[S5:OBS] line found
+[S5:OBS] RESUME line following
+[S2:ROBOT] obstacle handled, line following
+[S2:ROBOT] steer n=441 sens none=381 R=34 C=0 both=26 act straight=378 right=63 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=23025 R=20981 PWM=15/19
+[S5:OBS] MONITORING
+[S2:ROBOT] steer n=470 sens none=366 R=104 C=0 both=0 act straight=352 right=118 left=0 watch max=0mm bias=-1
+[S2:MOTION] state=2 fault=0 ticks L=24211 R=22213 PWM=15/19
+[S2:ROBOT] line probe: no black for 150 mm after a right correction; steering right up to 100 mm
+[S2:ROBOT] line probe found the tape after 161 mm; following
+[S2:ROBOT] steer n=463 sens none=407 R=0 C=56 both=0 act straight=407 right=0 left=56 watch max=161mm bias=-1
+[S2:MOTION] state=2 fault=0 ticks L=25106 R=23212 PWM=15/19
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=25691 R=23788 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=25691 R=23788 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=25691 R=23788 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=25688 R=23789 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=25689 R=23789 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=25689 R=23789 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=25689 R=23789 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=25689 R=23789 PWM=0/0
+=== COM5 connected 20:19:58.589 ===
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 609 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:MOTION] state=2 fault=0 ticks L=587 R=628 PWM=15/19
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=1786 R=1819 PWM=15/19
+[S2:ROBOT] steer n=474 sens none=423 R=51 C=0 both=0 act straight=394 right=80 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=2948 R=2990 PWM=15/19
+[S2:ROBOT] steer n=475 sens none=423 R=52 C=0 both=0 act straight=394 right=81 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=4113 R=4179 PWM=15/19
+[S2:ROBOT] steer n=475 sens none=453 R=22 C=0 both=0 act straight=439 right=36 left=0 watch max=0mm bias=0
+[S2:ROBOT] junction: no barcode, straight on
+[S2:MOTION] state=2 fault=0 ticks L=5293 R=5316 PWM=17/5
+[S2:ROBOT] steer n=474 sens none=423 R=22 C=0 both=29 act straight=438 right=36 left=0 watch max=0mm bias=0
+[S5:OBS] OBSTACLE at 183 mm -> HOLD
+[S2:ROBOT] obstacle: S5 has control
+[S2:MOTION] state=1 fault=0 ticks L=5814 R=5804 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5814 R=5804 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5814 R=5804 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5814 R=5804 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5814 R=5804 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5814 R=5804 PWM=0/0
+[S5:OBS] coarse  50 deg  301  ok
+[S5:OBS] coarse  70 deg  402  ok
+[S5:OBS] coarse  90 deg  183  ok
+[S5:OBS] coarse 110 deg  193  ok
+[S5:OBS] coarse 130 deg  291  ok
+[S5:OBS] fine 50..130 deg, 17 points, scan 5644 ms
+[S5:OBS]  50 deg  raw  296  med  296  ok
+[S5:OBS]  55 deg  raw  296  med  296  ok
+[S5:OBS]  60 deg  raw  209  med  209  ok
+[S5:OBS]  65 deg  raw  190  med  190  ok
+[S5:OBS]  70 deg  raw  190  med  190  ok
+[S5:OBS]  75 deg  raw  193  med  190  ok
+[S5:OBS]  80 deg  raw  183  med  183  ok
+[S5:OBS]  85 deg  raw  183  med  183  ok
+[S5:OBS]  90 deg  raw  183  med  183  ok
+[S5:OBS]  95 deg  raw  183  med  183  ok
+[S5:OBS] 100 deg  raw  183  med  183  ok
+[S5:OBS] 105 deg  raw  193  med  193  ok
+[S5:OBS] 110 deg  raw  215  med  215  ok
+[S5:OBS] 115 deg  raw  224  med  224  ok
+[S5:OBS] 120 deg  raw  600  med  312  ok
+[S5:OBS] 125 deg  raw  312  med  367  ok
+[S5:OBS] 130 deg  raw  367  med  367  ok
+[S5:OBS] closest 183 mm at 80 deg (x 180)
+[S5:OBS] centre y -50 mm, width 280 mm
+[S5:OBS] clear L 54 mm, R 9998 mm (9999 = open, 9998 = not seen: the box runs past the scan)
+[S5:OBS] PLAN PASS RIGHT, shift 315 mm
+[S5:OBS] WARN no side seen clear; passing on a side the scan never saw past
+[S5:OBS] BYPASS PASS RIGHT
+[S5:OBS] step 1/8: turn R 90 deg
+[S2:MOTION] state=4 fault=0 ticks L=6711 R=5804 PWM=20/0
+[S5:OBS] step 2/8: forward 40 cm
+[S2:MOTION] state=2 fault=0 ticks L=8082 R=5832 PWM=4/15
+[S2:MOTION] state=2 fault=0 ticks L=8837 R=6641 PWM=10/15
+[S2:MOTION] state=2 fault=0 ticks L=9631 R=7452 PWM=10/15
+[S2:MOTION] state=2 fault=0 ticks L=10447 R=8287 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=11279 R=9137 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=12133 R=10002 PWM=11/15
+[S5:OBS] step 3/8: turn L 90 deg
+[S2:MOTION] state=3 fault=0 ticks L=12675 R=10673 PWM=0/20
+[S2:MOTION] state=3 fault=0 ticks L=12675 R=11835 PWM=0/20
+[S5:OBS] step 4/8: forward 80 cm (at most, looking at the box)
+[S5:OBS] looking at the box square on (face ~310 mm out, beside < 330 mm): first look after 19 cm, then every 10 cm, up to 80 cm
+[S2:MOTION] state=2 fault=0 ticks L=12706 R=12842 PWM=12/14
+[S2:MOTION] state=2 fault=0 ticks L=13458 R=13604 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=14325 R=14496 PWM=12/14
+[S2:MOTION] state=3 fault=0 ticks L=14685 R=15301 PWM=-20/20
+[S5:OBS] ahead 304 mm ok
+[S5:OBS] ahead 562 mm ok
+[S5:OBS] ahead 562 mm ok
+[S2:MOTION] state=4 fault=0 ticks L=13836 R=16230 PWM=20/-20
+[S5:OBS] look at 19 cm: box not there
+[S2:MOTION] state=2 fault=0 ticks L=14902 R=15096 PWM=3/3
+[S2:MOTION] state=2 fault=0 ticks L=15649 R=15875 PWM=12/15
+[S2:MOTION] state=3 fault=0 ticks L=15699 R=16701 PWM=-20/20
+[S5:OBS] ahead 256 mm ok
+[S5:OBS] ahead 520 mm ok
+[S5:OBS] ahead 250 mm ok
+[S2:MOTION] state=4 fault=0 ticks L=15153 R=17343 PWM=20/-20
+[S5:OBS] look at 29 cm: box beside
+[S2:MOTION] state=2 fault=0 ticks L=16166 R=16405 PWM=9/15
+[S2:MOTION] state=2 fault=0 ticks L=17010 R=17292 PWM=12/14
+[S2:MOTION] state=3 fault=0 ticks L=16615 R=18199 PWM=-20/20
+[S5:OBS] ahead 301 mm ok
+[S5:OBS] ahead 265 mm ok
+[S5:OBS] ahead 247 mm ok
+[S2:MOTION] state=4 fault=0 ticks L=16621 R=18348 PWM=20/-20
+[S5:OBS] look at 39 cm: box beside
+[S2:MOTION] state=2 fault=0 ticks L=17495 R=17821 PWM=12/14
+[S2:MOTION] state=2 fault=0 ticks L=18351 R=18699 PWM=12/13
+[S2:MOTION] state=3 fault=0 ticks L=17518 R=19743 PWM=-20/20
+[S5:OBS] ahead 291 mm ok
+[S5:OBS] ahead 293 mm ok
+[S5:OBS] ahead 301 mm ok
+[S2:MOTION] state=4 fault=0 ticks L=18095 R=19375 PWM=20/-20
+[S5:OBS] look at 49 cm: box beside
+[S2:MOTION] state=2 fault=0 ticks L=18829 R=19234 PWM=12/13
+[S2:MOTION] state=3 fault=0 ticks L=19644 R=20061 PWM=-3/3
+[S2:MOTION] state=3 fault=0 ticks L=18505 R=21159 PWM=0/20
+[S5:OBS] ahead 441 mm ok
+[S5:OBS] ahead 400 mm ok
+[S5:OBS] ahead 425 mm ok
+[S2:MOTION] state=4 fault=0 ticks L=19437 R=20444 PWM=20/-20
+[S5:OBS] look at 59 cm: box not there
+[S5:OBS] box passed, 22 cm on for the tail
+[S2:MOTION] state=2 fault=0 ticks L=20102 R=20560 PWM=12/15
+[S2:MOTION] state=2 fault=0 ticks L=20965 R=21441 PWM=12/14
+[S2:MOTION] state=2 fault=0 ticks L=21839 R=22334 PWM=12/14
+[S5:OBS] step 5/8: turn L 90 deg
+[S2:MOTION] state=3 fault=0 ticks L=22218 R=23137 PWM=0/20
+[S2:MOTION] state=3 fault=0 ticks L=22218 R=24464 PWM=0/20
+[S5:OBS] ahead 1807 mm ok
+[S5:OBS] ahead 1806 mm ok
+[S5:OBS] ahead 1811 mm ok
+[S5:OBS] step 6/8: forward 50 cm (until the line)
+[S2:MOTION] state=2 fault=0 ticks L=22472 R=25267 PWM=12/14
+[S2:MOTION] state=2 fault=0 ticks L=23329 R=26144 PWM=12/13
+[S2:MOTION] state=2 fault=0 ticks L=24161 R=26995 PWM=12/13
+[S5:OBS] line found
+[S5:OBS] step 7/8: forward 4 cm
+[S2:MOTION] state=2 fault=0 ticks L=24853 R=27699 PWM=12/14
+[S5:OBS] step 8/8: turn R 120 deg (until the line)
+[S2:MOTION] state=4 fault=0 ticks L=25863 R=27999 PWM=20/0
+[S5:OBS] line found
+[S5:OBS] RESUME line following
+[S2:ROBOT] obstacle handled, line following
+[S2:ROBOT] steer n=56 sens none=55 R=1 C=0 both=0 act straight=55 right=1 left=0 watch max=0mm bias=0
+[S2:MOTION] state=2 fault=0 ticks L=27160 R=28000 PWM=14/0
+[S5:OBS] MONITORING
+[S2:ROBOT] steer n=470 sens none=323 R=147 C=0 both=0 act straight=295 right=175 left=0 watch max=23mm bias=-1
+[S2:MOTION] state=2 fault=0 ticks L=28292 R=28895 PWM=15/19
+[S2:ROBOT] steer n=477 sens none=434 R=43 C=0 both=0 act straight=405 right=72 left=0 watch max=0mm bias=-3
+[S2:MOTION] state=2 fault=0 ticks L=29507 R=30061 PWM=15/19
+[S2:ROBOT] steer n=473 sens none=429 R=44 C=0 both=0 act straight=414 right=59 left=0 watch max=0mm bias=-4
+[S2:MOTION] state=2 fault=0 ticks L=30701 R=31145 PWM=15/19
+[S2:ROBOT] junction: no barcode, straight on
+[S2:ROBOT] steer n=474 sens none=408 R=35 C=0 both=31 act straight=410 right=64 left=0 watch max=0mm bias=-5
+[S2:MOTION] state=2 fault=0 ticks L=31882 R=32333 PWM=15/19
+[S2:ROBOT] steer n=475 sens none=475 R=0 C=0 both=0 act straight=475 right=0 left=0 watch max=0mm bias=-3
+[S2:MOTION] state=2 fault=0 ticks L=32909 R=33422 PWM=13/17
+[S2:ROBOT] steer n=473 sens none=441 R=32 C=0 both=0 act straight=426 right=47 left=0 watch max=0mm bias=-2
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=34063 R=34523 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=34089 R=34546 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=34089 R=34546 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=34088 R=34548 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=34088 R=34548 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=34088 R=34548 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=34088 R=34548 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=34088 R=34542 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=34088 R=34543 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=34088 R=34543 PWM=0/0
+[S2:MOTION] state=5 fault=0 ticks L=34088 R=34543 PWM=0/0
+=== COM5 connected 20:21:19.557 ===
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 631 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=0 R=0 PWM=0/0
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:MOTION] state=2 fault=0 ticks L=21 R=19 PWM=15/17
+[S2:ROBOT] steer n=475 sens none=475 R=0 C=0 both=0 act straight=475 right=0 left=0 watch max=0mm bias=1
+[S2:MOTION] state=2 fault=0 ticks L=1207 R=1298 PWM=16/19
+[S2:ROBOT] steer n=475 sens none=475 R=0 C=0 both=0 act straight=475 right=0 left=0 watch max=0mm bias=6
+[S2:MOTION] state=2 fault=0 ticks L=2510 R=2608 PWM=16/19
+[S2:ROBOT] steer n=474 sens none=474 R=0 C=0 both=0 act straight=474 right=0 left=0 watch max=0mm bias=8
+[S2:MOTION] state=2 fault=0 ticks L=3795 R=3884 PWM=16/19
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=9
+[S2:MOTION] state=2 fault=0 ticks L=5067 R=5143 PWM=15/19
+[S2:ROBOT] junction: no barcode, straight on
+[S5:OBS] OBSTACLE at 199 mm -> HOLD
+[S2:ROBOT] obstacle: S5 has control
+[S2:MOTION] state=1 fault=0 ticks L=5700 R=5828 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5700 R=5828 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5700 R=5828 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5700 R=5828 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5700 R=5828 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=5700 R=5828 PWM=0/0
+[S5:OBS] coarse  50 deg  196  ok
+[S5:OBS] coarse  70 deg  205  ok
+[S5:OBS] coarse  90 deg  190  ok
+[S5:OBS] coarse 110 deg  190  ok
+[S5:OBS] coarse 130 deg  296  ok
+[S5:OBS] fine 50..130 deg, 17 points, scan 5645 ms
+[S5:OBS]  50 deg  raw  565  med  565  ok
+[S5:OBS]  55 deg  raw  441  med  441  ok
+[S5:OBS]  60 deg  raw  304  med  304  ok
+[S5:OBS]  65 deg  raw  196  med  209  ok
+[S5:OBS]  70 deg  raw  209  med  199  ok
+[S5:OBS]  75 deg  raw  199  med  199  ok
+[S5:OBS]  80 deg  raw  190  med  190  ok
+[S5:OBS]  85 deg  raw  189  med  190  ok
+[S5:OBS]  90 deg  raw  190  med  190  ok
+[S5:OBS]  95 deg  raw  190  med  190  ok
+[S5:OBS] 100 deg  raw  190  med  190  ok
+[S5:OBS] 105 deg  raw  199  med  199  ok
+[S5:OBS] 110 deg  raw  221  med  221  ok
+[S5:OBS] 115 deg  raw  311  med  296  ok
+[S5:OBS] 120 deg  raw  296  med  311  ok
+[S5:OBS] 125 deg  raw  314  med  314  ok
+[S5:OBS] 130 deg  raw  365  med  365  ok
+[S5:OBS] closest 190 mm at 80 deg (x 187)
+[S5:OBS] centre y 14 mm, width 194 mm
+[S5:OBS] clear L 54 mm, R 9999 mm (9999 = open, 9998 = not seen: the box runs past the scan)
+[S5:OBS] PLAN PASS RIGHT, shift 208 mm
+[S5:OBS] BYPASS PASS RIGHT
+[S5:OBS] step 1/8: turn R 90 deg
+[S2:MOTION] state=4 fault=0 ticks L=6376 R=5828 PWM=20/0
+[S5:OBS] step 2/8: forward 33 cm
+[S2:MOTION] state=2 fault=0 ticks L=7903 R=5828 PWM=0/0
+[S2:MOTION] state=2 fault=0 ticks L=8636 R=6585 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=9512 R=7479 PWM=12/15
+[S2:MOTION] state=2 fault=0 ticks L=10382 R=8366 PWM=12/15
+[S2:MOTION] state=2 fault=0 ticks L=11227 R=9226 PWM=12/15
+[S5:OBS] step 3/8: turn L 90 deg
+[S2:MOTION] state=3 fault=0 ticks L=11748 R=9959 PWM=0/20
+[S2:MOTION] state=3 fault=0 ticks L=11749 R=11095 PWM=0/20
+[S5:OBS] step 4/8: forward 80 cm (at most, looking at the box)
+[S5:OBS] looking at the box square on (face ~347 mm out, beside < 367 mm): first look after 20 cm, then every 10 cm, up to 80 cm
+[S2:MOTION] state=2 fault=0 ticks L=11790 R=12073 PWM=12/12
+[S2:MOTION] state=2 fault=0 ticks L=12656 R=12934 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=13533 R=13827 PWM=12/15
+[S2:MOTION] state=3 fault=0 ticks L=13959 R=14550 PWM=-20/20
+[S5:OBS] ahead 227 mm ok
+[S5:OBS] ahead 299 mm ok
+[S5:OBS] ahead 299 mm ok
+[S2:MOTION] state=4 fault=0 ticks L=12955 R=15569 PWM=10/-10
+[S5:OBS] look at 20 cm: box beside
+[S2:MOTION] state=2 fault=0 ticks L=14103 R=14429 PWM=1/1
+[S2:MOTION] state=2 fault=0 ticks L=14823 R=15179 PWM=12/15
+[S2:MOTION] state=3 fault=0 ticks L=14908 R=15981 PWM=-20/20
+[S5:OBS] ahead 190 mm ok
+[S5:OBS] ahead 205 mm ok
+[S5:OBS] ahead 196 mm ok
+[S2:MOTION] state=4 fault=0 ticks L=14269 R=16717 PWM=20/-20
+[S5:OBS] look at 30 cm: box beside
+[S2:MOTION] state=2 fault=0 ticks L=15301 R=15665 PWM=12/13
+[S2:MOTION] state=2 fault=0 ticks L=16147 R=16530 PWM=12/15
+[S2:MOTION] state=3 fault=0 ticks L=15933 R=17379 PWM=-20/20
+[S5:OBS] ahead 227 mm ok
+[S5:OBS] ahead 250 mm ok
+[S5:OBS] ahead 250 mm ok
+[S2:MOTION] state=4 fault=0 ticks L=15617 R=17787 PWM=20/-20
+[S5:OBS] look at 40 cm: box beside
+[S2:MOTION] state=2 fault=0 ticks L=16603 R=17001 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=17470 R=17895 PWM=12/14
+[S2:MOTION] state=3 fault=0 ticks L=16874 R=18868 PWM=-20/20
+[S5:OBS] ahead 374 mm ok
+[S5:OBS] ahead 363 mm ok
+[S5:OBS] ahead 368 mm ok
+[S2:MOTION] state=4 fault=0 ticks L=17121 R=18816 PWM=20/-20
+[S5:OBS] look at 50 cm: box not there
+[S5:OBS] box passed, 22 cm on for the tail
+[S2:MOTION] state=2 fault=0 ticks L=17894 R=18361 PWM=12/14
+[S2:MOTION] state=2 fault=0 ticks L=18740 R=19214 PWM=12/15
+[S2:MOTION] state=2 fault=0 ticks L=19590 R=20083 PWM=12/14
+[S5:OBS] step 5/8: turn L 90 deg
+[S2:MOTION] state=3 fault=0 ticks L=20255 R=20871 PWM=0/20
+[S2:MOTION] state=3 fault=0 ticks L=20255 R=22104 PWM=0/20
+[S5:OBS] ahead 1793 mm ok
+[S5:OBS] ahead 1796 mm ok
+[S5:OBS] ahead 1797 mm ok
+[S5:OBS] step 6/8: forward 50 cm (until the line)
+[S2:MOTION] state=2 fault=0 ticks L=20291 R=23063 PWM=11/15
+[S2:MOTION] state=2 fault=0 ticks L=21096 R=23894 PWM=12/14
+[S2:MOTION] state=2 fault=0 ticks L=21963 R=24779 PWM=12/14
+[S5:OBS] line found
+[S5:OBS] step 7/8: forward 4 cm
+[S2:MOTION] state=2 fault=0 ticks L=22675 R=25499 PWM=12/15
+[S5:OBS] step 8/8: turn R 120 deg (until the line)
+[S2:MOTION] state=4 fault=0 ticks L=23719 R=25744 PWM=20/0
+[S5:OBS] line found
+[S5:OBS] RESUME line following
+[S2:ROBOT] obstacle handled, line following
+[S2:ROBOT] steer n=371 sens none=303 R=10 C=30 both=28 act straight=302 right=24 left=45 watch max=0mm bias=9
+[S2:MOTION] state=2 fault=0 ticks L=24900 R=25809 PWM=15/19
+[S5:OBS] MONITORING
+[S2:ROBOT] steer n=474 sens none=316 R=158 C=0 both=0 act straight=287 right=187 left=0 watch max=36mm bias=8
+[S2:MOTION] state=2 fault=0 ticks L=26075 R=26798 PWM=15/19
+[S2:ROBOT] steer n=476 sens none=374 R=102 C=0 both=0 act straight=345 right=131 left=0 watch max=0mm bias=7
+[S2:MOTION] state=2 fault=0 ticks L=27273 R=27908 PWM=15/19
+[S2:ROBOT] steer n=475 sens none=448 R=27 C=0 both=0 act straight=419 right=56 left=0 watch max=0mm bias=6
+[S2:MOTION] state=2 fault=0 ticks L=28488 R=29032 PWM=15/19
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0
+[S2:MOTION] state=1 fault=0 ticks L=28900 R=29471 PWM=0/0

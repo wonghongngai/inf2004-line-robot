@@ -1,0 +1,162 @@
+# S5-U41 box offset 5 cm from the line, on 5fd4da5 (no reverse yet: blocked -> NO PATH at once). Trimmed copy of the gitignored testing/subsystem5/logs/2026-11-23_194553_console.txt from the 20:25 boot.
+# 20:25:07 PLAN STOP: clear L 122, R 47 mm (the box's own sloping face at 65-85 deg read as a second object). 20:25:40 PASS LEFT, log ends after step 1 (next boot 20:28, cause not recorded). 20:28 PLAN STOP: clear L 162, R 59 mm.
+
+=== COM5 connected 20:25:07.883 ===
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 625 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:ROBOT] steer n=474 sens none=443 R=31 C=0 both=0 act straight=428 right=46 left=0 watch max=0mm bias=0
+[S2:ROBOT] steer n=474 sens none=454 R=20 C=0 both=0 act straight=439 right=35 left=0 watch max=0mm bias=0
+[S2:ROBOT] steer n=474 sens none=454 R=20 C=0 both=0 act straight=440 right=34 left=0 watch max=0mm bias=0
+[S2:ROBOT] steer n=473 sens none=454 R=19 C=0 both=0 act straight=440 right=33 left=0 watch max=0mm bias=0
+[S2:ROBOT] junction: no barcode, straight on
+[S2:ROBOT] steer n=477 sens none=421 R=28 C=3 both=25 act straight=417 right=57 left=3 watch max=0mm bias=0
+[S5:OBS] OBSTACLE at 190 mm -> HOLD
+[S2:ROBOT] obstacle: S5 has control
+[S5:OBS] coarse  50 deg  299  ok
+[S5:OBS] coarse  70 deg  427  ok
+[S5:OBS] coarse  90 deg  190  ok
+[S5:OBS] coarse 110 deg  190  ok
+[S5:OBS] coarse 130 deg  714  ok
+[S5:OBS] fine 50..130 deg, 17 points, scan 5644 ms
+[S5:OBS]  50 deg  raw    0  med    0  no-echo
+[S5:OBS]  55 deg  raw    0  med    0  no-echo
+[S5:OBS]  60 deg  raw    0  med    0  no-echo
+[S5:OBS]  65 deg  raw  358  med  358  ok
+[S5:OBS]  70 deg  raw  306  med  306  ok
+[S5:OBS]  75 deg  raw  259  med  259  ok
+[S5:OBS]  80 deg  raw  233  med  259  ok
+[S5:OBS]  85 deg  raw  262  med  233  ok
+[S5:OBS]  90 deg  raw  190  med  190  ok
+[S5:OBS]  95 deg  raw  190  med  190  ok
+[S5:OBS] 100 deg  raw  190  med  190  ok
+[S5:OBS] 105 deg  raw  190  med  190  ok
+[S5:OBS] 110 deg  raw  500  med  500  ok
+[S5:OBS] 115 deg  raw  564  med  564  ok
+[S5:OBS] 120 deg  raw  966  med  743  ok
+[S5:OBS] 125 deg  raw  743  med  813  ok
+[S5:OBS] 130 deg  raw  813  med  813  ok
+[S5:OBS] closest 190 mm at 90 deg (x 190)
+[S5:OBS] centre y -27 mm, width 15 mm
+[S5:OBS] clear L 122 mm, R 47 mm (9999 = open, 9998 = not seen: the box runs past the scan)
+[S5:OBS] PLAN STOP (no path), shift 0 mm
+[S5:OBS] WARN NO PATH
+[S5:OBS] WARN SAFE STOP (reboot to re-arm)
+[S2:ROBOT] WARN stopped: obstacle: no path, line lost or bad S5 request; reboot to re-arm
+=== COM5 connected 20:25:40.761 ===
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 637 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:ROBOT] steer n=474 sens none=474 R=0 C=0 both=0 act straight=474 right=0 left=0 watch max=0mm bias=2
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=7
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=11
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=13
+[S2:ROBOT] junction: no barcode, straight on
+[S5:OBS] OBSTACLE at 193 mm -> HOLD
+[S2:ROBOT] obstacle: S5 has control
+[S5:OBS] coarse  50 deg  311  ok
+[S5:OBS] coarse  70 deg  427  ok
+[S5:OBS] coarse  90 deg  242  ok
+[S5:OBS] coarse 110 deg  293  ok
+[S5:OBS] coarse 130 deg  775  ok
+[S5:OBS] fine 50..130 deg, 17 points, scan 5644 ms
+[S5:OBS]  50 deg  raw    0  med    0  no-echo
+[S5:OBS]  55 deg  raw    0  med    0  no-echo
+[S5:OBS]  60 deg  raw    0  med    0  no-echo
+[S5:OBS]  65 deg  raw  311  med  311  ok
+[S5:OBS]  70 deg  raw  299  med  299  ok
+[S5:OBS]  75 deg  raw  239  med  239  ok
+[S5:OBS]  80 deg  raw  221  med  239  ok
+[S5:OBS]  85 deg  raw  259  med  221  ok
+[S5:OBS]  90 deg  raw  174  med  186  ok
+[S5:OBS]  95 deg  raw  186  med  186  ok
+[S5:OBS] 100 deg  raw  293  med  221  ok
+[S5:OBS] 105 deg  raw  221  med  293  ok
+[S5:OBS] 110 deg  raw  429  med  429  ok
+[S5:OBS] 115 deg  raw  795  med  795  ok
+[S5:OBS] 120 deg  raw  800  med  800  ok
+[S5:OBS] 125 deg  raw    0  med    0  no-echo
+[S5:OBS] 130 deg  raw    0  med    0  no-echo
+[S5:OBS] closest 186 mm at 90 deg (x 186)
+[S5:OBS] centre y -28 mm, width 72 mm
+[S5:OBS] clear L 9999 mm, R 9999 mm (9999 = open, 9998 = not seen: the box runs past the scan)
+[S5:OBS] PLAN PASS LEFT, shift 133 mm
+[S5:OBS] BYPASS PASS LEFT
+[S5:OBS] step 1/8: turn L 90 deg
+[S5:OBS] step 2/8: forward 26 cm
+[S5:OBS] step 3/8: turn R 90 deg
+[S5:OBS] step 4/8: forward 80 cm (at most, looking at the box)
+[S5:OBS] looking at the box square on (face ~352 mm out, beside < 372 mm): first look after 20 cm, then every 10 cm, up to 80 cm
+[S5:OBS] ahead 36 mm ok
+[S5:OBS] ahead 42 mm ok
+[S5:OBS] ahead 33 mm ok
+[S5:OBS] look at 20 cm: box beside
+[S5:OBS] ahead 60 mm ok
+[S5:OBS] ahead 51 mm ok
+[S5:OBS] ahead 51 mm ok
+[S5:OBS] look at 30 cm: box beside
+[S5:OBS] ahead 397 mm ok
+[S5:OBS] ahead 381 mm ok
+[S5:OBS] ahead 381 mm ok
+[S5:OBS] look at 40 cm: box not there
+[S5:OBS] box passed, 22 cm on for the tail
+[S5:OBS] step 5/8: turn R 90 deg
+[S5:OBS] ahead 1501 mm ok
+[S5:OBS] ahead 1495 mm ok
+[S5:OBS] ahead 1503 mm ok
+[S5:OBS] step 6/8: forward 50 cm (until the line)
+[S5:OBS] line found
+[S5:OBS] step 7/8: forward 4 cm
+[S5:OBS] step 8/8: turn L 120 deg (until the line)
+[S5:OBS] line found
+[S5:OBS] RESUME line following
+[S2:ROBOT] obstacle handled, line following
+[S2:ROBOT] steer n=432 sens none=357 R=11 C=37 both=27 act straight=355 right=26 left=51 watch max=0mm bias=14
+[S5:OBS] MONITORING
+[S2:ROBOT] steer n=467 sens none=377 R=90 C=0 both=0 act straight=363 right=104 left=0 watch max=0mm bias=11
+[S2:ROBOT] steer n=468 sens none=384 R=0 C=84 both=0 act straight=357 right=0 left=111 watch max=91mm bias=10
+[S2:ROBOT] paused (MQTT); RESUME to continue
+=== COM5 connected 20:28:07.199 ===
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 0, 574 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S2:ROBOT] steer n=476 sens none=476 R=0 C=0 both=0 act straight=476 right=0 left=0 watch max=0mm bias=3
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=11
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=12
+[S2:ROBOT] junction: no barcode, straight on
+[S2:ROBOT] steer n=472 sens none=423 R=17 C=13 both=19 act straight=427 right=32 left=13 watch max=0mm bias=11
+[S5:OBS] OBSTACLE at 190 mm -> HOLD
+[S2:ROBOT] obstacle: S5 has control
+[S5:OBS] coarse  50 deg    0  no-echo
+[S5:OBS] coarse  70 deg    0  no-echo
+[S5:OBS] coarse  90 deg  227  ok
+[S5:OBS] coarse 110 deg  227  ok
+[S5:OBS] coarse 130 deg  527  ok
+[S5:OBS] fine 70..130 deg, 13 points, scan 5154 ms
+[S5:OBS]  70 deg  raw  391  med  391  ok
+[S5:OBS]  75 deg  raw  377  med  377  ok
+[S5:OBS]  80 deg  raw  224  med  224  ok
+[S5:OBS]  85 deg  raw  190  med  190  ok
+[S5:OBS]  90 deg  raw  180  med  180  ok
+[S5:OBS]  95 deg  raw  180  med  180  ok
+[S5:OBS] 100 deg  raw  180  med  180  ok
+[S5:OBS] 105 deg  raw  291  med  190  ok
+[S5:OBS] 110 deg  raw  190  med  224  ok
+[S5:OBS] 115 deg  raw  224  med  224  ok
+[S5:OBS] 120 deg  raw  513  med  513  ok
+[S5:OBS] 125 deg  raw  642  med  513  ok
+[S5:OBS] 130 deg  raw  299  med  299  ok
+[S5:OBS] closest 180 mm at 90 deg (x 180)
+[S5:OBS] centre y 28 mm, width 2 mm
+[S5:OBS] clear L 162 mm, R 59 mm (9999 = open, 9998 = not seen: the box runs past the scan)
+[S5:OBS] PLAN STOP (no path), shift 0 mm
+[S5:OBS] WARN NO PATH
+[S5:OBS] WARN SAFE STOP (reboot to re-arm)
+[S2:ROBOT] WARN stopped: obstacle: no path, line lost or bad S5 request; reboot to re-arm
+[S2:ROBOT] WARN PAUSE ignored: already in a safety stop
