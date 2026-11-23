@@ -1,0 +1,60 @@
+# S2-U14 (#52): S2 status field widths decided from measurements. Host run, 2026-11-23 03:32.
+# Source: fb8d46c + uncommitted motion_protocol.h / motion_protocol_host_test.c (sha256 below).
+# e9678c827ff98be4c1b27c2c86ee8df39d20dc12921dcf6cedfe318cdbc8a648 *app_program/subsystem2/motion_protocol.h
+# 165fd01b0c8fc5c6e657d9a197e1f15e3f0a8db50061bad48b63e66b69c0d19b *testing/subsystem2/motion_protocol_host_test.c
+# Sanitizers: not available (MinGW cc cannot link -fsanitize=address,undefined).
+
+== bash testing/run_host_tests.sh (full suite) ==
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: fb8d46c + uncommitted changes
+
+s1/protocol                  PASS
+s1/barcode_queue             PASS
+s1/binary_cli                PASS
+s2/motion_protocol           PASS
+s2/motor_pwm                 PASS
+s2/loop_timing               PASS
+s3/line_barcode              PASS
+s3/pptx_samples              PASS
+s3/line_service              PASS
+s4/hump_height               PASS
+s5/obstacle_logic            PASS
+int/robot_control            PASS
+int/robot_avoidance          PASS
+int/line_service             PASS
+int/steering_ramp            PASS
+int/event_bits               PASS
+
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s2/loop_timing               
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/line_service              
+PASS   s4/hump_height               
+PASS   s5/obstacle_logic            
+PASS   int/robot_control            
+PASS   int/robot_avoidance          
+PASS   int/line_service             
+PASS   int/steering_ramp            
+PASS   int/event_bits               
+-----------------------------------------
+16 passed, 0 failed, 0 known failures, 0 skipped
+
+== header alone: cc -std=c11 -Wall -Wextra -Werror -pedantic -Wconversion -Wsign-conversion -Wshadow ==
+clean (0 warnings)
+
+== planted bugs (the test must FAIL) ==
+planted: rounding removed -> FAIL as expected: Assertion failed: o.left_speed_cm_s == 0.0f && o.right_speed_cm_s == -1.0f, file testing/subsystem2/motion_protocol_host_test.c, line 140
+planted: 16-bit wrap mask removed from s2_tick_delta -> FAIL as expected: Assertion failed: s2_tick_delta(o.left_encoder_ticks, counts[i]) == 0, file testing/subsystem2/motion_protocol_host_test.c, line 102
+planted: speed limit off by one -> FAIL as expected: Assertion failed: o.left_speed_cm_s == 127.0f && o.right_speed_cm_s == -128.0f, file testing/subsystem2/motion_protocol_host_test.c, line 131
+
+== firmware builds (arm-none-eabi-gcc 15.2, pico-sdk 2.3.1) ==
+integrated: Built: build_make/robot-integrated-offline.uf2
+test: Built: build_make/robot-integrated-offline-test.uf2
+motion: Built: build_make/robot-motion.uf2
+all_test: not built (needs config/wifi_secrets.h, absent in this worktree)

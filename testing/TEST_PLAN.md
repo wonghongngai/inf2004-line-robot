@@ -106,6 +106,7 @@ their line-stop re-arm checks now live in `int/robot_control`. Every L4 test run
 | S2-U11 | STOP latency | L3 | STOP command → motor outputs off, timed by the firmware (1 ms loop); wheel stop time recorded alongside | ≤ 100 ms to outputs off (was: to wheels stopped; changed 22 Nov, see `testing/subsystem2/TEST_LOG.md`) |
 | S2-U12 | Control loop timing | L4 | 5 min integrated run; read the late-control count that `motion_task` prints | 0 late cycles; max work time recorded |
 | S2-U13 | Reverse by distance (`moveBackward`, #39) | L3 | Reverse 10 / 20 / 30 cm, 3× each, measure on the floor | within ±2 cm; stops cleanly; works for both encoder polarities |
+| S2-U14 | Status field widths from measurements (#52, CR1) | L1 | Host `s2/motion_protocol`: 12-byte layout, 16-bit tick wrap and `s2_tick_delta`, saturation at each limit, rejects | PASS on the PC; widths justified from the robot logs (`subsystem2/TEST_LOG.md`) |
 | INT-13 | Host test of the S5 avoidance hand-over | L1 | New `int/robot_avoidance`: `robot_control.c` + the real `s5_executor.c`, kernel flags stubbed | VC hands control to S5, takes it back, and safe-stops on failure. **PASS 22 Nov (#20)**, 994 checks |
 
 **Done when:** U05–U12 pass with calibration recorded, and the VC passes
