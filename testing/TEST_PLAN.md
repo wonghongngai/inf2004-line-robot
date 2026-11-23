@@ -222,6 +222,7 @@ is to measure real data.
 | INT-12 | Host suite clean | L1 | `sh testing/run_host_tests.sh` all PASS before each merge to `main` |
 | INT-13 | VC ↔ S5 hand-over on the PC | L1 | see Buddy 2. **PASS 22 Nov (#20)**: `int/robot_avoidance` |
 | INT-14 | Event-bit table matches the code (#50) | L1 | `int/event_bits`: no file outside TEAM.md §5's producer/consumer columns sets, clears, waits on, sends to or reads an event object |
+| INT-15 | Invalid or corrupted commands, S1 → VC → S2 (#51, PT A7) | L1 + L4 | L1: `int/bad_commands` (real S1 MQTT callbacks and command buffer in front of the real VC and motion controller). L4: `python3 tools/robot_mqtt_test.py --broker <ip> --only INT-15` in `integrated`: wrong-length, reserved-code and reserved-bit payloads in Ready, while following and while paused. Pass: none has any effect, valid START / PAUSE / RESUME still work straight after, and the console's `invalid=` equals the number sent. **L1 PASS 23 Nov; L4 PASS 23 Nov** (`invalid=26`) |
 
 ## System (`testing/system/`): the whole robot against the brief
 

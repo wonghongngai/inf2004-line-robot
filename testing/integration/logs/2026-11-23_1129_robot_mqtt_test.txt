@@ -1,0 +1,26 @@
+11:29:24.397  robot_mqtt_test.py broker=172.20.10.2:1883 client=group17-robot
+11:29:24.442  repo commit d4ade8e (record the firmware's commit in TEST_LOG)
+11:29:24.449  == INT-15 invalid or corrupted commands, S1 -> VC -> S2 (#51) ==
+11:29:57.167  OPERATOR: done: Reboot the robot (integrated, no auto-start) on the line, or with the wheels raised. Wait for Wi-Fi + MQTT; keep the serial console captured.
+11:29:58.846  Ready  + empty payload            (-) -> still Ready, 0 cm/s
+11:30:00.800  Ready  + 2 bytes: START + 0       (0500) -> still Ready, 0 cm/s
+11:30:02.519  Ready  + 3 bytes: PAUSE x3        (010101) -> still Ready, 0 cm/s
+11:30:04.262  Ready  + reserved code 6          (06) -> still Ready, 0 cm/s
+11:30:06.003  Ready  + reserved code 7          (07) -> still Ready, 0 cm/s
+11:30:07.633  Ready  + code 8 (bit 3 only)      (08) -> still Ready, 0 cm/s
+11:30:09.210  Ready  + START + bit 3 (0x0d)     (0d) -> still Ready, 0 cm/s
+11:30:10.793  Ready  + START + bit 7 (0x85)     (85) -> still Ready, 0 cm/s
+11:30:12.474  Ready  + PAUSE + bit 7 (0x81)     (81) -> still Ready, 0 cm/s
+11:30:14.193  Ready  + RESUME + bit 4 (0x12)    (12) -> still Ready, 0 cm/s
+11:30:15.862  Ready  + all ones (0xff)          (ff) -> still Ready, 0 cm/s
+11:30:17.447  Ready  + START on <id>/commands -> still Ready
+11:30:28.638  OPERATOR: Did the wheels stay still through all of that? -> yes
+11:30:28.904  valid START -> driving
+11:30:32.184  driving + 11 bad payloads -> kept driving
+11:30:32.706  valid PAUSE -> IDLE after 515 ms
+11:30:35.949  paused + 4 corrupted RESUMEs (82 0a 22 42) -> stayed paused
+11:30:36.612  valid RESUME -> driving
+11:30:49.658  OPERATOR: Did the wheels keep turning through the bad payloads while following, stop at the PAUSE, stay stopped through the bad RESUMEs, and restart at RESUME? -> yes
+11:31:49.904  interrupted
+11:31:49.905  SUMMARY: no test completed
+11:31:49.905  log saved to C:\Users\Hong Ngai\Desktop\Y2S1\INF2004 Embedded Systems Programming\Project\inf2004-line-robot\testing\integration\logs\2026-11-23_1129_robot_mqtt_test.txt
