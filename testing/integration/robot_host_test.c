@@ -488,6 +488,10 @@ static void reset(MOTION_CONTROLLER *ctl)
     candidate_since = action_since = clear_since = junction_done = 0u;
     clear_pending = leaving_junction = false;
     pending_letter = 0u;
+    lost_watch = lost_probe = lost_stop = lost_seen_black = false;
+    lost_side = 0u;
+    lost_l0 = lost_r0 = 0;
+    lost_last_step = lost_max_mm = 0u;
     turn_stage = turn_cmd = 0u;
     has_event = enabled = false; snapshot_error = E_OK;
     memset(&fake_imu, 0, sizeof(fake_imu));
@@ -575,6 +579,197 @@ static void sfollow(MOTION_CONTROLLER *ctl)
     sstep(ctl, 5030, 0, 0);
     EXPECT(!halted && ctl->status.active_command == MOTION_CMD_FOLLOW_LINE &&
            ctl->target_value == 0.0f);
+}
+
+/* Encoder ticks (same on both wheels) for this many mm of travel. */
+static int32_t ticks_for_mm(float mm)
+{
+    return (int32_t)(mm / 10.0f /
+                     (0.5f * (1.0f / S2_ENC_LEFT_TICKS_PER_CM +
+                              1.0f / S2_ENC_RIGHT_TICKS_PER_CM)) + 0.5f);
+}
+
+/* Drive straight on (both wheels) in 10 ms steps until *ticks reaches
+   `to`, `per` ticks a step. Returns the new time. */
+static uint32_t sdrive(MOTION_CONTROLLER *ctl, uint32_t t, int32_t *ticks,
+                       int32_t to, int32_t per)
+{
+    while (*ticks < to) {
+        t += 10u;
+        *ticks = *ticks + per > to ? to : *ticks + per;
+        sstep(ctl, t, *ticks, *ticks);
+    }
+    return t;
+}
+
+/* Following, then R black (steer right) for `hold_ms`, then white.
+   Returns the time of the first white step; *ticks is the tick count. */
+static uint32_t scorrect_on(MOTION_CONTROLLER *ctl, unsigned black,
+                            uint32_t hold_ms, int32_t *ticks)
+{
+    uint32_t t = 6000u;
+    sfollow(ctl);
+    *ticks = 1;
+    set_sensors(black);
+    sstep(ctl, t, *ticks, *ticks);
+    while (t < 6000u + hold_ms) {
+        t += 10u;
+        *ticks += 20;
+        sstep(ctl, t, *ticks, *ticks);
+    }
+    set_sensors(0u);
+    t += 10u;
+    *ticks += 20;
+    sstep(ctl, t, *ticks, *ticks);
+    return t;
+}
+
+static uint32_t scorrect(MOTION_CONTROLLER *ctl, uint32_t hold_ms, int32_t *ticks)
+{
+    return scorrect_on(ctl, 1u, hold_ms, ticks);  /* R black: steer right */
+}
+
+/* #23: lost-line detection in the straddle model (S2_LINE_LOST_MM, then a
+ * probe of S2_LINE_PROBE_MM before stopping). */
+static void straddle_lost_tests(void)
+{
+    MOTION_CONTROLLER ctl;
+    int32_t ticks, t0;
+    uint32_t t;
+    const float lost = (float)S2_LINE_LOST_MM, stop = lost + (float)S2_LINE_PROBE_MM;
+
+    /* A hard right correction that clears to white and never sees black
+     * again: plain following up to S2_LINE_LOST_MM, then the probe steers
+     * right (soft) toward where the tape was, then a recoverable stop. */
+    t = scorrect(&ctl, S2_LINE_LOST_ARM_MS, &ticks);
+    EXPECT(lost_watch && lost_side == 1u && !halted);
+    t0 = ticks;
+    t = sdrive(&ctl, t, &ticks, t0 + ticks_for_mm(lost - 10.0f), 20);
+    EXPECT(!halted && lost_watch && !lost_probe && ctl.target_value == 0.0f);
+    t = sdrive(&ctl, t, &ticks, t0 + ticks_for_mm(lost + 5.0f), 20);
+    EXPECT(!halted && lost_probe && ctl.target_value == S2_LINE_PROBE_STEER);
+    t = sdrive(&ctl, t, &ticks, t0 + ticks_for_mm(stop - 10.0f), 20);
+    EXPECT(!halted && lost_probe && ctl.target_value == S2_LINE_PROBE_STEER);
+    t = sdrive(&ctl, t, &ticks, t0 + ticks_for_mm(stop + 5.0f), 20);
+    EXPECT(halted && line_halt && lost_stop && !lost_seen_black && !enabled &&
+           !lost_probe);
+
+    /* Held still on white: both white proves nothing, so no re-arm. */
+    for (uint32_t i = 0; i < 300u; ++i) { t += 10u; sstep(&ctl, t, ticks, ticks); }
+    EXPECT(halted && lost_stop);
+    /* The tape under R once, then still: re-arms S2_LINE_REARM_MS later,
+     * with no correction left over from before the stop. */
+    set_sensors(1u);
+    t += 10u;
+    sstep(&ctl, t, ticks, ticks);
+    EXPECT(lost_seen_black && halted);
+    set_sensors(0u);
+    uint32_t seen = t;
+    while (t < seen + S2_LINE_REARM_MS - 20u) { t += 10u; sstep(&ctl, t, ticks, ticks); }
+    EXPECT(halted);
+    t += 20u;
+    sstep(&ctl, t, ticks, ticks);
+    EXPECT(!halted && enabled && !lost_stop && steer_action == 0u && !lost_watch);
+
+    /* The 23 Nov false stop: tape still between C and R. The probe steers
+     * toward it, the other sensor (C) sees the tape, and following carries
+     * on with a normal left correction: no stop. */
+    t = scorrect(&ctl, S2_LINE_LOST_ARM_MS, &ticks);
+    t0 = ticks;
+    t = sdrive(&ctl, t, &ticks, t0 + ticks_for_mm(lost + 30.0f), 20);
+    EXPECT(lost_probe && !halted);
+    set_sensors(2u);
+    t += 10u;
+    ticks += 20;
+    sstep(&ctl, t, ticks, ticks);
+    EXPECT(!halted && !lost_watch && !lost_probe && ctl.target_value < 0.0f);
+    EXPECT(lost_max_mm >= (uint32_t)lost + 25u);       /* shows in `watch max` */
+    set_sensors(0u);
+    t = sdrive(&ctl, t, &ticks, ticks + ticks_for_mm(2.0f * stop), 20);
+    EXPECT(!halted);                 /* that C correction was short: no watch */
+
+    /* A left correction (C black) probes left. */
+    t = scorrect_on(&ctl, 2u, S2_LINE_LOST_ARM_MS, &ticks);
+    EXPECT(lost_watch && lost_side == 2u);
+    t = sdrive(&ctl, t, &ticks, ticks + ticks_for_mm(lost + 5.0f), 20);
+    EXPECT(lost_probe && ctl.target_value == -S2_LINE_PROBE_STEER);
+
+    /* PAUSE + RESUME after a lost stop re-arms without a black reading. */
+    t = scorrect(&ctl, S2_LINE_LOST_ARM_MS, &ticks);
+    t = sdrive(&ctl, t, &ticks, ticks + ticks_for_mm(stop + 5.0f), 20);
+    EXPECT(halted && lost_stop);
+    send_command(S1_COMMAND_PAUSE);
+    t += 10u;
+    sstep(&ctl, t, ticks, ticks);
+    EXPECT(paused);
+    send_command(S1_COMMAND_RESUME);
+    t += 10u;
+    sstep(&ctl, t, ticks, ticks);
+    EXPECT(!paused && lost_seen_black && halted);
+    uint32_t resumed = t;
+    while (t < resumed + S2_LINE_REARM_MS + 10u) { t += 10u; sstep(&ctl, t, ticks, ticks); }
+    EXPECT(!halted && enabled && !lost_stop);
+
+    /* PAUSE in the middle of a correction, RESUME: the old correction (and
+     * its hard timer) does not carry over. */
+    sfollow(&ctl);
+    set_sensors(1u);
+    t = 6000u;
+    for (uint32_t i = 0; i <= S2_LINE_HARD_MS / 10u; ++i) { sstep(&ctl, t, 1, 1); t += 10u; }
+    EXPECT(steer_action == 1u && ctl.target_value == 1.0f);     /* hard */
+    send_command(S1_COMMAND_PAUSE);
+    sstep(&ctl, t, 1, 1);
+    EXPECT(paused);
+    for (uint32_t i = 0; i < 200u; ++i) {           /* 2 s paused, motors stopping */
+        t += 10u;
+        motion_control_step(&ctl, t, 1, 1);
+        sstep(&ctl, t, 1, 1);
+    }
+    EXPECT(paused && !halted && steer_action == 1u);  /* kept while paused */
+    t += 10u;
+    send_command(S1_COMMAND_RESUME);
+    sstep(&ctl, t, 1, 1);
+    EXPECT(!paused && steer_action == 0u && !lost_watch);
+    for (uint32_t i = 0; i < 4u; ++i) {          /* past the 30 ms settle */
+        t += 10u;
+        motion_control_step(&ctl, t, 1, 1);
+        sstep(&ctl, t, 1, 1);
+    }
+    EXPECT(steer_action == 1u && ctl.target_value == 0.5f);     /* soft again */
+
+    /* Black again within S2_LINE_LOST_MM: the watch clears, no probe, and
+     * the distance is kept for the `steer ... watch max=` log. */
+    t = scorrect(&ctl, S2_LINE_LOST_ARM_MS, &ticks);
+    t0 = ticks;
+    t = sdrive(&ctl, t, &ticks, t0 + ticks_for_mm(100.0f), 20);
+    EXPECT(!lost_probe);
+    set_sensors(2u);
+    t += 10u;
+    sstep(&ctl, t, ticks, ticks);
+    EXPECT(!halted && !lost_watch && lost_max_mm >= 95u && lost_max_mm <= 115u);
+
+    /* A correction shorter than S2_LINE_LOST_ARM_MS never starts a watch. */
+    t = scorrect(&ctl, S2_LINE_LOST_ARM_MS - 20u, &ticks);
+    EXPECT(!lost_watch);
+    t = sdrive(&ctl, t, &ticks, ticks + ticks_for_mm(3.0f * stop), 20);
+    EXPECT(!halted && ctl.target_value == 0.0f);
+
+    /* A gap in line following (turn, avoidance, pause) drops the watch and
+     * any probe, so ticks counted elsewhere cannot trip it. */
+    t = scorrect(&ctl, S2_LINE_LOST_ARM_MS, &ticks);
+    t = sdrive(&ctl, t, &ticks, ticks + ticks_for_mm(lost + 5.0f), 20);
+    EXPECT(lost_probe);
+    ticks += ticks_for_mm(3.0f * stop);
+    t += S2_LINE_LOST_GAP_MS + 10u;
+    sstep(&ctl, t, ticks, ticks);
+    EXPECT(!halted && !lost_watch && !lost_probe);
+
+    /* A long straight with no correction never stops or probes (the 2 s
+     * deadline's failure, 21 Nov). */
+    sfollow(&ctl);
+    ticks = 0;
+    t = sdrive(&ctl, 6000u, &ticks, ticks_for_mm(20.0f * stop), 20);
+    EXPECT(!halted && !lost_watch && ctl.target_value == 0.0f);
 }
 
 static void straddle_tests(void)
@@ -683,6 +878,21 @@ static void straddle_tests(void)
     sstep(&ctl, 6020, 1, 1);
     EXPECT(!turning && leaving_junction && !(pending_letter & 0x80u));
 
+    /* S3-U33 (VC part, #23): an invalid frame stores no letter, so the next
+     * junction goes straight on with no turn. */
+    sfollow(&ctl);
+    send_map("FAZW");
+    sstep(&ctl, 6000, 1, 1);
+    queued = snapshot;
+    queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_INVALID << 3u);
+    has_event = true;
+    sstep(&ctl, 6010, 1, 1);
+    EXPECT(!halted && !(pending_letter & 0x80u));
+    set_sensors(3u);
+    sstep(&ctl, 6020, 1, 1);
+    EXPECT(!turning && leaving_junction && !halted &&
+           ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+
     /* An S3 fault stops at once and re-arms on a healthy snapshot held
      * still (both white is fine in this model). */
     sfollow(&ctl);
@@ -713,6 +923,77 @@ static uint32_t msteps(MOTION_CONTROLLER *m, uint32_t now, int n, int32_t l, int
 {
     for (int i = 0; i < n; ++i) { now += 10u; motion_control_step(m, now, l, r); }
     return now;
+}
+
+/* #23: the straight trim's I term (S2_FOLLOW_STRAIGHT_KI) learns a steady
+ * motor mismatch and keeps it across stretches. */
+static void follow_bias_tests(void)
+{
+    MOTION_CONTROLLER m;
+    MOTION_CONFIG cfg = alltest_config();
+    MOTION_COMMAND follow = {MOTION_CMD_FOLLOW_LINE, 0.0f};
+    const float L = S2_FOLLOW_LEFT_PWM_PERCENT, R = S2_FOLLOW_RIGHT_PWM_PERCENT;
+    const float lt = S2_ENC_LEFT_TICKS_PER_CM, rt = S2_ENC_RIGHT_TICKS_PER_CM;
+    const float cap = S2_FOLLOW_STRAIGHT_MAX_TRIM + S2_FOLLOW_STRAIGHT_MAX_BIAS;
+    const int32_t r11 = (int32_t)(1.1f * rt), r5 = (int32_t)(5.0f * rt);
+    float bias;
+    uint32_t now;
+
+    cfg.follow_straight_ki = S2_FOLLOW_STRAIGHT_KI;
+    cfg.follow_straight_max_bias = S2_FOLLOW_STRAIGHT_MAX_BIAS;
+    EXPECT(motion_control_init(&m, &cfg, 0u, 0, 0));
+    EXPECT(motion_control_command(&m, &follow, 0u, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, 0u, 10, 0, 0);
+    EXPECT(m.straight_bias == 0.0f);                       /* level: nothing learnt */
+
+    /* 1 s with the right wheel 1.1 cm ahead: KI x (1.1 - deadband) x 1 s. */
+    now = msteps(&m, now, 100, 0, r11);
+    EXPECT(fabsf(m.straight_bias - S2_FOLLOW_STRAIGHT_KI *
+                 ((float)r11 / rt - S2_FOLLOW_STRAIGHT_DEADBAND_CM)) < 0.02f);
+    bias = m.straight_bias;
+
+    /* A correction ends the stretch: the P trim restarts at 0, the bias is
+     * kept and still applied, so the next stretch starts corrected. */
+    follow.value = 0.5f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, r11) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, 0, r11);
+    EXPECT(m.straight_bias == bias);                       /* not learnt while steering */
+    follow.value = 0.0f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, r11) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, 0, r11);
+    EXPECT(m.straight_trim == 0.0f && m.straight_bias == bias);
+    EXPECT(NEAR(m.status.left_pwm_percent, L + bias) && NEAR(m.status.right_pwm_percent, R));
+
+    /* A large steady difference: capped at MAX_BIAS, PWM at L + trim + bias. */
+    now = msteps(&m, now, 1000, 0, r5);
+    EXPECT(NEAR(m.straight_bias, S2_FOLLOW_STRAIGHT_MAX_BIAS));
+    EXPECT(NEAR(m.status.left_pwm_percent, L + cap) && NEAR(m.status.right_pwm_percent, R));
+
+    /* The left wheel ahead instead: the bias swings negative and boosts
+     * the right wheel; the left is never cut. */
+    follow.value = 0.5f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, r5) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, 0, r5);
+    follow.value = 0.0f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, r5) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 1, 0, r5);
+    now = msteps(&m, now, 300, (int32_t)(10.0f * lt), r5);
+    EXPECT(NEAR(m.straight_bias, -S2_FOLLOW_STRAIGHT_MAX_BIAS));
+    EXPECT(NEAR(m.status.left_pwm_percent, L) && NEAR(m.status.right_pwm_percent, R + cap));
+
+    /* Only init clears it. */
+    EXPECT(motion_control_init(&m, &cfg, now, 0, 0));
+    EXPECT(m.straight_bias == 0.0f);
+
+    /* Config: negative KI or bias, or cruise + trim + bias over the PWM
+     * ceiling, is rejected. */
+    cfg.follow_straight_ki = -1.0f;
+    EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
+    cfg.follow_straight_ki = S2_FOLLOW_STRAIGHT_KI;
+    cfg.follow_straight_max_bias = -1.0f;
+    EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
+    cfg.follow_straight_max_bias = cfg.maximum_pwm_percent - R;
+    EXPECT(!motion_control_init(&m, &cfg, 0u, 0, 0));
 }
 
 /* ---- The rest of all_test, on the motion controller alone --------------- */
@@ -787,6 +1068,30 @@ static void alltest_motion_tests(void)
     motion_control_set_scanning(&m, false);
     now = msteps(&m, now, 1, 0, 0);
     EXPECT(m.status.left_pwm_percent == S2_FOLLOW_HARD_INNER_PWM_PERCENT);
+    follow.value = 0.0f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 100, 0, 0);
+
+    /* #23: a right correction while scanning gives the scanner-side (left)
+     * wheel no outer boost, so GP28 does not speed up over the bars; the
+     * right wheel still slows (soft, then hard). Not scanning: boost as
+     * before. */
+    motion_control_set_scanning(&m, true);
+    follow.value = 0.5f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 100, 0, 0);
+    EXPECT(NEAR(m.status.left_pwm_percent, L * S2_FOLLOW_SCAN_SCALE));
+    EXPECT(NEAR(m.status.right_pwm_percent,
+                S2_FOLLOW_INNER_PWM_PERCENT * S2_FOLLOW_SCAN_SCALE));
+    follow.value = 1.0f;
+    EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
+    now = msteps(&m, now, 100, 0, 0);
+    EXPECT(NEAR(m.status.left_pwm_percent, L * S2_FOLLOW_SCAN_SCALE));
+    EXPECT(NEAR(m.status.right_pwm_percent,
+                S2_FOLLOW_HARD_INNER_PWM_PERCENT * S2_FOLLOW_SCAN_SCALE));
+    motion_control_set_scanning(&m, false);
+    now = msteps(&m, now, 100, 0, 0);
+    EXPECT(NEAR(m.status.left_pwm_percent, L + S2_FOLLOW_BOOST_PWM_PERCENT));
     follow.value = 0.0f;
     EXPECT(motion_control_command(&m, &follow, now, 0, 0) == MOTION_RESULT_OK);
     now = msteps(&m, now, 100, 0, 0);
@@ -1825,6 +2130,8 @@ int main(void)
 
     follow_tuning_tests();   /* #8 */
     straddle_tests();        /* #8 */
+    straddle_lost_tests();   /* #23 */
+    follow_bias_tests();     /* #23 */
     alltest_motion_tests();  /* #8: the rest of all_test */
     alltest_robot_tests();
 #if S5_REAL_EXECUTOR

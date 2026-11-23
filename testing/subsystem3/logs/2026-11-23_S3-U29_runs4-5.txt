@@ -1,0 +1,1549 @@
+# S3-U29 runs 4 and 5, 23 Nov 2026 (#23). Robot re-flashed with robot-integrated.uf2 of 15:45 (tester); f399b56 + uncommitted #23 changes (lost-line stop with probe, steering reset on RESUME / re-arm, straight-trim I term, left encoder 116.2).
+# Trimmed copy of testing/subsystem5/logs/2026-11-23_155735_console.txt (gitignored raw capture); IMU 'Buddy4: n=' and idle 'state=1 ... L=0 R=0' lines removed.
+# Run 4: START 246 -> PAUSE 615. Run 5: RESUME 774 -> PAUSE 1112. Straight tape with cross tapes about every 65 cm.
+
+=== COM5 connected 15:57:35.517 ===
+
+
+microT-Kernel Version 3.00
+
+
+[APP] micro T-Kernel on Raspberry Pi Pico W (spec 0x6300, product 0x0003)
+[APP] dual-core (SMP) build, usermain on core 0
+[S2:MOTOR] PWM reset_done=1 counters L=1 R=1 check=0
+wifi: cyw43_utk_task starting (proc 1)
+wifi: cyw43_init() ...
+wifi: cyw43_init() returned, bringing interface up ...
+[S4:IMU] LSM303DLHC initialized
+[APP] task imu_task id=5 pri=18 prc=1
+[APP] task obstacle id=6 pri=20 prc=0
+[APP] task motion_task id=7 pri=14 prc=2
+[APP] INTEGRATED: S2 motion + S3 line/barcode + S4 IMU started
+[S4:IMU] IMU task started, period=20 ms
+[S2:MOTION] ctrl late=0/0 gap_max=0 loop_max=0 ms
+[S4:IMU] LSM303DLHC initialized
+wifi: joining "Dec???s iPhone 16 Pro Max" ...
+wifi: link status -> joined AP, waiting for IP (1)
+[S2:MOTION] ctrl late=0/100 gap_max=10 loop_max=2 ms
+[S4:IMU] calibration complete base=(-24,21,921) mg
+[S2:MOTION] ctrl late=0/200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=100 acc=(-19,21,917)mg delta=(x:5,y:0)mg mag=(244,-264,106) pitch=0 height=0mm height_valid=0 state=0
+[S5:OBS] SELF-TEST PASS: servo home 90 deg, echo 5/5 pings (last status 2, 0 mm)
+[S5:OBS] MONITORING
+[S2:ROBOT] ready: motors off, waiting for START over MQTT
+[S2:MOTION] ctrl late=0/300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=150 acc=(-22,21,921)mg delta=(x:2,y:0)mg mag=(245,-266,107) pitch=0 height=0mm height_valid=0 state=0
+wifi: link status -> joined AP, no IP yet (2)
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] ctrl late=0/400 gap_max=10 loop_max=2 ms
+wifi: link up, ip=172.20.10.3 t=4146 ms
+[S1:MQTT] connecting to 172.20.10.2:1883 as group17-robot
+[S4:IMU] n=200 acc=(-20,20,921)mg delta=(x:4,y:-1)mg mag=(245,-261,110) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/500 gap_max=10 loop_max=4 ms
+[S4:IMU] n=250 acc=(-27,20,921)mg delta=(x:-3,y:-1)mg mag=(244,-266,109) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=300 acc=(-23,21,919)mg delta=(x:1,y:0)mg mag=(246,-260,105) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/700 gap_max=11 loop_max=3 ms
+[S1:MQTT] connected to 172.20.10.2 t=7256 ms
+[S1:MQTT] subscribed to group17-robot/command
+[S1:MQTT] subscribed to group17-robot/mapping
+[S4:IMU] n=350 acc=(-22,21,923)mg delta=(x:2,y:0)mg mag=(246,-263,105) pitch=0 height=0mm height_valid=0 state=0
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] ctrl late=0/800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=400 acc=(-26,21,915)mg delta=(x:-2,y:0)mg mag=(247,-263,107) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/900 gap_max=11 loop_max=3 ms
+[S4:IMU] n=450 acc=(-25,24,919)mg delta=(x:-1,y:3)mg mag=(246,-262,107) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/1000 gap_max=10 loop_max=2 ms
+[S4:IMU] n=500 acc=(-24,21,919)mg delta=(x:0,y:0)mg mag=(244,-263,107) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/1100 gap_max=10 loop_max=4 ms
+[S4:IMU] n=550 acc=(-25,22,921)mg delta=(x:-1,y:1)mg mag=(247,-263,109) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/1200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=600 acc=(-23,23,918)mg delta=(x:1,y:2)mg mag=(246,-259,107) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/1300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=650 acc=(-24,24,921)mg delta=(x:0,y:3)mg mag=(248,-265,103) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/1400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=700 acc=(-24,15,920)mg delta=(x:0,y:-6)mg mag=(245,-265,107) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/3700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1800 acc=(-24,22,923)mg delta=(x:0,y:1)mg mag=(246,-261,108) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/3800 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1850 acc=(-24,20,917)mg delta=(x:0,y:-1)mg mag=(246,-264,107) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/3900 gap_max=11 loop_max=3 ms
+[S2:MOTION] ctrl late=0/4000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=1900 acc=(-28,18,916)mg delta=(x:-4,y:-3)mg mag=(248,-264,106) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/4100 gap_max=10 loop_max=2 ms
+[S4:IMU] n=1950 acc=(-25,22,923)mg delta=(x:-1,y:1)mg mag=(249,-262,106) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/4200 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2000 acc=(-26,20,922)mg delta=(x:-2,y:-1)mg mag=(243,-267,108) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/4300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2050 acc=(-44,-3,920)mg delta=(x:-20,y:-24)mg mag=(243,-265,109) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/4400 gap_max=10 loop_max=2 ms
+[S4:IMU] n=2100 acc=(-22,24,916)mg delta=(x:2,y:3)mg mag=(243,-263,109) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] ctrl late=0/4500 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-79 filtered=-95 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-92 filtered=-99 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-275 filtered=-148 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-367 filtered=-244 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-410 filtered=-350 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-442 filtered=-406 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-437 filtered=-429 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=0 deg lateral=20 mg
+[S4:IMU] n=2150 acc=(-4,-416,1023)mg delta=(x:20,y:-437)mg mag=(245,-295,95) pitch=-25 height=0mm height_valid=0 state=2
+[S4:IMU] HUMP DEBUG: raw=-382 filtered=-420 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-318 filtered=-379 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-313 filtered=-337 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-403 filtered=-344 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-406 filtered=-374 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-377 filtered=-395 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-414 filtered=-399 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-392 filtered=-394 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-376 filtered=-394 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-384 filtered=-384 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-428 filtered=-396 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-425 filtered=-412 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-403 filtered=-418 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-374 filtered=-400 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-391 filtered=-389 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-434 filtered=-399 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-489 filtered=-438 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-205mg threshold=200mg acc=(-53,-472,721) base_z=921
+[S4:IMU] HUMP DEBUG: raw=-521 filtered=-521 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-496 filtered=-508 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-506 filtered=-507 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-437 filtered=-479 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-375 filtered=-439 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-350 filtered=-387 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-279 filtered=-334 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-280 filtered=-303 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-286 filtered=-281 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-309 filtered=-291 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-296 filtered=-297 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-229 filtered=-278 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-203 filtered=-242 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-246 filtered=-226 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-295 filtered=-248 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-304 filtered=-281 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=1 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4600 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-287 filtered=-295 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-305 filtered=-298 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-293 filtered=-295 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-275 filtered=-291 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-248 filtered=-272 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-220 filtered=-247 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-195 filtered=-221 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-164 filtered=-193 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-149 filtered=-169 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-140 filtered=-151 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-119 filtered=-136 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-115 filtered=-124 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-97 filtered=-110 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-125 filtered=-112 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-127 filtered=-116 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-121 filtered=-124 moving=0 dist=0 entry=0
+[S4:IMU] n=2200 acc=(-121,-100,719)mg delta=(x:-97,y:-121)mg mag=(-355,-174,176) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=-127 filtered=-125 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-27 filtered=-91 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-184 filtered=-60 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-250mg threshold=200mg acc=(-126,-118,635) base_z=921
+[S4:IMU] HUMP DEBUG: raw=-127 filtered=-127 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-92 filtered=-109 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-91 filtered=-103 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-131 filtered=-104 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-137 filtered=-119 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-135 filtered=-134 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-153 filtered=-141 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-116 filtered=-134 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-48 filtered=-105 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-26 filtered=-63 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=1 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4700 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=137 filtered=110 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=119 filtered=128 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=157 filtered=137 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=110 filtered=128 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=139 filtered=135 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=117 filtered=122 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=84 filtered=113 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=96 filtered=99 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=44 filtered=74 moving=0 dist=0 entry=0
+[S4:IMU] n=2250 acc=(-34,-30,964)mg delta=(x:-10,y:-51)mg mag=(-539,105,166) pitch=-5 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=-138 filtered=-64 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-208 filtered=-132 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-208 filtered=-184 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-128 filtered=-181 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-20 filtered=-118 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-140 filtered=-68 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-132 filtered=-103 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-125 filtered=-132 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-89 filtered=-115 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-58 filtered=-90 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=113 filtered=71 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=95 filtered=87 moving=0 dist=0 entry=0
+[S2:MOTION] state=1 fault=0 ticks L=1 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/4800 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=130 filtered=62 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=123 filtered=99 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=102 filtered=118 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=146 filtered=123 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=75 filtered=107 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=18 filtered=79 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-143 filtered=-83 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-107 filtered=-118 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-10 filtered=-66 moving=0 dist=0 entry=0
+[S4:IMU] n=2300 acc=(-5,10,920)mg delta=(x:19,y:-11)mg mag=(-490,13,114) pitch=0 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=75 filtered=71 moving=0 dist=0 entry=0
+[S2:MOTION] ctrl late=0/4900 gap_max=10 loop_max=2 ms
+[S4:IMU] n=2350 acc=(-30,22,923)mg delta=(x:-6,y:1)mg mag=(-493,38,126) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5000 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2400 acc=(-34,10,926)mg delta=(x:-10,y:-11)mg mag=(-493,36,123) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5100 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2450 acc=(-30,12,923)mg delta=(x:-6,y:-9)mg mag=(-492,36,123) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5200 gap_max=10 loop_max=2 ms
+[S4:IMU] n=2500 acc=(-30,14,919)mg delta=(x:-6,y:-7)mg mag=(-497,35,125) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5300 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2550 acc=(-20,17,922)mg delta=(x:4,y:-4)mg mag=(-494,35,121) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5400 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2600 acc=(-24,13,921)mg delta=(x:0,y:-8)mg mag=(-494,36,124) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5500 gap_max=10 loop_max=2 ms
+[S4:IMU] n=2650 acc=(-31,15,915)mg delta=(x:-7,y:-6)mg mag=(-492,38,124) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5600 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2700 acc=(-24,10,922)mg delta=(x:0,y:-11)mg mag=(-494,36,125) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5700 gap_max=11 loop_max=3 ms
+[S4:IMU] n=2750 acc=(-29,14,923)mg delta=(x:-5,y:-7)mg mag=(-488,38,129) pitch=0 height=0mm height_valid=0 state=0
+[S2:MOTION] state=1 fault=0 ticks L=1 R=0 PWM=0/0
+[S2:MOTION] ctrl late=0/5800 gap_max=10 loop_max=2 ms
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=5
+[S2:ROBOT] START received
+[S2:ROBOT] armed: no letter map yet, straight at junctions
+[S4:IMU] HUMP DEBUG: raw=-97 filtered=-68 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-119 filtered=-92 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-14 filtered=-74 moving=1 dist=2 entry=1
+[S4:IMU] HUMP DEBUG: raw=208 filtered=107 moving=1 dist=2 entry=0
+[S4:IMU] n=2800 acc=(-49,229,856)mg delta=(x:-25,y:208)mg mag=(-420,39,72) pitch=10 height=0mm height_valid=0 state=0
+[S4:IMU] HUMP DEBUG: raw=216 filtered=66 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=585 R=618 PWM=13/17
+[S2:MOTION] ctrl late=0/5895 gap_max=12 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=17 filtered=-62 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=-80 filtered=-87 moving=1 dist=2 entry=0
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=0
+[S4:IMU] HUMP DEBUG: raw=-79 filtered=-61 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-8 filtered=-70 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-195 filtered=-85 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=12 filtered=-79 moving=1 dist=2 entry=1
+[S4:IMU] HUMP DEBUG: raw=-63 filtered=-82 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=111 filtered=60 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=46 filtered=106 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-26 filtered=-69 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-272 filtered=-98 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-26 filtered=-98 moving=1 dist=2 entry=1
+[S4:IMU] HUMP DEBUG: raw=9 filtered=-96 moving=1 dist=2 entry=2
+[S4:IMU] hump entry confirmed sign=-1 peak=98mg
+[S4:IMU] HUMP ACTIVE: forward=0 abs=0 dist=2 height=1
+[S4:IMU] EVENT HUMP height=1 mm highest=1 mm peak=98 mg
+[S4:IMU] n=2850 acc=(-27,24,922)mg delta=(x:-3,y:3)mg mag=(-383,116,24) pitch=0 height=1mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=1596 R=1653 PWM=13/17
+[S2:MOTION] ctrl late=0/5991 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=1
+[S2:MOTION] state=2 fault=0 ticks L=2639 R=2751 PWM=14/17
+[S2:MOTION] ctrl late=0/6086 gap_max=12 loop_max=4 ms
+[S4:IMU] n=2900 acc=(-7,67,907)mg delta=(x:17,y:46)mg mag=(-442,185,41) pitch=5 height=1mm height_valid=1 state=0
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=5
+[S2:MOTION] state=2 fault=0 ticks L=3732 R=3835 PWM=14/17
+[S2:MOTION] ctrl late=0/6181 gap_max=11 loop_max=4 ms
+[S4:IMU] n=2950 acc=(-76,47,871)mg delta=(x:-52,y:26)mg mag=(-475,174,106) pitch=0 height=1mm height_valid=1 state=0
+[S2:ROBOT] steer n=474 sens none=474 R=0 C=0 both=0 act straight=474 right=0 left=0 watch max=0mm bias=8
+[S2:MOTION] state=2 fault=0 ticks L=4794 R=4922 PWM=14/17
+[S2:MOTION] ctrl late=0/6276 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3000 acc=(48,-113,805)mg delta=(x:72,y:-134)mg mag=(-403,145,112) pitch=-10 height=1mm height_valid=1 state=0
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=10
+[S2:ROBOT] junction: no barcode, straight on
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S2:MOTION] state=2 fault=0 ticks L=5884 R=5999 PWM=15/17
+[S2:MOTION] ctrl late=0/6372 gap_max=12 loop_max=4 ms
+[S2:BARCODE] frame id=1 runs=19/29 black=10 white=9 result=? skipped=0
+[S2:BARCODE] width frame=1 run=1 BLACK width_ms=247
+[S2:BARCODE] width frame=1 run=2 WHITE width_ms=108
+[S2:BARCODE] width frame=1 run=3 BLACK width_ms=24
+[S2:BARCODE] width frame=1 run=4 WHITE width_ms=21
+[S2:BARCODE] width frame=1 run=5 BLACK width_ms=5
+[S2:BARCODE] width frame=1 run=6 WHITE width_ms=4
+[S2:BARCODE] width frame=1 run=7 BLACK width_ms=75
+[S2:BARCODE] width frame=1 run=8 WHITE width_ms=102
+[S2:BARCODE] width frame=1 run=9 BLACK width_ms=78
+[S2:BARCODE] width frame=1 run=10 WHITE width_ms=153
+[S2:BARCODE] width frame=1 run=11 BLACK width_ms=125
+[S2:BARCODE] width frame=1 run=12 WHITE width_ms=127
+[S2:BARCODE] width frame=1 run=13 BLACK width_ms=37
+[S2:BARCODE] width frame=1 run=14 WHITE width_ms=167
+[S2:BARCODE] width frame=1 run=15 BLACK width_ms=26
+[S2:BARCODE] width frame=1 run=16 WHITE width_ms=6
+[S2:BARCODE] width frame=1 run=17 BLACK width_ms=66
+[S2:BARCODE] width frame=1 run=18 WHITE width_ms=326
+[S2:BARCODE] width frame=1 run=19 BLACK width_ms=50
+[S1:MQTT] barcode acked frame=1
+[S4:IMU] n=3050 acc=(-37,-23,950)mg delta=(x:-13,y:-44)mg mag=(-247,89,57) pitch=-5 height=1mm height_valid=1 state=0
+[S2:ROBOT] steer n=468 sens none=437 R=8 C=0 both=23 act straight=447 right=21 left=0 watch max=0mm bias=11
+[S2:MOTION] state=2 fault=0 ticks L=6975 R=7055 PWM=14/17
+[S2:MOTION] ctrl late=0/6466 gap_max=14 loop_max=6 ms
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=9
+[S4:IMU] n=3100 acc=(-38,-17,873)mg delta=(x:-14,y:-38)mg mag=(-173,124,-11) pitch=0 height=1mm height_valid=1 state=0
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S2:MOTION] state=2 fault=0 ticks L=8036 R=8177 PWM=15/19
+[S2:MOTION] ctrl late=0/6561 gap_max=12 loop_max=4 ms
+[S2:BARCODE] frame id=2 runs=1/29 black=1 white=0 result=? skipped=0
+[S2:BARCODE] width frame=2 run=1 BLACK width_ms=322
+[S1:MQTT] barcode acked frame=2
+[S2:ROBOT] steer n=468 sens none=468 R=0 C=0 both=0 act straight=468 right=0 left=0 watch max=0mm bias=9
+[S4:IMU] n=3150 acc=(42,95,1079)mg delta=(x:66,y:74)mg mag=(-237,248,-116) pitch=5 height=1mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=9265 R=9448 PWM=16/19
+[S2:MOTION] ctrl late=0/6656 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=10
+[S4:IMU] n=3200 acc=(-76,204,950)mg delta=(x:-52,y:183)mg mag=(-209,500,-130) pitch=10 height=1mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=10400 R=10612 PWM=14/17
+[S2:MOTION] ctrl late=0/6751 gap_max=14 loop_max=5 ms
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=12
+[S4:IMU] n=3250 acc=(-60,40,928)mg delta=(x:-36,y:19)mg mag=(-254,652,29) pitch=0 height=1mm height_valid=1 state=0
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S1:MQTT] barcode acked frame=3
+[S2:MOTION] state=2 fault=0 ticks L=11504 R=11693 PWM=16/19
+[S2:MOTION] ctrl late=0/6847 gap_max=12 loop_max=4 ms
+[S2:BARCODE] frame id=3 runs=11/29 black=6 white=5 result=? skipped=0
+[S2:BARCODE] width frame=3 run=1 BLACK width_ms=35
+[S2:BARCODE] width frame=3 run=2 WHITE width_ms=139
+[S2:BARCODE] width frame=3 run=3 BLACK width_ms=32
+[S2:BARCODE] width frame=3 run=4 WHITE width_ms=52
+[S2:BARCODE] width frame=3 run=5 BLACK width_ms=42
+[S2:BARCODE] width frame=3 run=6 WHITE width_ms=41
+[S2:BARCODE] width frame=3 run=7 BLACK width_ms=87
+[S2:BARCODE] width frame=3 run=8 WHITE width_ms=86
+[S2:BARCODE] width frame=3 run=9 BLACK width_ms=90
+[S2:BARCODE] width frame=3 run=10 WHITE width_ms=139
+[S2:BARCODE] width frame=3 run=11 BLACK width_ms=11
+[S2:ROBOT] steer n=466 sens none=466 R=0 C=0 both=0 act straight=466 right=0 left=0 watch max=0mm bias=12
+[S4:IMU] n=3300 acc=(-163,202,844)mg delta=(x:-139,y:181)mg mag=(-420,641,254) pitch=10 height=1mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=12630 R=12833 PWM=14/17
+[S2:MOTION] ctrl late=0/6941 gap_max=12 loop_max=5 ms
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=12
+[S4:IMU] n=3350 acc=(-77,119,912)mg delta=(x:-53,y:98)mg mag=(-610,526,386) pitch=5 height=1mm height_valid=1 state=0
+[S2:ROBOT] junction: no barcode, straight on
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S2:MOTION] state=2 fault=0 ticks L=13698 R=13823 PWM=15/19
+[S2:MOTION] ctrl late=0/7037 gap_max=11 loop_max=4 ms
+[S2:BARCODE] frame id=4 runs=9/29 black=5 white=4 result=? skipped=0
+[S2:BARCODE] width frame=4 run=1 BLACK width_ms=37
+[S2:BARCODE] width frame=4 run=2 WHITE width_ms=4
+[S2:BARCODE] width frame=4 run=3 BLACK width_ms=6
+[S2:BARCODE] width frame=4 run=4 WHITE width_ms=14
+[S2:BARCODE] width frame=4 run=5 BLACK width_ms=612
+[S2:BARCODE] width frame=4 run=6 WHITE width_ms=6
+[S2:BARCODE] width frame=4 run=7 BLACK width_ms=57
+[S2:BARCODE] width frame=4 run=8 WHITE width_ms=6
+[S2:BARCODE] width frame=4 run=9 BLACK width_ms=7
+[S1:MQTT] barcode acked frame=4
+[S2:ROBOT] steer n=466 sens none=421 R=16 C=0 both=29 act straight=436 right=30 left=0 watch max=0mm bias=10
+[S4:IMU] n=3400 acc=(-65,43,904)mg delta=(x:-41,y:22)mg mag=(-745,370,371) pitch=0 height=1mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=14696 R=14874 PWM=14/17
+[S2:MOTION] ctrl late=0/7132 gap_max=11 loop_max=4 ms
+[S4:IMU] hump detector re-armed
+[S2:ROBOT] steer n=473 sens none=464 R=0 C=9 both=0 act straight=450 right=0 left=23 watch max=0mm bias=9
+[S4:IMU] n=3450 acc=(-4,-101,959)mg delta=(x:20,y:-122)mg mag=(-759,417,341) pitch=-5 height=1mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=15724 R=15937 PWM=14/17
+[S2:MOTION] ctrl late=0/7227 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=472 sens none=446 R=0 C=26 both=0 act straight=432 right=0 left=40 watch max=0mm bias=10
+[S4:IMU] HUMP DEBUG: raw=-91 filtered=-81 moving=1 dist=2 entry=0
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S4:IMU] HUMP DEBUG: raw=113 filtered=68 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=113 filtered=60 moving=1 dist=2 entry=0
+[S2:BARCODE] frame id=5 runs=7/29 black=4 white=3 result=? skipped=0
+[S2:BARCODE] width frame=5 run=1 BLACK width_ms=207
+[S2:BARCODE] width frame=5 run=2 WHITE width_ms=318
+[S2:BARCODE] width frame=5 run=3 BLACK width_ms=122
+[S2:BARCODE] width frame=5 run=4 WHITE width_ms=34
+[S2:BARCODE] width frame=5 run=5 BLACK width_ms=372
+[S2:BARCODE] width frame=5 run=6 WHITE width_ms=68
+[S2:BARCODE] width frame=5 run=7 BLACK width_ms=110
+[S1:MQTT] barcode acked frame=5
+[S4:IMU] n=3500 acc=(-40,46,970)mg delta=(x:-16,y:25)mg mag=(-670,471,345) pitch=0 height=1mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=16842 R=17104 PWM=16/19
+[S2:MOTION] ctrl late=0/7322 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=12
+[S4:IMU] HUMP DEBUG: raw=-58 filtered=-67 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-175 filtered=-71 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=208 filtered=98 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=182 filtered=151 moving=1 dist=2 entry=1
+[S4:IMU] HUMP DEBUG: raw=198 filtered=196 moving=1 dist=2 entry=2
+[S4:IMU] hump entry confirmed sign=1 peak=196mg
+[S4:IMU] HUMP ACTIVE: forward=135 abs=135 dist=2 height=2
+[S4:IMU] HUMP ACTIVE: forward=50 abs=50 dist=2 height=2
+[S4:IMU] HUMP ACTIVE: forward=33 abs=33 dist=2 height=2
+[S4:IMU] HUMP ACTIVE: forward=-116 abs=116 dist=1 height=3
+[S4:IMU] HUMP ACTIVE: forward=-125 abs=125 dist=2 height=3
+[S4:IMU] HUMP ACTIVE: forward=-144 abs=144 dist=3 height=3
+[S4:IMU] HUMP ACTIVE: forward=-79 abs=79 dist=2 height=3
+[S4:IMU] HUMP ACTIVE: forward=-35 abs=35 dist=2 height=3
+[S4:IMU] n=3550 acc=(-190,144,1122)mg delta=(x:-166,y:123)mg mag=(-528,554,438) pitch=5 height=1mm height_valid=1 state=1
+[S4:IMU] HUMP ACTIVE: forward=22 abs=22 dist=2 height=3
+[S4:IMU] HUMP ACTIVE: forward=-61 abs=61 dist=2 height=3
+[S4:IMU] HUMP ACTIVE: forward=-2 abs=2 dist=2 height=3
+[S4:IMU] HUMP ACTIVE: forward=97 abs=97 dist=2 height=3
+[S4:IMU] HUMP ACTIVE: forward=73 abs=73 dist=2 height=4
+[S4:IMU] HUMP ACTIVE: forward=46 abs=46 dist=2 height=4
+[S4:IMU] HUMP ACTIVE: forward=-44 abs=44 dist=2 height=4
+[S4:IMU] HUMP ACTIVE: forward=14 abs=14 dist=2 height=4
+[S2:MOTION] state=2 fault=0 ticks L=17981 R=18249 PWM=14/17
+[S2:MOTION] ctrl late=0/7417 gap_max=12 loop_max=4 ms
+[S4:IMU] HUMP ACTIVE: forward=173 abs=173 dist=2 height=5
+[S4:IMU] HUMP ACTIVE: forward=202 abs=202 dist=2 height=6
+[S4:IMU] HUMP ACTIVE: forward=54 abs=54 dist=2 height=7
+[S4:IMU] HUMP ACTIVE: forward=-66 abs=66 dist=1 height=7
+[S4:IMU] HUMP ACTIVE: forward=-115 abs=115 dist=2 height=7
+[S4:IMU] HUMP ACTIVE: forward=-35 abs=35 dist=2 height=7
+[S4:IMU] HUMP ACTIVE: forward=36 abs=36 dist=2 height=7
+[S4:IMU] EVENT HUMP height=7 mm highest=7 mm peak=202 mg
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=14
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S1:MQTT] barcode acked frame=6
+[S4:IMU] n=3600 acc=(61,-98,737)mg delta=(x:85,y:-119)mg mag=(-432,556,601) pitch=-5 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=19136 R=19420 PWM=16/19
+[S2:MOTION] ctrl late=0/7512 gap_max=12 loop_max=4 ms
+[S2:BARCODE] frame id=6 runs=13/29 black=7 white=6 result=? skipped=0
+[S2:BARCODE] width frame=6 run=1 BLACK width_ms=39
+[S2:BARCODE] width frame=6 run=2 WHITE width_ms=222
+[S2:BARCODE] width frame=6 run=3 BLACK width_ms=62
+[S2:BARCODE] width frame=6 run=4 WHITE width_ms=9
+[S2:BARCODE] width frame=6 run=5 BLACK width_ms=8
+[S2:BARCODE] width frame=6 run=6 WHITE width_ms=9
+[S2:BARCODE] width frame=6 run=7 BLACK width_ms=6
+[S2:BARCODE] width frame=6 run=8 WHITE width_ms=13
+[S2:BARCODE] width frame=6 run=9 BLACK width_ms=5
+[S2:BARCODE] width frame=6 run=10 WHITE width_ms=8
+[S2:BARCODE] width frame=6 run=11 BLACK width_ms=5
+[S2:BARCODE] width frame=6 run=12 WHITE width_ms=12
+[S2:BARCODE] width frame=6 run=13 BLACK width_ms=36
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=14
+[S4:IMU] n=3650 acc=(-15,8,752)mg delta=(x:9,y:-13)mg mag=(-394,515,752) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=20421 R=20754 PWM=16/19
+[S2:MOTION] ctrl late=0/7608 gap_max=11 loop_max=5 ms
+[S2:ROBOT] junction: no barcode, straight on
+[S4:IMU] EVENT TILT roll=-5 deg lateral=-107 mg
+[S2:ROBOT] steer n=469 sens none=437 R=7 C=0 both=25 act straight=462 right=7 left=0 watch max=0mm bias=15
+[S4:IMU] n=3700 acc=(-35,-159,929)mg delta=(x:-11,y:-180)mg mag=(-496,419,833) pitch=-10 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=21627 R=21960 PWM=14/17
+[S2:MOTION] ctrl late=0/7703 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=15
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S4:IMU] n=3750 acc=(163,4,883)mg delta=(x:187,y:-17)mg mag=(-497,366,955) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=22727 R=23100 PWM=16/19
+[S2:MOTION] ctrl late=0/7798 gap_max=11 loop_max=4 ms
+[S2:BARCODE] frame id=7 runs=1/29 black=1 white=0 result=? skipped=0
+[S2:BARCODE] width frame=7 run=1 BLACK width_ms=227
+[S2:ROBOT] steer n=468 sens none=468 R=0 C=0 both=0 act straight=468 right=0 left=0 watch max=0mm bias=15
+[S1:MQTT] barcode acked frame=7
+[S4:IMU] EVENT TILT roll=-10 deg lateral=-200 mg
+[S4:IMU] n=3800 acc=(-92,90,827)mg delta=(x:-68,y:69)mg mag=(-485,105,1045) pitch=5 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=23990 R=24360 PWM=16/19
+[S2:MOTION] ctrl late=0/7893 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=14
+[S2:MOTION] state=2 fault=0 ticks L=25222 R=25614 PWM=14/17
+[S2:MOTION] ctrl late=0/7988 gap_max=11 loop_max=4 ms
+[S4:IMU] n=3850 acc=(-98,18,958)mg delta=(x:-74,y:-3)mg mag=(-594,-241,863) pitch=0 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=468 sens none=468 R=0 C=0 both=0 act straight=468 right=0 left=0 watch max=0mm bias=13
+[S2:MOTION] state=2 fault=0 ticks L=26314 R=26705 PWM=14/17
+[S2:MOTION] ctrl late=0/8083 gap_max=12 loop_max=4 ms
+[S4:IMU] n=3900 acc=(-55,248,975)mg delta=(x:-31,y:227)mg mag=(-695,-400,518) pitch=15 height=7mm height_valid=1 state=0
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=12
+[S2:BARCODE] frame id=8 runs=5/29 black=3 white=2 result=? skipped=0
+[S2:BARCODE] width frame=8 run=1 BLACK width_ms=5
+[S2:BARCODE] width frame=8 run=2 WHITE width_ms=7
+[S2:BARCODE] width frame=8 run=3 BLACK width_ms=14
+[S2:BARCODE] width frame=8 run=4 WHITE width_ms=445
+[S2:BARCODE] width frame=8 run=5 BLACK width_ms=44
+[S1:MQTT] barcode acked frame=8
+[S2:MOTION] state=2 fault=0 ticks L=27482 R=27912 PWM=15/19
+[S2:MOTION] ctrl late=0/8178 gap_max=11 loop_max=3 ms
+[S4:IMU] n=3950 acc=(5,-251,992)mg delta=(x:29,y:-272)mg mag=(-772,-183,119) pitch=-15 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=470 sens none=444 R=26 C=0 both=0 act straight=430 right=40 left=0 watch max=0mm bias=10
+[S2:ROBOT] junction: no barcode, straight on
+[S2:MOTION] state=2 fault=0 ticks L=28691 R=29060 PWM=14/17
+[S2:MOTION] ctrl late=0/8273 gap_max=12 loop_max=4 ms
+[S4:IMU] n=4000 acc=(6,-64,798)mg delta=(x:30,y:-85)mg mag=(-790,88,82) pitch=-5 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=472 sens none=436 R=12 C=0 both=24 act straight=445 right=27 left=0 watch max=0mm bias=10
+[S4:IMU] EVENT TILT roll=-10 deg lateral=-185 mg
+[S2:MOTION] state=2 fault=0 ticks L=29774 R=30156 PWM=14/17
+[S2:MOTION] ctrl late=0/8368 gap_max=11 loop_max=4 ms
+[S4:IMU] n=4050 acc=(-78,5,934)mg delta=(x:-54,y:-16)mg mag=(-850,241,291) pitch=0 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=10
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S2:MOTION] state=2 fault=0 ticks L=30864 R=31331 PWM=17/19
+[S2:MOTION] ctrl late=0/8463 gap_max=13 loop_max=4 ms
+[S2:BARCODE] frame id=9 runs=11/29 black=6 white=5 result=? skipped=0
+[S2:BARCODE] width frame=9 run=1 BLACK width_ms=8
+[S2:BARCODE] width frame=9 run=2 WHITE width_ms=9
+[S2:BARCODE] width frame=9 run=3 BLACK width_ms=8
+[S2:BARCODE] width frame=9 run=4 WHITE width_ms=21
+[S2:BARCODE] width frame=9 run=5 BLACK width_ms=228
+[S2:BARCODE] width frame=9 run=6 WHITE width_ms=126
+[S2:BARCODE] width frame=9 run=7 BLACK width_ms=89
+[S2:BARCODE] width frame=9 run=8 WHITE width_ms=138
+[S2:BARCODE] width frame=9 run=9 BLACK width_ms=82
+[S2:BARCODE] width frame=9 run=10 WHITE width_ms=190
+[S2:BARCODE] width frame=9 run=11 BLACK width_ms=77
+[S4:IMU] n=4100 acc=(22,-122,843)mg delta=(x:46,y:-143)mg mag=(-792,218,381) pitch=-10 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=13
+[S4:IMU] EVENT TILT roll=-15 deg lateral=-234 mg
+[S2:MOTION] state=2 fault=0 ticks L=32153 R=32583 PWM=16/19
+[S2:MOTION] ctrl late=0/8559 gap_max=12 loop_max=5 ms
+[S2:ROBOT] steer n=464 sens none=444 R=20 C=0 both=0 act straight=430 right=34 left=0 watch max=0mm bias=14
+[S4:IMU] n=4150 acc=(-32,-81,824)mg delta=(x:-8,y:-102)mg mag=(-695,204,405) pitch=-5 height=7mm height_valid=1 state=0
+[S4:IMU] EVENT TILT roll=-10 deg lateral=-184 mg
+[S2:MOTION] state=2 fault=0 ticks L=33384 R=33831 PWM=19/5
+[S2:MOTION] ctrl late=0/8654 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=467 sens none=430 R=37 C=0 both=0 act straight=402 right=65 left=0 watch max=0mm bias=14
+[S4:IMU] n=4200 acc=(-52,179,1045)mg delta=(x:-28,y:158)mg mag=(-728,145,437) pitch=10 height=7mm height_valid=1 state=0
+[S1:MQTT] barcode acked frame=9
+[S2:MOTION] state=2 fault=0 ticks L=34487 R=34954 PWM=14/17
+[S2:MOTION] ctrl late=0/8749 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=468 sens none=468 R=0 C=0 both=0 act straight=468 right=0 left=0 watch max=0mm bias=14
+[S4:IMU] n=4250 acc=(-139,-5,908)mg delta=(x:-115,y:-26)mg mag=(-807,205,473) pitch=0 height=7mm height_valid=1 state=0
+[S2:ROBOT] junction: no barcode, straight on
+[S2:MOTION] state=2 fault=0 ticks L=35544 R=35931 PWM=14/17
+[S2:MOTION] ctrl late=0/8844 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=467 sens none=416 R=24 C=0 both=27 act straight=413 right=54 left=0 watch max=0mm bias=13
+[S4:IMU] n=4300 acc=(166,437,1038)mg delta=(x:190,y:416)mg mag=(-901,147,564) pitch=25 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=36573 R=36964 PWM=14/17
+[S2:MOTION] ctrl late=0/8939 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=468 sens none=468 R=0 C=0 both=0 act straight=468 right=0 left=0 watch max=0mm bias=11
+[S4:IMU] n=4350 acc=(-134,42,1021)mg delta=(x:-110,y:21)mg mag=(-892,58,700) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=37605 R=38035 PWM=14/17
+[S2:MOTION] ctrl late=0/9034 gap_max=13 loop_max=4 ms
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=10
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S2:BARCODE] frame id=10 runs=19/29 black=10 white=9 result=? skipped=0
+[S2:BARCODE] width frame=10 run=1 BLACK width_ms=11
+[S2:BARCODE] width frame=10 run=2 WHITE width_ms=689
+[S2:BARCODE] width frame=10 run=3 BLACK width_ms=80
+[S2:BARCODE] width frame=10 run=4 WHITE width_ms=682
+[S2:BARCODE] width frame=10 run=5 BLACK width_ms=33
+[S2:BARCODE] width frame=10 run=6 WHITE width_ms=262
+[S2:BARCODE] width frame=10 run=7 BLACK width_ms=30
+[S2:BARCODE] width frame=10 run=8 WHITE width_ms=9
+[S2:BARCODE] width frame=10 run=9 BLACK width_ms=6
+[S2:BARCODE] width frame=10 run=10 WHITE width_ms=14
+[S2:BARCODE] width frame=10 run=11 BLACK width_ms=4
+[S2:BARCODE] width frame=10 run=12 WHITE width_ms=117
+[S2:BARCODE] width frame=10 run=13 BLACK width_ms=39
+[S2:BARCODE] width frame=10 run=14 WHITE width_ms=45
+[S2:BARCODE] width frame=10 run=15 BLACK width_ms=4
+[S2:BARCODE] width frame=10 run=16 WHITE width_ms=250
+[S2:BARCODE] width frame=10 run=17 BLACK width_ms=248
+[S2:BARCODE] width frame=10 run=18 WHITE width_ms=696
+[S2:BARCODE] width frame=10 run=19 BLACK width_ms=39
+[S4:IMU] n=4400 acc=(34,-235,1012)mg delta=(x:58,y:-256)mg mag=(-770,-143,722) pitch=-15 height=7mm height_valid=1 state=0
+[S1:MQTT] barcode acked frame=10
+[S2:MOTION] state=2 fault=0 ticks L=38733 R=39203 PWM=14/17
+[S2:MOTION] ctrl late=0/9130 gap_max=12 loop_max=5 ms
+[S4:IMU] EVENT TILT roll=0 deg lateral=-9 mg
+[S2:ROBOT] steer n=467 sens none=467 R=0 C=0 both=0 act straight=467 right=0 left=0 watch max=0mm bias=10
+[S4:IMU] n=4450 acc=(-87,183,1084)mg delta=(x:-63,y:162)mg mag=(-645,-265,580) pitch=10 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=39820 R=40284 PWM=14/17
+[S2:MOTION] ctrl late=0/9225 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=468 sens none=468 R=0 C=0 both=0 act straight=468 right=0 left=0 watch max=0mm bias=10
+[S4:IMU] n=4500 acc=(-56,125,923)mg delta=(x:-32,y:104)mg mag=(-594,-188,486) pitch=5 height=7mm height_valid=1 state=0
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S1:MQTT] barcode acked frame=11
+[S2:MOTION] state=2 fault=0 ticks L=40863 R=41372 PWM=14/17
+[S2:MOTION] ctrl late=0/9320 gap_max=11 loop_max=4 ms
+[S2:BARCODE] frame id=11 runs=10/29 black=5 white=5 result=? skipped=0
+[S2:BARCODE] width frame=11 run=1 BLACK width_ms=19
+[S2:BARCODE] width frame=11 run=2 WHITE width_ms=144
+[S2:BARCODE] width frame=11 run=3 BLACK width_ms=95
+[S2:BARCODE] width frame=11 run=4 WHITE width_ms=6
+[S2:BARCODE] width frame=11 run=5 BLACK width_ms=133
+[S2:BARCODE] width frame=11 run=6 WHITE width_ms=23
+[S2:BARCODE] width frame=11 run=7 BLACK width_ms=311
+[S2:BARCODE] width frame=11 run=8 WHITE width_ms=7
+[S2:BARCODE] width frame=11 run=9 BLACK width_ms=40
+[S2:BARCODE] width frame=11 run=10 WHITE width_ms=70
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=10
+[S4:IMU] n=4550 acc=(-6,73,977)mg delta=(x:18,y:52)mg mag=(-570,-80,466) pitch=5 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=41912 R=42463 PWM=14/17
+[S2:MOTION] ctrl late=0/9416 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=12
+[S2:ROBOT] junction: no barcode, straight on
+[S4:IMU] n=4600 acc=(-1,120,880)mg delta=(x:23,y:99)mg mag=(-563,4,544) pitch=5 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=42982 R=43511 PWM=14/17
+[S2:MOTION] ctrl late=0/9511 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=473 sens none=428 R=14 C=0 both=31 act straight=445 right=28 left=0 watch max=0mm bias=12
+[S4:IMU] n=4650 acc=(58,1,921)mg delta=(x:82,y:-20)mg mag=(-615,-106,585) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=44009 R=44557 PWM=14/17
+[S2:MOTION] ctrl late=0/9606 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=11
+[S4:IMU] EVENT TILT roll=10 deg lateral=188 mg
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S4:IMU] n=4700 acc=(-48,1,921)mg delta=(x:-24,y:-20)mg mag=(-730,-171,443) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45355 PWM=0/0
+[S2:MOTION] ctrl late=0/9702 gap_max=12 loop_max=4 ms
+[S4:IMU] hump detector re-armed
+[S4:IMU] n=4750 acc=(-35,15,931)mg delta=(x:-11,y:-6)mg mag=(-730,-171,449) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45355 PWM=0/0
+[S2:MOTION] ctrl late=0/9802 gap_max=10 loop_max=2 ms
+[S4:IMU] n=4800 acc=(-50,26,926)mg delta=(x:-26,y:5)mg mag=(-727,-190,431) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45355 PWM=0/0
+[S2:MOTION] ctrl late=0/9902 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45355 PWM=0/0
+[S2:MOTION] ctrl late=0/10002 gap_max=10 loop_max=2 ms
+[S4:IMU] n=4850 acc=(-39,18,923)mg delta=(x:-15,y:-3)mg mag=(-723,-203,421) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45355 PWM=0/0
+[S2:MOTION] ctrl late=0/10102 gap_max=11 loop_max=3 ms
+[S4:IMU] n=4900 acc=(-30,12,924)mg delta=(x:-6,y:-9)mg mag=(-728,-210,418) pitch=0 height=7mm height_valid=1 state=0
+[S4:IMU] HUMP DEBUG: raw=66 filtered=61 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45355 PWM=0/0
+[S2:MOTION] ctrl late=0/10202 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=413 filtered=179 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=523 filtered=342 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=258 filtered=398 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=67 filtered=282 moving=0 dist=0 entry=0
+[S4:IMU] n=4950 acc=(163,88,1144)mg delta=(x:187,y:67)mg mag=(-715,-214,427) pitch=5 height=7mm height_valid=1 state=0
+[S4:IMU] HUMP DEBUG: raw=-50 filtered=91 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=10 deg lateral=180 mg
+[S4:IMU] HUMP DEBUG: raw=-164 filtered=-83 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-258 filtered=-152 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-122 filtered=-181 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=285mg threshold=200mg acc=(-6,-6,1274) base_z=921
+[S4:IMU] HUMP DEBUG: raw=-111 filtered=-111 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-27 filtered=-69 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-162 filtered=-97 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-219 filtered=-158 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-187 filtered=-189 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-317mg threshold=200mg acc=(91,-104,555) base_z=921
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45355 PWM=0/0
+[S2:MOTION] ctrl late=0/10302 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=-116 filtered=-116 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-49 filtered=-82 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-190 filtered=-94 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=15 deg lateral=234 mg
+[S4:IMU] HUMP DEBUG: raw=-265 filtered=-178 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-271 filtered=-242 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-173 filtered=-236 moving=0 dist=0 entry=0
+[S4:IMU] n=5000 acc=(241,-152,725)mg delta=(x:265,y:-173)mg mag=(263,-737,220) pitch=-10 height=7mm height_valid=1 state=2
+[S4:IMU] HUMP DEBUG: raw=-185 filtered=-209 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-161 filtered=-173 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-155 filtered=-167 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-166 filtered=-160 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-218 filtered=-179 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-190 filtered=-191 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-190 filtered=-199 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-215 filtered=-198 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-203mg threshold=200mg acc=(201,-281,782) base_z=921
+[S4:IMU] HUMP DEBUG: raw=-270 filtered=-270 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-311 filtered=-290 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-387 filtered=-322 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-325 filtered=-341 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-339 filtered=-350 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=20 deg lateral=305 mg
+[S4:IMU] HUMP DEBUG: raw=-250 filtered=-304 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-210 filtered=-266 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-202 filtered=-220 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-224 filtered=-212 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-251 filtered=-225 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-184 filtered=-219 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-178 filtered=-204 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-208 filtered=-190 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-163 filtered=-183 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-98 filtered=-156 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-173 filtered=-144 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-242 filtered=-171 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-276 filtered=-230 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-294 filtered=-270 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-310 filtered=-293 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-340 filtered=-314 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=0 deg lateral=29 mg
+[S4:IMU] HUMP DEBUG: raw=-283 filtered=-311 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-78 filtered=-233 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=8 filtered=-117 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-206mg threshold=200mg acc=(-25,-81,688) base_z=921
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45355 PWM=0/0
+[S2:MOTION] ctrl late=0/10402 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-293 filtered=-293 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-327 filtered=-310 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-333 filtered=-317 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-249 filtered=-303 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-133 filtered=-238 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-193 filtered=-191 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-186 filtered=-170 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-221 filtered=-200 moving=0 dist=0 entry=0
+[S4:IMU] n=5050 acc=(36,-200,1003)mg delta=(x:60,y:-221)mg mag=(974,107,221) pitch=-15 height=7mm height_valid=1 state=0
+[S4:IMU] HUMP DEBUG: raw=-232 filtered=-213 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-313 filtered=-255 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=5 deg lateral=72 mg
+[S4:IMU] HUMP DEBUG: raw=-370 filtered=-305 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-300 filtered=-327 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-280 filtered=-316 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-202 filtered=-260 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-76 filtered=-186 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-63 filtered=-113 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-116 filtered=-85 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-151 filtered=-110 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-160 filtered=-142 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-164 filtered=-158 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-177 filtered=-167 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-183 filtered=-174 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-153 filtered=-171 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-172 filtered=-169 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-144 filtered=-156 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-86 filtered=-134 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=7 filtered=-74 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-92 filtered=-70 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-134 filtered=-99 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-92 filtered=-106 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-563 filtered=-263 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-42 filtered=-232 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-184 filtered=-263 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-154 filtered=-126 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-216 filtered=-184 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-205 filtered=-191 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-93 filtered=-171 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=40 filtered=-86 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45355 PWM=0/0
+[S2:MOTION] ctrl late=0/10502 gap_max=10 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=-132 filtered=-78 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-179 filtered=-126 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-170 filtered=-160 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-78 filtered=-142 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-55 filtered=-101 moving=0 dist=0 entry=0
+[S4:IMU] n=5100 acc=(28,-48,850)mg delta=(x:52,y:-69)mg mag=(1132,270,365) pitch=-5 height=7mm height_valid=1 state=0
+[S4:IMU] HUMP DEBUG: raw=44 filtered=76 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-136 filtered=-89 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-101 filtered=-127 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-43 filtered=-93 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-41 filtered=-61 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-80 filtered=-61 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-179 filtered=-110 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-90 filtered=-116 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-66 filtered=-111 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-29 filtered=-61 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=110 filtered=74 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=13 filtered=88 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45363 PWM=0/0
+[S2:MOTION] ctrl late=0/10602 gap_max=10 loop_max=2 ms
+[S4:IMU] n=5150 acc=(-46,27,918)mg delta=(x:-22,y:6)mg mag=(1134,220,346) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45363 PWM=0/0
+[S2:MOTION] ctrl late=0/10702 gap_max=10 loop_max=4 ms
+[S4:IMU] n=5200 acc=(-45,23,925)mg delta=(x:-21,y:2)mg mag=(1120,216,350) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45363 PWM=0/0
+[S2:MOTION] ctrl late=0/10802 gap_max=10 loop_max=2 ms
+[S4:IMU] n=5250 acc=(-44,20,921)mg delta=(x:-20,y:-1)mg mag=(1124,209,350) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=44786 R=45363 PWM=0/0
+[S2:MOTION] ctrl late=0/10902 gap_max=11 loop_max=3 ms
+[S4:IMU] n=5300 acc=(-45,23,930)mg delta=(x:-21,y:2)mg mag=(1133,220,354) pitch=0 height=7mm height_valid=1 state=0
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=2
+[S2:ROBOT] resumed (MQTT)
+[S2:ROBOT] steer n=203 sens none=203 R=0 C=0 both=0 act straight=203 right=0 left=0 watch max=0mm bias=10
+[S4:IMU] HUMP DEBUG: raw=-268 filtered=-90 moving=1 dist=1 entry=0
+[S4:IMU] HUMP DEBUG: raw=34 filtered=-79 moving=1 dist=1 entry=1
+[S4:IMU] HUMP DEBUG: raw=-186 filtered=-140 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=148 filtered=72 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=26 filtered=67 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=78 filtered=84 moving=1 dist=2 entry=0
+[S2:MOTION] state=2 fault=0 ticks L=45095 R=45680 PWM=16/19
+[S2:MOTION] ctrl late=0/11000 gap_max=12 loop_max=4 ms
+[S4:IMU] HUMP DEBUG: raw=-302 filtered=-114 moving=1 dist=2 entry=0
+[S4:IMU] HUMP DEBUG: raw=-90 filtered=-138 moving=1 dist=2 entry=1
+[S4:IMU] HUMP DEBUG: raw=-133 filtered=-175 moving=1 dist=2 entry=2
+[S4:IMU] hump entry confirmed sign=-1 peak=175mg
+[S4:IMU] HUMP ACTIVE: forward=-107 abs=107 dist=2 height=1
+[S4:IMU] HUMP ACTIVE: forward=-53 abs=53 dist=2 height=2
+[S4:IMU] HUMP ACTIVE: forward=-39 abs=39 dist=2 height=2
+[S4:IMU] HUMP ACTIVE: forward=52 abs=52 dist=2 height=2
+[S4:IMU] HUMP ACTIVE: forward=54 abs=54 dist=3 height=2
+[S4:IMU] HUMP ACTIVE: forward=25 abs=25 dist=2 height=2
+[S4:IMU] HUMP ACTIVE: forward=25 abs=25 dist=3 height=2
+[S4:IMU] EVENT HUMP height=3 mm highest=7 mm peak=175 mg
+[S4:IMU] n=5350 acc=(-75,160,779)mg delta=(x:-51,y:139)mg mag=(1060,114,487) pitch=10 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=10
+[S2:MOTION] state=2 fault=0 ticks L=46327 R=46928 PWM=16/19
+[S2:MOTION] ctrl late=0/11095 gap_max=11 loop_max=4 ms
+[S4:IMU] EVENT TILT roll=-5 deg lateral=-46 mg
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=10
+[S4:IMU] n=5400 acc=(-59,-10,1067)mg delta=(x:-35,y:-31)mg mag=(1037,62,435) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=47562 R=48168 PWM=15/19
+[S2:MOTION] ctrl late=0/11190 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=9
+[S4:IMU] n=5450 acc=(-2,-275,991)mg delta=(x:22,y:-296)mg mag=(1052,147,388) pitch=-15 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=48768 R=49412 PWM=15/19
+[S2:MOTION] ctrl late=0/11286 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=474 sens none=474 R=0 C=0 both=0 act straight=474 right=0 left=0 watch max=0mm bias=9
+[S4:IMU] n=5500 acc=(36,28,863)mg delta=(x:60,y:7)mg mag=(1093,249,454) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=49981 R=50656 PWM=15/19
+[S2:MOTION] ctrl late=0/11380 gap_max=12 loop_max=4 ms
+[S2:ROBOT] junction: no barcode, straight on
+[S2:ROBOT] steer n=471 sens none=437 R=6 C=0 both=28 act straight=451 right=20 left=0 watch max=0mm bias=9
+[S4:IMU] n=5550 acc=(-28,0,857)mg delta=(x:-4,y:-21)mg mag=(1189,212,575) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=51124 R=51807 PWM=14/17
+[S2:MOTION] ctrl late=0/11475 gap_max=12 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=-5 deg lateral=-100 mg
+[S2:ROBOT] steer n=468 sens none=468 R=0 C=0 both=0 act straight=468 right=0 left=0 watch max=0mm bias=9
+[S4:IMU] EVENT TILT roll=15 deg lateral=227 mg
+[S4:IMU] n=5600 acc=(43,20,909)mg delta=(x:67,y:-1)mg mag=(1324,-14,582) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=52137 R=52830 PWM=14/17
+[S2:MOTION] ctrl late=0/11570 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=468 sens none=468 R=0 C=0 both=0 act straight=468 right=0 left=0 watch max=0mm bias=9
+[S4:IMU] n=5650 acc=(-16,59,981)mg delta=(x:8,y:38)mg mag=(1364,-175,439) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=53161 R=53896 PWM=14/17
+[S2:MOTION] ctrl late=0/11665 gap_max=11 loop_max=3 ms
+[S4:IMU] EVENT TILT roll=-10 deg lateral=-191 mg
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=9
+[S4:IMU] EVENT TILT roll=0 deg lateral=31 mg
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S4:IMU] n=5700 acc=(-105,129,1026)mg delta=(x:-81,y:108)mg mag=(1287,-149,336) pitch=5 height=7mm height_valid=1 state=0
+[S1:MQTT] barcode acked frame=12
+[S2:MOTION] state=2 fault=0 ticks L=54234 R=54976 PWM=15/19
+[S2:MOTION] ctrl late=0/11760 gap_max=12 loop_max=3 ms
+[S2:BARCODE] frame id=12 runs=24/29 black=12 white=12 result=? skipped=0
+[S2:BARCODE] width frame=12 run=1 BLACK width_ms=14
+[S2:BARCODE] width frame=12 run=2 WHITE width_ms=218
+[S2:BARCODE] width frame=12 run=3 BLACK width_ms=16
+[S2:BARCODE] width frame=12 run=4 WHITE width_ms=22
+[S2:BARCODE] width frame=12 run=5 BLACK width_ms=686
+[S2:BARCODE] width frame=12 run=6 WHITE width_ms=24
+[S2:BARCODE] width frame=12 run=7 BLACK width_ms=22
+[S2:BARCODE] width frame=12 run=8 WHITE width_ms=84
+[S2:BARCODE] width frame=12 run=9 BLACK width_ms=16
+[S2:BARCODE] width frame=12 run=10 WHITE width_ms=87
+[S2:BARCODE] width frame=12 run=11 BLACK width_ms=38
+[S2:BARCODE] width frame=12 run=12 WHITE width_ms=4
+[S2:BARCODE] width frame=12 run=13 BLACK width_ms=25
+[S2:BARCODE] width frame=12 run=14 WHITE width_ms=4
+[S2:BARCODE] width frame=12 run=15 BLACK width_ms=5
+[S2:BARCODE] width frame=12 run=16 WHITE width_ms=662
+[S2:BARCODE] width frame=12 run=17 BLACK width_ms=5
+[S2:BARCODE] width frame=12 run=18 WHITE width_ms=8
+[S2:BARCODE] width frame=12 run=19 BLACK width_ms=5
+[S2:BARCODE] width frame=12 run=20 WHITE width_ms=124
+[S2:BARCODE] width frame=12 run=21 BLACK width_ms=60
+[S2:BARCODE] width frame=12 run=22 WHITE width_ms=7
+[S2:BARCODE] width frame=12 run=23 BLACK width_ms=48
+[S2:BARCODE] width frame=12 run=24 WHITE width_ms=85
+[S2:ROBOT] steer n=467 sens none=467 R=0 C=0 both=0 act straight=467 right=0 left=0 watch max=0mm bias=9
+[S4:IMU] n=5750 acc=(-6,-32,838)mg delta=(x:18,y:-53)mg mag=(1180,-149,319) pitch=-5 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=55294 R=56093 PWM=14/17
+[S2:MOTION] ctrl late=0/11855 gap_max=12 loop_max=6 ms
+[S2:ROBOT] steer n=466 sens none=466 R=0 C=0 both=0 act straight=466 right=0 left=0 watch max=0mm bias=10
+[S4:IMU] n=5800 acc=(-150,242,1077)mg delta=(x:-126,y:221)mg mag=(1135,-194,311) pitch=15 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=56404 R=57231 PWM=15/17
+[S2:MOTION] ctrl late=0/11949 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=475 sens none=475 R=0 C=0 both=0 act straight=475 right=0 left=0 watch max=0mm bias=13
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S1:MQTT] barcode acked frame=13
+[S2:MOTION] state=2 fault=0 ticks L=57584 R=58425 PWM=15/17
+[S2:MOTION] ctrl late=0/12044 gap_max=12 loop_max=4 ms
+[S4:IMU] n=5850 acc=(98,170,1168)mg delta=(x:122,y:149)mg mag=(1202,-241,244) pitch=10 height=7mm height_valid=1 state=0
+[S2:BARCODE] frame id=13 runs=25/29 black=13 white=12 result=? skipped=0
+[S2:BARCODE] width frame=13 run=1 BLACK width_ms=112
+[S2:BARCODE] width frame=13 run=2 WHITE width_ms=6
+[S2:BARCODE] width frame=13 run=3 BLACK width_ms=27
+[S2:BARCODE] width frame=13 run=4 WHITE width_ms=6
+[S2:BARCODE] width frame=13 run=5 BLACK width_ms=10
+[S2:BARCODE] width frame=13 run=6 WHITE width_ms=359
+[S2:BARCODE] width frame=13 run=7 BLACK width_ms=34
+[S2:BARCODE] width frame=13 run=8 WHITE width_ms=129
+[S2:BARCODE] width frame=13 run=9 BLACK width_ms=10
+[S2:BARCODE] width frame=13 run=10 WHITE width_ms=233
+[S2:BARCODE] width frame=13 run=11 BLACK width_ms=92
+[S2:BARCODE] width frame=13 run=12 WHITE width_ms=175
+[S2:BARCODE] width frame=13 run=13 BLACK width_ms=4
+[S2:BARCODE] width frame=13 run=14 WHITE width_ms=8
+[S2:BARCODE] width frame=13 run=15 BLACK width_ms=9
+[S2:BARCODE] width frame=13 run=16 WHITE width_ms=10
+[S2:BARCODE] width frame=13 run=17 BLACK width_ms=30
+[S2:BARCODE] width frame=13 run=18 WHITE width_ms=6
+[S2:BARCODE] width frame=13 run=19 BLACK width_ms=116
+[S2:BARCODE] width frame=13 run=20 WHITE width_ms=4
+[S2:BARCODE] width frame=13 run=21 BLACK width_ms=11
+[S2:BARCODE] width frame=13 run=22 WHITE width_ms=5
+[S2:BARCODE] width frame=13 run=23 BLACK width_ms=9
+[S2:BARCODE] width frame=13 run=24 WHITE width_ms=117
+[S2:BARCODE] width frame=13 run=25 BLACK width_ms=48
+[S2:ROBOT] junction: no barcode, straight on
+[S2:ROBOT] steer n=464 sens none=354 R=72 C=0 both=38 act straight=377 right=87 left=0 watch max=0mm bias=14
+[S2:MOTION] state=2 fault=0 ticks L=58675 R=59385 PWM=14/17
+[S2:MOTION] ctrl late=1/12139 gap_max=16 loop_max=7 ms
+[S4:IMU] n=5900 acc=(-102,628,1037)mg delta=(x:-78,y:607)mg mag=(1309,-150,162) pitch=35 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=13
+[S2:MOTION] state=2 fault=0 ticks L=59775 R=60473 PWM=14/17
+[S2:MOTION] ctrl late=1/12235 gap_max=11 loop_max=4 ms
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S4:IMU] n=5950 acc=(-57,79,906)mg delta=(x:-33,y:58)mg mag=(1252,-141,24) pitch=5 height=7mm height_valid=1 state=0
+[S1:MQTT] barcode acked frame=14
+[S2:BARCODE] frame id=14 runs=3/29 black=2 white=1 result=? skipped=0
+[S2:BARCODE] width frame=14 run=1 BLACK width_ms=60
+[S2:BARCODE] width frame=14 run=2 WHITE width_ms=647
+[S2:BARCODE] width frame=14 run=3 BLACK width_ms=489
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=12
+[S2:MOTION] state=2 fault=0 ticks L=60968 R=61747 PWM=16/19
+[S2:MOTION] ctrl late=1/12330 gap_max=11 loop_max=4 ms
+[S4:IMU] n=6000 acc=(-19,-175,872)mg delta=(x:5,y:-196)mg mag=(1172,90,-84) pitch=-10 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=473 sens none=473 R=0 C=0 both=0 act straight=473 right=0 left=0 watch max=0mm bias=13
+[S2:MOTION] state=2 fault=0 ticks L=62114 R=62920 PWM=14/17
+[S2:MOTION] ctrl late=1/12425 gap_max=11 loop_max=4 ms
+[S4:IMU] n=6050 acc=(-24,-90,778)mg delta=(x:0,y:-111)mg mag=(1172,403,164) pitch=-5 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=14
+[S2:MOTION] state=2 fault=0 ticks L=63216 R=64035 PWM=14/17
+[S2:MOTION] ctrl late=1/12520 gap_max=11 loop_max=3 ms
+[S4:IMU] n=6100 acc=(28,-57,968)mg delta=(x:52,y:-78)mg mag=(1134,432,590) pitch=-5 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=474 sens none=474 R=0 C=0 both=0 act straight=474 right=0 left=0 watch max=0mm bias=15
+[S2:MOTION] state=2 fault=0 ticks L=64280 R=65119 PWM=15/17
+[S2:MOTION] ctrl late=1/12615 gap_max=12 loop_max=4 ms
+[S4:IMU] n=6150 acc=(-6,101,922)mg delta=(x:18,y:80)mg mag=(1062,209,901) pitch=5 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=16
+[S2:ROBOT] junction: no barcode, straight on
+[S2:MOTION] state=2 fault=0 ticks L=65376 R=66214 PWM=14/17
+[S2:MOTION] ctrl late=1/12710 gap_max=12 loop_max=4 ms
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S1:MQTT] barcode acked frame=15
+[S4:IMU] n=6200 acc=(-137,-55,811)mg delta=(x:-113,y:-76)mg mag=(1002,-110,965) pitch=-5 height=7mm height_valid=1 state=0
+[S2:BARCODE] frame id=15 runs=29/29 black=15 white=14 result=? skipped=0
+[S2:BARCODE] width frame=15 run=1 BLACK width_ms=27
+[S2:BARCODE] width frame=15 run=2 WHITE width_ms=145
+[S2:BARCODE] width frame=15 run=3 BLACK width_ms=89
+[S2:BARCODE] width frame=15 run=4 WHITE width_ms=4
+[S2:BARCODE] width frame=15 run=5 BLACK width_ms=271
+[S2:BARCODE] width frame=15 run=6 WHITE width_ms=6
+[S2:BARCODE] width frame=15 run=7 BLACK width_ms=29
+[S2:BARCODE] width frame=15 run=8 WHITE width_ms=4
+[S2:BARCODE] width frame=15 run=9 BLACK width_ms=72
+[S2:BARCODE] width frame=15 run=10 WHITE width_ms=87
+[S2:BARCODE] width frame=15 run=11 BLACK width_ms=6
+[S2:BARCODE] width frame=15 run=12 WHITE width_ms=10
+[S2:BARCODE] width frame=15 run=13 BLACK width_ms=6
+[S2:BARCODE] width frame=15 run=14 WHITE width_ms=41
+[S2:BARCODE] width frame=15 run=15 BLACK width_ms=87
+[S2:BARCODE] width frame=15 run=16 WHITE width_ms=41
+[S2:BARCODE] width frame=15 run=17 BLACK width_ms=177
+[S2:BARCODE] width frame=15 run=18 WHITE width_ms=58
+[S2:BARCODE] width frame=15 run=19 BLACK width_ms=51
+[S2:BARCODE] width frame=15 run=20 WHITE width_ms=80
+[S2:BARCODE] width frame=15 run=21 BLACK width_ms=68
+[S2:BARCODE] width frame=15 run=22 WHITE width_ms=32
+[S2:BARCODE] width frame=15 run=23 BLACK width_ms=170
+[S2:BARCODE] width frame=15 run=24 WHITE width_ms=850
+[S2:BARCODE] width frame=15 run=25 BLACK width_ms=24
+[S2:BARCODE] width frame=15 run=26 WHITE width_ms=155
+[S2:BARCODE] width frame=15 run=27 BLACK width_ms=110
+[S2:BARCODE] width frame=15 run=28 WHITE width_ms=921
+[S2:BARCODE] width frame=15 run=29 BLACK width_ms=159
+[S2:ROBOT] steer n=464 sens none=425 R=10 C=0 both=29 act straight=440 right=24 left=0 watch max=0mm bias=16
+[S2:MOTION] state=2 fault=0 ticks L=66488 R=67359 PWM=16/19
+[S2:MOTION] ctrl late=1/12805 gap_max=13 loop_max=8 ms
+[S4:IMU] n=6250 acc=(-31,106,926)mg delta=(x:-7,y:85)mg mag=(1024,-323,835) pitch=5 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=16
+[S4:IMU] EVENT TILT roll=-5 deg lateral=-118 mg
+[S2:MOTION] state=2 fault=0 ticks L=67632 R=68502 PWM=14/17
+[S2:MOTION] ctrl late=1/12900 gap_max=12 loop_max=3 ms
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S1:MQTT] barcode acked frame=16
+[S4:IMU] n=6300 acc=(-53,-60,902)mg delta=(x:-29,y:-81)mg mag=(961,-378,742) pitch=-5 height=7mm height_valid=1 state=0
+[S2:BARCODE] frame id=16 runs=3/29 black=2 white=1 result=? skipped=0
+[S2:BARCODE] width frame=16 run=1 BLACK width_ms=24
+[S2:BARCODE] width frame=16 run=2 WHITE width_ms=5
+[S2:BARCODE] width frame=16 run=3 BLACK width_ms=6
+[S2:ROBOT] steer n=467 sens none=467 R=0 C=0 both=0 act straight=467 right=0 left=0 watch max=0mm bias=15
+[S2:MOTION] state=2 fault=0 ticks L=68801 R=69713 PWM=16/19
+[S2:MOTION] ctrl late=1/12995 gap_max=12 loop_max=4 ms
+[S4:IMU] n=6350 acc=(-25,78,865)mg delta=(x:-1,y:57)mg mag=(873,-481,660) pitch=5 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=470 sens none=470 R=0 C=0 both=0 act straight=470 right=0 left=0 watch max=0mm bias=15
+[S2:MOTION] state=2 fault=0 ticks L=70062 R=70999 PWM=16/19
+[S2:MOTION] ctrl late=1/13091 gap_max=12 loop_max=3 ms
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=15
+[S4:IMU] n=6400 acc=(-67,41,906)mg delta=(x:-43,y:20)mg mag=(903,-566,480) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=71328 R=72290 PWM=16/19
+[S2:MOTION] ctrl late=1/13186 gap_max=11 loop_max=3 ms
+[S2:ROBOT] steer n=469 sens none=469 R=0 C=0 both=0 act straight=469 right=0 left=0 watch max=0mm bias=15
+[S4:IMU] n=6450 acc=(-61,31,1045)mg delta=(x:-37,y:10)mg mag=(1018,-546,286) pitch=0 height=7mm height_valid=1 state=0
+[S2:ROBOT] junction: no barcode, straight on
+[S2:MOTION] state=2 fault=0 ticks L=72596 R=73584 PWM=16/19
+[S2:MOTION] ctrl late=1/13281 gap_max=12 loop_max=5 ms
+[S2:ROBOT] steer n=469 sens none=436 R=11 C=1 both=21 act straight=443 right=11 left=15 watch max=0mm bias=16
+[S4:IMU] n=6500 acc=(-55,68,845)mg delta=(x:-31,y:47)mg mag=(1114,-513,189) pitch=5 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=73713 R=74697 PWM=14/17
+[S2:MOTION] ctrl late=1/13375 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=472 sens none=444 R=28 C=0 both=0 act straight=429 right=43 left=0 watch max=0mm bias=16
+[S4:IMU] n=6550 acc=(-28,-255,829)mg delta=(x:-4,y:-276)mg mag=(1165,-460,151) pitch=-15 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=74790 R=75753 PWM=14/17
+[S2:MOTION] ctrl late=1/13471 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=470 sens none=454 R=16 C=0 both=0 act straight=440 right=30 left=0 watch max=0mm bias=15
+[S4:IMU] n=6600 acc=(181,-84,943)mg delta=(x:205,y:-105)mg mag=(1109,-425,199) pitch=-5 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=75883 R=76862 PWM=14/17
+[S2:MOTION] ctrl late=1/13566 gap_max=12 loop_max=4 ms
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S2:BARCODE] frame id=17 runs=8/29 black=4 white=4 result=? skipped=0
+[S2:BARCODE] width frame=17 run=1 BLACK width_ms=4
+[S2:BARCODE] width frame=17 run=2 WHITE width_ms=40
+[S2:BARCODE] width frame=17 run=3 BLACK width_ms=14
+[S2:BARCODE] width frame=17 run=4 WHITE width_ms=7
+[S2:BARCODE] width frame=17 run=5 BLACK width_ms=693
+[S2:BARCODE] width frame=17 run=6 WHITE width_ms=920
+[S2:BARCODE] width frame=17 run=7 BLACK width_ms=108
+[S2:BARCODE] width frame=17 run=8 WHITE width_ms=79
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=14
+[S4:IMU] n=6650 acc=(-86,85,820)mg delta=(x:-62,y:64)mg mag=(943,-520,180) pitch=5 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=77050 R=78035 PWM=15/19
+[S2:MOTION] ctrl late=1/13661 gap_max=11 loop_max=4 ms
+[S2:ROBOT] steer n=473 sens none=456 R=17 C=0 both=0 act straight=456 right=17 left=0 watch max=0mm bias=11
+[S1:MQTT] barcode acked frame=17
+[S4:IMU] n=6700 acc=(6,8,863)mg delta=(x:30,y:-13)mg mag=(763,-581,86) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=78124 R=79096 PWM=14/17
+[S2:MOTION] ctrl late=1/13756 gap_max=11 loop_max=4 ms
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S2:BARCODE] frame id=18 runs=0/29 black=0 white=0 result=? skipped=0
+[S1:MQTT] barcode acked frame=18
+[S2:ROBOT] steer n=463 sens none=455 R=8 C=0 both=0 act straight=440 right=23 left=0 watch max=0mm bias=11
+[S4:IMU] n=6750 acc=(-29,-18,915)mg delta=(x:-5,y:-39)mg mag=(641,-564,-77) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=2 fault=0 ticks L=79207 R=80195 PWM=14/17
+[S2:MOTION] ctrl late=1/13850 gap_max=12 loop_max=4 ms
+[S2:ROBOT] steer n=466 sens none=466 R=0 C=0 both=0 act straight=466 right=0 left=0 watch max=0mm bias=10
+[S2:ROBOT] junction: no barcode, straight on
+[S2:MOTION] state=2 fault=0 ticks L=80263 R=81246 PWM=14/17
+[S2:MOTION] ctrl late=1/13945 gap_max=12 loop_max=4 ms
+[S4:IMU] n=6800 acc=(-8,82,1008)mg delta=(x:16,y:61)mg mag=(663,-390,-170) pitch=5 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=472 sens none=430 R=12 C=0 both=30 act straight=446 right=26 left=0 watch max=0mm bias=10
+[S2:MOTION] state=2 fault=0 ticks L=81329 R=82370 PWM=14/17
+[S2:MOTION] ctrl late=1/14040 gap_max=12 loop_max=3 ms
+[S4:IMU] n=6850 acc=(1,-198,907)mg delta=(x:25,y:-219)mg mag=(668,-190,-96) pitch=-15 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=471 sens none=471 R=0 C=0 both=0 act straight=471 right=0 left=0 watch max=0mm bias=11
+[S2:MOTION] state=2 fault=0 ticks L=82426 R=83486 PWM=14/17
+[S2:MOTION] ctrl late=1/14136 gap_max=12 loop_max=4 ms
+[S4:IMU] n=6900 acc=(-32,-41,867)mg delta=(x:-8,y:-62)mg mag=(635,-145,21) pitch=-5 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=12
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S2:MOTION] state=2 fault=0 ticks L=83551 R=84618 PWM=14/17
+[S2:MOTION] ctrl late=1/14230 gap_max=11 loop_max=3 ms
+[S2:BARCODE] frame id=19 runs=21/29 black=11 white=10 result=? skipped=0
+[S2:BARCODE] width frame=19 run=1 BLACK width_ms=5
+[S2:BARCODE] width frame=19 run=2 WHITE width_ms=123
+[S2:BARCODE] width frame=19 run=3 BLACK width_ms=559
+[S2:BARCODE] width frame=19 run=4 WHITE width_ms=49
+[S2:BARCODE] width frame=19 run=5 BLACK width_ms=42
+[S2:BARCODE] width frame=19 run=6 WHITE width_ms=50
+[S2:BARCODE] width frame=19 run=7 BLACK width_ms=11
+[S2:BARCODE] width frame=19 run=8 WHITE width_ms=63
+[S2:BARCODE] width frame=19 run=9 BLACK width_ms=117
+[S2:BARCODE] width frame=19 run=10 WHITE width_ms=617
+[S2:BARCODE] width frame=19 run=11 BLACK width_ms=17
+[S2:BARCODE] width frame=19 run=12 WHITE width_ms=116
+[S2:BARCODE] width frame=19 run=13 BLACK width_ms=583
+[S2:BARCODE] width frame=19 run=14 WHITE width_ms=52
+[S2:BARCODE] width frame=19 run=15 BLACK width_ms=368
+[S2:BARCODE] width frame=19 run=16 WHITE width_ms=258
+[S2:BARCODE] width frame=19 run=17 BLACK width_ms=58
+[S2:BARCODE] width frame=19 run=18 WHITE width_ms=230
+[S2:BARCODE] width frame=19 run=19 BLACK width_ms=10
+[S2:BARCODE] width frame=19 run=20 WHITE width_ms=270
+[S2:BARCODE] width frame=19 run=21 BLACK width_ms=22
+[S4:IMU] n=6950 acc=(112,-69,974)mg delta=(x:136,y:-90)mg mag=(763,-157,39) pitch=-5 height=7mm height_valid=1 state=0
+[S1:MQTT] barcode acked frame=19
+[S2:ROBOT] steer n=465 sens none=454 R=11 C=0 both=0 act straight=439 right=26 left=0 watch max=0mm bias=12
+[S2:MOTION] state=2 fault=0 ticks L=84647 R=85715 PWM=14/17
+[S2:MOTION] ctrl late=1/14324 gap_max=14 loop_max=6 ms
+[S4:IMU] n=7000 acc=(-150,43,1052)mg delta=(x:-126,y:22)mg mag=(879,-171,18) pitch=0 height=7mm height_valid=1 state=0
+[S2:BARCODE] WARN rejected invalid frame: check start/stop, narrow/wide widths and white margins
+[S1:MQTT] barcode acked frame=20
+[S2:BARCODE] frame id=20 runs=9/29 black=5 white=4 result=? skipped=0
+[S2:BARCODE] width frame=20 run=1 BLACK width_ms=73
+[S2:BARCODE] width frame=20 run=2 WHITE width_ms=46
+[S2:BARCODE] width frame=20 run=3 BLACK width_ms=71
+[S2:BARCODE] width frame=20 run=4 WHITE width_ms=6
+[S2:BARCODE] width frame=20 run=5 BLACK width_ms=5
+[S2:BARCODE] width frame=20 run=6 WHITE width_ms=9
+[S2:BARCODE] width frame=20 run=7 BLACK width_ms=82
+[S2:BARCODE] width frame=20 run=8 WHITE width_ms=5
+[S2:BARCODE] width frame=20 run=9 BLACK width_ms=53
+[S2:ROBOT] steer n=466 sens none=466 R=0 C=0 both=0 act straight=466 right=0 left=0 watch max=0mm bias=11
+[S2:MOTION] state=2 fault=0 ticks L=85836 R=86884 PWM=15/19
+[S2:MOTION] ctrl late=1/14419 gap_max=12 loop_max=4 ms
+[S4:IMU] n=7050 acc=(-162,93,905)mg delta=(x:-138,y:72)mg mag=(882,-154,-12) pitch=5 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=472 sens none=449 R=23 C=0 both=0 act straight=434 right=38 left=0 watch max=0mm bias=11
+[S2:MOTION] state=2 fault=0 ticks L=87087 R=88144 PWM=15/19
+[S2:MOTION] ctrl late=1/14514 gap_max=12 loop_max=4 ms
+[S2:ROBOT] junction: no barcode, straight on
+[S4:IMU] n=7100 acc=(-77,273,920)mg delta=(x:-53,y:252)mg mag=(806,-107,-12) pitch=15 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=470 sens none=422 R=25 C=0 both=23 act straight=415 right=55 left=0 watch max=0mm bias=11
+[S4:IMU] EVENT TILT roll=-10 deg lateral=-192 mg
+[S2:MOTION] state=2 fault=0 ticks L=88289 R=89366 PWM=14/17
+[S2:MOTION] ctrl late=1/14610 gap_max=12 loop_max=4 ms
+[S4:IMU] n=7150 acc=(-77,-183,929)mg delta=(x:-53,y:-204)mg mag=(825,-86,15) pitch=-10 height=7mm height_valid=1 state=0
+[S2:ROBOT] steer n=472 sens none=472 R=0 C=0 both=0 act straight=472 right=0 left=0 watch max=0mm bias=11
+[S1:MQTT] RX topic=group17-robot/command length=1
+[S1:MQTT] RX command=1
+[S2:ROBOT] paused (MQTT); RESUME to continue
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/14706 gap_max=12 loop_max=3 ms
+[S4:IMU] hump detector re-armed
+[S4:IMU] n=7200 acc=(-39,20,924)mg delta=(x:-15,y:-1)mg mag=(881,-78,33) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/14806 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7250 acc=(-39,20,921)mg delta=(x:-15,y:-1)mg mag=(882,-78,33) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/14906 gap_max=10 loop_max=2 ms
+[S4:IMU] n=7300 acc=(-50,23,923)mg delta=(x:-26,y:2)mg mag=(882,-78,35) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/15006 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7350 acc=(-38,-95,1034)mg delta=(x:-14,y:-116)mg mag=(887,-82,35) pitch=-5 height=7mm height_valid=1 state=0
+[S4:IMU] HUMP DEBUG: raw=49 filtered=72 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/15106 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=210 filtered=127 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-52 filtered=106 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-86 filtered=-71 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-218 filtered=-111 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-165 filtered=-156 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=250mg threshold=200mg acc=(38,-204,1207) base_z=921
+[S4:IMU] HUMP DEBUG: raw=-240 filtered=-240 moving=0 dist=0 entry=0
+[S4:IMU] n=7400 acc=(118,-219,960)mg delta=(x:142,y:-240)mg mag=(799,-162,41) pitch=-15 height=7mm height_valid=1 state=0
+[S4:IMU] HUMP DEBUG: raw=-226 filtered=-233 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-209 filtered=-225 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-180 filtered=-205 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-206 filtered=-198 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=5 deg lateral=53 mg
+[S4:IMU] HUMP DEBUG: raw=-206 filtered=-197 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-256 filtered=-222 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-241 filtered=-234 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-217 filtered=-238 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-227 filtered=-228 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-251 filtered=-231 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-267 filtered=-248 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-356 filtered=-291 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-274mg threshold=200mg acc=(29,-356,601) base_z=921
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/15206 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-351 filtered=-351 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-372 filtered=-361 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-409 filtered=-377 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-327 filtered=-369 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-247 filtered=-327 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-231 filtered=-268 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-245 filtered=-241 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-249 filtered=-241 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-266 filtered=-253 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-296 filtered=-270 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-372 filtered=-311 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-399 filtered=-355 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-367 filtered=-379 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-353 filtered=-373 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-377 filtered=-365 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-348 filtered=-359 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-286 filtered=-337 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-281 filtered=-305 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-290 filtered=-285 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-342 filtered=-304 moving=0 dist=0 entry=0
+[S4:IMU] n=7450 acc=(-140,-321,702)mg delta=(x:-116,y:-342)mg mag=(739,-179,150) pitch=-20 height=7mm height_valid=1 state=2
+[S4:IMU] HUMP DEBUG: raw=-374 filtered=-335 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-369 filtered=-361 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-372 filtered=-371 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-351 filtered=-364 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-289 filtered=-337 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-257 filtered=-299 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-261 filtered=-269 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-281 filtered=-266 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-286 filtered=-276 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-324 filtered=-297 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-363 filtered=-324 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-339 filtered=-342 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-322 filtered=-341 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-345 filtered=-335 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-396 filtered=-354 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/15306 gap_max=11 loop_max=3 ms
+[S4:IMU] HUMP DEBUG: raw=-378 filtered=-373 moving=0 dist=0 entry=0
+[S4:IMU] EVENT LIFT z_avg-base=-203mg threshold=200mg acc=(35,-345,751) base_z=921
+[S4:IMU] HUMP DEBUG: raw=-406 filtered=-406 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-430 filtered=-418 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-412 filtered=-416 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-458 filtered=-433 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-498 filtered=-456 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-428 filtered=-461 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-292 filtered=-406 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-187 filtered=-302 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-190 filtered=-223 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-176 filtered=-184 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-40 filtered=-135 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-17 filtered=-77 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-121 filtered=-79 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-89 filtered=-103 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-68 filtered=-92 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-83 filtered=-80 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-104 filtered=-85 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-122 filtered=-103 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-166 filtered=-130 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-73 filtered=-120 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=13 filtered=-75 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=148 filtered=98 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=161 filtered=137 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=110 filtered=139 moving=0 dist=0 entry=0
+[S4:IMU] n=7500 acc=(-109,131,755)mg delta=(x:-85,y:110)mg mag=(445,-457,251) pitch=5 height=7mm height_valid=1 state=0
+[S4:IMU] HUMP DEBUG: raw=71 filtered=114 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=48 filtered=76 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=169 filtered=96 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=164 filtered=127 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=190 filtered=174 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=173 filtered=175 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=273 filtered=212 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=297 filtered=247 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=319 filtered=296 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=281 filtered=299 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=300 filtered=300 moving=0 dist=0 entry=0
+[S4:IMU] EVENT TILT roll=0 deg lateral=34 mg
+[S4:IMU] HUMP DEBUG: raw=277 filtered=286 moving=0 dist=0 entry=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S4:IMU] HUMP DEBUG: raw=196 filtered=257 moving=0 dist=0 entry=0
+[S2:MOTION] ctrl late=1/15406 gap_max=10 loop_max=2 ms
+[S4:IMU] HUMP DEBUG: raw=113 filtered=195 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=84 filtered=131 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=65 filtered=87 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=176 filtered=108 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=126 filtered=122 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=113 filtered=138 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=79 filtered=106 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=24 filtered=72 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=116 filtered=63 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=74 filtered=81 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-190 filtered=-107 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-195 filtered=-180 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-37 filtered=-140 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-52 filtered=-94 moving=0 dist=0 entry=0
+[S4:IMU] HUMP DEBUG: raw=-171 filtered=-79 moving=0 dist=0 entry=0
+[S4:IMU] n=7550 acc=(-66,44,902)mg delta=(x:-42,y:23)mg mag=(333,-402,70) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/15506 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7600 acc=(-28,13,924)mg delta=(x:-4,y:-8)mg mag=(342,-403,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/15606 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7650 acc=(-25,17,929)mg delta=(x:-1,y:-4)mg mag=(339,-398,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/15706 gap_max=10 loop_max=2 ms
+[S4:IMU] n=7700 acc=(-23,11,923)mg delta=(x:1,y:-10)mg mag=(341,-398,68) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/15806 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7750 acc=(-27,15,924)mg delta=(x:-3,y:-6)mg mag=(343,-399,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/15906 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/16006 gap_max=10 loop_max=2 ms
+[S4:IMU] n=7800 acc=(-24,11,922)mg delta=(x:0,y:-10)mg mag=(339,-398,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/16106 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7850 acc=(-24,9,926)mg delta=(x:0,y:-12)mg mag=(340,-397,62) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/16206 gap_max=10 loop_max=2 ms
+[S4:IMU] n=7900 acc=(-23,11,918)mg delta=(x:1,y:-10)mg mag=(342,-401,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/16306 gap_max=11 loop_max=3 ms
+[S4:IMU] n=7950 acc=(-23,12,925)mg delta=(x:1,y:-9)mg mag=(340,-397,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/16406 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8000 acc=(-25,10,919)mg delta=(x:-1,y:-11)mg mag=(344,-399,62) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/16506 gap_max=10 loop_max=2 ms
+[S4:IMU] n=8050 acc=(-24,11,923)mg delta=(x:0,y:-10)mg mag=(341,-399,67) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/16606 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8100 acc=(-25,10,929)mg delta=(x:-1,y:-11)mg mag=(338,-396,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/16706 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8150 acc=(-23,14,925)mg delta=(x:1,y:-7)mg mag=(340,-400,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/16806 gap_max=10 loop_max=2 ms
+[S4:IMU] n=8200 acc=(-24,12,921)mg delta=(x:0,y:-9)mg mag=(342,-398,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/16906 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8250 acc=(-23,15,919)mg delta=(x:1,y:-6)mg mag=(341,-399,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/17006 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8300 acc=(-22,15,925)mg delta=(x:2,y:-6)mg mag=(338,-394,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/17106 gap_max=10 loop_max=2 ms
+[S4:IMU] n=8350 acc=(-19,15,923)mg delta=(x:5,y:-6)mg mag=(341,-397,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/17206 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8400 acc=(-25,9,921)mg delta=(x:-1,y:-12)mg mag=(342,-400,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/17306 gap_max=10 loop_max=2 ms
+[S4:IMU] n=8450 acc=(-25,12,920)mg delta=(x:-1,y:-9)mg mag=(343,-399,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/17406 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8500 acc=(-23,12,924)mg delta=(x:1,y:-9)mg mag=(339,-400,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/17506 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8550 acc=(-25,14,924)mg delta=(x:-1,y:-7)mg mag=(342,-401,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/17606 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8600 acc=(-22,15,932)mg delta=(x:2,y:-6)mg mag=(340,-399,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/17706 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8650 acc=(-24,15,921)mg delta=(x:0,y:-6)mg mag=(341,-395,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/17806 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8700 acc=(-21,10,923)mg delta=(x:3,y:-11)mg mag=(340,-395,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/17906 gap_max=10 loop_max=2 ms
+[S4:IMU] n=8750 acc=(-28,15,924)mg delta=(x:-4,y:-6)mg mag=(342,-399,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/18006 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/18106 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8800 acc=(-25,10,919)mg delta=(x:-1,y:-11)mg mag=(343,-400,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/18206 gap_max=10 loop_max=2 ms
+[S4:IMU] n=8850 acc=(-22,13,927)mg delta=(x:2,y:-8)mg mag=(340,-401,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/18306 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8900 acc=(-17,12,917)mg delta=(x:7,y:-9)mg mag=(342,-400,70) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/18406 gap_max=11 loop_max=3 ms
+[S4:IMU] n=8950 acc=(-25,12,922)mg delta=(x:-1,y:-9)mg mag=(339,-401,62) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/18506 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9000 acc=(-24,11,917)mg delta=(x:0,y:-10)mg mag=(343,-401,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/18606 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9050 acc=(-24,12,921)mg delta=(x:0,y:-9)mg mag=(341,-399,61) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/18706 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9100 acc=(-24,17,919)mg delta=(x:0,y:-4)mg mag=(340,-400,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/18806 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9150 acc=(-25,16,923)mg delta=(x:-1,y:-5)mg mag=(338,-398,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/18906 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9200 acc=(-24,13,921)mg delta=(x:0,y:-8)mg mag=(345,-401,62) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/19006 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9250 acc=(-25,13,924)mg delta=(x:-1,y:-8)mg mag=(344,-396,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/19106 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9300 acc=(-23,11,923)mg delta=(x:1,y:-10)mg mag=(337,-401,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/19206 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9350 acc=(-25,8,917)mg delta=(x:-1,y:-13)mg mag=(343,-398,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/19306 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9400 acc=(-26,10,922)mg delta=(x:-2,y:-11)mg mag=(342,-398,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/19406 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9450 acc=(-23,13,914)mg delta=(x:1,y:-8)mg mag=(340,-399,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/19506 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9500 acc=(-24,10,923)mg delta=(x:0,y:-11)mg mag=(339,-398,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/19606 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9550 acc=(-23,12,922)mg delta=(x:1,y:-9)mg mag=(342,-400,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/19706 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9600 acc=(-22,13,923)mg delta=(x:2,y:-8)mg mag=(341,-397,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/19806 gap_max=11 loop_max=4 ms
+[S4:IMU] n=9650 acc=(-20,11,921)mg delta=(x:4,y:-10)mg mag=(338,-397,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/19906 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9700 acc=(-19,9,922)mg delta=(x:5,y:-12)mg mag=(341,-400,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/20006 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9750 acc=(-25,12,926)mg delta=(x:-1,y:-9)mg mag=(341,-398,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/20106 gap_max=10 loop_max=4 ms
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/20206 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9800 acc=(-26,8,924)mg delta=(x:-2,y:-13)mg mag=(338,-398,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/20306 gap_max=11 loop_max=3 ms
+[S4:IMU] n=9850 acc=(-22,9,918)mg delta=(x:2,y:-12)mg mag=(338,-395,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/20406 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9900 acc=(-23,10,922)mg delta=(x:1,y:-11)mg mag=(339,-400,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/20506 gap_max=10 loop_max=2 ms
+[S4:IMU] n=9950 acc=(-28,17,921)mg delta=(x:-4,y:-4)mg mag=(342,-398,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/20606 gap_max=10 loop_max=4 ms
+[S4:IMU] n=10000 acc=(-21,11,925)mg delta=(x:3,y:-10)mg mag=(341,-400,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/20706 gap_max=10 loop_max=2 ms
+[S4:IMU] n=10050 acc=(-22,13,916)mg delta=(x:2,y:-8)mg mag=(339,-399,62) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/20806 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10100 acc=(-27,9,920)mg delta=(x:-3,y:-12)mg mag=(343,-398,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/20906 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10150 acc=(-23,12,917)mg delta=(x:1,y:-9)mg mag=(340,-398,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/21006 gap_max=10 loop_max=2 ms
+[S4:IMU] n=10200 acc=(-19,14,921)mg delta=(x:5,y:-7)mg mag=(341,-396,67) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/21106 gap_max=10 loop_max=4 ms
+[S4:IMU] n=10250 acc=(-23,11,923)mg delta=(x:1,y:-10)mg mag=(344,-399,61) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/21206 gap_max=10 loop_max=4 ms
+[S4:IMU] n=10300 acc=(-25,9,921)mg delta=(x:-1,y:-12)mg mag=(340,-399,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/21306 gap_max=10 loop_max=2 ms
+[S4:IMU] n=10350 acc=(-22,11,923)mg delta=(x:2,y:-10)mg mag=(340,-399,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/21406 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10400 acc=(-26,10,923)mg delta=(x:-2,y:-11)mg mag=(341,-400,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/21506 gap_max=10 loop_max=2 ms
+[S4:IMU] n=10450 acc=(-22,16,924)mg delta=(x:2,y:-5)mg mag=(341,-397,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/21606 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10500 acc=(-21,12,919)mg delta=(x:3,y:-9)mg mag=(342,-398,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/21706 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10550 acc=(-20,10,923)mg delta=(x:4,y:-11)mg mag=(341,-396,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/21806 gap_max=10 loop_max=2 ms
+[S4:IMU] n=10600 acc=(-19,16,925)mg delta=(x:5,y:-5)mg mag=(342,-398,67) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/21906 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10650 acc=(-24,13,920)mg delta=(x:0,y:-8)mg mag=(342,-401,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/22006 gap_max=10 loop_max=4 ms
+[S4:IMU] n=10700 acc=(-25,9,923)mg delta=(x:-1,y:-12)mg mag=(343,-399,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/22106 gap_max=10 loop_max=2 ms
+[S4:IMU] n=10750 acc=(-26,13,916)mg delta=(x:-2,y:-8)mg mag=(342,-400,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/22206 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S4:IMU] n=10800 acc=(-22,12,926)mg delta=(x:2,y:-9)mg mag=(342,-400,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] ctrl late=1/22306 gap_max=10 loop_max=2 ms
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/22406 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10850 acc=(-25,8,922)mg delta=(x:-1,y:-13)mg mag=(341,-400,67) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/22506 gap_max=11 loop_max=3 ms
+[S4:IMU] n=10900 acc=(-21,13,919)mg delta=(x:3,y:-8)mg mag=(342,-402,60) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/22606 gap_max=10 loop_max=2 ms
+[S4:IMU] n=10950 acc=(-24,14,925)mg delta=(x:0,y:-7)mg mag=(342,-401,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/22706 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11000 acc=(-21,13,923)mg delta=(x:3,y:-8)mg mag=(345,-401,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/22806 gap_max=10 loop_max=4 ms
+[S4:IMU] n=11050 acc=(-27,13,922)mg delta=(x:-3,y:-8)mg mag=(343,-401,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/22906 gap_max=10 loop_max=2 ms
+[S4:IMU] n=11100 acc=(-24,11,925)mg delta=(x:0,y:-10)mg mag=(345,-395,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/23006 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11150 acc=(-20,14,921)mg delta=(x:4,y:-7)mg mag=(344,-401,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/23106 gap_max=10 loop_max=2 ms
+[S4:IMU] n=11200 acc=(-23,12,924)mg delta=(x:1,y:-9)mg mag=(344,-397,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/23206 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11250 acc=(-23,10,919)mg delta=(x:1,y:-11)mg mag=(340,-399,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/23306 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11300 acc=(-24,12,923)mg delta=(x:0,y:-9)mg mag=(339,-400,62) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/23406 gap_max=10 loop_max=2 ms
+[S4:IMU] n=11350 acc=(-21,16,921)mg delta=(x:3,y:-5)mg mag=(343,-398,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/23506 gap_max=10 loop_max=4 ms
+[S4:IMU] n=11400 acc=(-21,11,925)mg delta=(x:3,y:-10)mg mag=(343,-402,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/23606 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11450 acc=(-24,12,920)mg delta=(x:0,y:-9)mg mag=(343,-398,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/23706 gap_max=10 loop_max=2 ms
+[S4:IMU] n=11500 acc=(-25,15,920)mg delta=(x:-1,y:-6)mg mag=(340,-399,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/23806 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11550 acc=(-21,11,922)mg delta=(x:3,y:-10)mg mag=(342,-399,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/23906 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11600 acc=(-23,11,921)mg delta=(x:1,y:-10)mg mag=(342,-397,62) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/24006 gap_max=10 loop_max=2 ms
+[S4:IMU] n=11650 acc=(-24,12,917)mg delta=(x:0,y:-9)mg mag=(340,-399,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/24106 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11700 acc=(-21,12,925)mg delta=(x:3,y:-9)mg mag=(341,-400,63) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/24206 gap_max=10 loop_max=2 ms
+[S4:IMU] n=11750 acc=(-20,11,920)mg delta=(x:4,y:-10)mg mag=(343,-401,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/24306 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11800 acc=(-22,9,921)mg delta=(x:2,y:-12)mg mag=(343,-403,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/24406 gap_max=11 loop_max=3 ms
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/24506 gap_max=10 loop_max=2 ms
+[S4:IMU] n=11850 acc=(-30,10,923)mg delta=(x:-6,y:-11)mg mag=(342,-399,67) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/24606 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11900 acc=(-20,11,916)mg delta=(x:4,y:-10)mg mag=(344,-402,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/24706 gap_max=11 loop_max=3 ms
+[S4:IMU] n=11950 acc=(-19,11,921)mg delta=(x:5,y:-10)mg mag=(344,-399,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/24806 gap_max=10 loop_max=2 ms
+[S4:IMU] n=12000 acc=(-19,6,923)mg delta=(x:5,y:-15)mg mag=(338,-400,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/24906 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12050 acc=(-22,15,919)mg delta=(x:2,y:-6)mg mag=(342,-398,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/25006 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12100 acc=(-25,14,923)mg delta=(x:-1,y:-7)mg mag=(344,-401,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/25106 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12150 acc=(-21,12,918)mg delta=(x:3,y:-9)mg mag=(345,-400,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/25206 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12200 acc=(-25,11,919)mg delta=(x:-1,y:-10)mg mag=(343,-402,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/25306 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12250 acc=(-17,10,912)mg delta=(x:7,y:-11)mg mag=(343,-402,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/25406 gap_max=10 loop_max=2 ms
+[S4:IMU] n=12300 acc=(-20,6,917)mg delta=(x:4,y:-15)mg mag=(343,-399,62) pitch=0 height=7mm height_valid=1 state=0
+[S2:ROBOT] telemetry queue full; waiting for MQTT (-50)
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/25506 gap_max=10 loop_max=2 ms
+[S4:IMU] n=12350 acc=(-18,13,919)mg delta=(x:6,y:-8)mg mag=(342,-399,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/25606 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12400 acc=(-22,15,923)mg delta=(x:2,y:-6)mg mag=(341,-402,66) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/25706 gap_max=10 loop_max=2 ms
+[S4:IMU] n=12450 acc=(-20,10,923)mg delta=(x:4,y:-11)mg mag=(344,-398,62) pitch=0 height=7mm height_valid=1 state=0
+[S2:ROBOT] telemetry queue accepting packets again (0)
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/25806 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12500 acc=(-26,11,914)mg delta=(x:-2,y:-10)mg mag=(340,-399,65) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/25906 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12550 acc=(-23,18,919)mg delta=(x:1,y:-3)mg mag=(339,-398,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/26006 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12600 acc=(-22,10,922)mg delta=(x:2,y:-11)mg mag=(343,-397,67) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/26106 gap_max=11 loop_max=3 ms
+[S4:IMU] n=12650 acc=(-24,11,926)mg delta=(x:0,y:-10)mg mag=(342,-399,64) pitch=0 height=7mm height_valid=1 state=0
+[S2:MOTION] state=5 fault=0 ticks L=89115 R=90203 PWM=0/0
+[S2:MOTION] ctrl late=1/26206 gap_max=10 loop_max=2 ms
+[S4:IMU] n=12700 acc=(-25,11,917)mg delta=(x:-1,y:-10)mg mag=(342,-397,65) pitch=0 height=7mm height_valid=1 state=0

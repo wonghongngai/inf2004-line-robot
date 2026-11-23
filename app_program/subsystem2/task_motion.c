@@ -131,6 +131,8 @@ static MOTION_CONFIG build_config(void)
     cfg.follow_straight_max_trim = S2_FOLLOW_STRAIGHT_MAX_TRIM;
     cfg.follow_straight_trim_rate = S2_FOLLOW_STRAIGHT_TRIM_RATE;
     cfg.follow_straight_deadband_cm = S2_FOLLOW_STRAIGHT_DEADBAND_CM;
+    cfg.follow_straight_ki = S2_FOLLOW_STRAIGHT_KI;
+    cfg.follow_straight_max_bias = S2_FOLLOW_STRAIGHT_MAX_BIAS;
     cfg.follow_scan_scale = S2_FOLLOW_SCAN_SCALE;
     cfg.follow_scan_left_inner_pwm_percent = S2_FOLLOW_SCAN_LEFT_INNER_PWM_PERCENT;
     cfg.move_left_pwm_percent = S2_MOVE_LEFT_PWM_PERCENT;

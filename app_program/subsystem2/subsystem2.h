@@ -75,6 +75,15 @@
 #define S2_FOLLOW_STRAIGHT_MAX_TRIM          2.5f
 #define S2_FOLLOW_STRAIGHT_TRIM_RATE         5.0f   /* PWM points per second */
 #define S2_FOLLOW_STRAIGHT_DEADBAND_CM       0.10f
+/* I term (23 Nov, #23: the robot drifted one way). The P trim above restarts
+   at 0 on every stretch, so on short stretches between corrections it never
+   builds up and a steady motor mismatch keeps pushing the same way. This
+   bias learns that mismatch from the same wheel difference, KI PWM points
+   per cm per second, and is kept across stretches, turns and stops (only
+   motion_control_init clears it). Added to the P trim on straights only.
+   0 = off. The steer log line prints it as `bias=` in tenths of a point. */
+#define S2_FOLLOW_STRAIGHT_KI                1.0f
+#define S2_FOLLOW_STRAIGHT_MAX_BIAS          3.0f
 /* While GP28 is on a bar or a barcode capture is open, line following runs
    at this fraction of its PWM, and a left correction keeps the left
    (scanner-side) wheel at the scan inner PWM instead of pivoting on it. */
@@ -83,8 +92,13 @@
 
 /* Interrupt-encoder calibration, from three 100 cm hand pushes (2026-11-06;
    right trimmed 2026-11-08 for drift). S2_*_TICKS_PER_CM above predate the
-   interrupt encoder; all_test's S5 moves, odometry and height use these. */
-#define S2_ENC_LEFT_TICKS_PER_CM             117.8f
+   interrupt encoder; all_test's S5 moves, odometry and height use these.
+   Left 117.8 -> 116.2 on 23 Nov (#23): three ~210 cm bare-floor runs with
+   the encoder trim holding the wheels level (right 0.7-1.2 cm ahead by the
+   encoders) each veered ~20 cm right, so the left wheel goes ~1.4 % further
+   per tick than 117.8 says (wheel centres ~10.5 cm apart: 8 cm inner gap
+   plus the tyre width, estimated). */
+#define S2_ENC_LEFT_TICKS_PER_CM             116.2f
 #define S2_ENC_RIGHT_TICKS_PER_CM            118.3f
 
 /* all_test's drive numbers for distance moves and pivots. Both builds read

@@ -18,6 +18,13 @@ static unsigned steer_candidate;
 static uint32_t candidate_since, action_since, clear_since, junction_done;
 static bool clear_pending, leaving_junction;
 static uint8_t pending_letter;           /* bit 7 = waiting, bits 4..0 = A..Z */
+/* #23 lost-line watch (straddle model, see S2_LINE_LOST_MM). */
+static bool lost_watch, lost_probe, lost_stop, lost_seen_black;
+static unsigned lost_side;               /* steer_action that was clearing */
+static int32_t lost_l0, lost_r0;         /* wheel ticks when the watch began */
+static uint32_t lost_last_step;          /* last straddle_step, for gaps */
+static uint32_t lost_max_mm;             /* longest cleared watch this second */
+static void straddle_reset_steer(void);
 #define TURN_ADVANCE 1u
 #define TURN_PIVOT 2u
 static unsigned turn_stage, turn_cmd;
@@ -80,7 +87,12 @@ static bool line_rearm_ready(uint32_t now, int32_t l, int32_t r)
        snapshot will do; the S3 model needs centre + right on black. */
     bool on_line = straddle ? (msg.data[1] & 7u) != LINE_BARCODE_FAULT :
                               (msg.data[0] & 3u) == 3u;
-    bool ready = er >= E_OK && on_line && l == rearm_l && r == rearm_r;
+    /* After a lost-line stop both white proves nothing: wait until C or R
+       has seen the tape (the robot put back across it). */
+    if (lost_stop && er >= E_OK && (msg.data[0] & 3u) != 0u)
+        lost_seen_black = true;
+    bool ready = er >= E_OK && on_line && (!lost_stop || lost_seen_black) &&
+                 l == rearm_l && r == rearm_r;
 
     if (!ready) {
         rearm_since = now;
@@ -317,6 +329,8 @@ static void resume_robot(uint32_t now)
         /* The recoverable line-stop path re-arms as usual, but the "held
            still" wait starts now: time spent paused does not count. */
         rearm_since = now;
+        /* The operator put it back on the line: no black reading needed. */
+        lost_seen_black = true;
         LOG_INFO(TAG_S2_ROBOT, "resumed; re-arms when the line is held still");
         return;
     }
@@ -327,6 +341,7 @@ static void resume_robot(uint32_t now)
     }
     resumed_at = now;
     line_unsafe_active = false;
+    straddle_reset_steer();
     LOG_INFO(TAG_S2_ROBOT, "resumed (MQTT)");
 }
 
@@ -566,6 +581,93 @@ static bool straddle_junction(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, i
     return true;
 }
 
+/* Distance in mm since the lost-line watch began (mean of both wheels). */
+static uint32_t lost_watch_mm(int32_t l, int32_t r)
+{
+    float cm = 0.5f * ((float)(l - lost_l0) / S2_ENC_LEFT_TICKS_PER_CM +
+                       (float)(r - lost_r0) / S2_ENC_RIGHT_TICKS_PER_CM);
+    return cm > 0.0f ? (uint32_t)(cm * 10.0f) : 0u;
+}
+
+/* #23: detect a lost line in the straddle model (see S2_LINE_LOST_MM).
+   Call with this step's C/R bits before the steering state is updated, so
+   the first white sample after a correction still sees clear_pending false.
+   After S2_LINE_LOST_MM of white the robot first probes: it steers softly
+   toward the side the tape was last under for up to S2_LINE_PROBE_MM.
+   Tape left between C and R (robot running parallel to it, 23 Nov) then
+   passes under the other sensor; tape just outside the last sensor passes
+   back under it. Either way the watch ends and following carries on. Only
+   no black at all through the probe stops the robot. Returns true when it
+   stopped the robot; *probe_steer is the steer to command while probing,
+   0 when not probing. */
+static bool line_lost_check(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l,
+                            int32_t r, unsigned sensors, float *probe_steer)
+{
+    *probe_steer = 0.0f;
+#if S2_LINE_LOST_MM > 0
+    /* Not following for a while (turn, avoidance, pause): the start ticks
+       are stale. */
+    if ((uint32_t)(now - lost_last_step) > S2_LINE_LOST_GAP_MS)
+        lost_watch = lost_probe = false;
+    lost_last_step = now;
+    if (sensors != 0u) {
+        if (lost_watch) {
+            uint32_t mm = lost_watch_mm(l, r);
+            if (mm > lost_max_mm) lost_max_mm = mm;
+            if (lost_probe)
+                LOG_INFO(TAG_S2_ROBOT, "line probe found the tape after %u mm; following",
+                          (unsigned)mm);
+        }
+        lost_watch = lost_probe = false;
+        return false;
+    }
+    if (!lost_watch) {
+        /* First white sample after a long enough correction. */
+        if (steer_action != 0u && !clear_pending &&
+            (uint32_t)(now - action_since) >= S2_LINE_LOST_ARM_MS) {
+            lost_watch = true;
+            lost_side = steer_action;
+            lost_l0 = l;
+            lost_r0 = r;
+        }
+        return false;
+    }
+    uint32_t mm = lost_watch_mm(l, r);
+    if (mm < S2_LINE_LOST_MM) return false;
+    if (!lost_probe && S2_LINE_PROBE_MM > 0u) {
+        lost_probe = true;
+        LOG_INFO(TAG_S2_ROBOT, "line probe: no black for %u mm after a %s correction; steering %s up to %u mm",
+                  (unsigned)S2_LINE_LOST_MM, lost_side == 1u ? "right" : "left",
+                  lost_side == 1u ? "right" : "left", (unsigned)S2_LINE_PROBE_MM);
+    }
+    if (mm < S2_LINE_LOST_MM + S2_LINE_PROBE_MM) {
+        /* lost_side 1 = R was black (steer right, +); 2 = C (left, -). */
+        *probe_steer = lost_side == 1u ? S2_LINE_PROBE_STEER : -S2_LINE_PROBE_STEER;
+        return false;
+    }
+    LOG_WARN(TAG_S2_ROBOT, "line lost: no black on C or R for %u mm after a %s correction (probe included)",
+              (unsigned)mm, lost_side == 1u ? "right" : "left");
+    lost_watch = lost_probe = false;
+    halt_line(ctl, now, l, r, "line lost; put the tape under C or R, or PAUSE + RESUME");
+    lost_stop = true;
+    lost_seen_black = false;
+    return true;
+#else
+    (void)ctl; (void)now; (void)l; (void)r; (void)sensors;
+    return false;
+#endif
+}
+
+/* Forget any correction in progress: after a pause or a line stop the robot
+   may have been moved by hand, so an old correction (and its hard-correction
+   timer) must not carry over (#23). */
+static void straddle_reset_steer(void)
+{
+    steer_action = steer_candidate = 0u;
+    clear_pending = false;
+    lost_watch = lost_probe = false;
+}
+
 static void straddle_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t r)
 {
     line_barcode_msg_t msg = {{0u, 0u, 0u}};
@@ -625,6 +727,8 @@ static void straddle_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32
     }
 
     sensors = msg.data[0] & 3u; /* C bit 1, R bit 0; the scanner is ignored */
+    float probe_steer;
+    if (line_lost_check(ctl, now, l, r, sensors, &probe_steer)) return;
     if (leaving_junction && sensors != 3u &&
         (uint32_t)(now - junction_done) >= S2_JUNCTION_SETTLE_MS)
         leaving_junction = false;
@@ -667,10 +771,16 @@ static void straddle_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32
         sens_n[sensors & 3u]++;
         act_n[steer_action > 2u ? 0u : steer_action]++;
         if ((uint32_t)(now - log_t0) >= 1000u) {
-            LOG_INFO(TAG_S2_ROBOT, "steer n=%u sens none=%u R=%u C=%u both=%u act straight=%u right=%u left=%u",
+            /* watch max: longest white run (mm) after a correction that
+               ended in black again; tunes S2_LINE_LOST_MM (#23). bias: the
+               learned straight-trim I term in tenths of a PWM point,
+               + = left wheel boosted (S2_FOLLOW_STRAIGHT_KI). */
+            LOG_INFO(TAG_S2_ROBOT, "steer n=%u sens none=%u R=%u C=%u both=%u act straight=%u right=%u left=%u watch max=%umm bias=%d",
                       (unsigned)log_n, sens_n[0], sens_n[1], sens_n[2], sens_n[3],
-                      act_n[0], act_n[1], act_n[2]);
+                      act_n[0], act_n[1], act_n[2], (unsigned)lost_max_mm,
+                      (int)(ctl->straight_bias * 10.0f));
             log_n = 0u;
+            lost_max_mm = 0u;
             for (unsigned i = 0; i < 4u; ++i) sens_n[i] = 0u;
             for (unsigned i = 0; i < 3u; ++i) act_n[i] = 0u;
         }
@@ -679,7 +789,8 @@ static void straddle_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32
     /* Right sensor black: drifting left, steer right (positive). */
     float strength = (uint32_t)(now - action_since) >= S2_LINE_HARD_MS ? 1.0f : 0.5f;
     cmd.type = MOTION_CMD_FOLLOW_LINE;
-    cmd.value = sensors == 3u ? 0.0f :         /* on the crossing: straight */
+    cmd.value = probe_steer != 0.0f ? probe_steer : /* #23 lost-line probe */
+                sensors == 3u ? 0.0f :         /* on the crossing: straight */
                 steer_action == 1u ? strength :
                 steer_action == 2u ? -strength : 0.0f;
     if (motion_control_command(ctl, &cmd, now, l, r) != MOTION_RESULT_OK)
@@ -711,6 +822,8 @@ static void control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_
         }
         resumed_at = now;
         line_unsafe_active = false;
+        lost_stop = false;
+        straddle_reset_steer();
         LOG_INFO(TAG_S2_ROBOT, "line found, re-armed");
         return;
     }

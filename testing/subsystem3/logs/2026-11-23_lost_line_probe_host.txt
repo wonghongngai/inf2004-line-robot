@@ -1,0 +1,56 @@
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: f399b56 + uncommitted changes
+
+int/robot_control            PASS
+robot host tests: 1020 checks passed
+
+================ summary ================
+PASS   int/robot_control            
+-----------------------------------------
+1 passed, 0 failed, 0 known failures, 0 skipped
+Host tests  (compiler: cc, sanitizers: none, python: python3)
+commit: f399b56 + uncommitted changes
+
+s1/protocol                  PASS
+s1/barcode_queue             PASS
+s1/binary_cli                PASS
+s2/motion_protocol           PASS
+s2/motor_pwm                 PASS
+s2/loop_timing               PASS
+s3/line_barcode              PASS
+s3/pptx_samples              PASS
+s3/line_service              PASS
+s4/hump_height               PASS
+s5/obstacle_logic            PASS
+int/robot_control            PASS
+int/robot_avoidance          PASS
+int/bad_commands             PASS
+int/line_service             PASS
+int/steering_ramp            PASS
+int/event_bits               PASS
+
+================ summary ================
+PASS   s1/protocol                  
+PASS   s1/barcode_queue             
+PASS   s1/binary_cli                
+PASS   s2/motion_protocol           
+PASS   s2/motor_pwm                 
+PASS   s2/loop_timing               
+PASS   s3/line_barcode              
+PASS   s3/pptx_samples              
+PASS   s3/line_service              
+PASS   s4/hump_height               
+PASS   s5/obstacle_logic            
+PASS   int/robot_control            
+PASS   int/robot_avoidance          
+PASS   int/bad_commands             
+PASS   int/line_service             
+PASS   int/steering_ramp            
+PASS   int/event_bits               
+-----------------------------------------
+17 passed, 0 failed, 0 known failures, 0 skipped
+
+Firmware build (sh ../build.sh integrated, Pico SDK 2.3.1): exit 0, 0 warnings/errors
+
+Built: build_make/robot-integrated.uf2
+Flash it: hold BOOTSEL, plug in the Pico, copy the .uf2 onto the RPI-RP2 drive.
