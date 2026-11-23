@@ -845,6 +845,11 @@ static void report_telemetry(ALL_TEST *t, uint32_t now)
     if (height > S1_HUMP_MAX) height = S1_HUMP_MAX;
     (void)s1_telemetry_set(&packet, S1_FIELD_HIGHEST_HUMP_MM, height);
     (void)s1_telemetry_set(&packet, S1_FIELD_DISTANCE_CM, t->distance_mm / 10u);
+    /* #41: low 16 bits of the raw counts; the PC takes int16 differences. */
+    (void)s1_telemetry_set(&packet, S1_FIELD_LEFT_TICKS,
+                          (int)((uint32_t)t->left_ticks & S1_TICKS_MASK));
+    (void)s1_telemetry_set(&packet, S1_FIELD_RIGHT_TICKS,
+                          (int)((uint32_t)t->right_ticks & S1_TICKS_MASK));
     if (elapsed_ms != 0u && t->odometry.available && !t->telemetry_encoder_error) {
         /* Average translational speed over this telemetry interval. */
         uint64_t speed = ((uint64_t)t->telemetry_travel_mm * 100u + elapsed_ms / 2u)

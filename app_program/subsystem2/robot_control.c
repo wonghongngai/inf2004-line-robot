@@ -445,7 +445,8 @@ static void report_barcode_frame(uint32_t now)
 }
 
 /* IF-05 telemetry, once a second (or at once after STATUS). Nonblocking. */
-static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now)
+static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now,
+                             int32_t l, int32_t r)
 {
     S1_TELEMETRY packet;
     line_barcode_msg_t msg = {{0u, 0u, 0u}};
@@ -487,6 +488,10 @@ static void report_telemetry(const MOTION_CONTROLLER *ctl, uint32_t now)
     (void)s1_telemetry_set(&packet, S1_FIELD_BARCODE_WHITE,
                            white > S1_BARCODE_COUNT_MAX ? (int)S1_BARCODE_COUNT_MAX : (int)white);
     (void)s1_telemetry_set(&packet, S1_FIELD_HIGHEST_HUMP_MM, hump > S1_HUMP_MAX ? S1_HUMP_MAX : (int)hump);
+    /* #41: low 16 bits of this step's raw counts (the ones distance uses;
+       ctl->status lags a motion step). The PC takes int16 differences. */
+    (void)s1_telemetry_set(&packet, S1_FIELD_LEFT_TICKS, (int)((uint32_t)l & S1_TICKS_MASK));
+    (void)s1_telemetry_set(&packet, S1_FIELD_RIGHT_TICKS, (int)((uint32_t)r & S1_TICKS_MASK));
     /* #40: S5's last obstacle scan (all 0 until one found an obstacle; a
        corrupt word reads as 0 too). S5's ranges equal S1's. */
     if (subsystem5_get_obstacle(&obstacle) == E_OK) {
@@ -933,7 +938,7 @@ void robot_control_step(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
     poll_commands(ctl, now, l, r);
     control_step(ctl, now, l, r);
     update_distance(ctl, l, r);
-    report_telemetry(ctl, now);
+    report_telemetry(ctl, now, l, r);
     report_barcode_frame(now);
 }
 

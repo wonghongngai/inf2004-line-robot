@@ -18,11 +18,13 @@
 #define BARCODE_COUNT_BITS 16U
 #define MAP_RECEIVED_BITS 1U
 #define RESERVED_BITS 1U /* bit 87 */
+#define TICKS_BITS 16U    /* #41: bits 120-135 left, 136-151 right */
 _Static_assert(STATE_BITS + FAULT_BITS + BATTERY_BITS + SPEED_BITS +
                DISTANCE_BITS + LINE_BITS + BARCODE_BITS + HUMP_BITS +
                OBSTACLE_BITS + SCAN_BITS + WIDTH_BITS + BARCODE_LETTER_BITS +
                SPEED_VALID_BITS + MAP_RECEIVED_BITS + RESERVED_BITS +
-               2U * BARCODE_COUNT_BITS == S1_TELEMETRY_BYTES * 8U,
+               2U * BARCODE_COUNT_BITS + 2U * TICKS_BITS ==
+               S1_TELEMETRY_BYTES * 8U,
                "Update packet size and protocol layout together");
 _Static_assert(sizeof(S1_TELEMETRY) == S1_TELEMETRY_BYTES, "Telemetry must have no padding");
 _Static_assert(sizeof(S1_COMMAND) == 1, "Command must have no padding");
@@ -57,6 +59,7 @@ CHECK_BITS("line bits", S1_LINE_MIN, S1_LINE_MAX, LINE_BITS);
 CHECK_BITS("barcode bits", S1_BARCODE_MIN, S1_BARCODE_MAX, BARCODE_BITS);
 CHECK_BITS("barcode letter bits", 0, S1_BARCODE_LETTER_MAX, BARCODE_LETTER_BITS);
 CHECK_BITS("barcode count bits", 0, S1_BARCODE_COUNT_MAX, BARCODE_COUNT_BITS);
+CHECK_BITS("encoder tick bits", 0, S1_TICKS_MASK, TICKS_BITS);
 CHECK_BITS("hump bits", S1_HUMP_MIN, S1_HUMP_MAX, HUMP_BITS);
 CHECK_BITS("obstacle bits", S1_OBSTACLE_MIN, S1_OBSTACLE_MAX, OBSTACLE_BITS);
 CHECK_BITS("angle bits", S1_SCAN_MIN, S1_SCAN_MAX, SCAN_BITS);
@@ -89,7 +92,9 @@ static const FIELD_LAYOUT fields[S1_FIELD_COUNT] = {
     {85, SPEED_VALID_BITS, 0, 1},
     {88, BARCODE_COUNT_BITS, 0, S1_BARCODE_COUNT_MAX},
     {104, BARCODE_COUNT_BITS, 0, S1_BARCODE_COUNT_MAX},
-    {86, MAP_RECEIVED_BITS, 0, 1}
+    {86, MAP_RECEIVED_BITS, 0, 1},
+    {120, TICKS_BITS, 0, (int)S1_TICKS_MASK},
+    {136, TICKS_BITS, 0, (int)S1_TICKS_MASK}
 };
 
 int s1_telemetry_set(S1_TELEMETRY *packet, S1_FIELD field, int value)

@@ -86,9 +86,11 @@ static void send_command(unsigned code)
  * out of bufsz. So the command buffer holds S1_QUEUE_DEPTH messages. */
 #define FAKE_MBFS 4
 #define FAKE_MBF_MSGS 16
+/* Largest message: 19-byte telemetry since #41 (was 15). */
+#define FAKE_MBF_MAXMSZ 32
 static struct {
     INT bufsz, maxmsz, used, head, count;
-    unsigned char msg[FAKE_MBF_MSGS][16];
+    unsigned char msg[FAKE_MBF_MSGS][FAKE_MBF_MAXMSZ];
     INT size[FAKE_MBF_MSGS];
 } mbf[FAKE_MBFS];
 static ID mbf_count;
@@ -96,7 +98,7 @@ static INT mbf_cost(INT size)
 { return (INT)sizeof(INT) + ((size + (INT)sizeof(INT) - 1) / (INT)sizeof(INT)) * (INT)sizeof(INT); }
 ID tk_cre_mbf(const T_CMBF *pk)
 {
-    assert(mbf_count < FAKE_MBFS && pk->maxmsz <= 16);
+    assert(mbf_count < FAKE_MBFS && pk->maxmsz <= FAKE_MBF_MAXMSZ);
     memset(&mbf[mbf_count], 0, sizeof(mbf[0]));
     mbf[mbf_count].bufsz = pk->bufsz; mbf[mbf_count].maxmsz = pk->maxmsz;
     return ++mbf_count;
@@ -1752,6 +1754,7 @@ int main(void)
     EXPECT(field(S1_FIELD_STATE) == S1_STATE_FOLLOWING);
     EXPECT(field(S1_FIELD_LINE_SENSORS) == 3);             /* wire: L bit0, C bit1 */
     EXPECT(field(S1_FIELD_DISTANCE_CM) == 10);
+    EXPECT(field(S1_FIELD_LEFT_TICKS) == 100 && field(S1_FIELD_RIGHT_TICKS) == 100); /* #41 */
     EXPECT(field(S1_FIELD_HIGHEST_HUMP_MM) == 23);
     EXPECT(field(S1_FIELD_BARCODE_BLACK) == 15 && field(S1_FIELD_BARCODE_WHITE) == 14);
     EXPECT(field(S1_FIELD_FAULTS) == 0);
@@ -1779,6 +1782,11 @@ int main(void)
     send_command(S1_COMMAND_STATUS);
     robot_control_step(&ctl, 6002, 100, 100);
     EXPECT(field(S1_FIELD_STATE) == S1_STATE_IDLE);        /* paused */
+    /* #41: raw counts go out as their low 16 bits: -5 -> 0xfffb, and
+       70000 wraps to 4464; the PC takes int16 differences. */
+    send_command(S1_COMMAND_STATUS);
+    robot_control_step(&ctl, 6003, -5, 70000);
+    EXPECT(field(S1_FIELD_LEFT_TICKS) == 0xfffb && field(S1_FIELD_RIGHT_TICKS) == 4464);
     follow(&ctl); line_stop(&ctl, 5041);
     send_command(S1_COMMAND_STATUS);
     robot_control_step(&ctl, 5042, 1, 1);
