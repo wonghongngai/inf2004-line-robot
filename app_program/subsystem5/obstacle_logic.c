@@ -712,8 +712,8 @@ EXPORT UW bypass_look_limit_mm(UW gap_mm)
 /* Drive on once a look finds the box gone */
 EXPORT UW bypass_after_look_cm(void)
 {
-    UW on_mm = (ROBOT_TAIL_MM - SPIN_SENSOR_AHEAD_MM) + PASS_MARGIN_MM +
-               TURN_SWEEP_MM;
+    UW on_mm =
+        (ROBOT_TAIL_MM - SPIN_SENSOR_AHEAD_MM) + PASS_MARGIN_MM + TURN_SWEEP_MM;
 
     return (on_mm + (MM_PER_CM - 1U)) / MM_PER_CM;
 }
@@ -825,9 +825,9 @@ EXPORT BOOL s5_request_unpack(UW word, S5_REQUEST * p_req)
     p_req->b_spin         = FALSE;
     p_req->b_reverse      = FALSE;
 
-    kind = (UB)((word >> REQ_KIND_SHIFT) & REQ_KIND_MASK);
-    move = (UB)((word >> REQ_MOVE_SHIFT) & REQ_MOVE_MASK);
-    b_spin = (0U != ((word >> REQ_SPIN_SHIFT) & 1U)) ? TRUE : FALSE;
+    kind      = (UB)((word >> REQ_KIND_SHIFT) & REQ_KIND_MASK);
+    move      = (UB)((word >> REQ_MOVE_SHIFT) & REQ_MOVE_MASK);
+    b_spin    = (0U != ((word >> REQ_SPIN_SHIFT) & 1U)) ? TRUE : FALSE;
     b_reverse = (0U != ((word >> REQ_REV_SHIFT) & 1U)) ? TRUE : FALSE;
 
     if ((kind > S5_REQ_SAFE_STOP) || (REQ_MOVE_RESERVED == move) ||
@@ -928,11 +928,10 @@ EXPORT UW s5_obstacle_pack(const S5_OBSTACLE_INFO * p_info)
     distance = (p_info->distance_cm > S5_OBS_DISTANCE_MAX_CM)
                    ? S5_OBS_DISTANCE_MAX_CM
                    : (UW)p_info->distance_cm;
-    angle    = (p_info->angle_deg > S5_OBS_ANGLE_MAX_DEG)
-                   ? S5_OBS_ANGLE_MAX_DEG
-                   : (UW)p_info->angle_deg;
-    width    = (p_info->width_cm > S5_OBS_WIDTH_MAX_CM) ? S5_OBS_WIDTH_MAX_CM
-                                                       : (UW)p_info->width_cm;
+    angle = (p_info->angle_deg > S5_OBS_ANGLE_MAX_DEG) ? S5_OBS_ANGLE_MAX_DEG
+                                                       : (UW)p_info->angle_deg;
+    width = (p_info->width_cm > S5_OBS_WIDTH_MAX_CM) ? S5_OBS_WIDTH_MAX_CM
+                                                     : (UW)p_info->width_cm;
 
     return ((distance & OBS_DIST_MASK) << OBS_DIST_SHIFT) |
            ((angle & OBS_ANGLE_MASK) << OBS_ANGLE_SHIFT) |
@@ -960,8 +959,8 @@ EXPORT BOOL s5_obstacle_unpack(UW word, S5_OBSTACLE_INFO * p_info)
     width    = (word >> OBS_WIDTH_SHIFT) & OBS_WIDTH_MASK;
 
     if ((0U != (word >> OBS_UNUSED_SHIFT)) ||
-        (distance > S5_OBS_DISTANCE_MAX_CM) ||
-        (angle > S5_OBS_ANGLE_MAX_DEG) || (width > S5_OBS_WIDTH_MAX_CM))
+        (distance > S5_OBS_DISTANCE_MAX_CM) || (angle > S5_OBS_ANGLE_MAX_DEG) ||
+        (width > S5_OBS_WIDTH_MAX_CM))
     {
         return FALSE;
     }

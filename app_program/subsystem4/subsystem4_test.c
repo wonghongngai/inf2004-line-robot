@@ -10,43 +10,37 @@
 
 EXPORT void subsystem4_test(void)
 {
-    IMU_DATA before;
-    IMU_DATA after;
+    IMU_DATA       before;
+    IMU_DATA       after;
     IMU_PACKED_MSG packed;
-    ER er;
+    ER             er;
 
     TEST_INIT();
 
     er = subsystem4_get_latest(&before);
-    TEST_CHECK("S4-U01",
-               er == E_OK,
-               "latest IMU snapshot can be read safely");
+    TEST_CHECK("S4-U01", er == E_OK, "latest IMU snapshot can be read safely");
 
     /* Allow 1 s calibration plus normal samples. */
     tk_dly_tsk(1500);
 
     er = subsystem4_get_latest(&after);
-    TEST_CHECK("S4-U02",
-               er == E_OK && after.sensor_ok,
+    TEST_CHECK("S4-U02", er == E_OK && after.sensor_ok,
                "LSM303DLHC responds through Buddy 4 task");
 
-    TEST_CHECK("S4-U03",
-               after.calibrated,
+    TEST_CHECK("S4-U03", after.calibrated,
                "stationary IMU calibration completes");
 
-    TEST_CHECK("S4-U04",
-               after.sample_count > before.sample_count,
+    TEST_CHECK("S4-U04", after.sample_count > before.sample_count,
                "IMU task continues producing samples");
 
     /* Timing evidence: count overruns instead of spamming serial warnings. */
-    TEST_CHECK("S4-U05",
-               after.last_cycle_ms <= S4_SAMPLE_PERIOD_MS,
-               "latest IMU sensing/processing cycle fits within the sample period");
+    TEST_CHECK(
+        "S4-U05", after.last_cycle_ms <= S4_SAMPLE_PERIOD_MS,
+        "latest IMU sensing/processing cycle fits within the sample period");
     /* Diagnostic only (not a check): how far over, and how often. */
     tm_printf((UB *)"Buddy4: S4-U05 timing: period=%d ms last=%u ms max=%u ms "
-              "overruns=%u (+%u in the last %u samples) samples=%u\n",
-              S4_SAMPLE_PERIOD_MS,
-              (unsigned int)after.last_cycle_ms,
+                    "overruns=%u (+%u in the last %u samples) samples=%u\n",
+              S4_SAMPLE_PERIOD_MS, (unsigned int)after.last_cycle_ms,
               (unsigned int)after.max_cycle_ms,
               (unsigned int)after.timing_overruns,
               (unsigned int)(after.timing_overruns - before.timing_overruns),
@@ -54,12 +48,10 @@ EXPORT void subsystem4_test(void)
               (unsigned int)after.sample_count);
 
     er = subsystem4_get_packed(&packed);
-    TEST_CHECK("S4-U06",
-               er == E_OK && sizeof(IMU_PACKED_MSG) == 4U,
+    TEST_CHECK("S4-U06", er == E_OK && sizeof(IMU_PACKED_MSG) == 4U,
                "compact Buddy 4 output is exactly 4 bytes");
 
-    TEST_CHECK("S4-U07",
-               packed.ramp_height_mm <= S4_MAX_RAMP_HEIGHT_MM,
+    TEST_CHECK("S4-U07", packed.ramp_height_mm <= S4_MAX_RAMP_HEIGHT_MM,
                "8-bit ramp-height field remains within its valid range");
 
     TEST_SUMMARY("subsystem4");

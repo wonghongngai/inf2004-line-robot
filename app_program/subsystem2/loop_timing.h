@@ -24,45 +24,50 @@
 #define S2_CONTROL_LATE_MS 5U
 #endif
 
-typedef struct {
-    uint32_t steps;        /* control steps since boot */
-    uint32_t late;         /* of which late */
-    uint32_t gap_max_ms;   /* worst control gap, this window */
-    uint32_t loop_max_ms;  /* worst gap between loop wake-ups, this window */
+typedef struct
+{
+    uint32_t steps;       /* control steps since boot */
+    uint32_t late;        /* of which late */
+    uint32_t gap_max_ms;  /* worst control gap, this window */
+    uint32_t loop_max_ms; /* worst gap between loop wake-ups, this window */
     uint32_t last_loop_ms;
     uint8_t  started;
 } LOOP_TIMING;
 
 /* Call once per loop wake-up with the current time. */
-static inline void loop_timing_wake(LOOP_TIMING *t, uint32_t now_ms)
+static inline void loop_timing_wake(LOOP_TIMING * t, uint32_t now_ms)
 {
-    if (t->started) {
+    if (t->started)
+    {
         uint32_t gap = now_ms - t->last_loop_ms;
-        if (gap > t->loop_max_ms) {
+        if (gap > t->loop_max_ms)
+        {
             t->loop_max_ms = gap;
         }
     }
     t->last_loop_ms = now_ms;
-    t->started = 1u;
+    t->started      = 1u;
 }
 
 /* Call once per control step with the time since the previous step. */
-static inline void loop_timing_control(LOOP_TIMING *t, uint32_t gap_ms,
+static inline void loop_timing_control(LOOP_TIMING * t, uint32_t gap_ms,
                                        uint32_t period_ms)
 {
     ++t->steps;
-    if (gap_ms > period_ms + S2_CONTROL_LATE_MS) {
+    if (gap_ms > period_ms + S2_CONTROL_LATE_MS)
+    {
         ++t->late;
     }
-    if (gap_ms > t->gap_max_ms) {
+    if (gap_ms > t->gap_max_ms)
+    {
         t->gap_max_ms = gap_ms;
     }
 }
 
 /* Call after printing: the maxima restart, the totals carry on. */
-static inline void loop_timing_new_window(LOOP_TIMING *t)
+static inline void loop_timing_new_window(LOOP_TIMING * t)
 {
-    t->gap_max_ms = 0u;
+    t->gap_max_ms  = 0u;
     t->loop_max_ms = 0u;
 }
 

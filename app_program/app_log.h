@@ -21,29 +21,29 @@
 #ifndef APP_LOG_H
 #define APP_LOG_H
 
-#include <tm/tmonitor.h>	/* tm_printf() */
+#include <tm/tmonitor.h> /* tm_printf() */
 
-#define TAG_APP		"APP"
-#define TAG_S1_MQTT	"S1:MQTT"	/* broker link, RX/TX		*/
-#define TAG_S1_CMD	"S1:CMD"	/* command / map queues		*/
-#define TAG_S1_BUZZER	"S1:BUZZER"
-#define TAG_S2_ROBOT	"S2:ROBOT"	/* integrated state machine	*/
-#define TAG_S2_BARCODE	"S2:BARCODE"	/* barcode frames seen by S2	*/
-#define TAG_S2_MOTION	"S2:MOTION"	/* motion task			*/
-#define TAG_S2_MOTOR	"S2:MOTOR"	/* PWM driver			*/
-#define TAG_S2_DEMO	"S2:DEMO"	/* MOTION_DEMO=1 sequence	*/
-#define TAG_S2_HWTEST	"S2:HWTEST"	/* motor bench test		*/
-#define TAG_S2_BENCH	"S2:BENCH"	/* S2-U10/U11 floor bench	*/
-#define TAG_S3_LINE	"S3:LINE"	/* line / barcode demo		*/
-#define TAG_S3_BARCODE	"S3:BARCODE"	/* barcode service		*/
-#define TAG_S4_IMU	"S4:IMU"
-#define TAG_S5_OBS	"S5:OBS"	/* obstacle scan and bypass	*/
+#define TAG_APP        "APP"
+#define TAG_S1_MQTT    "S1:MQTT" /* broker link, RX/TX		*/
+#define TAG_S1_CMD     "S1:CMD"  /* command / map queues		*/
+#define TAG_S1_BUZZER  "S1:BUZZER"
+#define TAG_S2_ROBOT   "S2:ROBOT"   /* integrated state machine	*/
+#define TAG_S2_BARCODE "S2:BARCODE" /* barcode frames seen by S2	*/
+#define TAG_S2_MOTION  "S2:MOTION"  /* motion task			*/
+#define TAG_S2_MOTOR   "S2:MOTOR"   /* PWM driver			*/
+#define TAG_S2_DEMO    "S2:DEMO"    /* MOTION_DEMO=1 sequence	*/
+#define TAG_S2_HWTEST  "S2:HWTEST"  /* motor bench test		*/
+#define TAG_S2_BENCH   "S2:BENCH"   /* S2-U10/U11 floor bench	*/
+#define TAG_S3_LINE    "S3:LINE"    /* line / barcode demo		*/
+#define TAG_S3_BARCODE "S3:BARCODE" /* barcode service		*/
+#define TAG_S4_IMU     "S4:IMU"
+#define TAG_S5_OBS     "S5:OBS" /* obstacle scan and bypass	*/
 
 #define LOG_INFO(tag, fmt, ...) \
-	tm_printf((UB*)"[" tag "] " fmt "\n", ##__VA_ARGS__)
+    tm_printf((UB *)"[" tag "] " fmt "\n", ##__VA_ARGS__)
 #define LOG_WARN(tag, fmt, ...) \
-	tm_printf((UB*)"[" tag "] WARN " fmt "\n", ##__VA_ARGS__)
+    tm_printf((UB *)"[" tag "] WARN " fmt "\n", ##__VA_ARGS__)
 #define LOG_ERR(tag, fmt, ...) \
-	tm_printf((UB*)"[" tag "] ERR " fmt "\n", ##__VA_ARGS__)
+    tm_printf((UB *)"[" tag "] ERR " fmt "\n", ##__VA_ARGS__)
 
 #endif /* APP_LOG_H */

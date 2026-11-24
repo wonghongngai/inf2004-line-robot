@@ -7,13 +7,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define LINE_BARCODE_ALPHABET_SIZE   26u
-#define LINE_BARCODE_LAYOUT_TRACK    0u
-#define LINE_BARCODE_LAYOUT_SIDE     1u
+#define LINE_BARCODE_ALPHABET_SIZE 26u
+#define LINE_BARCODE_LAYOUT_TRACK  0u
+#define LINE_BARCODE_LAYOUT_SIDE   1u
 
-#define LINE_BARCODE_PERIOD_MS       1u
-#define LINE_BARCODE_DEBOUNCE_MS     3u
-#define LINE_BARCODE_LOST_MS         100u
+#define LINE_BARCODE_PERIOD_MS   1u
+#define LINE_BARCODE_DEBOUNCE_MS 3u
+#define LINE_BARCODE_LOST_MS     100u
 #if (defined(APP_ALL_TEST) && APP_ALL_TEST) || \
     (defined(APP_ROBOT_INTEGRATED) && APP_ROBOT_INTEGRATED)
 /* No line-search deadline on the robot. C and R straddle the line, so both
@@ -21,58 +21,58 @@
  * deadline latched FAULT on every long straight and integrated stopped,
  * re-arming 1 s later (21 Nov 19:57 log, #8). all_test never had it. The S2
  * VC handles a really lost line itself (S3 LOST event in the S3 model). */
-#define LINE_BARCODE_SEARCH_MS       0u
+#define LINE_BARCODE_SEARCH_MS 0u
 #else
-#define LINE_BARCODE_SEARCH_MS       2000u
+#define LINE_BARCODE_SEARCH_MS 2000u
 #endif
-#define LINE_BARCODE_RUN_MAX_MS      1000u
-#define LINE_BARCODE_QUIET_MS        100u
+#define LINE_BARCODE_RUN_MAX_MS     1000u
+#define LINE_BARCODE_QUIET_MS       100u
 /* SIDE cross-junction: scanner black for 4.5 narrow widths of the last
  * decoded barcode (18 mm crossing = 6 units, wide bar = 3). Before any
  * barcode is seen, a fixed time is used: 270 ms suits about 50 mm/s.
  */
-#define LINE_BARCODE_JUNCTION_MS     270u
-#define LINE_BARCODE_JUNCTION_NUM    9u
-#define LINE_BARCODE_JUNCTION_DEN    2u
-#define LINE_BARCODE_FRAME_RUNS      29u
+#define LINE_BARCODE_JUNCTION_MS    270u
+#define LINE_BARCODE_JUNCTION_NUM   9u
+#define LINE_BARCODE_JUNCTION_DEN   2u
+#define LINE_BARCODE_FRAME_RUNS     29u
 /* Digital comparator squeezes white spaces; retain runs above debounce. */
-#define LINE_BARCODE_MIN_RUN_MS      10u
-#define LINE_BARCODE_SENSOR_MASK     7u
-#define LINE_BARCODE_CAPTURE_ACTIVE  (1u << 6u)
-#define LINE_BARCODE_LEFT            4u
-#define LINE_BARCODE_CENTRE          2u
-#define LINE_BARCODE_RIGHT           1u
+#define LINE_BARCODE_MIN_RUN_MS     10u
+#define LINE_BARCODE_SENSOR_MASK    7u
+#define LINE_BARCODE_CAPTURE_ACTIVE (1u << 6u)
+#define LINE_BARCODE_LEFT           4u
+#define LINE_BARCODE_CENTRE         2u
+#define LINE_BARCODE_RIGHT          1u
 
-#define LINE_BARCODE_FOLLOW          0u
-#define LINE_BARCODE_SEARCH          1u
-#define LINE_BARCODE_JUNCTION        2u
-#define LINE_BARCODE_SCANNING        3u
-#define LINE_BARCODE_PAUSED          4u
-#define LINE_BARCODE_FAULT           5u
+#define LINE_BARCODE_FOLLOW   0u
+#define LINE_BARCODE_SEARCH   1u
+#define LINE_BARCODE_JUNCTION 2u
+#define LINE_BARCODE_SCANNING 3u
+#define LINE_BARCODE_PAUSED   4u
+#define LINE_BARCODE_FAULT    5u
 
-#define LINE_BARCODE_CMD_LEFT        0u
-#define LINE_BARCODE_CMD_RIGHT       1u
-#define LINE_BARCODE_CMD_STRAIGHT    2u
-#define LINE_BARCODE_CMD_UTURN       3u
+#define LINE_BARCODE_CMD_LEFT     0u
+#define LINE_BARCODE_CMD_RIGHT    1u
+#define LINE_BARCODE_CMD_STRAIGHT 2u
+#define LINE_BARCODE_CMD_UTURN    3u
 
-#define LINE_BARCODE_EVT_STATUS      0u
-#define LINE_BARCODE_EVT_JUNCTION    1u
-#define LINE_BARCODE_EVT_COMMAND     2u
-#define LINE_BARCODE_EVT_INVALID     3u
-#define LINE_BARCODE_EVT_LOST        4u
-#define LINE_BARCODE_EVT_FOUND       5u
-#define LINE_BARCODE_EVT_FAULT       6u
-#define LINE_BARCODE_EVT_BARCODE     7u
+#define LINE_BARCODE_EVT_STATUS   0u
+#define LINE_BARCODE_EVT_JUNCTION 1u
+#define LINE_BARCODE_EVT_COMMAND  2u
+#define LINE_BARCODE_EVT_INVALID  3u
+#define LINE_BARCODE_EVT_LOST     4u
+#define LINE_BARCODE_EVT_FOUND    5u
+#define LINE_BARCODE_EVT_FAULT    6u
+#define LINE_BARCODE_EVT_BARCODE  7u
 
 /* Fault bitmask: one bit per fault, several may be set together. */
-#define LINE_BARCODE_ERR_NONE        0u
-#define LINE_BARCODE_ERR_LINE        1u  /* line lost longer than search */
-#define LINE_BARCODE_ERR_QUEUE       2u  /* line_nav_q overflowed */
-#define LINE_BARCODE_ERR_TIMING      4u  /* sampling interval missed */
-#define LINE_BARCODE_ERR_MASK        7u
+#define LINE_BARCODE_ERR_NONE   0u
+#define LINE_BARCODE_ERR_LINE   1u /* line lost longer than search */
+#define LINE_BARCODE_ERR_QUEUE  2u /* line_nav_q overflowed */
+#define LINE_BARCODE_ERR_TIMING 4u /* sampling interval missed */
+#define LINE_BARCODE_ERR_MASK   7u
 
-#define LINE_BARCODE_LETTER_MASK     0x1fu
-#define LINE_BARCODE_FAULT_SHIFT     5u
+#define LINE_BARCODE_LETTER_MASK 0x1fu
+#define LINE_BARCODE_FAULT_SHIFT 5u
 
 /* Explicit wire layout, independent of ABI/bit-field ordering:
  * byte 0: sensors[2:0], position[5:3], command[7:6].
@@ -93,12 +93,12 @@ typedef struct
     uint8_t data[10];
 } line_barcode_map_t;
 
-bool line_barcode_map_set(line_barcode_map_t *p_map, char letter,
-                           uint8_t command);
-void line_barcode_map_clear(line_barcode_map_t *p_map);
+bool line_barcode_map_set(line_barcode_map_t * p_map, char letter,
+                          uint8_t command);
+void line_barcode_map_clear(line_barcode_map_t * p_map);
 /* letter is 0..25 (A=0). True and *p_command set only if the letter is mapped. */
-bool line_barcode_map_get(line_barcode_map_t const *p_map, uint8_t letter,
-                          uint8_t *p_command);
+bool line_barcode_map_get(line_barcode_map_t const * p_map, uint8_t letter,
+                          uint8_t * p_command);
 
 /* Letter remembered from the last barcode until the next junction.
  * pending bit 7 = waiting, bits 4..0 = letter A=0..Z=25.
@@ -108,19 +108,20 @@ typedef struct
     uint8_t pending;
 } line_barcode_nav_t;
 
-void line_barcode_nav_clear(line_barcode_nav_t *p_nav);
+void line_barcode_nav_clear(line_barcode_nav_t * p_nav);
 /* BARCODE (while following): store the letter, message unchanged.
  * JUNCTION with a stored letter: consume it; if mapped, the message becomes
  * a COMMAND carrying the letter and movement. Returns true on COMMAND.
  */
-bool line_barcode_nav_update(line_barcode_nav_t *p_nav,
-                             line_barcode_map_t const *p_map,
-                             line_barcode_msg_t *p_msg);
+bool line_barcode_nav_update(line_barcode_nav_t *       p_nav,
+                             line_barcode_map_t const * p_map,
+                             line_barcode_msg_t *       p_msg);
 
 typedef struct
 {
-    uint8_t candidate_ms[3]; /* elapsed stability since first candidate sample */
-    uint8_t runs[37]; /* 29 widths, 10 bits per width, 6 spare bits. */
+    uint8_t
+        candidate_ms[3]; /* elapsed stability since first candidate sample */
+    uint8_t  runs[37];   /* 29 widths, 10 bits per width, 6 spare bits. */
     uint32_t run_ms : 14;
     uint32_t lost_ms : 7;
     uint32_t search_ms : 11;
@@ -136,28 +137,29 @@ typedef struct
 } line_barcode_ctx_t;
 
 /* Call only from the owning task, or with a task-private test context. */
-void line_barcode_reset(line_barcode_ctx_t *p_ctx);
+void line_barcode_reset(line_barcode_ctx_t * p_ctx);
 /* Completed run width in ms; index must be below run_count and 29. */
-uint16_t line_barcode_run_width(line_barcode_ctx_t const *p_ctx, uint8_t index);
+uint16_t line_barcode_run_width(line_barcode_ctx_t const * p_ctx,
+                                uint8_t                    index);
 /* SIDE (default): left scans barcode; centre/right track opposite line edges.
  * A cross-junction is all three black with the scanner held black longer
  * than any bar (see LINE_BARCODE_JUNCTION_MS).
  * TRACK: three-sensor tracking/junction candidates; barcode capture disabled.
  * Changing layout clears any partial frame and recovery timers.
  */
-bool line_barcode_set_layout(line_barcode_ctx_t *p_ctx, uint8_t layout);
-line_barcode_msg_t line_barcode_step(line_barcode_ctx_t *p_ctx,
-                                    uint8_t sensors, uint16_t elapsed_ms);
+bool line_barcode_set_layout(line_barcode_ctx_t * p_ctx, uint8_t layout);
+line_barcode_msg_t line_barcode_step(line_barcode_ctx_t * p_ctx,
+                                     uint8_t sensors, uint16_t elapsed_ms);
 /* widths alternate black/white, including two inter-character gaps.
  * Accepts *A* through *Z*, forward or reverse, no checksum.
  * Output is letter index 0..25; this function does not assign a motion command.
  */
-bool line_barcode_decode(uint16_t const *p_runs, uint8_t count,
-                         uint8_t *p_letter);
-uint8_t line_barcode_position(uint8_t sensors);
+bool               line_barcode_decode(uint16_t const * p_runs, uint8_t count,
+                                       uint8_t * p_letter);
+uint8_t            line_barcode_position(uint8_t sensors);
 line_barcode_msg_t line_barcode_pack(uint8_t sensors, uint8_t position,
-                                    uint8_t command, uint8_t state,
-                                    uint8_t event, uint8_t fault);
+                                     uint8_t command, uint8_t state,
+                                     uint8_t event, uint8_t fault);
 
 #if APP_TEST
 void line_barcode_test(void);

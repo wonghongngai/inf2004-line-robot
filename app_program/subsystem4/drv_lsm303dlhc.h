@@ -11,7 +11,8 @@
 
 #include "subsystem4.h"
 
-typedef struct {
+typedef struct
+{
     W ax_mg;
     W ay_mg;
     W az_mg;
@@ -22,7 +23,7 @@ typedef struct {
 } LSM303_SAMPLE;
 
 EXPORT ER lsm303dlhc_init(void);
-EXPORT ER lsm303dlhc_read(LSM303_SAMPLE *sample);
+EXPORT ER lsm303dlhc_read(LSM303_SAMPLE * sample);
 /* Free a stuck I2C bus (9 clocks + STOP); TRUE if SDA is high afterwards. */
 EXPORT BOOL lsm303dlhc_recover_bus(void);
 

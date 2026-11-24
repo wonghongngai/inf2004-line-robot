@@ -28,15 +28,14 @@ EXPORT BOOL s5_exec_startup_hold(void)
 {
     S5_REQUEST req;
 
-    return ((E_OK != subsystem5_get_request(&req)) ||
-            (S5_REQ_HOLD == req.kind))
+    return ((E_OK != subsystem5_get_request(&req)) || (S5_REQ_HOLD == req.kind))
                ? TRUE
                : FALSE;
 }
 
 /* Stop and reply: the current request is finished */
-static void exec_finish(S5_EXEC * p_x, const S5_EXEC_OPS * p_ops,
-                        void * p_ctx, UINT bits)
+static void exec_finish(S5_EXEC * p_x, const S5_EXEC_OPS * p_ops, void * p_ctx,
+                        UINT bits)
 {
     p_ops->stop(p_ctx);
     p_x->b_replied = TRUE;
@@ -44,8 +43,8 @@ static void exec_finish(S5_EXEC * p_x, const S5_EXEC_OPS * p_ops,
 }
 
 /* One control step */
-EXPORT BOOL s5_exec_step(S5_EXEC * p_x, const S5_EXEC_OPS * p_ops,
-                         void * p_ctx, UW now_ms)
+EXPORT BOOL s5_exec_step(S5_EXEC * p_x, const S5_EXEC_OPS * p_ops, void * p_ctx,
+                         UW now_ms)
 {
     S5_REQUEST req;
     BOOL       b_fresh;

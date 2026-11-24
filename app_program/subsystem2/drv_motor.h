@@ -15,10 +15,7 @@ ER drv_motor_init(void);
 /*
  * Set signed PWM percentages: positive forward, negative reverse.
  */
-void drv_motor_set(
-    float left_percent,
-    float right_percent
-);
+void drv_motor_set(float left_percent, float right_percent);
 
 /*
  * Immediately set both motors to zero PWM.
@@ -27,12 +24,13 @@ void drv_motor_stop(void);
 
 /* Read actual PWM state with outputs unchanged. Counters must advance even
    while stopped (zero compare). This checks the MCU, not motor power. */
-typedef struct {
-    UW reset_done;
-    UW left_csr, right_csr;
-    UW left_compare, right_compare;
+typedef struct
+{
+    UW   reset_done;
+    UW   left_csr, right_csr;
+    UW   left_compare, right_compare;
     BOOL left_counting, right_counting;
 } MOTOR_DIAGNOSTICS;
-ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS *out);
+ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS * out);
 
 #endif /* S2_DRV_MOTOR_H */

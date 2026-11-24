@@ -9,19 +9,20 @@
 
 EXPORT ER subsystem3_init(void)
 {
-	return line_service_init();
+    return line_service_init();
 }
 
 EXPORT ER subsystem3_start(void)
 {
-	ER er = line_service_start();
+    ER er = line_service_start();
 
-	/* Bench printout of barcode/junction events (no motors).  Not in
+    /* Bench printout of barcode/junction events (no motors).  Not in
 	   test builds: the tests pause the service and change the map. */
 #if LINE_DEMO_ENABLE && !APP_TEST
-	if (er == E_OK) {
-		er = line_demo_start();
-	}
+    if (er == E_OK)
+    {
+        er = line_demo_start();
+    }
 #endif
-	return er;
+    return er;
 }

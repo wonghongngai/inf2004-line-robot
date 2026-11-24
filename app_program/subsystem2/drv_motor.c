@@ -22,23 +22,24 @@
 
 #define MOTOR_PWM_REG(slice, offset) (PWM_BASE + (slice) * 0x14u + (offset))
 
-#define MOTOR_LEFT_FORWARD_PIN    8U
-#define MOTOR_LEFT_REVERSE_PIN    9U
+#define MOTOR_LEFT_FORWARD_PIN 8U
+#define MOTOR_LEFT_REVERSE_PIN 9U
 
-#define MOTOR_RIGHT_FORWARD_PIN  10U
-#define MOTOR_RIGHT_REVERSE_PIN  11U
+#define MOTOR_RIGHT_FORWARD_PIN 10U
+#define MOTOR_RIGHT_REVERSE_PIN 11U
 
 /*
  * PWM counter top.
  *
  * 1000 gives convenient conversion between percentage and compare value.
  */
-#define MOTOR_PWM_WRAP 1000U
+#define MOTOR_PWM_WRAP         1000U
 #define MOTOR_PWM_FREQUENCY_HZ 10000U
 /* RP2040 divider is 8.4 fixed point. Round to the nearest 1/16 step.
    At this port's 125 MHz SYSCLK this is 12.5, giving about 9.99 kHz. */
-#define MOTOR_PWM_DIV_16 \
-    ((SYSCLK * 1000000u * 16u + MOTOR_PWM_FREQUENCY_HZ * (MOTOR_PWM_WRAP + 1u) / 2u) / \
+#define MOTOR_PWM_DIV_16                                     \
+    ((SYSCLK * 1000000u * 16u +                              \
+      MOTOR_PWM_FREQUENCY_HZ * (MOTOR_PWM_WRAP + 1u) / 2u) / \
      (MOTOR_PWM_FREQUENCY_HZ * (MOTOR_PWM_WRAP + 1u)))
 
 /*
@@ -46,11 +47,13 @@
  */
 static float clamp_percent(float percent)
 {
-    if (percent < 0.0f) {
+    if (percent < 0.0f)
+    {
         return 0.0f;
     }
 
-    if (percent > 100.0f) {
+    if (percent > 100.0f)
+    {
         return 100.0f;
     }
 
@@ -62,14 +65,7 @@ static float clamp_percent(float percent)
  */
 static UW percent_to_cc(float percent)
 {
-    return
-        (UW)(
-            (
-                clamp_percent(percent) *
-                (float)MOTOR_PWM_WRAP
-            ) /
-            100.0f
-        );
+    return (UW)((clamp_percent(percent) * (float)MOTOR_PWM_WRAP) / 100.0f);
 }
 
 /*
@@ -81,7 +77,8 @@ static ER init_pwm_pin(UINT pin)
 
     er = pwm_set_pin(pin);
 
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
 
@@ -89,22 +86,17 @@ static ER init_pwm_pin(UINT pin)
        rating. Use the 10 kHz frequency from Cytron's motor example. */
     out_w(MOTOR_PWM_REG((pin >> 1u) & 7u, PWM_CHx_DIV), MOTOR_PWM_DIV_16);
 
-    er = pwm_set_wrap(
-        pin,
-        MOTOR_PWM_WRAP
-    );
+    er = pwm_set_wrap(pin, MOTOR_PWM_WRAP);
 
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
 
     /*
      * Start with zero motor output.
      */
-    return pwm_set_cc(
-        pin,
-        0U
-    );
+    return pwm_set_cc(pin, 0U);
 }
 
 ER drv_motor_init(void)
@@ -114,38 +106,34 @@ ER drv_motor_init(void)
     /*
      * Configure left motor outputs.
      */
-    er = init_pwm_pin(
-        MOTOR_LEFT_FORWARD_PIN
-    );
+    er = init_pwm_pin(MOTOR_LEFT_FORWARD_PIN);
 
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
 
-    er = init_pwm_pin(
-        MOTOR_LEFT_REVERSE_PIN
-    );
+    er = init_pwm_pin(MOTOR_LEFT_REVERSE_PIN);
 
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
 
     /*
      * Configure right motor outputs.
      */
-    er = init_pwm_pin(
-        MOTOR_RIGHT_FORWARD_PIN
-    );
+    er = init_pwm_pin(MOTOR_RIGHT_FORWARD_PIN);
 
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
 
-    er = init_pwm_pin(
-        MOTOR_RIGHT_REVERSE_PIN
-    );
+    er = init_pwm_pin(MOTOR_RIGHT_REVERSE_PIN);
 
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
 
@@ -157,21 +145,17 @@ ER drv_motor_init(void)
      * Therefore enabling one channel from each pair enables the
      * corresponding slice.
      */
-    er = pwm_set_enabled(
-        MOTOR_LEFT_FORWARD_PIN,
-        TRUE
-    );
+    er = pwm_set_enabled(MOTOR_LEFT_FORWARD_PIN, TRUE);
 
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
 
-    er = pwm_set_enabled(
-        MOTOR_RIGHT_FORWARD_PIN,
-        TRUE
-    );
+    er = pwm_set_enabled(MOTOR_RIGHT_FORWARD_PIN, TRUE);
 
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
 
@@ -204,21 +188,23 @@ void drv_motor_stop(void)
     drv_motor_set(0.0f, 0.0f);
 }
 
-ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS *out)
+ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS * out)
 {
-    UW left_start, right_start;
-    const UW left_slice = (MOTOR_LEFT_FORWARD_PIN >> 1u) & 7u;
+    UW       left_start, right_start;
+    const UW left_slice  = (MOTOR_LEFT_FORWARD_PIN >> 1u) & 7u;
     const UW right_slice = (MOTOR_RIGHT_FORWARD_PIN >> 1u) & 7u;
-    if (out == 0) return E_PAR;
-    out->reset_done = in_w(RESETS_RESET_DONE) & RESETS_RESET_PWM;
-    out->left_csr = in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CSR));
-    out->right_csr = in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CSR));
-    out->left_compare = in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CC));
+    if (out == 0)
+        return E_PAR;
+    out->reset_done    = in_w(RESETS_RESET_DONE) & RESETS_RESET_PWM;
+    out->left_csr      = in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CSR));
+    out->right_csr     = in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CSR));
+    out->left_compare  = in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CC));
     out->right_compare = in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CC));
     out->left_counting = out->right_counting = FALSE;
-    left_start = in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CTR));
+    left_start  = in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CTR));
     right_start = in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CTR));
-    for (unsigned i = 0; i < 64u; ++i) {
+    for (unsigned i = 0; i < 64u; ++i)
+    {
         if (in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CTR)) != left_start)
             out->left_counting = TRUE;
         if (in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CTR)) != right_start)
@@ -232,9 +218,12 @@ ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS *out)
         in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_TOP)) != MOTOR_PWM_WRAP ||
         in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_TOP)) != MOTOR_PWM_WRAP)
         return E_IO;
-    for (UINT pin = MOTOR_LEFT_FORWARD_PIN; pin <= MOTOR_RIGHT_REVERSE_PIN; ++pin) {
+    for (UINT pin = MOTOR_LEFT_FORWARD_PIN; pin <= MOTOR_RIGHT_REVERSE_PIN;
+         ++pin)
+    {
         if (in_w(GPIO_CTRL(pin)) != GPIO_CTRL_FUNCSEL_PWM ||
-            (in_w(GPIO(pin)) & GPIO_OD)) return E_IO;
+            (in_w(GPIO(pin)) & GPIO_OD))
+            return E_IO;
     }
     return E_OK;
 }

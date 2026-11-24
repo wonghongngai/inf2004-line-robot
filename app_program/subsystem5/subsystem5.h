@@ -54,7 +54,7 @@
 #define S5_MOVE_FWD    (0U)
 #define S5_MOVE_TURN_L (1U) /* pivot on one stopped wheel (or spin)  */
 #define S5_MOVE_TURN_R (2U)
-                            /* move 3 reserved = invalid             */
+/* move 3 reserved = invalid             */
 
 #define S5_REQ_VALUE_MAX (1023U) /* 10-bit value field */
 #define S5_REQ_SEQ_MASK  (0x0FU) /* 4-bit seq field    */

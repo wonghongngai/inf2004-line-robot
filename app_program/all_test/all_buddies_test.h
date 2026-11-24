@@ -17,7 +17,7 @@
 #define ALL_TEST_TURN_ADVANCE_CM 5.0f
 #define ALL_TEST_TURN_TIMEOUT_MS 8000u
 /* After a movement, C/R both black drives straight instead of stopping. */
-#define ALL_TEST_TURN_SETTLE_MS 500u
+#define ALL_TEST_TURN_SETTLE_MS  500u
 #ifndef ALL_TEST_DURATION_MS
 /* Zero runs continuously until manually paused. */
 #define ALL_TEST_DURATION_MS 0u
@@ -36,7 +36,7 @@
 #endif
 /* Zero disables the search deadline for hardware trials. */
 #define ALL_TEST_CORNER_TIMEOUT_MS 0u
-#define ALL_TEST_CORNER_CENTRE_MS 60u
+#define ALL_TEST_CORNER_CENTRE_MS  60u
 #define ALL_TEST_DIRECTION_HOLD_MS 300u
 /* Combined hardware test; fixed PWM, no calibrated distance/angle motion. */
 ER all_buddies_test_start(void);

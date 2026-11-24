@@ -28,35 +28,35 @@
 #include "drv_encoder.h"
 #include <tk/syslib.h>
 
-#define ENCODER_LEFT_A_PIN   26U
-#define ENCODER_LEFT_B_PIN    6U
+#define ENCODER_LEFT_A_PIN 26U
+#define ENCODER_LEFT_B_PIN 6U
 
-#define ENCODER_RIGHT_A_PIN   2U
-#define ENCODER_RIGHT_B_PIN   3U
+#define ENCODER_RIGHT_A_PIN 2U
+#define ENCODER_RIGHT_B_PIN 3U
 
 /* RP2040 IO_BANK0 interrupt registers (datasheet 2.19.6.1).  Each GPIO has
  * four bits per register: level low, level high, edge low, edge high. */
-#define ENC_IO_BANK0_BASE    0x40014000UL
-#define ENC_INTR(n)          (ENC_IO_BANK0_BASE + 0x0F0UL + (4UL * (n)))
-#define ENC_PROC0_INTE(n)    (ENC_IO_BANK0_BASE + 0x100UL + (4UL * (n)))
-#define ENC_PROC1_INTE(n)    (ENC_IO_BANK0_BASE + 0x130UL + (4UL * (n)))
-#define ENC_EDGE_BITS(pin)   (0xCUL << (4U * ((pin) % 8U))) /* both edges */
-#define ENC_REG_INDEX(pin)   ((pin) / 8U)
+#define ENC_IO_BANK0_BASE  0x40014000UL
+#define ENC_INTR(n)        (ENC_IO_BANK0_BASE + 0x0F0UL + (4UL * (n)))
+#define ENC_PROC0_INTE(n)  (ENC_IO_BANK0_BASE + 0x100UL + (4UL * (n)))
+#define ENC_PROC1_INTE(n)  (ENC_IO_BANK0_BASE + 0x130UL + (4UL * (n)))
+#define ENC_EDGE_BITS(pin) (0xCUL << (4U * ((pin) % 8U))) /* both edges */
+#define ENC_REG_INDEX(pin) ((pin) / 8U)
 
 /* SIO: GPIO input levels, and which core is running */
-#define ENC_SIO_GPIO_IN      0xD0000004UL
-#define ENC_SIO_CPUID        0xD0000000UL
+#define ENC_SIO_GPIO_IN 0xD0000004UL
+#define ENC_SIO_CPUID   0xD0000000UL
 
-#define ENC_INTNO_IO_BANK0   13U /* IO_IRQ_BANK0 */
-#define ENC_INTPRI           2   /* same level as the physical timer */
+#define ENC_INTNO_IO_BANK0 13U /* IO_IRQ_BANK0 */
+#define ENC_INTPRI         2   /* same level as the physical timer */
 
 /*
  * State belonging to one wheel encoder.  'count' is written only by the
  * interrupt handler (one aligned 32-bit store); 'zero' only by tasks
  * (drv_encoder_reset).  Readers see count - zero.
  */
-typedef struct {
-
+typedef struct
+{
     volatile int32_t count;
 
     volatile int32_t zero;
@@ -77,24 +77,15 @@ static BOOL irq_defined = FALSE;
  *     bit 1 = A
  *     bit 0 = B
  */
-static UINT ab_from_levels(
-    UW levels,
-    UINT pin_a,
-    UINT pin_b
-)
+static UINT ab_from_levels(UW levels, UINT pin_a, UINT pin_b)
 {
-    return
-        (((levels >> pin_a) & 1U) << 1) |
-        ((levels >> pin_b) & 1U);
+    return (((levels >> pin_a) & 1U) << 1) | ((levels >> pin_b) & 1U);
 }
 
 /*
  * Read A and B now and combine as above.
  */
-static UINT read_ab(
-    UINT pin_a,
-    UINT pin_b
-)
+static UINT read_ab(UINT pin_a, UINT pin_b)
 {
     return ab_from_levels(in_w(ENC_SIO_GPIO_IN), pin_a, pin_b);
 }
@@ -106,44 +97,29 @@ static UINT read_ab(
  *
  * Invalid two-bit jumps produce 0 instead of inventing movement.
  */
-static int32_t quadrature_delta(
-    UINT previous_ab,
-    UINT current_ab
-)
+static int32_t quadrature_delta(UINT previous_ab, UINT current_ab)
 {
     static const int8_t transition[16] = {
 
-         0, -1,  1,  0,
+        0,  -1, 1,  0,
 
-         1,  0,  0, -1,
+        1,  0,  0,  -1,
 
-        -1,  0,  0,  1,
+        -1, 0,  0,  1,
 
-         0,  1, -1,  0
-    };
+        0,  1,  -1, 0};
 
-    return transition[
-        ((previous_ab & 3U) << 2) |
-        (current_ab & 3U)
-    ];
+    return transition[((previous_ab & 3U) << 2) | (current_ab & 3U)];
 }
 
 /*
  * Process one encoder A/B sample (interrupt handler only).
  */
-static void update_channel(
-    ENCODER_CHANNEL *channel,
-    UINT current_ab
-)
+static void update_channel(ENCODER_CHANNEL * channel, UINT current_ab)
 {
-    channel->count +=
-        quadrature_delta(
-            channel->previous_ab,
-            current_ab
-        );
+    channel->count += quadrature_delta(channel->previous_ab, current_ab);
 
-    channel->previous_ab =
-        current_ab;
+    channel->previous_ab = current_ab;
 }
 
 /*
@@ -176,12 +152,10 @@ static void encoder_inthdr(UINT intno)
     clear_edges();
     levels = in_w(ENC_SIO_GPIO_IN);
 
-    update_channel(&left_encoder,
-                   ab_from_levels(levels, ENCODER_LEFT_A_PIN,
-                                  ENCODER_LEFT_B_PIN));
-    update_channel(&right_encoder,
-                   ab_from_levels(levels, ENCODER_RIGHT_A_PIN,
-                                  ENCODER_RIGHT_B_PIN));
+    update_channel(&left_encoder, ab_from_levels(levels, ENCODER_LEFT_A_PIN,
+                                                 ENCODER_LEFT_B_PIN));
+    update_channel(&right_encoder, ab_from_levels(levels, ENCODER_RIGHT_A_PIN,
+                                                  ENCODER_RIGHT_B_PIN));
 }
 
 /*
@@ -204,42 +178,34 @@ ER drv_encoder_init(void)
     /*
      * Left encoder inputs.
      */
-    er = gpio_set_pin(
-        ENCODER_LEFT_A_PIN,
-        GPIO_MODE_IN
-    );
+    er = gpio_set_pin(ENCODER_LEFT_A_PIN, GPIO_MODE_IN);
 
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
 
-    er = gpio_set_pin(
-        ENCODER_LEFT_B_PIN,
-        GPIO_MODE_IN
-    );
+    er = gpio_set_pin(ENCODER_LEFT_B_PIN, GPIO_MODE_IN);
 
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
 
     /*
      * Right encoder inputs.
      */
-    er = gpio_set_pin(
-        ENCODER_RIGHT_A_PIN,
-        GPIO_MODE_IN
-    );
+    er = gpio_set_pin(ENCODER_RIGHT_A_PIN, GPIO_MODE_IN);
 
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
 
-    er = gpio_set_pin(
-        ENCODER_RIGHT_B_PIN,
-        GPIO_MODE_IN
-    );
+    er = gpio_set_pin(ENCODER_RIGHT_B_PIN, GPIO_MODE_IN);
 
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
 
@@ -247,24 +213,18 @@ ER drv_encoder_init(void)
      * Start counters from zero, and remember the current A/B values so
      * the first edge has a valid previous state.
      */
-    left_encoder.count = 0;
-    left_encoder.zero = 0;
+    left_encoder.count  = 0;
+    left_encoder.zero   = 0;
     right_encoder.count = 0;
-    right_encoder.zero = 0;
+    right_encoder.zero  = 0;
 
-    left_encoder.previous_ab =
-        read_ab(
-            ENCODER_LEFT_A_PIN,
-            ENCODER_LEFT_B_PIN
-        );
+    left_encoder.previous_ab = read_ab(ENCODER_LEFT_A_PIN, ENCODER_LEFT_B_PIN);
 
     right_encoder.previous_ab =
-        read_ab(
-            ENCODER_RIGHT_A_PIN,
-            ENCODER_RIGHT_B_PIN
-        );
+        read_ab(ENCODER_RIGHT_A_PIN, ENCODER_RIGHT_B_PIN);
 
-    if (irq_defined) {
+    if (irq_defined)
+    {
         return E_OK; /* already counting */
     }
 
@@ -273,8 +233,9 @@ ER drv_encoder_init(void)
      */
     dint.intatr = TA_HLNG;
     dint.inthdr = (FP)encoder_inthdr;
-    er = tk_def_int(ENC_INTNO_IO_BANK0, &dint);
-    if (er < E_OK) {
+    er          = tk_def_int(ENC_INTNO_IO_BANK0, &dint);
+    if (er < E_OK)
+    {
         return er;
     }
 
@@ -296,21 +257,16 @@ void drv_encoder_poll(void)
      * existing 1 ms callers still build. */
 }
 
-void drv_encoder_get_counts(
-    int32_t *left_ticks,
-    int32_t *right_ticks
-)
+void drv_encoder_get_counts(int32_t * left_ticks, int32_t * right_ticks)
 {
-    if (left_ticks != 0) {
-
-        *left_ticks =
-            left_encoder.count - left_encoder.zero;
+    if (left_ticks != 0)
+    {
+        *left_ticks = left_encoder.count - left_encoder.zero;
     }
 
-    if (right_ticks != 0) {
-
-        *right_ticks =
-            right_encoder.count - right_encoder.zero;
+    if (right_ticks != 0)
+    {
+        *right_ticks = right_encoder.count - right_encoder.zero;
     }
 }
 

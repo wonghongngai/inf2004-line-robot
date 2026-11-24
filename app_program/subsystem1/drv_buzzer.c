@@ -9,7 +9,7 @@
  * but is an SIO encoder input, so the PWM output only reaches GP22. */
 #include "drv_buzzer.h"
 
-#define BUZZER_PIN        22U   /* Robo Pico piezo (TEAM.md pin table) */
+#define BUZZER_PIN        22U /* Robo Pico piezo (TEAM.md pin table) */
 #define BUZZER_SLICE      ((BUZZER_PIN >> 1U) & 0x7U)
 #define BUZZER_SLICE_BASE (PWM_BASE + (0x14UL * BUZZER_SLICE))
 #define BUZZER_CSR_ADDR   (BUZZER_SLICE_BASE + PWM_CHx_CSR)
@@ -27,7 +27,7 @@
 LOCAL ID buzzer_alarm;
 
 /* Alarm handler: end the tone. Only a register write, safe in handler context. */
-LOCAL void buzzer_off(void *exinf)
+LOCAL void buzzer_off(void * exinf)
 {
     (void)exinf;
     (void)pwm_set_cc(BUZZER_PIN, 0U);
@@ -37,13 +37,15 @@ LOCAL void buzzer_off(void *exinf)
 LOCAL ER buzzer_init(void)
 {
     T_CALM alarm = {0};
-    ER er;
-    ID id;
-    if (buzzer_alarm > 0) {
+    ER     er;
+    ID     id;
+    if (buzzer_alarm > 0)
+    {
         return E_OK;
     }
     er = pwm_set_pin(BUZZER_PIN);
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
     out_w(BUZZER_CSR_ADDR, 0U); /* free-running, disabled while configuring */
@@ -53,8 +55,9 @@ LOCAL ER buzzer_init(void)
     (void)pwm_set_enabled(BUZZER_PIN, TRUE);
     alarm.almatr = TA_HLNG;
     alarm.almhdr = (FP)buzzer_off;
-    id = tk_cre_alm(&alarm);
-    if (id < E_OK) {
+    id           = tk_cre_alm(&alarm);
+    if (id < E_OK)
+    {
         return id;
     }
     buzzer_alarm = id;
@@ -64,16 +67,19 @@ LOCAL ER buzzer_init(void)
 EXPORT ER buzzer_beep(UINT ms)
 {
     ER er;
-    if (ms == 0U) {
+    if (ms == 0U)
+    {
         return E_PAR;
     }
     er = buzzer_init();
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         return er;
     }
     (void)pwm_set_cc(BUZZER_PIN, BUZZER_ON_CC);
     er = tk_sta_alm(buzzer_alarm, (RELTIM)ms);
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         buzzer_off(NULL); /* never leave the tone running */
     }
     return er;
@@ -84,7 +90,8 @@ EXPORT void wifi_utk_link_up(void)
 {
 #if WIFI_CONNECT_BEEP
     ER er = buzzer_beep(WIFI_BEEP_MS);
-    if (er < E_OK) {
+    if (er < E_OK)
+    {
         LOG_ERR(TAG_S1_BUZZER, "connect beep failed, er=%d", (int)er);
     }
 #endif

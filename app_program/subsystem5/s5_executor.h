@@ -75,8 +75,8 @@ typedef struct
  * its line following.
  * @return TRUE while S5 has control: skip line following this step.
  */
-IMPORT BOOL s5_exec_step(S5_EXEC * p_x, const S5_EXEC_OPS * p_ops,
-                         void * p_ctx, UW now_ms);
+IMPORT BOOL s5_exec_step(S5_EXEC * p_x, const S5_EXEC_OPS * p_ops, void * p_ctx,
+                         UW now_ms);
 
 /** Tell S5 whether the robot is line-following (call FALSE on any stop).
  *  Flag calls only on change. */

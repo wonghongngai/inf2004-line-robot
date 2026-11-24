@@ -270,8 +270,8 @@ EXPORT void subsystem5_test(void)
                     !s5_request_unpack((UW)S5_REQ_MOVE | (1UL << 27), &req)),
                    "unused bits 20-27 set: rejected");
         {
-            S5_REQUEST all_in = {S5_REQ_MOVE, S5_MOVE_FWD, 3U, TRUE, 50U, TRUE,
-                                 FALSE, FALSE};
+            S5_REQUEST all_in  = {S5_REQ_MOVE, S5_MOVE_FWD, 3U,    TRUE,
+                                  50U,         TRUE,        FALSE, FALSE};
             S5_REQUEST all_out = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE, FALSE};
 
             TEST_CHECK("S5-U09",
@@ -289,15 +289,15 @@ EXPORT void subsystem5_test(void)
                    "rejected word reads back as NONE");
         /* Spin (bit 29, 23 Nov): valid only on a MOVE that turns */
         {
-            S5_REQUEST spin_in  = {S5_REQ_MOVE, S5_MOVE_TURN_R, 4U, FALSE, 90U,
-                                   FALSE, TRUE, FALSE};
+            S5_REQUEST spin_in  = {S5_REQ_MOVE, S5_MOVE_TURN_R, 4U,   FALSE,
+                                   90U,         FALSE,          TRUE, FALSE};
             S5_REQUEST spin_out = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE, FALSE};
-            S5_REQUEST fwd_in   = {S5_REQ_MOVE, S5_MOVE_FWD, 4U, FALSE, 10U,
-                                   FALSE, TRUE, FALSE};
-            S5_REQUEST rev_in   = {S5_REQ_MOVE, S5_MOVE_FWD, 6U, FALSE, 15U,
-                                   FALSE, FALSE, TRUE};
-            S5_REQUEST turn_rev = {S5_REQ_MOVE, S5_MOVE_TURN_L, 6U, FALSE, 90U,
-                                   FALSE, FALSE, TRUE};
+            S5_REQUEST fwd_in   = {S5_REQ_MOVE, S5_MOVE_FWD, 4U,   FALSE,
+                                   10U,         FALSE,       TRUE, FALSE};
+            S5_REQUEST rev_in   = {S5_REQ_MOVE, S5_MOVE_FWD, 6U,    FALSE,
+                                   15U,         FALSE,       FALSE, TRUE};
+            S5_REQUEST turn_rev = {S5_REQ_MOVE, S5_MOVE_TURN_L, 6U,    FALSE,
+                                   90U,         FALSE,          FALSE, TRUE};
             UW         word     = s5_request_pack(&spin_in);
 
             TEST_CHECK("S5-U09",
@@ -307,26 +307,26 @@ EXPORT void subsystem5_test(void)
                         (90U == spin_out.value)),
                        "spin right 90: bit 29 set, round trip");
             spin_in.move = S5_MOVE_TURN_L;
+            TEST_CHECK(
+                "S5-U09",
+                (s5_request_unpack(s5_request_pack(&spin_in), &spin_out) &&
+                 spin_out.b_spin && (S5_MOVE_TURN_L == spin_out.move)),
+                "spin left 90 round trip");
             TEST_CHECK("S5-U09",
-                       (s5_request_unpack(s5_request_pack(&spin_in), &spin_out) &&
-                        spin_out.b_spin && (S5_MOVE_TURN_L == spin_out.move)),
-                       "spin left 90 round trip");
-            TEST_CHECK("S5-U09",
-                       (request_round_trip(S5_REQ_MOVE, S5_MOVE_TURN_L, 2U, FALSE,
-                                           90U) &&
-                        s5_request_unpack(
-                            s5_request_pack(&(S5_REQUEST){S5_REQ_MOVE,
-                                                          S5_MOVE_TURN_L, 2U,
-                                                          FALSE, 90U, FALSE,
-                                                          FALSE, FALSE}),
-                            &spin_out) &&
+                       (request_round_trip(S5_REQ_MOVE, S5_MOVE_TURN_L, 2U,
+                                           FALSE, 90U) &&
+                        s5_request_unpack(s5_request_pack(&(S5_REQUEST){
+                                              S5_REQ_MOVE, S5_MOVE_TURN_L, 2U,
+                                              FALSE, 90U, FALSE, FALSE, FALSE}),
+                                          &spin_out) &&
                         !spin_out.b_spin),
                        "a turn without the bit is a pivot (b_spin FALSE)");
-            TEST_CHECK("S5-U09",
-                       (!s5_request_unpack(
-                            (UW)S5_REQ_MOVE | (10UL << 10) | (1UL << 29), &req) &&
-                        (0UL == (s5_request_pack(&fwd_in) & (1UL << 29)))),
-                       "spin on a FWD move: rejected, and pack never sets it");
+            TEST_CHECK(
+                "S5-U09",
+                (!s5_request_unpack(
+                     (UW)S5_REQ_MOVE | (10UL << 10) | (1UL << 29), &req) &&
+                 (0UL == (s5_request_pack(&fwd_in) & (1UL << 29)))),
+                "spin on a FWD move: rejected, and pack never sets it");
             /* Reverse (bit 30, 23 Nov): valid only on a forward MOVE */
             word = s5_request_pack(&rev_in);
             TEST_CHECK("S5-U09",
@@ -336,24 +336,25 @@ EXPORT void subsystem5_test(void)
                         (S5_MOVE_FWD == spin_out.move) &&
                         (15U == spin_out.value)),
                        "reverse 15 cm: bit 30 set, round trip");
-            TEST_CHECK("S5-U09",
-                       (s5_request_unpack(s5_request_pack(&fwd_in), &spin_out) &&
-                        !spin_out.b_reverse),
-                       "a leg without the bit goes forward (b_reverse FALSE)");
-            TEST_CHECK("S5-U09",
-                       (!s5_request_unpack((UW)S5_REQ_MOVE | (1UL << 3) |
-                                               (1UL << 30),
-                                           &req) &&
-                        !s5_request_unpack((UW)S5_REQ_HOLD | (1UL << 30), &req) &&
-                        (0UL == (s5_request_pack(&turn_rev) & (1UL << 30)))),
-                       "reverse on a turn or a HOLD: rejected, and pack never "
-                       "sets it there");
+            TEST_CHECK(
+                "S5-U09",
+                (s5_request_unpack(s5_request_pack(&fwd_in), &spin_out) &&
+                 !spin_out.b_reverse),
+                "a leg without the bit goes forward (b_reverse FALSE)");
+            TEST_CHECK(
+                "S5-U09",
+                (!s5_request_unpack((UW)S5_REQ_MOVE | (1UL << 3) | (1UL << 30),
+                                    &req) &&
+                 !s5_request_unpack((UW)S5_REQ_HOLD | (1UL << 30), &req) &&
+                 (0UL == (s5_request_pack(&turn_rev) & (1UL << 30)))),
+                "reverse on a turn or a HOLD: rejected, and pack never "
+                "sets it there");
             TEST_CHECK("S5-U09",
                        !s5_request_unpack((UW)S5_REQ_MOVE | (1UL << 31), &req),
                        "unused bit 31 set: rejected");
         }
-        req = (S5_REQUEST){S5_REQ_MOVE, S5_MOVE_FWD, 1U, FALSE, 2000U, FALSE,
-                           FALSE, FALSE};
+        req = (S5_REQUEST){S5_REQ_MOVE, S5_MOVE_FWD, 1U,    FALSE,
+                           2000U,       FALSE,       FALSE, FALSE};
         TEST_CHECK("S5-U09",
                    (1023U == ((s5_request_pack(&req) >> 10) & 0x3FFU)),
                    "value over 1023 clamped");
@@ -579,8 +580,8 @@ EXPORT void subsystem5_test(void)
         TEST_CHECK("S5-U37", (170U == bypass_side_gap_mm(&right, &prof)),
                    "right pass: F1 260 + 100 - right edge 190 = 170 mm");
         {
-            obstacle_profile_t wide = {TRUE, 190U, 90U, 185, 0, 900U,
-                                       9999U, 9999U};
+            obstacle_profile_t wide = {TRUE, 190U, 90U,   185,
+                                       0,    900U, 9999U, 9999U};
             plan_t             near = {PLAN_PASS_LEFT, 0U, FALSE};
 
             TEST_CHECK("S5-U37",
@@ -604,10 +605,12 @@ EXPORT void subsystem5_test(void)
 
     /* S5-U49: looked-pass distances and the spin that faces the box */
     {
-        obstacle_profile_t prof = {TRUE, 190U, 80U, 185, -88, 205U, 9999U, 9999U};
+        obstacle_profile_t prof = {TRUE, 190U, 80U,   185,
+                                   -88,  205U, 9999U, 9999U};
 
-        TEST_CHECK("S5-U49", (20U == bypass_look_start_cm(&prof)),
-                   "first look: front 185 - 100 + sensor 80 + 30 = 195 -> 20 cm");
+        TEST_CHECK(
+            "S5-U49", (20U == bypass_look_start_cm(&prof)),
+            "first look: front 185 - 100 + sensor 80 + 30 = 195 -> 20 cm");
         prof.closest_x_mm = 900;
         TEST_CHECK("S5-U49", (PASS_MAX_CM == bypass_look_start_cm(&prof)),
                    "first look at most PASS_MAX_CM");
@@ -626,8 +629,9 @@ EXPORT void subsystem5_test(void)
                     (100U == bypass_look_limit_mm(50U))),
                    "beside under (226 - 80) + 100 = 246 mm; gap under the "
                    "sensor offset: 100");
-        TEST_CHECK("S5-U49", (22U == bypass_after_look_cm()),
-                   "after the box: tail 150 - 80 + 50 + 100 sweep = 220 -> 22 cm");
+        TEST_CHECK(
+            "S5-U49", (22U == bypass_after_look_cm()),
+            "after the box: tail 150 - 80 + 50 + 100 sweep = 220 -> 22 cm");
         TEST_CHECK("S5-U49",
                    ((S5_MOVE_TURN_R == bypass_look_turn(PLAN_PASS_LEFT)) &&
                     (S5_MOVE_TURN_L == bypass_look_turn(PLAN_PASS_RIGHT)) &&
@@ -676,8 +680,7 @@ EXPORT void subsystem5_test(void)
                "below 50 / above 130 deg clamped to the holder limits");
 
     /* S5-U12: settle time for a coarse jump */
-    TEST_CHECK("S5-U12", (0U == servo_settle_ms(90U, 90U)),
-               "no move: no wait");
+    TEST_CHECK("S5-U12", (0U == servo_settle_ms(90U, 90U)), "no move: no wait");
     TEST_CHECK("S5-U12",
                ((70U == servo_settle_ms(60U, 30U)) &&
                 (70U == servo_settle_ms(30U, 60U))),
@@ -699,14 +702,12 @@ EXPORT void subsystem5_test(void)
                    "(a) one close reading does not confirm");
         hist = 0U;
         (void)obstacle_filter_update(&hist, ULTRASONIC_OK, 150U);
-        TEST_CHECK("S5-U13",
-                   obstacle_filter_update(&hist, ULTRASONIC_OK, 150U),
+        TEST_CHECK("S5-U13", obstacle_filter_update(&hist, ULTRASONIC_OK, 150U),
                    "(b) two close readings in a row confirm");
         hist = 0U;
         (void)obstacle_filter_update(&hist, ULTRASONIC_OK, 150U);
         (void)obstacle_filter_update(&hist, ULTRASONIC_OK, 500U);
-        TEST_CHECK("S5-U13",
-                   obstacle_filter_update(&hist, ULTRASONIC_OK, 150U),
+        TEST_CHECK("S5-U13", obstacle_filter_update(&hist, ULTRASONIC_OK, 150U),
                    "(c) close, far, close: two of the last three confirm");
         hist = 0U;
         (void)obstacle_filter_update(&hist, ULTRASONIC_OK, 150U);
@@ -724,13 +725,13 @@ EXPORT void subsystem5_test(void)
         b_got = FALSE;
         for (index = 0U; index < 3U; index++)
         {
-            b_got = b_got ||
-                    obstacle_filter_update(&hist, ULTRASONIC_NO_ECHO, 0U);
+            b_got =
+                b_got || obstacle_filter_update(&hist, ULTRASONIC_NO_ECHO, 0U);
         }
         for (index = 0U; index < 3U; index++)
         {
-            b_got = b_got ||
-                    obstacle_filter_update(&hist, ULTRASONIC_TOO_FAR, 0U);
+            b_got =
+                b_got || obstacle_filter_update(&hist, ULTRASONIC_TOO_FAR, 0U);
         }
         TEST_CHECK("S5-U13", !b_got,
                    "(f) NO_ECHO x3 and TOO_FAR x3 never confirm");
@@ -739,14 +740,12 @@ EXPORT void subsystem5_test(void)
         TEST_CHECK("S5-U13",
                    !obstacle_filter_update(&hist, ULTRASONIC_OK, D_DETECT_MM),
                    "(g) 200 mm x2: not under D_DETECT_MM (boundary)");
-        TEST_CHECK("S5-U13",
-                   !obstacle_filter_update(NULL, ULTRASONIC_OK, 150U),
+        TEST_CHECK("S5-U13", !obstacle_filter_update(NULL, ULTRASONIC_OK, 150U),
                    "(h) NULL history is FALSE");
         hist = 0U;
         (void)obstacle_filter_update(&hist, ULTRASONIC_OK, 150U);
         (void)obstacle_filter_update(&hist, ULTRASONIC_BUSY, 0U);
-        TEST_CHECK("S5-U13",
-                   obstacle_filter_update(&hist, ULTRASONIC_OK, 150U),
+        TEST_CHECK("S5-U13", obstacle_filter_update(&hist, ULTRASONIC_OK, 150U),
                    "(i) BUSY between two close readings is skipped");
     }
 
@@ -757,8 +756,14 @@ EXPORT void subsystem5_test(void)
         plan_t             plan;
 
         /* 100 mm box centred, both sides open */
-        prof = (obstacle_profile_t){TRUE,  250U, 90U, 250, 0, 100U,
-                                    CLEARANCE_OPEN_MM, CLEARANCE_OPEN_MM};
+        prof = (obstacle_profile_t){TRUE,
+                                    250U,
+                                    90U,
+                                    250,
+                                    0,
+                                    100U,
+                                    CLEARANCE_OPEN_MM,
+                                    CLEARANCE_OPEN_MM};
         obstacle_plan(&prof, 0U, &plan);
         TEST_CHECK("S5-U08",
                    ((PLAN_PASS_LEFT == plan.decision) &&
@@ -767,17 +772,17 @@ EXPORT void subsystem5_test(void)
 
         prof.centre_y_mm = -40; /* box a little to the right */
         obstacle_plan(&prof, 0U, &plan);
-        TEST_CHECK("S5-U08",
-                   ((PLAN_PASS_LEFT == plan.decision) &&
-                    (135U == plan.shift_mm)),
-                   "(b) box 40 mm right: LEFT, shift 10 + 125 = 135");
+        TEST_CHECK(
+            "S5-U08",
+            ((PLAN_PASS_LEFT == plan.decision) && (135U == plan.shift_mm)),
+            "(b) box 40 mm right: LEFT, shift 10 + 125 = 135");
 
         prof.centre_y_mm = 40; /* box a little to the left */
         obstacle_plan(&prof, 0U, &plan);
-        TEST_CHECK("S5-U08",
-                   ((PLAN_PASS_RIGHT == plan.decision) &&
-                    (135U == plan.shift_mm)),
-                   "(c) box 40 mm left: RIGHT, shift 135");
+        TEST_CHECK(
+            "S5-U08",
+            ((PLAN_PASS_RIGHT == plan.decision) && (135U == plan.shift_mm)),
+            "(c) box 40 mm left: RIGHT, shift 135");
 
         prof.centre_y_mm   = -40;
         prof.clear_left_mm = PASS_GAP_MM - 1U; /* left too narrow */
@@ -790,10 +795,10 @@ EXPORT void subsystem5_test(void)
         prof.clear_left_mm  = PASS_GAP_MM; /* exactly fits */
         prof.clear_right_mm = 100U;
         obstacle_plan(&prof, 0U, &plan);
-        TEST_CHECK("S5-U08",
-                   ((PLAN_PASS_LEFT == plan.decision) &&
-                    (135U == plan.shift_mm)),
-                   "(e) left gap exactly 250 fits: LEFT");
+        TEST_CHECK(
+            "S5-U08",
+            ((PLAN_PASS_LEFT == plan.decision) && (135U == plan.shift_mm)),
+            "(e) left gap exactly 250 fits: LEFT");
 
         prof.clear_left_mm  = 100U; /* both blocked */
         prof.clear_right_mm = 100U;
@@ -834,22 +839,22 @@ EXPORT void subsystem5_test(void)
     {
         UW mm = 7U;
 
-        TEST_CHECK("S5-U03",
-                   ((ULTRASONIC_NO_ECHO ==
-                     ultrasonic_classify(0U, FALSE, &mm)) &&
-                    (0U == mm)),
-                   "(a) 0 us (ECHO never high): NO_ECHO, 0 mm");
+        TEST_CHECK(
+            "S5-U03",
+            ((ULTRASONIC_NO_ECHO == ultrasonic_classify(0U, FALSE, &mm)) &&
+             (0U == mm)),
+            "(a) 0 us (ECHO never high): NO_ECHO, 0 mm");
         mm = 7U;
-        TEST_CHECK("S5-U03",
-                   ((ULTRASONIC_NO_ECHO ==
-                     ultrasonic_classify(1750U, TRUE, &mm)) &&
-                    (0U == mm)),
-                   "(b) ECHO still high at the window end: NO_ECHO");
-        TEST_CHECK("S5-U03",
-                   ((ULTRASONIC_TOO_NEAR ==
-                     ultrasonic_classify(116U, FALSE, &mm)) &&
-                    (0U == mm)),
-                   "(c) 116 us = 19 mm < 2 cm: TOO_NEAR, 0 mm");
+        TEST_CHECK(
+            "S5-U03",
+            ((ULTRASONIC_NO_ECHO == ultrasonic_classify(1750U, TRUE, &mm)) &&
+             (0U == mm)),
+            "(b) ECHO still high at the window end: NO_ECHO");
+        TEST_CHECK(
+            "S5-U03",
+            ((ULTRASONIC_TOO_NEAR == ultrasonic_classify(116U, FALSE, &mm)) &&
+             (0U == mm)),
+            "(c) 116 us = 19 mm < 2 cm: TOO_NEAR, 0 mm");
         TEST_CHECK("S5-U03",
                    ((ULTRASONIC_OK == ultrasonic_classify(117U, FALSE, &mm)) &&
                     (20U == mm)),
@@ -858,22 +863,21 @@ EXPORT void subsystem5_test(void)
                    ((ULTRASONIC_OK == ultrasonic_classify(1750U, FALSE, &mm)) &&
                     (300U == mm)),
                    "(e) 1750 us = 300 mm: OK");
-        TEST_CHECK("S5-U03",
-                   ((ULTRASONIC_OK ==
-                     ultrasonic_classify(23324U, FALSE, &mm)) &&
-                    (4000U == mm)),
-                   "(f) 23324 us = 4000 mm: OK (upper limit is valid)");
-        TEST_CHECK("S5-U03",
-                   ((ULTRASONIC_TOO_FAR ==
-                     ultrasonic_classify(23330U, FALSE, &mm)) &&
-                    (0U == mm) &&
-                    (ULTRASONIC_TOO_FAR ==
-                     ultrasonic_classify(65535U, FALSE, &mm))),
-                   "(g) 4001 mm and the 65535 us counter limit: TOO_FAR, 0 mm");
-        TEST_CHECK("S5-U03",
-                   (ULTRASONIC_NO_ECHO ==
-                    ultrasonic_classify(1750U, FALSE, NULL)),
-                   "(h) NULL distance pointer: NO_ECHO");
+        TEST_CHECK(
+            "S5-U03",
+            ((ULTRASONIC_OK == ultrasonic_classify(23324U, FALSE, &mm)) &&
+             (4000U == mm)),
+            "(f) 23324 us = 4000 mm: OK (upper limit is valid)");
+        TEST_CHECK(
+            "S5-U03",
+            ((ULTRASONIC_TOO_FAR == ultrasonic_classify(23330U, FALSE, &mm)) &&
+             (0U == mm) &&
+             (ULTRASONIC_TOO_FAR == ultrasonic_classify(65535U, FALSE, &mm))),
+            "(g) 4001 mm and the 65535 us counter limit: TOO_FAR, 0 mm");
+        TEST_CHECK(
+            "S5-U03",
+            (ULTRASONIC_NO_ECHO == ultrasonic_classify(1750U, FALSE, NULL)),
+            "(h) NULL distance pointer: NO_ECHO");
     }
 
     /* S5-U46: start-up self-test decision (#47) */
@@ -881,10 +885,10 @@ EXPORT void subsystem5_test(void)
         static const UW none[SELFTEST_PINGS]  = {0U, 0U, 0U, 0U, 0U};
         static const UW one[SELFTEST_PINGS]   = {0U, 0U, 1748U, 0U, 0U};
         static const UW two[SELFTEST_PINGS]   = {0U, 1748U, 0U, 30000U, 0U};
-        static const UW all[SELFTEST_PINGS]   = {1748U, 1750U, 1747U,
-                                                 1749U, 1748U};
-        static const UW open_[SELFTEST_PINGS] = {30000U, 0U, 30000U,
-                                                 0U, 30000U};
+        static const UW all[SELFTEST_PINGS]   = {1748U, 1750U, 1747U, 1749U,
+                                                 1748U};
+        static const UW open_[SELFTEST_PINGS] = {30000U, 0U, 30000U, 0U,
+                                                 30000U};
 
         TEST_CHECK("S5-U46", !s5_selftest_echo_ok(none, SELFTEST_PINGS),
                    "ECHO never high (unplugged / dead): FAIL");

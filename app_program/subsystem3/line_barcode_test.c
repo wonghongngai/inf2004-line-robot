@@ -9,12 +9,12 @@
 #ifdef LINE_BARCODE_HOST_TEST
 #include <stdio.h>
 static unsigned int g_failures = 0u;
-#define TEST_CHECK(ID, CONDITION, TEXT) \
-    do \
-    { \
-        bool b_pass = (CONDITION); \
+#define TEST_CHECK(ID, CONDITION, TEXT)                                   \
+    do                                                                    \
+    {                                                                     \
+        bool b_pass = (CONDITION);                                        \
         printf("[TEST] %s %s: %s\n", ID, b_pass ? "PASS" : "FAIL", TEXT); \
-        g_failures += b_pass ? 0u : 1u; \
+        g_failures += b_pass ? 0u : 1u;                                   \
     } while (0)
 #else
 #include "../test_report.h"
@@ -29,21 +29,20 @@ static unsigned int g_failures = 0u;
 #define TEST_QUIET_MS      700u
 #define TEST_ZERO_MS       0u
 
-static void build_frame(uint16_t *p_runs, uint8_t command, bool b_reverse)
+static void build_frame(uint16_t * p_runs, uint8_t command, bool b_reverse)
 {
-    static uint16_t const symbols[TEST_SYMBOLS] =
-        {0x109u, 0x049u, 0x148u, 0x019u, 0x118u, 0x058u, 0x00du,
-         0x10cu, 0x04cu, 0x01cu, 0x103u, 0x043u, 0x142u, 0x013u,
-         0x112u, 0x052u, 0x007u, 0x106u, 0x046u, 0x016u, 0x181u,
-         0x0c1u, 0x1c0u, 0x091u, 0x190u, 0x0d0u};
+    static uint16_t const symbols[TEST_SYMBOLS] = {
+        0x109u, 0x049u, 0x148u, 0x019u, 0x118u, 0x058u, 0x00du, 0x10cu, 0x04cu,
+        0x01cu, 0x103u, 0x043u, 0x142u, 0x013u, 0x112u, 0x052u, 0x007u, 0x106u,
+        0x046u, 0x016u, 0x181u, 0x0c1u, 0x1c0u, 0x091u, 0x190u, 0x0d0u};
     uint16_t patterns[3] = {0x094u, symbols[command], 0x094u};
     for (uint8_t idx = 0u; idx < LINE_BARCODE_FRAME_RUNS; idx++)
     {
-        uint8_t character = idx / 10u;
-        uint8_t element = idx % 10u;
-        uint16_t width = TEST_NARROW_MS;
-        if ((element < TEST_ELEMENT_COUNT)
-            && (0u != (patterns[character] & (1u << (8u - element)))))
+        uint8_t  character = idx / 10u;
+        uint8_t  element   = idx % 10u;
+        uint16_t width     = TEST_NARROW_MS;
+        if ((element < TEST_ELEMENT_COUNT) &&
+            (0u != (patterns[character] & (1u << (8u - element)))))
         {
             width = TEST_WIDE_MS;
         }
@@ -52,9 +51,9 @@ static void build_frame(uint16_t *p_runs, uint8_t command, bool b_reverse)
     }
 }
 
-static line_barcode_msg_t feed(line_barcode_ctx_t *p_ctx, uint8_t sensors,
-                               uint16_t duration_ms, uint8_t *p_commands,
-                               uint8_t *p_last_command)
+static line_barcode_msg_t feed(line_barcode_ctx_t * p_ctx, uint8_t sensors,
+                               uint16_t duration_ms, uint8_t * p_commands,
+                               uint8_t * p_last_command)
 {
     line_barcode_msg_t msg = {{0u, 0u}};
     for (uint16_t elapsed = TEST_ZERO_MS; elapsed < duration_ms;
@@ -73,48 +72,49 @@ static line_barcode_msg_t feed(line_barcode_ctx_t *p_ctx, uint8_t sensors,
 static bool test_stream(uint8_t command, bool b_reverse, uint16_t narrow_ms)
 {
     line_barcode_ctx_t context;
-    uint16_t runs[LINE_BARCODE_FRAME_RUNS] = {0u};
-    uint8_t commands = 0u;
-    uint8_t last_command = 0xffu;
+    uint16_t           runs[LINE_BARCODE_FRAME_RUNS] = {0u};
+    uint8_t            commands                      = 0u;
+    uint8_t            last_command                  = 0xffu;
     line_barcode_reset(&context);
     build_frame(runs, command, b_reverse);
     uint16_t quiet_ms = (uint16_t)(10u * narrow_ms + 100u);
     for (uint8_t idx = 0u; idx < LINE_BARCODE_FRAME_RUNS; idx++)
     {
-        runs[idx] = (uint16_t)((uint32_t)runs[idx] * narrow_ms
-                               / TEST_NARROW_MS);
+        runs[idx] =
+            (uint16_t)((uint32_t)runs[idx] * narrow_ms / TEST_NARROW_MS);
     }
-    (void)feed(&context, 3u, quiet_ms,
-               &commands, &last_command);
+    (void)feed(&context, 3u, quiet_ms, &commands, &last_command);
     for (uint8_t idx = 0u; idx < LINE_BARCODE_FRAME_RUNS; idx++)
     {
         uint8_t sensors = (0u == (idx & 1u)) ? 7u : 3u;
         (void)feed(&context, sensors, runs[idx], &commands, &last_command);
     }
-    (void)feed(&context, 3u, quiet_ms,
-               &commands, &last_command);
-    (void)feed(&context, 3u, quiet_ms,
-               &commands, &last_command);
+    (void)feed(&context, 3u, quiet_ms, &commands, &last_command);
+    (void)feed(&context, 3u, quiet_ms, &commands, &last_command);
     return ((1u == commands) && (command == last_command));
 }
 
 static bool test_pdf_samples(void)
 {
-    uint8_t letter = 0xffu;
+    uint8_t  letter                            = 0xffu;
     uint16_t reversed[LINE_BARCODE_FRAME_RUNS] = {0u};
-    bool b_valid = line_barcode_decode(g_sample_a, LINE_BARCODE_FRAME_RUNS,
-                                       &letter) && (0u == letter);
-    b_valid = b_valid && line_barcode_decode(g_sample_z,
-        LINE_BARCODE_FRAME_RUNS, &letter) && (25u == letter);
+    bool     b_valid =
+        line_barcode_decode(g_sample_a, LINE_BARCODE_FRAME_RUNS, &letter) &&
+        (0u == letter);
+    b_valid =
+        b_valid &&
+        line_barcode_decode(g_sample_z, LINE_BARCODE_FRAME_RUNS, &letter) &&
+        (25u == letter);
     for (uint8_t idx = 0u; idx < LINE_BARCODE_FRAME_RUNS; idx++)
     {
         reversed[idx] = g_sample_z[LINE_BARCODE_FRAME_RUNS - 1u - idx];
     }
-    return (b_valid && line_barcode_decode(reversed,
-             LINE_BARCODE_FRAME_RUNS, &letter) && (25u == letter));
+    return (b_valid &&
+            line_barcode_decode(reversed, LINE_BARCODE_FRAME_RUNS, &letter) &&
+            (25u == letter));
 }
 
-static uint8_t msg_event(line_barcode_msg_t const *p_msg)
+static uint8_t msg_event(line_barcode_msg_t const * p_msg)
 {
     return ((p_msg->data[1] >> 3u) & 7u);
 }
@@ -122,40 +122,41 @@ static uint8_t msg_event(line_barcode_msg_t const *p_msg)
 static bool test_mapping(void)
 {
     line_barcode_map_t mapping = {{0u}};
-    line_barcode_nav_t nav = {0u};
-    line_barcode_msg_t barcode = line_barcode_pack(3u, 2u, 0u,
-        LINE_BARCODE_FOLLOW, LINE_BARCODE_EVT_BARCODE, 0u);
-    line_barcode_msg_t junction = line_barcode_pack(7u, 2u, 0u,
-        LINE_BARCODE_JUNCTION, LINE_BARCODE_EVT_JUNCTION, 0u);
+    line_barcode_nav_t nav     = {0u};
+    line_barcode_msg_t barcode = line_barcode_pack(
+        3u, 2u, 0u, LINE_BARCODE_FOLLOW, LINE_BARCODE_EVT_BARCODE, 0u);
+    line_barcode_msg_t junction = line_barcode_pack(
+        7u, 2u, 0u, LINE_BARCODE_JUNCTION, LINE_BARCODE_EVT_JUNCTION, 0u);
     line_barcode_msg_t msg = junction;
 
     /* Unmapped letter: stored, then consumed as a plain junction. */
     barcode.data[2] = 25u;
-    bool b_valid = !line_barcode_nav_update(&nav, &mapping, &barcode)
-                   && (LINE_BARCODE_EVT_BARCODE == msg_event(&barcode))
-                   && !line_barcode_nav_update(&nav, &mapping, &msg)
-                   && (LINE_BARCODE_EVT_JUNCTION == msg_event(&msg))
-                   && (0u == nav.pending);
+    bool b_valid    = !line_barcode_nav_update(&nav, &mapping, &barcode) &&
+                      (LINE_BARCODE_EVT_BARCODE == msg_event(&barcode)) &&
+                      !line_barcode_nav_update(&nav, &mapping, &msg) &&
+                      (LINE_BARCODE_EVT_JUNCTION == msg_event(&msg)) &&
+                      (0u == nav.pending);
     for (uint8_t letter = 0u; letter < LINE_BARCODE_ALPHABET_SIZE; letter++)
     {
-        b_valid = b_valid && line_barcode_map_set(&mapping,
-            (char)('A' + letter), letter % 4u);
+        b_valid = b_valid && line_barcode_map_set(
+                                 &mapping, (char)('A' + letter), letter % 4u);
     }
     for (uint8_t letter = 0u; letter < LINE_BARCODE_ALPHABET_SIZE; letter++)
     {
         uint8_t command = 9u;
-        b_valid = b_valid && line_barcode_map_get(&mapping, letter, &command)
-                  && ((letter % 4u) == command);
+        b_valid = b_valid && line_barcode_map_get(&mapping, letter, &command) &&
+                  ((letter % 4u) == command);
         barcode.data[2] = letter;
-        msg = junction;
-        b_valid = b_valid && !line_barcode_nav_update(&nav, &mapping, &barcode)
-                   && line_barcode_nav_update(&nav, &mapping, &msg)
-                   && ((letter % 4u) == (msg.data[0] >> 6u))
-                   && (letter == (msg.data[2] & LINE_BARCODE_LETTER_MASK))
-                   && (LINE_BARCODE_EVT_COMMAND == msg_event(&msg));
+        msg             = junction;
+        b_valid = b_valid &&
+                  !line_barcode_nav_update(&nav, &mapping, &barcode) &&
+                  line_barcode_nav_update(&nav, &mapping, &msg) &&
+                  ((letter % 4u) == (msg.data[0] >> 6u)) &&
+                  (letter == (msg.data[2] & LINE_BARCODE_LETTER_MASK)) &&
+                  (LINE_BARCODE_EVT_COMMAND == msg_event(&msg));
     }
     /* A junction with no letter waiting gives no command. */
-    msg = junction;
+    msg     = junction;
     b_valid = b_valid && !line_barcode_nav_update(&nav, &mapping, &msg);
     /* Barcodes seen while searching for the line are not stored. */
     barcode.data[1] = (LINE_BARCODE_EVT_BARCODE << 3u) | LINE_BARCODE_SEARCH;
@@ -163,26 +164,26 @@ static bool test_mapping(void)
     b_valid = b_valid && (0u == nav.pending);
     line_barcode_map_clear(&mapping);
     uint8_t unused = 0u;
-    b_valid = b_valid && !line_barcode_map_get(&mapping, 0u, &unused)
-              && !line_barcode_map_get(&mapping, 26u, &unused);
-    return (b_valid && !line_barcode_map_set(&mapping, 'a', 0u)
-            && !line_barcode_map_set(&mapping, 'Z', 4u)
-            && (10u == sizeof(mapping)));
+    b_valid        = b_valid && !line_barcode_map_get(&mapping, 0u, &unused) &&
+                     !line_barcode_map_get(&mapping, 26u, &unused);
+    return (b_valid && !line_barcode_map_set(&mapping, 'a', 0u) &&
+            !line_barcode_map_set(&mapping, 'Z', 4u) &&
+            (10u == sizeof(mapping)));
 }
 
 /* Steps one sensor pattern for duration_ms; BARCODE events go through the
  * optional nav so the stored letter is the decoder's real output.
  */
-static void feed_nav(line_barcode_ctx_t *p_ctx, uint8_t sensors,
-                     uint16_t duration_ms, line_barcode_nav_t *p_nav,
-                     uint8_t *p_count, uint8_t *p_letter)
+static void feed_nav(line_barcode_ctx_t * p_ctx, uint8_t sensors,
+                     uint16_t duration_ms, line_barcode_nav_t * p_nav,
+                     uint8_t * p_count, uint8_t * p_letter)
 {
     static line_barcode_map_t const empty_map = {{0u}};
     for (uint16_t elapsed = 0u; elapsed < duration_ms;
          elapsed += LINE_BARCODE_PERIOD_MS)
     {
-        line_barcode_msg_t msg = line_barcode_step(p_ctx, sensors,
-                                                  LINE_BARCODE_PERIOD_MS);
+        line_barcode_msg_t msg =
+            line_barcode_step(p_ctx, sensors, LINE_BARCODE_PERIOD_MS);
         if (LINE_BARCODE_EVT_BARCODE == msg_event(&msg))
         {
             (*p_count)++;
@@ -196,20 +197,20 @@ static void feed_nav(line_barcode_ctx_t *p_ctx, uint8_t sensors,
 }
 
 /* Drives a frame at narrow_ms into the context, then trailing quiet. */
-static uint8_t scan_letter(line_barcode_ctx_t *p_ctx, uint8_t letter,
+static uint8_t scan_letter(line_barcode_ctx_t * p_ctx, uint8_t letter,
                            bool b_reverse, uint16_t narrow_ms,
-                           line_barcode_nav_t *p_nav)
+                           line_barcode_nav_t * p_nav)
 {
     uint16_t runs[LINE_BARCODE_FRAME_RUNS] = {0u};
-    uint8_t count = 0u;
-    uint8_t decoded = 0xffu;
+    uint8_t  count                         = 0u;
+    uint8_t  decoded                       = 0xffu;
     build_frame(runs, letter, b_reverse);
     uint16_t quiet_ms = (uint16_t)(10u * narrow_ms + 100u);
     feed_nav(p_ctx, 3u, quiet_ms, p_nav, &count, &decoded);
     for (uint8_t idx = 0u; idx < LINE_BARCODE_FRAME_RUNS; idx++)
     {
-        uint16_t width = (uint16_t)((uint32_t)runs[idx] * narrow_ms
-                                    / TEST_NARROW_MS);
+        uint16_t width =
+            (uint16_t)((uint32_t)runs[idx] * narrow_ms / TEST_NARROW_MS);
         uint8_t sensors = (0u == (idx & 1u)) ? 7u : 3u;
         feed_nav(p_ctx, sensors, width, p_nav, &count, &decoded);
     }
@@ -218,21 +219,21 @@ static uint8_t scan_letter(line_barcode_ctx_t *p_ctx, uint8_t letter,
 }
 
 /* Feeds a crossing line (all black) and counts JUNCTION events. */
-static uint8_t cross_line(line_barcode_ctx_t *p_ctx, uint16_t black_ms)
+static uint8_t cross_line(line_barcode_ctx_t * p_ctx, uint16_t black_ms)
 {
     uint8_t junctions = 0u;
     for (uint16_t elapsed = 0u; elapsed < black_ms;
          elapsed += LINE_BARCODE_PERIOD_MS)
     {
-        line_barcode_msg_t msg = line_barcode_step(p_ctx, 7u,
-                                                  LINE_BARCODE_PERIOD_MS);
+        line_barcode_msg_t msg =
+            line_barcode_step(p_ctx, 7u, LINE_BARCODE_PERIOD_MS);
         junctions += (LINE_BARCODE_EVT_JUNCTION == msg_event(&msg)) ? 1u : 0u;
     }
     for (uint16_t elapsed = 0u; elapsed < 200u;
          elapsed += LINE_BARCODE_PERIOD_MS)
     {
-        line_barcode_msg_t msg = line_barcode_step(p_ctx, 3u,
-                                                  LINE_BARCODE_PERIOD_MS);
+        line_barcode_msg_t msg =
+            line_barcode_step(p_ctx, 3u, LINE_BARCODE_PERIOD_MS);
         junctions += (LINE_BARCODE_EVT_JUNCTION == msg_event(&msg)) ? 1u : 0u;
     }
     return (junctions);
@@ -243,14 +244,16 @@ static bool test_side_junction(void)
 {
     line_barcode_ctx_t context;
     line_barcode_reset(&context);
-    bool b_valid = (0u == scan_letter(&context, 0u, false, TEST_NARROW_MS, NULL));
+    bool b_valid =
+        (0u == scan_letter(&context, 0u, false, TEST_NARROW_MS, NULL));
     b_valid = b_valid && (1u == cross_line(&context, 6u * TEST_NARROW_MS));
     /* Slow scan: wide bars last 600 ms, above the fixed fallback, but the
      * in-frame reference stops them from looking like a crossing.
      */
     line_barcode_reset(&context);
-    b_valid = b_valid && (25u == scan_letter(&context, 25u, true, 200u, NULL))
-              && (1u == cross_line(&context, 1200u));
+    b_valid = b_valid &&
+              (25u == scan_letter(&context, 25u, true, 200u, NULL)) &&
+              (1u == cross_line(&context, 1200u));
     /* A short black patch (a wide bar's length) is not a junction. */
     b_valid = b_valid && (0u == cross_line(&context, 3u * 200u));
     return (b_valid);
@@ -261,34 +264,34 @@ static bool test_barcode_then_junction(void)
 {
     line_barcode_ctx_t context;
     line_barcode_map_t mapping = {{0u}};
-    line_barcode_nav_t nav = {0u};
+    line_barcode_nav_t nav     = {0u};
     bool b_valid = line_barcode_map_set(&mapping, 'Z', LINE_BARCODE_CMD_UTURN);
     for (uint8_t direction = 0u; direction < TEST_DIRECTIONS; direction++)
     {
         uint8_t commands = 0u;
-        uint8_t command = 0xffu;
-        uint8_t letter = 0xffu;
+        uint8_t command  = 0xffu;
+        uint8_t letter   = 0xffu;
         line_barcode_reset(&context);
         line_barcode_nav_clear(&nav);
-        b_valid = b_valid
-                  && (25u == scan_letter(&context, 25u, (0u != direction),
-                                         TEST_NARROW_MS, &nav))
-                  && ((0x80u | 25u) == nav.pending);
+        b_valid = b_valid &&
+                  (25u == scan_letter(&context, 25u, (0u != direction),
+                                      TEST_NARROW_MS, &nav)) &&
+                  ((0x80u | 25u) == nav.pending);
         for (uint16_t elapsed = 0u; elapsed < 600u;
              elapsed += LINE_BARCODE_PERIOD_MS)
         {
-            uint8_t sensors = (elapsed < 360u) ? 7u : 3u;
-            line_barcode_msg_t msg = line_barcode_step(&context, sensors,
-                                                      LINE_BARCODE_PERIOD_MS);
+            uint8_t            sensors = (elapsed < 360u) ? 7u : 3u;
+            line_barcode_msg_t msg =
+                line_barcode_step(&context, sensors, LINE_BARCODE_PERIOD_MS);
             if (line_barcode_nav_update(&nav, &mapping, &msg))
             {
                 commands++;
                 command = msg.data[0] >> 6u;
-                letter = msg.data[2] & LINE_BARCODE_LETTER_MASK;
+                letter  = msg.data[2] & LINE_BARCODE_LETTER_MASK;
             }
         }
-        b_valid = b_valid && (1u == commands)
-                  && (LINE_BARCODE_CMD_UTURN == command) && (25u == letter);
+        b_valid = b_valid && (1u == commands) &&
+                  (LINE_BARCODE_CMD_UTURN == command) && (25u == letter);
     }
     return (b_valid);
 }
@@ -302,11 +305,11 @@ static bool test_side_layout(void)
     bool b_valid = true;
     for (uint8_t idx = 0u; idx < LINE_BARCODE_FRAME_RUNS; idx++)
     {
-        uint8_t sensors = (0u == (idx & 1u)) ? 7u : 3u;
-        line_barcode_msg_t msg = line_barcode_step(&context, sensors,
-                                                  LINE_BARCODE_PERIOD_MS);
-        b_valid = b_valid && (2u == ((msg.data[0] >> 3u) & 7u))
-                   && (LINE_BARCODE_EVT_JUNCTION != ((msg.data[1] >> 3u) & 7u));
+        uint8_t            sensors = (0u == (idx & 1u)) ? 7u : 3u;
+        line_barcode_msg_t msg =
+            line_barcode_step(&context, sensors, LINE_BARCODE_PERIOD_MS);
+        b_valid = b_valid && (2u == ((msg.data[0] >> 3u) & 7u)) &&
+                  (LINE_BARCODE_EVT_JUNCTION != ((msg.data[1] >> 3u) & 7u));
     }
     return (b_valid);
 }
@@ -314,8 +317,8 @@ static bool test_side_layout(void)
 static bool test_loss_during_scan(void)
 {
     line_barcode_ctx_t context;
-    uint8_t count = 0u;
-    uint8_t letter = 0u;
+    uint8_t            count  = 0u;
+    uint8_t            letter = 0u;
     line_barcode_reset(&context);
     (void)feed(&context, 3u, TEST_QUIET_MS, &count, &letter);
     (void)feed(&context, 7u, g_sample_a[0], &count, &letter);
@@ -359,19 +362,19 @@ void line_barcode_test(void)
 #ifndef LINE_BARCODE_HOST_TEST
     TEST_INIT();
 #endif
-    line_barcode_ctx_t context;
-    uint8_t commands = 0u;
-    uint8_t last_command = 0u;
-    uint16_t runs[LINE_BARCODE_FRAME_RUNS] = {0u};
-    static uint8_t const expected[TEST_SENSOR_COUNT] =
-        {6u, 4u, 2u, 3u, 0u, 5u, 1u, 5u};
-    bool b_patterns = true;
-    bool b_barcodes = true;
-    bool b_streams = true;
+    line_barcode_ctx_t   context;
+    uint8_t              commands                      = 0u;
+    uint8_t              last_command                  = 0u;
+    uint16_t             runs[LINE_BARCODE_FRAME_RUNS] = {0u};
+    static uint8_t const expected[TEST_SENSOR_COUNT]   = {6u, 4u, 2u, 3u,
+                                                          0u, 5u, 1u, 5u};
+    bool                 b_patterns                    = true;
+    bool                 b_barcodes                    = true;
+    bool                 b_streams                     = true;
     for (uint8_t sensors = 0u; sensors < TEST_SENSOR_COUNT; sensors++)
     {
-        b_patterns = b_patterns
-                     && (expected[sensors] == line_barcode_position(sensors));
+        b_patterns =
+            b_patterns && (expected[sensors] == line_barcode_position(sensors));
     }
     TEST_CHECK("S3-U02", b_patterns, "all eight sensor positions");
     line_barcode_reset(&context);
@@ -399,15 +402,15 @@ void line_barcode_test(void)
         {
             uint8_t decoded = 0xffu;
             build_frame(runs, command, (0u != direction));
-            b_barcodes = b_barcodes
-                         && line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS,
-                                                 &decoded)
-                         && (command == decoded);
-            b_streams = b_streams && test_stream(command, (0u != direction),
-                                                 TEST_NARROW_MS);
+            b_barcodes =
+                b_barcodes &&
+                line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &decoded) &&
+                (command == decoded);
+            b_streams = b_streams &&
+                        test_stream(command, (0u != direction), TEST_NARROW_MS);
         }
     }
-    bool b_speeds = true;
+    bool                  b_speeds = true;
     static uint16_t const speeds[] = {40u, 100u, 200u};
     for (uint8_t idx = 0u; idx < (sizeof(speeds) / sizeof(speeds[0])); idx++)
     {
@@ -423,86 +426,115 @@ void line_barcode_test(void)
     runs[1] = TEST_NARROW_MS; /* Corrupt the wide space of '*'. */
     (void)feed(&context, 3u, TEST_QUIET_MS, &commands, &last_command);
     for (uint8_t i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
-        (void)feed(&context, (i & 1u) ? 3u : 7u, runs[i],
-                   &commands, &last_command);
+        (void)feed(&context, (i & 1u) ? 3u : 7u, runs[i], &commands,
+                   &last_command);
     (void)feed(&context, 3u, TEST_QUIET_MS, &commands, &last_command);
-    bool retained = context.run_count == LINE_BARCODE_FRAME_RUNS && commands == 0u;
+    bool retained =
+        context.run_count == LINE_BARCODE_FRAME_RUNS && commands == 0u;
     for (uint8_t i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
         retained = retained && line_barcode_run_width(&context, i) == runs[i];
-    TEST_CHECK("S3-U39", retained, "malformed start retains all 29 raw widths without emitting letter");
+    TEST_CHECK(
+        "S3-U39", retained,
+        "malformed start retains all 29 raw widths without emitting letter");
     /* Hardware scan supplied on 4 Nov: all edges present, squeezed whites. */
     static uint16_t const measured_a[LINE_BARCODE_FRAME_RUNS] = {
-        101u,202u,140u,13u,318u,26u,309u,25u,141u,27u,
-        269u,64u,110u,48u,124u,191u,141u,20u,298u,16u,
-        137u,177u,132u,22u,296u,27u,304u,27u,150u
-    };
+        101u, 202u, 140u, 13u, 318u, 26u,  309u, 25u, 141u, 27u,
+        269u, 64u,  110u, 48u, 124u, 191u, 141u, 20u, 298u, 16u,
+        137u, 177u, 132u, 22u, 296u, 27u,  304u, 27u, 150u};
     bool measured_ok = true;
-    for (unsigned direction = 0u; direction < 2u; ++direction) {
+    for (unsigned direction = 0u; direction < 2u; ++direction)
+    {
         for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
-            runs[i] = measured_a[direction ? LINE_BARCODE_FRAME_RUNS - 1u - i : i];
+            runs[i] =
+                measured_a[direction ? LINE_BARCODE_FRAME_RUNS - 1u - i : i];
         uint8_t letter = 0xffu;
-        measured_ok = measured_ok && line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter)
-                      && letter == 0u;
+        measured_ok =
+            measured_ok &&
+            line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter) &&
+            letter == 0u;
         line_barcode_reset(&context);
-        commands = 0u;
+        commands     = 0u;
         last_command = 0xffu;
         (void)feed(&context, 3u, 734u, &commands, &last_command);
         for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
-            (void)feed(&context, (i & 1u) ? 3u : 7u, runs[i], &commands, &last_command);
+            (void)feed(&context, (i & 1u) ? 3u : 7u, runs[i], &commands,
+                       &last_command);
         (void)feed(&context, 3u, 420u, &commands, &last_command);
         measured_ok = measured_ok && commands == 1u && last_command == 0u;
     }
-    TEST_CHECK("S3-U40", measured_ok, "recorded 29-run scan decodes A forward/reverse, raw and sampled");
+    TEST_CHECK(
+        "S3-U40", measured_ok,
+        "recorded 29-run scan decodes A forward/reverse, raw and sampled");
     /* Hardware scans of A on 19 Nov after rebalancing the GP28 comparator
      * (testing/subsystem5/logs/2026-11-19_183720_console.txt). Scan speed
      * changed within characters; the old strongest-gap split rejected
      * frames 1 and 2. Frame 2 character 2 has only 1.20x bar separation. */
     static uint16_t const scans_19nov[3][LINE_BARCODE_FRAME_RUNS] = {
-        {22u,436u,89u,169u,286u,186u,303u,204u,29u,283u,432u,237u,118u,192u,191u,
-         445u,273u,100u,623u,74u,263u,462u,247u,71u,598u,87u,575u,127u,193u},
-        {179u,416u,242u,42u,395u,240u,367u,296u,71u,324u,400u,274u,146u,247u,126u,
-         527u,334u,54u,709u,52u,273u,402u,254u,114u,594u,69u,631u,113u,209u},
-        {66u,481u,38u,240u,274u,239u,354u,250u,44u,249u,350u,237u,80u,230u,85u,
-         512u,89u,217u,375u,206u,69u,468u,70u,210u,370u,203u,387u,198u,97u}
-    };
+        {22u,  436u, 89u,  169u, 286u, 186u, 303u, 204u, 29u,  283u,
+         432u, 237u, 118u, 192u, 191u, 445u, 273u, 100u, 623u, 74u,
+         263u, 462u, 247u, 71u,  598u, 87u,  575u, 127u, 193u},
+        {179u, 416u, 242u, 42u,  395u, 240u, 367u, 296u, 71u,  324u,
+         400u, 274u, 146u, 247u, 126u, 527u, 334u, 54u,  709u, 52u,
+         273u, 402u, 254u, 114u, 594u, 69u,  631u, 113u, 209u},
+        {66u,  481u, 38u, 240u, 274u, 239u, 354u, 250u, 44u,  249u,
+         350u, 237u, 80u, 230u, 85u,  512u, 89u,  217u, 375u, 206u,
+         69u,  468u, 70u, 210u, 370u, 203u, 387u, 198u, 97u}};
     bool scans_ok = true;
-    for (unsigned scan = 0u; scan < 3u; ++scan) {
-        for (unsigned direction = 0u; direction < 2u; ++direction) {
+    for (unsigned scan = 0u; scan < 3u; ++scan)
+    {
+        for (unsigned direction = 0u; direction < 2u; ++direction)
+        {
             for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
-                runs[i] = scans_19nov[scan][direction ? LINE_BARCODE_FRAME_RUNS - 1u - i : i];
+                runs[i] =
+                    scans_19nov[scan]
+                               [direction ? LINE_BARCODE_FRAME_RUNS - 1u - i
+                                          : i];
             uint8_t letter = 0xffu;
-            scans_ok = scans_ok && line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter)
-                       && letter == 0u;
+            scans_ok =
+                scans_ok &&
+                line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter) &&
+                letter == 0u;
         }
     }
-    TEST_CHECK("S3-U36", scans_ok,
-               "19 Nov hardware scans with uneven speed decode A forward/reverse");
+    TEST_CHECK(
+        "S3-U36", scans_ok,
+        "19 Nov hardware scans with uneven speed decode A forward/reverse");
     /* Rank-based rule still needs separation: 1.10x between the shortest
      * wide bar and longest narrow bar of the start marker must fail. */
     build_frame(runs, 0u, false);
-    runs[0] = (uint16_t)((runs[4] * 10u) / 11u);   /* narrow bar near wide */
-    TEST_CHECK("S3-U37", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS,
-                                              &last_command),
-               "wide/narrow separation below 1.15x rejected");
+    runs[0] = (uint16_t)((runs[4] * 10u) / 11u); /* narrow bar near wide */
+    TEST_CHECK(
+        "S3-U37",
+        !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
+        "wide/narrow separation below 1.15x rejected");
     /* Medium-size A (about 0.73x the large print) on 19 Nov, after the GP28
      * comparator was retuned to a ~37 ms bar/space bias. Scanned in reverse;
      * narrow bars read 28-50 ms. Before retuning they read 5 ms or vanished. */
     static uint16_t const medium_19nov[3][LINE_BARCODE_FRAME_RUNS] = {
-        {28u,96u,164u,84u,166u,106u,31u,245u,34u,114u,184u,110u,34u,266u,33u,
-         123u,33u,116u,192u,115u,28u,112u,190u,111u,184u,109u,36u,260u,34u},
-        {28u,99u,170u,88u,173u,109u,33u,268u,32u,110u,178u,110u,32u,263u,30u,
-         115u,33u,114u,187u,110u,29u,112u,183u,105u,175u,104u,37u,251u,34u},
-        {50u,80u,177u,82u,164u,112u,30u,257u,31u,103u,178u,106u,31u,247u,31u,
-         108u,30u,107u,173u,106u,29u,109u,182u,106u,190u,102u,46u,250u,44u}
-    };
+        {28u,  96u,  164u, 84u,  166u, 106u, 31u, 245u, 34u,  114u,
+         184u, 110u, 34u,  266u, 33u,  123u, 33u, 116u, 192u, 115u,
+         28u,  112u, 190u, 111u, 184u, 109u, 36u, 260u, 34u},
+        {28u,  99u,  170u, 88u,  173u, 109u, 33u, 268u, 32u,  110u,
+         178u, 110u, 32u,  263u, 30u,  115u, 33u, 114u, 187u, 110u,
+         29u,  112u, 183u, 105u, 175u, 104u, 37u, 251u, 34u},
+        {50u,  80u,  177u, 82u,  164u, 112u, 30u, 257u, 31u,  103u,
+         178u, 106u, 31u,  247u, 31u,  108u, 30u, 107u, 173u, 106u,
+         29u,  109u, 182u, 106u, 190u, 102u, 46u, 250u, 44u}};
     bool medium_ok = true;
-    for (unsigned scan = 0u; scan < 3u; ++scan) {
-        for (unsigned direction = 0u; direction < 2u; ++direction) {
+    for (unsigned scan = 0u; scan < 3u; ++scan)
+    {
+        for (unsigned direction = 0u; direction < 2u; ++direction)
+        {
             for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
-                runs[i] = medium_19nov[scan][direction ? LINE_BARCODE_FRAME_RUNS - 1u - i : i];
+                runs[i] =
+                    medium_19nov[scan]
+                                [direction ? LINE_BARCODE_FRAME_RUNS - 1u - i
+                                           : i];
             uint8_t letter = 0xffu;
-            medium_ok = medium_ok && line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter)
-                        && letter == 0u;
+            medium_ok =
+                medium_ok &&
+                line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter) &&
+                letter == 0u;
         }
     }
     /* Direct decode only. A sampled feed in this build does not match the
@@ -512,31 +544,40 @@ void line_barcode_test(void)
      * 2 s line-search deadline (disabled in APP_ALL_TEST) faults first. */
     TEST_CHECK("S3-U38", medium_ok,
                "19 Nov medium-size scans decode A forward/reverse");
-    for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i) runs[i] = measured_a[i];
+    for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+        runs[i] = measured_a[i];
     runs[3] = LINE_BARCODE_MIN_RUN_MS - 1u;
-    TEST_CHECK("S3-U41", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
-               "sub-minimum white run remains invalid");
+    TEST_CHECK(
+        "S3-U41",
+        !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
+        "sub-minimum white run remains invalid");
     runs[3] = measured_a[3];
     runs[9] = 1000u;
-    TEST_CHECK("S3-U42", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
-               "recorded scan with oversized character gap remains invalid");
+    TEST_CHECK(
+        "S3-U42",
+        !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
+        "recorded scan with oversized character gap remains invalid");
     build_frame(runs, 0u, false);
     runs[0] = 0u;
-    TEST_CHECK("S3-U09", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS,
-                                             &last_command),
-               "zero-width malformed frame rejected");
+    TEST_CHECK(
+        "S3-U09",
+        !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
+        "zero-width malformed frame rejected");
     build_frame(runs, 0u, false);
     runs[9] = 1000u;
-    TEST_CHECK("S3-U10", !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS,
-                                             &last_command),
-               "invalid inter-character gap rejected");
+    TEST_CHECK(
+        "S3-U10",
+        !line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &last_command),
+        "invalid inter-character gap rejected");
     msg = line_barcode_step(&context, 2u, 100u);
-    TEST_CHECK("S3-U11", 0u != ((msg.data[2] >> LINE_BARCODE_FAULT_SHIFT)
-                                & LINE_BARCODE_ERR_TIMING),
+    TEST_CHECK("S3-U11",
+               0u != ((msg.data[2] >> LINE_BARCODE_FAULT_SHIFT) &
+                      LINE_BARCODE_ERR_TIMING),
                "missed sampling interval invalidates capture");
     msg = line_barcode_pack(7u, 6u, 3u, 5u, 6u, LINE_BARCODE_ERR_MASK);
-    TEST_CHECK("S3-U12", (0xf7u == msg.data[0]) && (0x35u == msg.data[1])
-                         && (3u == sizeof(msg)) && (0xe0u == msg.data[2]),
+    TEST_CHECK("S3-U12",
+               (0xf7u == msg.data[0]) && (0x35u == msg.data[1]) &&
+                   (3u == sizeof(msg)) && (0xe0u == msg.data[2]),
                "three-byte wire layout; three faults set at once");
 #ifndef LINE_BARCODE_HOST_TEST
     TEST_SUMMARY("subsystem3 line/barcode");
