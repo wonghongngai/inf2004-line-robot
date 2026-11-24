@@ -440,10 +440,13 @@ EXPORT void motion_task(INT stacd, void * exinf)
                                          right_ticks);
         }
         else
+        {
+            robot_control_step(&controller, now_ms, left_ticks, right_ticks);
+        }
 #else
         (void)manual_stop;
+        robot_control_step(&controller, now_ms, left_ticks, right_ticks);
 #endif
-            robot_control_step(&controller, now_ms, left_ticks, right_ticks);
 
         /*
          * Immediately apply safety-related command changes.
