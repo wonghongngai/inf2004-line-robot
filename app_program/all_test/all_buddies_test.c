@@ -25,7 +25,8 @@ enum
 {
     TURN_NONE,
     TURN_ADVANCE,
-    TURN_PIVOT
+    TURN_PIVOT,
+    TURN_REVERSE /* backing up to rescan a rejected barcode */
 };
 #define ALL_START_MS               5000u
 #define ALL_READY_MS               15000u
@@ -114,6 +115,7 @@ typedef struct
     int32_t  turn_left0, turn_right0;
     bool     turn_done_valid;
     bool     leaving_junction;
+    unsigned barcode_retries; /* reverse-and-rescan attempts on this code */
     /* Line following's straight stretches are held straight by the
        encoders (white_straight_step): ticks where the stretch began. */
     bool     straight_active;
@@ -509,6 +511,7 @@ static void finish_turn(ALL_TEST * t, uint32_t now)
     line_service_barcode_raw(&level, &t->barcode_consumed_rises,
                              &t->barcode_consumed_falls);
     t->turn_stage          = TURN_NONE;
+    t->barcode_retries     = 0u; /* the next barcode gets its own retries */
     t->turn_done           = now;
     t->turn_done_valid     = true;
     t->leaving_junction    = true;
@@ -581,6 +584,101 @@ static void turn_step(ALL_TEST * t, uint32_t now)
         t->left = 0.0f;
         apply_follow_pwm(t, 0.0f, ALL_BASE_PWM, now);
     }
+}
+
+/* Straight-move PWM pair (forward magnitudes) that holds the heading: the
+ * wheel ahead since the move began is slowed until the distances match.
+ * Shared by S5's straight legs and the barcode-reject back-up. */
+static void hold_heading_pwm(float left_cm, float right_cm, float * p_left,
+                             float * p_right)
+{
+    float err = S5_HEADING_KP * (right_cm - left_cm); /* > 0: right ahead */
+    float left_pwm = ALL_BASE_PWM, right_pwm = ALL_RIGHT_BASE_PWM;
+    if (err > 0.0f)
+    {
+        right_pwm -= err;
+    }
+    else
+    {
+        left_pwm += err;
+    }
+    *p_left  = left_pwm < 0.0f ? 0.0f : left_pwm;
+    *p_right = right_pwm < 0.0f ? 0.0f : right_pwm;
+}
+
+/* A barcode frame was rejected: pause S3 (so the bars read backwards are
+ * not decoded) and back up ALL_TEST_REJECT_REVERSE_CM to rescan it. False
+ * when no retry is left or another movement owns the motors. */
+static bool start_barcode_retry(ALL_TEST * t, uint32_t now)
+{
+    if (t->turn_stage != TURN_NONE || t->s5.b_active)
+    {
+        return false;
+    }
+    if (t->barcode_retries >= ALL_TEST_REJECT_RETRIES)
+    {
+        tm_printf((UB *)"[BARCODE RETRY] gave up after %u retries; "
+                        "continuing forward\n",
+                  (UINT)t->barcode_retries);
+        return false;
+    }
+    if (line_service_enable(false) < E_OK)
+    {
+        stop_test(t, "line pause for barcode retry failed", S1_STATE_FAULT);
+        return false;
+    }
+    t->barcode_retries++;
+    t->turn_started    = now;
+    t->straight_active = false;
+    begin_turn_stage(t, TURN_REVERSE);
+    t->stop_reason  = "barcode rejected: reversing to rescan";
+    t->force_status = true;
+    tm_printf((UB *)"[BARCODE RETRY] %u/%u: reversing %d cm to rescan\n",
+              (UINT)t->barcode_retries, (UINT)ALL_TEST_REJECT_RETRIES,
+              (int)ALL_TEST_REJECT_REVERSE_CM);
+    return true;
+}
+
+/* Back straight up on the encoders, then stop and resume line following
+ * through SETTLING, which waits for a fresh sample from the re-enabled S3
+ * (resuming also clears any partial barcode). */
+static void reverse_step(ALL_TEST * t, uint32_t now)
+{
+    if ((uint32_t)(now - t->turn_started) >= ALL_TEST_REJECT_REVERSE_TIMEOUT_MS)
+    {
+        t->turn_stage = TURN_NONE;
+        stop_test(t, "barcode retry reverse timed out", S1_STATE_FAULT);
+        return;
+    }
+    float left_cm =
+        (float)tick_delta(t->left_ticks, t->turn_left0) / S5_LEFT_TICKS_PER_CM;
+    float right_cm =
+        (float)tick_delta(t->right_ticks, t->turn_right0) / S5_RIGHT_TICKS_PER_CM;
+    if ((left_cm + right_cm) * 0.5f < ALL_TEST_REJECT_REVERSE_CM)
+    {
+        float left_pwm, right_pwm;
+        hold_heading_pwm(left_cm, right_cm, &left_pwm, &right_pwm);
+        apply_follow_pwm(t, -left_pwm, -right_pwm, now);
+        return;
+    }
+    drv_motor_stop();
+    t->left = t->right     = 0.0f;
+    t->pwm_clock_started   = false;
+    t->turn_stage          = TURN_NONE;
+    t->steering_action     = 0u;
+    t->steering_candidate  = 0u;
+    t->white_clear_pending = false;
+    t->white_reported      = false;
+    if (line_service_enable(true) < E_OK)
+    {
+        stop_test(t, "line resume after barcode retry failed", S1_STATE_FAULT);
+        return;
+    }
+    t->phase        = SETTLING;
+    t->settled      = now;
+    t->stop_reason  = NULL;
+    t->force_status = true;
+    tm_printf((UB *)"[BARCODE RETRY] backed up; rescanning\n");
 }
 
 /* One step of a straight stretch in line following.  Open-loop 12.5/15 %
@@ -755,6 +853,7 @@ static void white_follow_step(ALL_TEST * t, uint32_t now)
     {
         t->leaving_junction    = true;
         t->turn_done           = now;
+        t->barcode_retries     = 0u;
         t->steering_action     = 0u;
         t->white_clear_pending = false;
         t->stop_reason         = NULL;
@@ -852,28 +951,12 @@ static UB at_run_move(void * p, const S5_REQUEST * req)
            straight PWM (2026-11-06: at 16-22.5 % it read backwards, the
            correction ran away and the robot veered right into the box). */
         float left_cm = at_left_cm(t), right_cm = at_right_cm(t);
-        float err = S5_HEADING_KP * (right_cm - left_cm); /* > 0: right ahead */
-        float left_pwm = ALL_BASE_PWM, right_pwm = ALL_RIGHT_BASE_PWM;
+        float left_pwm, right_pwm;
         if ((left_cm + right_cm) * 0.5f >= (float)req->value)
         {
             return S5_EXEC_DONE;
         }
-        if (err > 0.0f)
-        {
-            right_pwm -= err;
-        }
-        else
-        {
-            left_pwm += err;
-        }
-        if (left_pwm < 0.0f)
-        {
-            left_pwm = 0.0f;
-        }
-        if (right_pwm < 0.0f)
-        {
-            right_pwm = 0.0f;
-        }
+        hold_heading_pwm(left_cm, right_cm, &left_pwm, &right_pwm);
         if (req->b_reverse)
         { /* S5 back-off (23 Nov): backwards */
             left_pwm  = -left_pwm;
@@ -1573,6 +1656,10 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
                     tm_printf((UB *)"[BARCODE REJECT] invalid frame: check "
                                     "start/stop, narrow/wide widths and white "
                                     "margins\n");
+                    if (start_barcode_retry(t, now))
+                    {
+                        break; /* S3 is paused; nothing newer is queued */
+                    }
                 }
                 if (code == LINE_BARCODE_EVT_LOST)
                 {
@@ -1597,6 +1684,7 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
                     unsigned letter = event.data[2] & LINE_BARCODE_LETTER_MASK;
                     t->barcode_letter = letter + 1u;
                     unsigned action   = barcode_action(letter);
+                    t->barcode_retries = 0u;
                     /* A newer barcode replaces any letter still waiting. */
                     t->pending_letter = (uint8_t)(0x80u | letter);
                     tm_printf((UB *)"[BARCODE -> MOTION] decoded=%c queued=%s; "
@@ -1613,6 +1701,10 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
                 if (s5_step(t, now))
                 {
                     /* S5 obstacle avoidance owns the motors this step. */
+                }
+                else if (t->turn_stage == TURN_REVERSE)
+                {
+                    reverse_step(t, now);
                 }
                 else if (t->turn_stage != TURN_NONE)
                 {

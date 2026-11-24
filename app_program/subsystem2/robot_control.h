@@ -28,6 +28,22 @@
 #define S2_LINE_UNSAFE_MS        200u
 #define S2_LINE_REARM_MS         1000u
 #define S2_ROBOT_TURN_TIMEOUT_MS 8000u /* all_test's junction movement limit */
+/* A rejected barcode frame (straddle model): back up this far (REVERSE
+   profile, heading held) and follow the line forward over it again. After
+   this many retries the robot carries on without a letter, as all_test. */
+#define S2_REJECT_REVERSE_CM         30.0f
+#define S2_REJECT_RETRIES            2u
+#define S2_REJECT_REVERSE_TIMEOUT_MS 10000u
+/* Only a rejected frame with at least one full character of runs (the 9
+   elements of '*') is a barcode worth rescanning. A junction's cross line
+   under the scanner opens a capture with one black run that times out as a
+   reject about 1 s later; backing up for that would loop at every junction. */
+#define S2_REJECT_MIN_RUNS 9u
+/* A reject that had already read this many runs (bars and spaces) is far
+   into the barcode, so the robot is further past its start: back up
+   S2_REJECT_EXTRA_CM more than S2_REJECT_REVERSE_CM. */
+#define S2_REJECT_LONG_RUNS 20u
+#define S2_REJECT_EXTRA_CM  15.0f
 /* S5 avoidance (all_test): HOLD is answered once the robot has had this long
    to stop, and each leg or pivot may take this long (an 80 cm leg at
    12.5/15 % takes about 10 s). */
