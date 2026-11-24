@@ -23,7 +23,7 @@ Where it differs from the Week 6 design, see
 | File | What it does |
 |---|---|
 | `subsystem5.h` | Public interface: the request word, reply bits, obstacle word, fault bits |
-| `subsystem5.c` | `subsystem5_init()` creates `flg_s5_evt`; `subsystem5_start()` starts `obstacle_task` |
+| `subsystem5.c` | `subsystem5_init()` creates `g_flg_s5_evt`; `subsystem5_start()` starts `obstacle_task` |
 | `task_obstacle.c` | `obstacle_task`: the state machine, the scans, the bypass and the back-off |
 | `obstacle_logic.c/.h` | Pure functions with no hardware and no kernel calls: filter, scan window, median, profile, plan, bypass steps, packing, self-test check. Host-tested |
 | `s5_executor.c/.h` | The VC side of the hand-shake, shared by `integrated` and `all_test`. The controller passes in its own drive functions |
@@ -66,7 +66,7 @@ Where it differs from the Week 6 design, see
 | Item | Value |
 |---|---|
 | Task | `obstacle_task`, priority 20, any core (TEAM.md section 4) |
-| Event flag | `flg_s5_evt`, created and owned by S5, `TA_WSGL` (only S5 waits) |
+| Event flag | `g_flg_s5_evt`, created and owned by S5, `TA_WSGL` (only S5 waits) |
 | Shared words | `g_s5_request`, `g_s5_obstacle`, `g_s5_faults`: one writer (S5), aligned 32-bit stores |
 
 S5 is the **lowest-priority** application task, not the highest as in
@@ -211,7 +211,7 @@ request, which the VC acts on once.
 and spin or reverse on the wrong move. The VC must then stop (the tribunal
 fix for corrupted commands, checked by INT-13 and INT-15).
 
-### IF-11: VC → S5 replies (`flg_s5_evt`)
+### IF-11: VC → S5 replies (`g_flg_s5_evt`)
 
 | Bit | Meaning |
 |---|---|
@@ -315,7 +315,7 @@ M3) and [`DECISIONS.md`](../../DECISIONS.md).
 | Detection → action ≤ 2 s | Dropped | A smooth fine scan was chosen over the time budget (5 Nov) | B5-4 |
 | Distance ±2 cm over 5–100 cm | > 90 % within ±5 cm over 5–60 cm | ±2 cm isn't met (5 cm spikes, ~2 cm short at 45 cm). The track doesn't need 100 cm | B5-5 |
 | Obstacle task highest priority | Lowest (20) | S5 only requests moves, and safety comes through the VC | A1, #66 |
-| `obstacle_q`, `robot_events` group | Packed request word + `flg_s5_evt` | One writer per word, no shared event group | A3 |
+| `obstacle_q`, `robot_events` group | Packed request word + `g_flg_s5_evt` | One writer per word, no shared event group | A3 |
 | 5 V sensor + level shifter | HC-SR04P on 3.3 V | No shifter needed | — |
 | Echo ISR | PWM-gated hardware count | No interrupt, and no sharing the GPIO IRQ with the encoders | — |
 | Diagonal bypass (turn 45°, …) | Turn-and-box with 90° turns and a looked pass | Easier to tune on encoders. The spin-look fixes false "clear" on long boxes | B5-7, B5-8 |

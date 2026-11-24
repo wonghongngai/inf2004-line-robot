@@ -60,109 +60,109 @@
 #define LSM303_BUS_HALF_PERIOD_US 5U /* ~100 kHz while bit-banging */
 #define LSM303_BUS_CLOCKS         9U
 
-LOCAL ID   lsm303_dd         = 0;
-LOCAL BOOL open_err_reported = FALSE;
-LOCAL BOOL who_err_reported  = FALSE;
+LOCAL ID   g_lsm303_dd           = 0;
+LOCAL BOOL g_b_open_err_reported = FALSE;
+LOCAL BOOL g_b_who_err_reported  = FALSE;
 
-LOCAL ER read_reg(UW sadr, UW reg, UB * value)
+LOCAL ER read_reg(UW sadr, UW reg, UB * p_value)
 {
-    if (lsm303_dd <= 0 || value == NULL)
+    if (g_lsm303_dd <= 0 || p_value == NULL)
     {
         return E_PAR;
     }
 
-    return i2c_read_reg(lsm303_dd, sadr, reg, value);
+    return i2c_read_reg(g_lsm303_dd, sadr, reg, p_value);
 }
 
 LOCAL ER write_reg(UW sadr, UW reg, UB value)
 {
-    if (lsm303_dd <= 0)
+    if (g_lsm303_dd <= 0)
     {
         return E_PAR;
     }
 
-    return i2c_write_reg(lsm303_dd, sadr, reg, value);
+    return i2c_write_reg(g_lsm303_dd, sadr, reg, value);
 }
 
-LOCAL ER read_acc_axis(UW low_reg, UW high_reg, W * value_mg)
+LOCAL ER read_acc_axis(UW low_reg, UW high_reg, W * p_value_mg)
 {
-    UB      lo;
-    UB      hi;
+    UB      low_byte;
+    UB      high_byte;
     int16_t raw16;
     int16_t raw12;
-    ER      er;
+    ER      ercd;
 
-    if (value_mg == NULL)
+    if (p_value_mg == NULL)
     {
         return E_PAR;
     }
 
-    er = read_reg(LSM303_ACC_ADDR, low_reg, &lo);
-    if (er < E_OK)
+    ercd = read_reg(LSM303_ACC_ADDR, low_reg, &low_byte);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = read_reg(LSM303_ACC_ADDR, high_reg, &hi);
-    if (er < E_OK)
+    ercd = read_reg(LSM303_ACC_ADDR, high_reg, &high_byte);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    raw16 = (int16_t)(((uint16_t)hi << 8) | (uint16_t)lo);
+    raw16 = (int16_t)(((uint16_t)high_byte << 8) | (uint16_t)low_byte);
     raw12 = (int16_t)(raw16 >> 4);
 
     /* +/-2 g high-resolution mode: approximately 1 mg per LSB. */
-    *value_mg = (W)raw12;
+    *p_value_mg = (W)raw12;
     return E_OK;
 }
 
-LOCAL ER read_mag_axis(UW high_reg, UW low_reg, W * value_raw)
+LOCAL ER read_mag_axis(UW high_reg, UW low_reg, W * p_value_raw)
 {
-    UB      hi;
-    UB      lo;
+    UB      high_byte;
+    UB      low_byte;
     int16_t raw;
-    ER      er;
+    ER      ercd;
 
-    if (value_raw == NULL)
+    if (p_value_raw == NULL)
     {
         return E_PAR;
     }
 
-    er = read_reg(LSM303_MAG_ADDR, high_reg, &hi);
-    if (er < E_OK)
+    ercd = read_reg(LSM303_MAG_ADDR, high_reg, &high_byte);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = read_reg(LSM303_MAG_ADDR, low_reg, &lo);
-    if (er < E_OK)
+    ercd = read_reg(LSM303_MAG_ADDR, low_reg, &low_byte);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    raw        = (int16_t)(((uint16_t)hi << 8) | (uint16_t)lo);
-    *value_raw = (W)raw;
+    raw          = (int16_t)(((uint16_t)high_byte << 8) | (uint16_t)low_byte);
+    *p_value_raw = (W)raw;
     return E_OK;
 }
 
 EXPORT ER lsm303dlhc_init(void)
 {
     UB who_am_i;
-    ER er;
+    ER ercd;
 
-    if (lsm303_dd <= 0)
+    if (g_lsm303_dd <= 0)
     {
-        lsm303_dd =
+        g_lsm303_dd =
             tk_opn_dev((CONST UB *)LSM303_I2C_DEVNAME, TD_UPDATE | TD_EXCL);
-        if (lsm303_dd < E_OK)
+        if (g_lsm303_dd < E_OK)
         {
-            ER open_er = lsm303_dd;
+            ER open_er = g_lsm303_dd;
 
-            lsm303_dd = 0; /* never keep an error code as a descriptor */
-            if (!open_err_reported)
+            g_lsm303_dd = 0; /* never keep an error code as a descriptor */
+            if (!g_b_open_err_reported)
             { /* later ones: imu_task's report */
-                open_err_reported = TRUE;
+                g_b_open_err_reported = TRUE;
                 LOG_ERR(TAG_S4_IMU, "failed to open I2C device, er=%d",
                         open_er);
             }
@@ -170,101 +170,101 @@ EXPORT ER lsm303dlhc_init(void)
         }
     }
 
-    er = read_reg(LSM303_ACC_ADDR, LSM303_WHO_AM_I_A, &who_am_i);
-    if (er < E_OK)
+    ercd = read_reg(LSM303_ACC_ADDR, LSM303_WHO_AM_I_A, &who_am_i);
+    if (ercd < E_OK)
     {
         /* Reported, rate-limited, by imu_task (report_error). */
-        return er;
+        return ercd;
     }
 
     if (who_am_i != LSM303_WHO_AM_I_VALUE)
     {
-        if (!who_err_reported)
+        if (!g_b_who_err_reported)
         { /* later ones: imu_task's report */
-            who_err_reported = TRUE;
+            g_b_who_err_reported = TRUE;
             LOG_ERR(TAG_S4_IMU, "unexpected WHO_AM_I=0x%02x", who_am_i);
         }
         return E_IO;
     }
 
-    er = write_reg(LSM303_ACC_ADDR, LSM303_CTRL_REG1_A, LSM303_CTRL1_VALUE);
-    if (er < E_OK)
+    ercd = write_reg(LSM303_ACC_ADDR, LSM303_CTRL_REG1_A, LSM303_CTRL1_VALUE);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = write_reg(LSM303_ACC_ADDR, LSM303_CTRL_REG4_A, LSM303_CTRL4_VALUE);
-    if (er < E_OK)
+    ercd = write_reg(LSM303_ACC_ADDR, LSM303_CTRL_REG4_A, LSM303_CTRL4_VALUE);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = write_reg(LSM303_MAG_ADDR, LSM303_CRA_REG_M, LSM303_CRA_VALUE);
-    if (er < E_OK)
+    ercd = write_reg(LSM303_MAG_ADDR, LSM303_CRA_REG_M, LSM303_CRA_VALUE);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = write_reg(LSM303_MAG_ADDR, LSM303_CRB_REG_M, LSM303_CRB_VALUE);
-    if (er < E_OK)
+    ercd = write_reg(LSM303_MAG_ADDR, LSM303_CRB_REG_M, LSM303_CRB_VALUE);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = write_reg(LSM303_MAG_ADDR, LSM303_MR_REG_M, LSM303_MR_VALUE);
-    if (er < E_OK)
+    ercd = write_reg(LSM303_MAG_ADDR, LSM303_MR_REG_M, LSM303_MR_VALUE);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
     LOG_INFO(TAG_S4_IMU, "LSM303DLHC initialized");
     return E_OK;
 }
 
-EXPORT ER lsm303dlhc_read(LSM303_SAMPLE * sample)
+EXPORT ER lsm303dlhc_read(LSM303_SAMPLE * p_sample)
 {
-    ER er;
+    ER ercd;
 
-    if (sample == NULL)
+    if (p_sample == NULL)
     {
         return E_PAR;
     }
 
-    er = read_acc_axis(LSM303_OUT_X_L_A, LSM303_OUT_X_H_A, &sample->ax_mg);
-    if (er < E_OK)
+    ercd = read_acc_axis(LSM303_OUT_X_L_A, LSM303_OUT_X_H_A, &p_sample->ax_mg);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = read_acc_axis(LSM303_OUT_Y_L_A, LSM303_OUT_Y_H_A, &sample->ay_mg);
-    if (er < E_OK)
+    ercd = read_acc_axis(LSM303_OUT_Y_L_A, LSM303_OUT_Y_H_A, &p_sample->ay_mg);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = read_acc_axis(LSM303_OUT_Z_L_A, LSM303_OUT_Z_H_A, &sample->az_mg);
-    if (er < E_OK)
+    ercd = read_acc_axis(LSM303_OUT_Z_L_A, LSM303_OUT_Z_H_A, &p_sample->az_mg);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
     /* Magnetometer output order is X, Z, Y and is big-endian. */
-    er = read_mag_axis(LSM303_OUT_X_H_M, LSM303_OUT_X_L_M, &sample->mx_raw);
-    if (er < E_OK)
+    ercd = read_mag_axis(LSM303_OUT_X_H_M, LSM303_OUT_X_L_M, &p_sample->mx_raw);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = read_mag_axis(LSM303_OUT_Y_H_M, LSM303_OUT_Y_L_M, &sample->my_raw);
-    if (er < E_OK)
+    ercd = read_mag_axis(LSM303_OUT_Y_H_M, LSM303_OUT_Y_L_M, &p_sample->my_raw);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = read_mag_axis(LSM303_OUT_Z_H_M, LSM303_OUT_Z_L_M, &sample->mz_raw);
-    if (er < E_OK)
+    ercd = read_mag_axis(LSM303_OUT_Z_H_M, LSM303_OUT_Z_L_M, &p_sample->mz_raw);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
     return E_OK;
@@ -284,27 +284,27 @@ EXPORT ER lsm303dlhc_read(LSM303_SAMPLE * sample)
  * Takes about 0.1 ms; no kernel calls, so it also works on a core that can no
  * longer block.
  */
-LOCAL void bus_wait_us(UW us)
+LOCAL void bus_wait_us(UW delay_us)
 {
     UW start = in_w(TIMER_TIMERAWL);
 
-    while ((UW)(in_w(TIMER_TIMERAWL) - start) < us)
+    while ((UW)(in_w(TIMER_TIMERAWL) - start) < delay_us)
     {
         /* busy-wait: at most a few microseconds */
     }
 }
 
-LOCAL void bus_line(UW pin, BOOL low)
+LOCAL void bus_line(UW pin, BOOL b_low)
 {
-    out_w(low ? GPIO_OE_SET : GPIO_OE_CLR, 1UL << pin);
+    out_w(b_low ? GPIO_OE_SET : GPIO_OE_CLR, 1UL << pin);
     bus_wait_us(LSM303_BUS_HALF_PERIOD_US);
 }
 
 EXPORT BOOL lsm303dlhc_recover_bus(void)
 {
     UW   mask = (1UL << LSM303_SDA_PIN) | (1UL << LSM303_SCL_PIN);
-    UW   i;
-    BOOL sda_free;
+    UW   idx;
+    BOOL b_sda_free;
 
     out_w(GPIO_OE_CLR, mask);  /* both released (pull-ups) */
     out_w(GPIO_OUT_CLR, mask); /* when enabled, drive low */
@@ -312,9 +312,9 @@ EXPORT BOOL lsm303dlhc_recover_bus(void)
     out_w(GPIO_CTRL(LSM303_SCL_PIN), GPIO_CTRL_FUNCSEL_SIO);
     bus_wait_us(LSM303_BUS_HALF_PERIOD_US);
 
-    for (i = 0U; i < LSM303_BUS_CLOCKS &&
-                 (in_w(GPIO_IN) & (1UL << LSM303_SDA_PIN)) == 0U;
-         i++)
+    for (idx = 0U; idx < LSM303_BUS_CLOCKS &&
+                   (in_w(GPIO_IN) & (1UL << LSM303_SDA_PIN)) == 0U;
+         idx++)
     {
         bus_line(LSM303_SCL_PIN, TRUE);
         bus_line(LSM303_SCL_PIN, FALSE);
@@ -326,9 +326,9 @@ EXPORT BOOL lsm303dlhc_recover_bus(void)
     bus_line(LSM303_SCL_PIN, FALSE);
     bus_line(LSM303_SDA_PIN, FALSE);
 
-    sda_free = ((in_w(GPIO_IN) & (1UL << LSM303_SDA_PIN)) != 0U);
+    b_sda_free = ((in_w(GPIO_IN) & (1UL << LSM303_SDA_PIN)) != 0U);
 
     out_w(GPIO_CTRL(LSM303_SDA_PIN), GPIO_CTRL_FUNCSEL_I2C);
     out_w(GPIO_CTRL(LSM303_SCL_PIN), GPIO_CTRL_FUNCSEL_I2C);
-    return sda_free;
+    return b_sda_free;
 }

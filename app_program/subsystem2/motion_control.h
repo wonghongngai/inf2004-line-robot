@@ -323,39 +323,40 @@ typedef struct
  *
  * Returns false if the calibration/configuration is invalid.
  */
-bool motion_control_init(MOTION_CONTROLLER *   controller,
-                         const MOTION_CONFIG * config, uint32_t now_ms,
+bool motion_control_init(MOTION_CONTROLLER *   p_controller,
+                         const MOTION_CONFIG * p_config, uint32_t now_ms,
                          int32_t left_ticks, int32_t right_ticks);
 
 /*
  * Give Motion Control a new command.
  */
-MOTION_RESULT motion_control_command(MOTION_CONTROLLER *    controller,
-                                     const MOTION_COMMAND * command,
+MOTION_RESULT motion_control_command(MOTION_CONTROLLER *    p_controller,
+                                     const MOTION_COMMAND * p_command,
                                      uint32_t now_ms, int32_t left_ticks,
                                      int32_t right_ticks);
 
 /*
  * Choose the drive profile for the next FORWARD_CM / TURN_*_DEG command.
  */
-void motion_control_set_profile(MOTION_CONTROLLER * controller,
+void motion_control_set_profile(MOTION_CONTROLLER * p_controller,
                                 MOTION_PROFILE      profile);
 
 /*
  * Tell FOLLOW_LINE whether a barcode is being scanned (slow-down).
  */
-void motion_control_set_scanning(MOTION_CONTROLLER * controller, bool scanning);
+void motion_control_set_scanning(MOTION_CONTROLLER * p_controller,
+                                 bool                b_scanning);
 
 /*
  * One periodic Motion Control update.
  */
-void motion_control_step(MOTION_CONTROLLER * controller, uint32_t now_ms,
+void motion_control_step(MOTION_CONTROLLER * p_controller, uint32_t now_ms,
                          int32_t left_ticks, int32_t right_ticks);
 
 /*
  * Copy current Motion Control status.
  */
-void motion_control_get_status(const MOTION_CONTROLLER * controller,
-                               MOTION_STATUS *           status);
+void motion_control_get_status(const MOTION_CONTROLLER * p_controller,
+                               MOTION_STATUS *           p_status);
 
 #endif /* S2_MOTION_CONTROL_H */

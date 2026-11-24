@@ -425,53 +425,57 @@ void line_barcode_test(void)
     build_frame(runs, 0u, false);
     runs[1] = TEST_NARROW_MS; /* Corrupt the wide space of '*'. */
     (void)feed(&context, 3u, TEST_QUIET_MS, &commands, &last_command);
-    for (uint8_t i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+    for (uint8_t loop_idx = 0u; loop_idx < LINE_BARCODE_FRAME_RUNS; ++loop_idx)
     {
-        (void)feed(&context, (i & 1u) ? 3u : 7u, runs[i], &commands,
-                   &last_command);
+        (void)feed(&context, (loop_idx & 1u) ? 3u : 7u, runs[loop_idx],
+                   &commands, &last_command);
     }
     (void)feed(&context, 3u, TEST_QUIET_MS, &commands, &last_command);
-    bool retained =
+    bool b_retained =
         context.run_count == LINE_BARCODE_FRAME_RUNS && commands == 0u;
-    for (uint8_t i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+    for (uint8_t loop_idx = 0u; loop_idx < LINE_BARCODE_FRAME_RUNS; ++loop_idx)
     {
-        retained = retained && line_barcode_run_width(&context, i) == runs[i];
+        b_retained = b_retained && line_barcode_run_width(&context, loop_idx) ==
+                                       runs[loop_idx];
     }
     TEST_CHECK(
-        "S3-U39", retained,
+        "S3-U39", b_retained,
         "malformed start retains all 29 raw widths without emitting letter");
     /* Hardware scan supplied on 4 Nov: all edges present, squeezed whites. */
     static uint16_t const measured_a[LINE_BARCODE_FRAME_RUNS] = {
         101u, 202u, 140u, 13u, 318u, 26u,  309u, 25u, 141u, 27u,
         269u, 64u,  110u, 48u, 124u, 191u, 141u, 20u, 298u, 16u,
         137u, 177u, 132u, 22u, 296u, 27u,  304u, 27u, 150u};
-    bool measured_ok = true;
+    bool b_measured_ok = true;
     for (unsigned direction = 0u; direction < 2u; ++direction)
     {
-        for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+        for (unsigned loop_idx = 0u; loop_idx < LINE_BARCODE_FRAME_RUNS;
+             ++loop_idx)
         {
-            runs[i] =
-                measured_a[direction ? LINE_BARCODE_FRAME_RUNS - 1u - i : i];
+            runs[loop_idx] =
+                measured_a[direction ? LINE_BARCODE_FRAME_RUNS - 1u - loop_idx
+                                     : loop_idx];
         }
         uint8_t letter = 0xffu;
-        measured_ok =
-            measured_ok &&
+        b_measured_ok =
+            b_measured_ok &&
             line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter) &&
             letter == 0u;
         line_barcode_reset(&context);
         commands     = 0u;
         last_command = 0xffu;
         (void)feed(&context, 3u, 734u, &commands, &last_command);
-        for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+        for (unsigned loop_idx = 0u; loop_idx < LINE_BARCODE_FRAME_RUNS;
+             ++loop_idx)
         {
-            (void)feed(&context, (i & 1u) ? 3u : 7u, runs[i], &commands,
-                       &last_command);
+            (void)feed(&context, (loop_idx & 1u) ? 3u : 7u, runs[loop_idx],
+                       &commands, &last_command);
         }
         (void)feed(&context, 3u, 420u, &commands, &last_command);
-        measured_ok = measured_ok && commands == 1u && last_command == 0u;
+        b_measured_ok = b_measured_ok && commands == 1u && last_command == 0u;
     }
     TEST_CHECK(
-        "S3-U40", measured_ok,
+        "S3-U40", b_measured_ok,
         "recorded 29-run scan decodes A forward/reverse, raw and sampled");
     /* Hardware scans of A on 19 Nov after rebalancing the GP28 comparator
      * (testing/subsystem5/logs/2026-11-19_183720_console.txt). Scan speed
@@ -487,27 +491,28 @@ void line_barcode_test(void)
         {66u,  481u, 38u, 240u, 274u, 239u, 354u, 250u, 44u,  249u,
          350u, 237u, 80u, 230u, 85u,  512u, 89u,  217u, 375u, 206u,
          69u,  468u, 70u, 210u, 370u, 203u, 387u, 198u, 97u}};
-    bool scans_ok = true;
+    bool b_scans_ok = true;
     for (unsigned scan = 0u; scan < 3u; ++scan)
     {
         for (unsigned direction = 0u; direction < 2u; ++direction)
         {
-            for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+            for (unsigned loop_idx = 0u; loop_idx < LINE_BARCODE_FRAME_RUNS;
+                 ++loop_idx)
             {
-                runs[i] =
-                    scans_19nov[scan]
-                               [direction ? LINE_BARCODE_FRAME_RUNS - 1u - i
-                                          : i];
+                runs[loop_idx] =
+                    scans_19nov[scan][direction ? LINE_BARCODE_FRAME_RUNS - 1u -
+                                                      loop_idx
+                                                : loop_idx];
             }
             uint8_t letter = 0xffu;
-            scans_ok =
-                scans_ok &&
+            b_scans_ok =
+                b_scans_ok &&
                 line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter) &&
                 letter == 0u;
         }
     }
     TEST_CHECK(
-        "S3-U36", scans_ok,
+        "S3-U36", b_scans_ok,
         "19 Nov hardware scans with uneven speed decode A forward/reverse");
     /* Rank-based rule still needs separation: 1.10x between the shortest
      * wide bar and longest narrow bar of the start marker must fail. */
@@ -530,21 +535,22 @@ void line_barcode_test(void)
         {50u,  80u,  177u, 82u,  164u, 112u, 30u, 257u, 31u,  103u,
          178u, 106u, 31u,  247u, 31u,  108u, 30u, 107u, 173u, 106u,
          29u,  109u, 182u, 106u, 190u, 102u, 46u, 250u, 44u}};
-    bool medium_ok = true;
+    bool b_medium_ok = true;
     for (unsigned scan = 0u; scan < 3u; ++scan)
     {
         for (unsigned direction = 0u; direction < 2u; ++direction)
         {
-            for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+            for (unsigned loop_idx = 0u; loop_idx < LINE_BARCODE_FRAME_RUNS;
+                 ++loop_idx)
             {
-                runs[i] =
-                    medium_19nov[scan]
-                                [direction ? LINE_BARCODE_FRAME_RUNS - 1u - i
-                                           : i];
+                runs[loop_idx] =
+                    medium_19nov[scan][direction ? LINE_BARCODE_FRAME_RUNS -
+                                                       1u - loop_idx
+                                                 : loop_idx];
             }
             uint8_t letter = 0xffu;
-            medium_ok =
-                medium_ok &&
+            b_medium_ok =
+                b_medium_ok &&
                 line_barcode_decode(runs, LINE_BARCODE_FRAME_RUNS, &letter) &&
                 letter == 0u;
         }
@@ -554,11 +560,11 @@ void line_barcode_test(void)
      * (4.5x the frame's first narrow bar, 28 ms here) fires on a 164 ms
      * wide bar; with C/R white, as all_test reads over a barcode, the
      * 2 s line-search deadline (disabled in APP_ALL_TEST) faults first. */
-    TEST_CHECK("S3-U38", medium_ok,
+    TEST_CHECK("S3-U38", b_medium_ok,
                "19 Nov medium-size scans decode A forward/reverse");
-    for (unsigned i = 0u; i < LINE_BARCODE_FRAME_RUNS; ++i)
+    for (unsigned loop_idx = 0u; loop_idx < LINE_BARCODE_FRAME_RUNS; ++loop_idx)
     {
-        runs[i] = measured_a[i];
+        runs[loop_idx] = measured_a[loop_idx];
     }
     runs[3] = LINE_BARCODE_MIN_RUN_MS - 1u;
     TEST_CHECK(

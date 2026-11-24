@@ -73,24 +73,24 @@ static UW percent_to_cc(float percent)
  */
 static ER init_pwm_pin(UINT pin)
 {
-    ER er;
+    ER ercd;
 
-    er = pwm_set_pin(pin);
+    ercd = pwm_set_pin(pin);
 
-    if (er < E_OK)
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
     /* Default divider=1 would produce ~125 kHz, above Robo Pico's 20 kHz
        rating. Use the 10 kHz frequency from Cytron's motor example. */
     out_w(MOTOR_PWM_REG((pin >> 1u) & 7u, PWM_CHx_DIV), MOTOR_PWM_DIV_16);
 
-    er = pwm_set_wrap(pin, MOTOR_PWM_WRAP);
+    ercd = pwm_set_wrap(pin, MOTOR_PWM_WRAP);
 
-    if (er < E_OK)
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
     /*
@@ -101,40 +101,40 @@ static ER init_pwm_pin(UINT pin)
 
 ER drv_motor_init(void)
 {
-    ER er;
+    ER ercd;
 
     /*
      * Configure left motor outputs.
      */
-    er = init_pwm_pin(MOTOR_LEFT_FORWARD_PIN);
+    ercd = init_pwm_pin(MOTOR_LEFT_FORWARD_PIN);
 
-    if (er < E_OK)
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = init_pwm_pin(MOTOR_LEFT_REVERSE_PIN);
+    ercd = init_pwm_pin(MOTOR_LEFT_REVERSE_PIN);
 
-    if (er < E_OK)
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
     /*
      * Configure right motor outputs.
      */
-    er = init_pwm_pin(MOTOR_RIGHT_FORWARD_PIN);
+    ercd = init_pwm_pin(MOTOR_RIGHT_FORWARD_PIN);
 
-    if (er < E_OK)
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = init_pwm_pin(MOTOR_RIGHT_REVERSE_PIN);
+    ercd = init_pwm_pin(MOTOR_RIGHT_REVERSE_PIN);
 
-    if (er < E_OK)
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
     /*
@@ -145,18 +145,18 @@ ER drv_motor_init(void)
      * Therefore enabling one channel from each pair enables the
      * corresponding slice.
      */
-    er = pwm_set_enabled(MOTOR_LEFT_FORWARD_PIN, TRUE);
+    ercd = pwm_set_enabled(MOTOR_LEFT_FORWARD_PIN, TRUE);
 
-    if (er < E_OK)
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = pwm_set_enabled(MOTOR_RIGHT_FORWARD_PIN, TRUE);
+    ercd = pwm_set_enabled(MOTOR_RIGHT_FORWARD_PIN, TRUE);
 
-    if (er < E_OK)
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
     /*
@@ -188,36 +188,37 @@ void drv_motor_stop(void)
     drv_motor_set(0.0f, 0.0f);
 }
 
-ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS * out)
+ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS * p_out)
 {
     UW       left_start, right_start;
     const UW left_slice  = (MOTOR_LEFT_FORWARD_PIN >> 1u) & 7u;
     const UW right_slice = (MOTOR_RIGHT_FORWARD_PIN >> 1u) & 7u;
-    if (out == 0)
+    if (p_out == 0)
     {
         return E_PAR;
     }
-    out->reset_done    = in_w(RESETS_RESET_DONE) & RESETS_RESET_PWM;
-    out->left_csr      = in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CSR));
-    out->right_csr     = in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CSR));
-    out->left_compare  = in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CC));
-    out->right_compare = in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CC));
-    out->left_counting = out->right_counting = FALSE;
+    p_out->reset_done    = in_w(RESETS_RESET_DONE) & RESETS_RESET_PWM;
+    p_out->left_csr      = in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CSR));
+    p_out->right_csr     = in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CSR));
+    p_out->left_compare  = in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CC));
+    p_out->right_compare = in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CC));
+    p_out->left_counting = p_out->right_counting = FALSE;
     left_start  = in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CTR));
     right_start = in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CTR));
-    for (unsigned i = 0; i < 64u; ++i)
+    for (unsigned idx = 0; idx < 64u; ++idx)
     {
         if (in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CTR)) != left_start)
         {
-            out->left_counting = TRUE;
+            p_out->left_counting = TRUE;
         }
         if (in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CTR)) != right_start)
         {
-            out->right_counting = TRUE;
+            p_out->right_counting = TRUE;
         }
     }
-    if (!out->reset_done || !out->left_counting || !out->right_counting ||
-        !(out->left_csr & PWM_CH_CSR_EN) || !(out->right_csr & PWM_CH_CSR_EN))
+    if (!p_out->reset_done || !p_out->left_counting || !p_out->right_counting ||
+        !(p_out->left_csr & PWM_CH_CSR_EN) ||
+        !(p_out->right_csr & PWM_CH_CSR_EN))
     {
         return E_IO;
     }

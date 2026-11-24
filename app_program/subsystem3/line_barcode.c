@@ -223,20 +223,20 @@ static uint16_t decode_character(uint16_t const * p_runs, bool b_reverse)
     {
         uint8_t  order[5]; /* element indices, longest first */
         unsigned count = 0u;
-        for (unsigned i = colour; i < BARCODE_ELEMENTS; i += 2u)
+        for (unsigned elem = colour; elem < BARCODE_ELEMENTS; elem += 2u)
         {
-            uint16_t width = p_runs[i];
+            uint16_t width = p_runs[elem];
             if (width < BARCODE_MIN_RUN_MS || width > LINE_BARCODE_RUN_MAX_MS)
             {
                 return 0u;
             }
-            unsigned j = count++;
-            while (j > 0u && p_runs[order[j - 1u]] < width)
+            unsigned slot = count++;
+            while (slot > 0u && p_runs[order[slot - 1u]] < width)
             {
-                order[j] = order[j - 1u];
-                --j;
+                order[slot] = order[slot - 1u];
+                --slot;
             }
-            order[j] = (uint8_t)i;
+            order[slot] = (uint8_t)elem;
         }
         unsigned wide           = wide_wanted[colour];
         uint32_t shortest_wide  = p_runs[order[wide - 1u]];
@@ -246,15 +246,15 @@ static uint16_t decode_character(uint16_t const * p_runs, bool b_reverse)
         {
             return 0u;
         }
-        for (unsigned k = 0u; k < wide; ++k)
+        for (unsigned rank = 0u; rank < wide; ++rank)
         {
-            is_wide |= (uint16_t)(1u << order[k]);
+            is_wide |= (uint16_t)(1u << order[rank]);
         }
     }
     uint16_t pattern = 0u;
-    for (unsigned i = 0u; i < BARCODE_ELEMENTS; ++i)
+    for (unsigned elem = 0u; elem < BARCODE_ELEMENTS; ++elem)
     {
-        unsigned source = b_reverse ? BARCODE_ELEMENTS - 1u - i : i;
+        unsigned source = b_reverse ? BARCODE_ELEMENTS - 1u - elem : elem;
         pattern = (uint16_t)((pattern << 1u) | ((is_wide >> source) & 1u));
     }
     return pattern;
@@ -266,9 +266,9 @@ static uint16_t largest_narrow_space(uint16_t const * p_runs)
 {
     uint16_t longest = 0u;
     uint16_t second  = 0u;
-    for (unsigned i = 1u; i < BARCODE_ELEMENTS; i += 2u)
+    for (unsigned idx = 1u; idx < BARCODE_ELEMENTS; idx += 2u)
     {
-        uint16_t width = p_runs[i];
+        uint16_t width = p_runs[idx];
         if (width > longest)
         {
             second  = longest;

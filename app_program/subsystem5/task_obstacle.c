@@ -149,10 +149,10 @@ static UINT s5_post_and_wait(UB kind, UB move, UW value, BOOL b_stop_on_line,
     UINT pattern = 0U;
 
     /* Forget old replies first, so a stale bit can't answer this one */
-    (void)tk_clr_flg(flg_s5_evt, ~wanted);
+    (void)tk_clr_flg(g_flg_s5_evt, ~wanted);
     s5_post(kind, move, value, b_stop_on_line);
 
-    if (E_OK != tk_wai_flg(flg_s5_evt, wanted, TWF_ORW, &pattern, timeout_ms))
+    if (E_OK != tk_wai_flg(g_flg_s5_evt, wanted, TWF_ORW, &pattern, timeout_ms))
     {
         return 0U;
     }
@@ -190,10 +190,10 @@ static BOOL s5_special_move(UB move, UW value, BOOL b_spin, BOOL b_reverse)
     UINT wanted  = S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED;
     UINT pattern = 0U;
 
-    (void)tk_clr_flg(flg_s5_evt, ~wanted);
+    (void)tk_clr_flg(g_flg_s5_evt, ~wanted);
     s5_post_full(S5_REQ_MOVE, move, value, FALSE, FALSE, b_spin, b_reverse);
     if (E_OK !=
-        tk_wai_flg(flg_s5_evt, wanted, TWF_ORW, &pattern, MOVE_TIMEOUT_MS))
+        tk_wai_flg(g_flg_s5_evt, wanted, TWF_ORW, &pattern, MOVE_TIMEOUT_MS))
     {
         return FALSE;
     }
@@ -207,9 +207,9 @@ static BOOL s5_spin(UB turn, UW deg)
 }
 
 /* Ask the VC to drive 'cm' straight backwards (heading held) and wait */
-static BOOL s5_reverse(UW cm)
+static BOOL s5_reverse(UW dist_cm)
 {
-    return s5_special_move(S5_MOVE_FWD, cm, FALSE, TRUE);
+    return s5_special_move(S5_MOVE_FWD, dist_cm, FALSE, TRUE);
 }
 
 /* Check whether a forward obstacle reading may count right now */
@@ -221,7 +221,7 @@ static BOOL s5_detect_allowed(void)
 
     /* Only while the VC is armed and following the line */
     if (E_OK !=
-        tk_wai_flg(flg_s5_evt, S5_EVT_FOLLOWING, TWF_ORW, &pattern, TMO_POL))
+        tk_wai_flg(g_flg_s5_evt, S5_EVT_FOLLOWING, TWF_ORW, &pattern, TMO_POL))
     {
         return FALSE;
     }
@@ -531,7 +531,7 @@ static UINT forward_watched(const bypass_step_t * p_step)
     }
 
     /* Start the leg, but don't wait: watch ahead meanwhile */
-    (void)tk_clr_flg(flg_s5_evt, ~wanted);
+    (void)tk_clr_flg(g_flg_s5_evt, ~wanted);
     s5_post_line(S5_REQ_MOVE, S5_MOVE_FWD, p_step->value,
                  p_step->b_stop_on_line, p_step->b_line_all);
     t0_us = rp2040_time_us();
@@ -546,7 +546,8 @@ static UINT forward_watched(const bypass_step_t * p_step)
             return 0U;
         }
 
-        if (E_OK == tk_wai_flg(flg_s5_evt, wanted, TWF_ORW, &pattern, TMO_POL))
+        if (E_OK ==
+            tk_wai_flg(g_flg_s5_evt, wanted, TWF_ORW, &pattern, TMO_POL))
         {
             return ((pattern & S5_EVT_MOVE_FAILED) != 0U) ? 0U
                                                           : (pattern & wanted);
@@ -740,7 +741,8 @@ static BOOL look_pass(const plan_t *             p_plan,
  */
 static BOOL clear_ahead(const bypass_step_t * p_turn, UW limit_mm)
 {
-    bypass_step_t on = {S5_MOVE_FWD, PROBE_STEP_CM, FALSE, FALSE, FALSE, FALSE};
+    bypass_step_t probe = {S5_MOVE_FWD, PROBE_STEP_CM, FALSE,
+                           FALSE,       FALSE,         FALSE};
     UW            tries = 0U;
 
     while (ahead_blocked(limit_mm))
@@ -757,7 +759,7 @@ static BOOL clear_ahead(const bypass_step_t * p_turn, UW limit_mm)
                  limit_mm, PROBE_STEP_CM, tries, PROBE_TRIES);
         if ((S5_EVT_MOTION_DONE !=
              s5_move(opposite_turn(p_turn->move), p_turn->value, FALSE)) ||
-            (S5_EVT_MOTION_DONE != forward_watched(&on)) ||
+            (S5_EVT_MOTION_DONE != forward_watched(&probe)) ||
             (S5_EVT_MOTION_DONE != s5_move(p_turn->move, p_turn->value, FALSE)))
         {
             LOG_ERR(TAG_S5_OBS, "retry move failed");
@@ -982,7 +984,7 @@ static void s5_bench_loop(void)
 #endif
 
 /* Main obstacle task: monitor, hold, scan, plan, then resume or stop */
-EXPORT void obstacle_task(INT stacd, void * exinf)
+EXPORT void obstacle_task(INT stacd, void * p_exinf)
 {
     s5_state_t          state   = S5_MONITORING;
     UB                  history = 0U;
@@ -994,7 +996,7 @@ EXPORT void obstacle_task(INT stacd, void * exinf)
 
     /* To hide unused warnings */
     (void)stacd;
-    (void)exinf;
+    (void)p_exinf;
 
     /* Start-up hold: the VC won't arm while S5 asks for HOLD.  The servo's
      * first swing shakes the robot hard enough for S4 to report TILT (and,

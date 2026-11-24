@@ -139,16 +139,16 @@
 #define S2_AVOID_SPIN_PWM_PERCENT 20.0f
 
 /* Receiver-owned command message buffer: Vehicle Controller -> Buddy 2. */
-IMPORT ID mbf_motion_cmd;
-IMPORT ID flg_motion_stop;
+IMPORT ID g_mbf_motion_cmd;
+IMPORT ID g_flg_motion_stop;
 
 /* Public integration interface. */
-ER subsystem2_send_command(const MOTION_COMMAND * command);
-ER subsystem2_get_status(MOTION_STATUS * status);
+ER subsystem2_send_command(const MOTION_COMMAND * p_command);
+ER subsystem2_get_status(MOTION_STATUS * p_status);
 
 /* Private to subsystem 2, declared here for task creation/tests. */
-IMPORT ID   mtx_motion_status;
-IMPORT void motion_task(INT stacd, void * exinf);
-IMPORT void subsystem2_publish_status(const MOTION_STATUS * status);
+IMPORT ID   g_mtx_motion_status;
+IMPORT void motion_task(INT stacd, void * p_exinf);
+IMPORT void subsystem2_publish_status(const MOTION_STATUS * p_status);
 
 #endif /* SUBSYSTEM2_H */

@@ -1,0 +1,226 @@
+# BARR-C 7.1 naming, subsystems 1 and 3 (#60, fix 6), 24 Nov
+# base 713f9ab (docs/barr-c-review-60); renames uncommitted on s2-s4/barr-c-naming-60, on top of the S2/S4 renames
+# 140 renames (18 file-scope statics, 34 locals, 51 parameters, 37 prototype parameters); no shared globals
+#   host tests that #include S1/S3 sources renamed with them: robot_host_test.c, barcode_queue_test.c
+# rename tool fix: the collision check had a broken regex (\b saved as backspace) and never fired
+#   in the S2/S4 pass; rerun with the fix against the HEAD sources it finds one collision,
+#   ev -> event in straddle_step(), already fixed by hand (ev -> frame). S1/S3 ran with the fixed check.
+# firmware: each mode built from HEAD and from the renamed tree (S1-S4), objcopy -O binary compared:
+#   SAME   all_test
+#   SAME   all_test_offline
+#   SAME   barcode_test
+#   SAME   integrated
+#   SAME   integrated_S4_TRACE_1
+#   DIFF   integrated_TEST_1  bytes=267226 size 416696/416700
+#   SAME   integrated_WIFI_none_NET_none_MQTT_0
+#   SAME   integrated_motor_test
+#   SAME   line_follow_test
+#   SAME   motion
+#   SAME   motion_MOTION_DEMO_1
+#   SAME   motion_MOTION_DEMO_1_PID_BENCH_1
+#   SAME   motion_MOTION_DEMO_1_PIVOT_BENCH_1
+#   SAME   motion_TEST_1
+#   SAME   motor_test
+#   integrated TEST=1 differs only in line_barcode_test.o (+4 bytes text): TEST_CHECK __LINE__ constants
+#   moved, and some now need a literal-pool load (593) instead of movs+lsls (592). Compiled both versions
+#   of line_barcode_test.c with -D__LINE__=0: all 2895 disassembly lines identical.
+#   all 15 new builds: exit 0, 0 warnings (-Wall -Wextra)
+# host tests: 17 passed, 0 failed
+
+# python -I tools/barr_c_check.py app_program/subsystem1 app_program/subsystem3 --files
+BARR-C:2018 heuristic scan of app_program/subsystem1, app_program/subsystem3
+19 files, 3867 lines
+
+check            rule    hits  files  what
+1.2-width        1.2       14      8  line longer than 80 characters
+1.3-brace        1.3        0      0  left brace not on a line by itself
+1.3-nobrace      1.3        0      0  if/else/for/while body without braces
+1.7-goto         1.7        0      0  goto used
+1.7-continue     1.7        1      1  continue used
+1.7-auto-reg     1.7        0      0  auto or register used
+3.4-indent       3.4        6      2  code indent not a multiple of 4 spaces
+3.5-tab          3.5        0      0  tab character in a line
+3.6-crlf         3.6        0      0  file stored with CRLF line endings
+4.2-guard        4.2        0      0  header without an #ifndef include guard
+4.3-inc-c        4.3        0      0  #include of a .c file
+5.1-typedef      5.1        8      3  typedef name does not end in _t
+5.2-int          5.2      100     12  plain int / INT / UINT for numeric data
+5.2-short-long   5.2        7      2  short or long keyword used
+6.1-fn-case      6.1        0      0  function name contains uppercase
+6.1-macro-case   6.1        0      0  macro name contains lowercase
+6.2-len          6.2        2      2  function body longer than 100 lines
+6.2-exit         6.2       27      5  function with more than one return
+6.3-fnmacro      6.3        2      2  function-like macro defined
+7.1-short        7.1        0      0  variable name shorter than 3 characters
+7.1-case         7.1        0      0  variable name contains uppercase
+7.1-global       7.1        3      2  file-scope variable without g_ prefix
+7.1-pointer      7.1        0      0  pointer variable without p_ prefix
+7.1-bool         7.1        0      0  Boolean variable without b_ prefix
+8.2-else         8.2        0      0  if ... else if chain without a final else
+8.3-default      8.3        0      0  switch without a default case
+8.5-exit         8.5        0      0  setjmp/longjmp/abort/exit used
+8.6-const-right  8.6      104      9  == or != with the constant on the right
+
+per file (checks with hits):
+  app_program/subsystem1/communication_internal.h: 5.1-typedef=1, 5.2-int=9
+  app_program/subsystem1/communication_protocol.c: 1.2-width=2, 5.1-typedef=1, 5.2-int=38, 5.2-short-long=6, 6.2-exit=9, 6.3-fnmacro=1, 7.1-global=1, 8.6-const-right=22
+  app_program/subsystem1/communication_protocol.h: 1.2-width=5, 5.1-typedef=6, 5.2-int=12
+  app_program/subsystem1/drv_buzzer.c: 1.2-width=1, 5.2-int=2, 6.2-exit=2, 8.6-const-right=2
+  app_program/subsystem1/drv_buzzer.h: 5.2-int=1
+  app_program/subsystem1/mqtt_manager.c: 1.2-width=1, 5.2-int=15, 5.2-short-long=1, 6.2-exit=2, 8.6-const-right=29
+  app_program/subsystem1/subsystem1.c: 5.2-int=14, 6.2-exit=10, 8.6-const-right=8
+  app_program/subsystem1/subsystem1.h: 1.2-width=2, 5.2-int=2
+  app_program/subsystem1/subsystem1_test.c: 5.2-int=1, 8.6-const-right=17
+  app_program/subsystem3/line_barcode.c: 1.2-width=1, 3.4-indent=1, 6.2-exit=4, 8.6-const-right=1
+  app_program/subsystem3/line_barcode.h: 1.2-width=1, 7.1-global=2
+  app_program/subsystem3/line_barcode_test.c: 3.4-indent=5, 5.2-int=1, 6.2-len=1, 6.3-fnmacro=1, 8.6-const-right=5
+  app_program/subsystem3/line_demo.c: 5.2-int=1
+  app_program/subsystem3/line_service.c: 1.2-width=1, 1.7-continue=1, 5.2-int=4, 6.2-len=1, 8.6-const-right=19
+  app_program/subsystem3/subsystem3.c: 8.6-const-right=1
+
+# remaining 7.1 hits (false positives: a const table, prototype parameter lines)
+app_program/subsystem1/communication_protocol.c:87: static const FIELD_LAYOUT fields[S1_FIELD_COUNT] = {
+app_program/subsystem3/line_barcode.h:152: uint8_t sensors, uint16_t elapsed_ms);
+app_program/subsystem3/line_barcode.h:162: uint8_t event, uint8_t fault);
+
+# rename plan (old -> new, type, scope)
+app_program/subsystem1/communication_internal.h proto     out                        -> p_out                          S1_COMMAND_STATS * (prototype:s1_command_stats_get)
+app_program/subsystem1/communication_internal.h proto     payload                    -> p_payload                      const unsigned char * (prototype:s1_deliver_command)
+app_program/subsystem1/communication_internal.h proto     payload                    -> p_payload                      const unsigned char * (prototype:s1_deliver_mapping)
+app_program/subsystem1/communication_internal.h proto     payload                    -> p_payload                      unsigned char * (prototype:s1_take_telemetry)
+app_program/subsystem1/communication_internal.h proto     result                     -> p_result                       S1_BARCODE_RESULT * (prototype:s1_take_barcode)
+app_program/subsystem1/communication_protocol.c local     byte                       -> p_byte                         unsigned char * (s1_telemetry_set)
+app_program/subsystem1/communication_protocol.c local     i                          -> idx                            unsigned int (s1_barcode_pack)
+app_program/subsystem1/communication_protocol.c local     i                          -> idx                            unsigned int (s1_barcode_unpack)
+app_program/subsystem1/communication_protocol.c local     i                          -> idx                            unsigned int (s1_mapping_get)
+app_program/subsystem1/communication_protocol.c local     i                          -> idx                            unsigned int (s1_mapping_set)
+app_program/subsystem1/communication_protocol.c local     i                          -> idx                            unsigned int (s1_telemetry_get)
+app_program/subsystem1/communication_protocol.c local     i                          -> idx                            unsigned int (s1_telemetry_init)
+app_program/subsystem1/communication_protocol.c local     i                          -> idx                            unsigned int (s1_telemetry_set)
+app_program/subsystem1/communication_protocol.c local     i                          -> idx                            unsigned int (s1_telemetry_valid)
+app_program/subsystem1/communication_protocol.c local     layout                     -> p_layout                       const FIELD_LAYOUT * (s1_telemetry_get)
+app_program/subsystem1/communication_protocol.c local     layout                     -> p_layout                       const FIELD_LAYOUT * (s1_telemetry_set)
+app_program/subsystem1/communication_protocol.c parameter packet                     -> p_packet                       S1_BARCODE_PACKET * (s1_barcode_pack)
+app_program/subsystem1/communication_protocol.c parameter packet                     -> p_packet                       S1_COMMAND * (s1_command_set)
+app_program/subsystem1/communication_protocol.c parameter packet                     -> p_packet                       S1_MAPPING * (s1_mapping_set)
+app_program/subsystem1/communication_protocol.c parameter packet                     -> p_packet                       S1_TELEMETRY * (s1_telemetry_init)
+app_program/subsystem1/communication_protocol.c parameter packet                     -> p_packet                       S1_TELEMETRY * (s1_telemetry_set)
+app_program/subsystem1/communication_protocol.c parameter packet                     -> p_packet                       const S1_BARCODE_PACKET * (s1_barcode_unpack)
+app_program/subsystem1/communication_protocol.c parameter packet                     -> p_packet                       const S1_COMMAND * (s1_command_valid)
+app_program/subsystem1/communication_protocol.c parameter packet                     -> p_packet                       const S1_MAPPING * (s1_mapping_get)
+app_program/subsystem1/communication_protocol.c parameter packet                     -> p_packet                       const S1_TELEMETRY * (s1_telemetry_get)
+app_program/subsystem1/communication_protocol.c parameter packet                     -> p_packet                       const S1_TELEMETRY * (s1_telemetry_valid)
+app_program/subsystem1/communication_protocol.c parameter result                     -> p_result                       S1_BARCODE_RESULT * (s1_barcode_unpack)
+app_program/subsystem1/communication_protocol.c parameter result                     -> p_result                       const S1_BARCODE_RESULT * (s1_barcode_pack)
+app_program/subsystem1/communication_protocol.c parameter result                     -> p_result                       const S1_BARCODE_RESULT * (s1_barcode_result_valid)
+app_program/subsystem1/communication_protocol.c parameter value                      -> p_value                        int * (s1_telemetry_get)
+app_program/subsystem1/communication_protocol.h proto     packet                     -> p_packet                       S1_BARCODE_PACKET * (prototype:s1_barcode_pack)
+app_program/subsystem1/communication_protocol.h proto     packet                     -> p_packet                       S1_COMMAND * (prototype:s1_command_set)
+app_program/subsystem1/communication_protocol.h proto     packet                     -> p_packet                       S1_MAPPING * (prototype:s1_mapping_set)
+app_program/subsystem1/communication_protocol.h proto     packet                     -> p_packet                       S1_TELEMETRY * (prototype:s1_telemetry_init)
+app_program/subsystem1/communication_protocol.h proto     packet                     -> p_packet                       S1_TELEMETRY * (prototype:s1_telemetry_set)
+app_program/subsystem1/communication_protocol.h proto     packet                     -> p_packet                       const S1_BARCODE_PACKET * (prototype:s1_barcode_unpack)
+app_program/subsystem1/communication_protocol.h proto     packet                     -> p_packet                       const S1_COMMAND * (prototype:s1_command_valid)
+app_program/subsystem1/communication_protocol.h proto     packet                     -> p_packet                       const S1_MAPPING * (prototype:s1_mapping_get)
+app_program/subsystem1/communication_protocol.h proto     packet                     -> p_packet                       const S1_TELEMETRY * (prototype:s1_telemetry_get)
+app_program/subsystem1/communication_protocol.h proto     packet                     -> p_packet                       const S1_TELEMETRY * (prototype:s1_telemetry_valid)
+app_program/subsystem1/communication_protocol.h proto     result                     -> p_result                       S1_BARCODE_RESULT * (prototype:s1_barcode_unpack)
+app_program/subsystem1/communication_protocol.h proto     result                     -> p_result                       const S1_BARCODE_RESULT * (prototype:s1_barcode_pack)
+app_program/subsystem1/communication_protocol.h proto     result                     -> p_result                       const S1_BARCODE_RESULT * (prototype:s1_barcode_result_valid)
+app_program/subsystem1/communication_protocol.h proto     value                      -> p_value                        int * (prototype:s1_telemetry_get)
+app_program/subsystem1/drv_buzzer.c           local     er                         -> ercd                           ER (buzzer_beep)
+app_program/subsystem1/drv_buzzer.c           local     er                         -> ercd                           ER (buzzer_init)
+app_program/subsystem1/drv_buzzer.c           local     er                         -> ercd                           ER (wifi_utk_link_up)
+app_program/subsystem1/drv_buzzer.c           local     id                         -> alarm_id                       ID (buzzer_init)
+app_program/subsystem1/drv_buzzer.c           parameter exinf                      -> p_exinf                        void * (buzzer_off)
+app_program/subsystem1/drv_buzzer.c           parameter ms                         -> duration_ms                    UINT (buzzer_beep)
+app_program/subsystem1/drv_buzzer.c           static    buzzer_alarm               -> g_buzzer_alarm                 ID
+app_program/subsystem1/drv_buzzer.h           proto     ms                         -> duration_ms                    UINT (prototype:buzzer_beep)
+app_program/subsystem1/mqtt_manager.c         local     i                          -> idx                            unsigned int (incoming_data_cb)
+app_program/subsystem1/mqtt_manager.c         local     i                          -> idx                            unsigned int (topic_is)
+app_program/subsystem1/mqtt_manager.c         parameter arg                        -> p_arg                          void * (barcode_done_cb)
+app_program/subsystem1/mqtt_manager.c         parameter arg                        -> p_arg                          void * (connection_cb)
+app_program/subsystem1/mqtt_manager.c         parameter arg                        -> p_arg                          void * (heartbeat_timeout)
+app_program/subsystem1/mqtt_manager.c         parameter arg                        -> p_arg                          void * (incoming_data_cb)
+app_program/subsystem1/mqtt_manager.c         parameter arg                        -> p_arg                          void * (incoming_publish_cb)
+app_program/subsystem1/mqtt_manager.c         parameter arg                        -> p_arg                          void * (publish_done_cb)
+app_program/subsystem1/mqtt_manager.c         parameter arg                        -> p_arg                          void * (retry_timeout)
+app_program/subsystem1/mqtt_manager.c         parameter arg                        -> p_arg                          void * (subscribe_done_cb)
+app_program/subsystem1/mqtt_manager.c         parameter c                          -> p_client                       mqtt_client_t * (connection_cb)
+app_program/subsystem1/mqtt_manager.c         parameter data                       -> p_data                         const u8_t * (incoming_data_cb)
+app_program/subsystem1/mqtt_manager.c         parameter name                       -> p_name                         const char * (topic_is)
+app_program/subsystem1/mqtt_manager.c         parameter topic                      -> p_topic                        const char * (incoming_publish_cb)
+app_program/subsystem1/mqtt_manager.c         parameter topic                      -> p_topic                        const char * (topic_is)
+app_program/subsystem1/mqtt_manager.c         proto     arg                        -> p_arg                          void * (prototype:heartbeat_timeout)
+app_program/subsystem1/mqtt_manager.c         static    barcode_pending            -> g_barcode_pending              S1_BARCODE_RESULT
+app_program/subsystem1/mqtt_manager.c         static    barcode_state              -> g_barcode_state                unsigned char
+app_program/subsystem1/mqtt_manager.c         static    broker_addr                -> g_broker_addr                  ip_addr_t
+app_program/subsystem1/mqtt_manager.c         static    client                     -> g_p_client                     mqtt_client_t *
+app_program/subsystem1/mqtt_manager.c         static    connecting                 -> g_connecting                   u8_t
+app_program/subsystem1/mqtt_manager.c         static    rx_kind                    -> g_rx_kind                      unsigned char
+app_program/subsystem1/mqtt_manager.c         static    rx_length                  -> g_rx_length                    unsigned char
+app_program/subsystem1/mqtt_manager.c         static    rx_log                     -> g_rx_log                       unsigned char
+app_program/subsystem1/mqtt_manager.c         static    rx_payload                 -> g_rx_payload                   unsigned char[]
+app_program/subsystem1/subsystem1.c           local     i                          -> idx                            unsigned int (s1_deliver_mapping)
+app_program/subsystem1/subsystem1.c           local     last                       -> p_last                         const S1_COMMAND_STATS * (s1_command_stats_report)
+app_program/subsystem1/subsystem1.c           local     now                        -> p_now                          const S1_COMMAND_STATS * (s1_command_stats_report)
+app_program/subsystem1/subsystem1.c           parameter command                    -> p_command                      S1_COMMAND * (subsystem1_receive_command)
+app_program/subsystem1/subsystem1.c           parameter mapping                    -> p_mapping                      S1_MAPPING * (subsystem1_receive_mapping)
+app_program/subsystem1/subsystem1.c           parameter out                        -> p_out                          S1_COMMAND_STATS * (s1_command_stats_get)
+app_program/subsystem1/subsystem1.c           parameter packet                     -> p_packet                       const S1_TELEMETRY * (subsystem1_publish_telemetry)
+app_program/subsystem1/subsystem1.c           parameter payload                    -> p_payload                      const unsigned char * (s1_deliver_command)
+app_program/subsystem1/subsystem1.c           parameter payload                    -> p_payload                      const unsigned char * (s1_deliver_mapping)
+app_program/subsystem1/subsystem1.c           parameter payload                    -> p_payload                      unsigned char * (s1_take_telemetry)
+app_program/subsystem1/subsystem1.c           parameter result                     -> p_result                       S1_BARCODE_RESULT * (s1_take_barcode)
+app_program/subsystem1/subsystem1.c           parameter result                     -> p_result                       const S1_BARCODE_RESULT * (subsystem1_publish_barcode)
+app_program/subsystem1/subsystem1.c           static    barcode_queue              -> g_barcode_queue                ID
+app_program/subsystem1/subsystem1.c           static    command_log_budget         -> g_command_log_budget           unsigned int
+app_program/subsystem1/subsystem1.c           static    command_queue              -> g_command_queue                ID
+app_program/subsystem1/subsystem1.c           static    command_stats              -> g_command_stats                S1_COMMAND_STATS
+app_program/subsystem1/subsystem1.c           static    command_stats_reported     -> g_command_stats_reported       S1_COMMAND_STATS
+app_program/subsystem1/subsystem1.c           static    mapping_queue              -> g_mapping_queue                ID
+app_program/subsystem1/subsystem1.c           static    telemetry_queue            -> g_telemetry_queue              ID
+app_program/subsystem1/subsystem1.h           proto     command                    -> p_command                      S1_COMMAND * (prototype:subsystem1_receive_command)
+app_program/subsystem1/subsystem1.h           proto     mapping                    -> p_mapping                      S1_MAPPING * (prototype:subsystem1_receive_mapping)
+app_program/subsystem1/subsystem1.h           proto     packet                     -> p_packet                       const S1_TELEMETRY * (prototype:subsystem1_publish_telemetry)
+app_program/subsystem1/subsystem1.h           proto     result                     -> p_result                       const S1_BARCODE_RESULT * (prototype:subsystem1_publish_barcode)
+app_program/subsystem3/line_barcode.c         local     i                          -> elem                           unsigned (decode_character)
+app_program/subsystem3/line_barcode.c         local     i                          -> idx                            unsigned (largest_narrow_space)
+app_program/subsystem3/line_barcode.c         local     j                          -> slot                           unsigned (decode_character)
+app_program/subsystem3/line_barcode.c         local     k                          -> rank                           unsigned (decode_character)
+app_program/subsystem3/line_barcode_test.c    local     i                          -> loop_idx                       uint8_t (line_barcode_test)
+app_program/subsystem3/line_barcode_test.c    local     i                          -> loop_idx                       unsigned (line_barcode_test)
+app_program/subsystem3/line_barcode_test.c    local     measured_ok                -> b_measured_ok                  bool (line_barcode_test)
+app_program/subsystem3/line_barcode_test.c    local     medium_ok                  -> b_medium_ok                    bool (line_barcode_test)
+app_program/subsystem3/line_barcode_test.c    local     retained                   -> b_retained                     bool (line_barcode_test)
+app_program/subsystem3/line_barcode_test.c    local     scans_ok                   -> b_scans_ok                     bool (line_barcode_test)
+app_program/subsystem3/line_service.c         local     available                  -> b_available                    bool (line_service_barcode_run)
+app_program/subsystem3/line_service.c         local     er                         -> ercd                           ER (publish_barcode_result)
+app_program/subsystem3/line_service.c         local     i                          -> idx                            unsigned (line_service_task)
+app_program/subsystem3/line_service.c         parameter age_ms                     -> p_age_ms                       uint32_t * (line_service_barcode_level)
+app_program/subsystem3/line_service.c         parameter black                      -> p_black                        unsigned * (line_service_barcode_debug)
+app_program/subsystem3/line_service.c         parameter black                      -> p_black                        unsigned * (line_service_barcode_level)
+app_program/subsystem3/line_service.c         parameter black                      -> p_black                        unsigned * (line_service_barcode_run)
+app_program/subsystem3/line_service.c         parameter dropped                    -> p_dropped                      uint32_t * (line_service_barcode_run)
+app_program/subsystem3/line_service.c         parameter falls                      -> p_falls                        unsigned * (line_service_barcode_raw)
+app_program/subsystem3/line_service.c         parameter frame                      -> p_frame                        const line_service_barcode_frame_t * (publish_barcode_result)
+app_program/subsystem3/line_service.c         parameter frame                      -> p_frame                        line_service_barcode_frame_t * (line_service_barcode_frame)
+app_program/subsystem3/line_service.c         parameter letter                     -> p_letter                       uint8_t * (line_service_barcode_debug)
+app_program/subsystem3/line_service.c         parameter level                      -> p_level                        unsigned * (line_service_barcode_raw)
+app_program/subsystem3/line_service.c         parameter ms                         -> p_run_ms                       uint32_t * (line_service_barcode_run)
+app_program/subsystem3/line_service.c         parameter rises                      -> p_rises                        unsigned * (line_service_barcode_raw)
+app_program/subsystem3/line_service.c         parameter white                      -> p_white                        unsigned * (line_service_barcode_debug)
+app_program/subsystem3/line_service.c         static    g_debug_raw_valid          -> g_b_debug_raw_valid            bool
+app_program/subsystem3/line_service.h         proto     age_ms                     -> p_age_ms                       uint32_t * (prototype:line_service_barcode_level)
+app_program/subsystem3/line_service.h         proto     black                      -> p_black                        unsigned * (prototype:line_service_barcode_debug)
+app_program/subsystem3/line_service.h         proto     black                      -> p_black                        unsigned * (prototype:line_service_barcode_level)
+app_program/subsystem3/line_service.h         proto     black                      -> p_black                        unsigned * (prototype:line_service_barcode_run)
+app_program/subsystem3/line_service.h         proto     dropped                    -> p_dropped                      uint32_t * (prototype:line_service_barcode_run)
+app_program/subsystem3/line_service.h         proto     falls                      -> p_falls                        unsigned * (prototype:line_service_barcode_raw)
+app_program/subsystem3/line_service.h         proto     frame                      -> p_frame                        line_service_barcode_frame_t * (prototype:line_service_barcode_frame)
+app_program/subsystem3/line_service.h         proto     letter                     -> p_letter                       uint8_t * (prototype:line_service_barcode_debug)
+app_program/subsystem3/line_service.h         proto     level                      -> p_level                        unsigned * (prototype:line_service_barcode_raw)
+app_program/subsystem3/line_service.h         proto     ms                         -> p_run_ms                       uint32_t * (prototype:line_service_barcode_run)
+app_program/subsystem3/line_service.h         proto     rises                      -> p_rises                        unsigned * (prototype:line_service_barcode_raw)
+app_program/subsystem3/line_service.h         proto     white                      -> p_white                        unsigned * (prototype:line_service_barcode_debug)
+app_program/subsystem3/subsystem3.c           local     er                         -> ercd                           ER (subsystem3_start)

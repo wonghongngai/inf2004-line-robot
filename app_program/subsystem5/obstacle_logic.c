@@ -26,31 +26,31 @@ static const INT g_cos_x1000[] = {1000, 996, 985, 966, 940, 906, 866,
                                   819,  766, 707, 643, 574, 500};
 
 /* Median of three values: the one in the middle. */
-static UW median3(UW a, UW b, UW c)
+static UW median3(UW first, UW second, UW third)
 {
     UW temp;
 
     /* Sort a <= b <= c with three compare-and-swaps, then b is the median */
-    if (a > b)
+    if (first > second)
     {
-        temp = a;
-        a    = b;
-        b    = temp;
+        temp   = first;
+        first  = second;
+        second = temp;
     }
-    if (b > c)
+    if (second > third)
     {
-        temp = b;
-        b    = c;
-        c    = temp;
+        temp   = second;
+        second = third;
+        third  = temp;
     }
-    if (a > b)
+    if (first > second)
     {
-        temp = a;
-        a    = b;
-        b    = temp;
+        temp   = first;
+        first  = second;
+        second = temp;
     }
 
-    return b;
+    return second;
 }
 
 /* Pick the angle range for the fine scan from the coarse scan */
@@ -887,11 +887,11 @@ EXPORT BOOL s5_selftest_echo_ok(const UW * p_echo_us, UW count)
 #define OBS_UNUSED_SHIFT (26U) /* bits 26-31 must be 0 */
 
 /* mm -> cm, rounded to nearest, clamped */
-static UW mm_to_cm_clamped(UW mm, UW max_cm)
+static UW mm_to_cm_clamped(UW dist_mm, UW max_cm)
 {
-    UW cm = (mm + 5U) / 10U;
+    UW dist_cm = (dist_mm + 5U) / 10U;
 
-    return (cm > max_cm) ? max_cm : cm;
+    return (dist_cm > max_cm) ? max_cm : dist_cm;
 }
 
 /* Telemetry values from a valid profile */

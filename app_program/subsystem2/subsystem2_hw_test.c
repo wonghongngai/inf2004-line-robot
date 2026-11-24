@@ -51,20 +51,20 @@ static bool wait_and_poll(uint32_t duration_ms)
     return true;
 }
 
-static bool run_stage(const char * name, float left, float right)
+static bool run_stage(const char * p_name, float left, float right)
 {
     int32_t           left_ticks;
     int32_t           right_ticks;
-    bool              waited;
+    bool              b_waited;
     MOTOR_DIAGNOSTICS diag;
     ER                check;
 
     drv_encoder_reset();
     /* Print before applying power; stop before printing the result. */
-    LOG_INFO(TAG_S2_HWTEST, "%s: %u ms", name, (UINT)S2_HW_TEST_RUN_MS);
+    LOG_INFO(TAG_S2_HWTEST, "%s: %u ms", p_name, (UINT)S2_HW_TEST_RUN_MS);
     drv_motor_set(left, right);
-    check  = drv_motor_diagnostics(&diag);
-    waited = check == E_OK && wait_and_poll(S2_HW_TEST_RUN_MS);
+    check    = drv_motor_diagnostics(&diag);
+    b_waited = check == E_OK && wait_and_poll(S2_HW_TEST_RUN_MS);
     drv_motor_stop();
     drv_encoder_get_counts(&left_ticks, &right_ticks);
     LOG_INFO(TAG_S2_HWTEST, "STOP; ticks left=%ld right=%ld", (long)left_ticks,
@@ -77,51 +77,51 @@ static bool run_stage(const char * name, float left, float right)
     report_sensors();
 #endif
 
-    return waited && wait_and_poll(S2_HW_TEST_PAUSE_MS);
+    return b_waited && wait_and_poll(S2_HW_TEST_PAUSE_MS);
 }
 
-EXPORT void subsystem2_hw_test_task(INT stacd, void * exinf)
+EXPORT void subsystem2_hw_test_task(INT stacd, void * p_exinf)
 {
     const float pwm = S2_HW_TEST_PWM_PERCENT;
-    bool        ok;
+    bool        b_ok;
 
     (void)stacd;
-    (void)exinf;
+    (void)p_exinf;
     drv_motor_stop();
     LOG_INFO(TAG_S2_HWTEST, "MOTOR BENCH TEST: raise wheels off the ground.");
     LOG_INFO(TAG_S2_HWTEST, "starts in %u ms; normal motion control disabled.",
              (UINT)S2_HW_TEST_START_MS);
 
-    ok = (pwm > 0.0f && pwm <= 100.0f && S2_HW_TEST_RUN_MS > 0U &&
-          S2_HW_TEST_RUN_MS <= 2000U);
-    if (ok)
+    b_ok = (pwm > 0.0f && pwm <= 100.0f && S2_HW_TEST_RUN_MS > 0U &&
+            S2_HW_TEST_RUN_MS <= 2000U);
+    if (b_ok)
     {
-        ok = wait_and_poll(S2_HW_TEST_START_MS);
+        b_ok = wait_and_poll(S2_HW_TEST_START_MS);
     }
-    if (ok)
+    if (b_ok)
     {
-        ok = run_stage("LEFT ONLY (GP8 PWM, GP9 LOW)", pwm, 0.0f);
+        b_ok = run_stage("LEFT ONLY (GP8 PWM, GP9 LOW)", pwm, 0.0f);
     }
-    if (ok)
+    if (b_ok)
     {
-        ok = run_stage("RIGHT ONLY (GP10 PWM, GP11 LOW)", 0.0f, pwm);
+        b_ok = run_stage("RIGHT ONLY (GP10 PWM, GP11 LOW)", 0.0f, pwm);
     }
-    if (ok)
+    if (b_ok)
     {
-        ok = run_stage("BOTH FORWARD", pwm, pwm);
+        b_ok = run_stage("BOTH FORWARD", pwm, pwm);
     }
-    if (ok)
+    if (b_ok)
     {
-        ok = run_stage("LEFT PIVOT (right wheel only)", 0.0f, pwm);
+        b_ok = run_stage("LEFT PIVOT (right wheel only)", 0.0f, pwm);
     }
-    if (ok)
+    if (b_ok)
     {
-        ok = run_stage("RIGHT PIVOT (left wheel only)", pwm, 0.0f);
+        b_ok = run_stage("RIGHT PIVOT (left wheel only)", pwm, 0.0f);
     }
 
     drv_motor_stop();
     LOG_INFO(TAG_S2_HWTEST, "%s; motors OFF. Inspect wheel behaviour manually.",
-             ok ? "Sequence finished" : "Sequence aborted");
+             b_ok ? "Sequence finished" : "Sequence aborted");
 
     /* Remain the sole motor owner; do not start normal control afterwards. */
     while (1)

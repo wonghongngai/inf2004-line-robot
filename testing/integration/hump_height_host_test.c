@@ -33,8 +33,8 @@ static unsigned spins, spun_ms;
 #include "../../app_program/subsystem4/task_imu.c"
 #include "../../app_program/subsystem2/wheel_odometry.h"
 
-ID mtx_imu_data;
-IMU_DATA s4_imu_data;
+ID g_mtx_imu_data;
+IMU_DATA g_s4_imu_data;
 static unsigned prints, motor_stops, ena_dsp_calls;
 static UINT fake_sysstat;
 static ER dly_result;
@@ -137,18 +137,18 @@ static void lift_checks(void)
         assert(!update_lift(BASE_Z + 800, BASE_Z, NULL));
     assert(update_lift(BASE_Z + 800, BASE_Z, NULL));
 
-    /* Put down again: the condition clears and lift_reported re-arms. */
-    lift_reported = TRUE;
+    /* Put down again: the condition clears and g_b_lift_reported re-arms. */
+    g_b_lift_reported = TRUE;
     for (unsigned i = 0; i < 2u * S4_LIFT_FILTER_SAMPLES; ++i)
         (void)update_lift(BASE_Z, BASE_Z, NULL);
-    assert(!update_lift(BASE_Z, BASE_Z, NULL) && !lift_reported && lift_confirm == 0u);
+    assert(!update_lift(BASE_Z, BASE_Z, NULL) && !g_b_lift_reported && g_lift_confirm == 0u);
 }
 
 /* #27 (23 Nov): hump detector rules tuned on the 10 mm one-side ramp.
    update_hump() takes the 10-sample average; values here stand for it. */
 static void hump_fresh(void)
 {
-    hump_armed = TRUE; hump_rearm_count = 0U;
+    g_b_hump_armed = TRUE; g_hump_rearm_count = 0U;
     reset_hump_detector(); reset_height_tracker();
 }
 
@@ -182,18 +182,18 @@ static void hump_detector_checks(void)
        confirmation count: one sample short is not a hump. */
     hump_fresh();
     assert(!feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES - 1u, 60, TRUE, 2));
-    assert(hump_state.phase == HUMP_IDLE);
+    assert(g_hump_state.phase == HUMP_IDLE);
     feed(1, 0, TRUE, 2);
     assert(!feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES - 1u, 60, TRUE, 2));
-    assert(hump_state.phase == HUMP_IDLE);
+    assert(g_hump_state.phase == HUMP_IDLE);
     feed(1, 60, TRUE, 2);
-    assert(hump_state.phase == HUMP_FIRST_SLOPE && hump_state.first_sign == 1);
+    assert(g_hump_state.phase == HUMP_FIRST_SLOPE && g_hump_state.first_sign == 1);
 
     /* Only while the wheels turn: braking at a stop (no distance) never
        starts one, however long the jolt lasts. */
     hump_fresh();
     assert(!feed(50, 400, FALSE, 0));
-    assert(hump_state.phase == HUMP_IDLE);
+    assert(g_hump_state.phase == HUMP_IDLE);
 
     /* The climb is counted from the last level sample, not from the
        confirmation: 20 samples at 25 mg (below entry) then the 10 that
@@ -201,8 +201,8 @@ static void hump_detector_checks(void)
     hump_fresh();
     feed(20, 25, TRUE, 2);
     feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES, 60, TRUE, 2);
-    assert(hump_state.phase == HUMP_FIRST_SLOPE);
-    assert(hump_entry_height_milli_mm ==
+    assert(g_hump_state.phase == HUMP_FIRST_SLOPE);
+    assert(g_hump_entry_height_milli_mm ==
            20 * 2 * 25 + (int64_t)S4_HUMP_ENTRY_CONFIRM_SAMPLES * 2 * 60);
 
     /* ... and restarts on level ground (|avg| <= S4_HUMP_SETTLE_MG) ... */
@@ -210,14 +210,14 @@ static void hump_detector_checks(void)
     feed(20, 25, TRUE, 2);
     feed(1, S4_HUMP_SETTLE_MG, TRUE, 2);
     feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES, 60, TRUE, 2);
-    assert(hump_entry_height_milli_mm ==
+    assert(g_hump_entry_height_milli_mm ==
            (int64_t)S4_HUMP_ENTRY_CONFIRM_SAMPLES * 2 * 60);
 
     /* ... or when the slope changes direction. */
     hump_fresh();
     feed(20, -25, TRUE, 2);
     feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES, 60, TRUE, 2);
-    assert(hump_entry_height_milli_mm ==
+    assert(g_hump_entry_height_milli_mm ==
            (int64_t)S4_HUMP_ENTRY_CONFIRM_SAMPLES * 2 * 60);
 
     /* The end needs S4_HUMP_EXIT_FLAT_SAMPLES level samples in a row: a
@@ -226,46 +226,46 @@ static void hump_detector_checks(void)
     feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES, 60, TRUE, 2);
     assert(!feed(S4_HUMP_EXIT_FLAT_SAMPLES - 1u, 15, TRUE, 2));
     assert(!feed(1, 50, TRUE, 2));
-    assert(hump_state.phase == HUMP_FIRST_SLOPE);
+    assert(g_hump_state.phase == HUMP_FIRST_SLOPE);
     assert(!feed(S4_HUMP_EXIT_FLAT_SAMPLES - 1u, 15, TRUE, 2));
     assert(feed(1, 15, TRUE, 2));
-    assert(hump_state.phase == HUMP_IDLE && !hump_armed);
+    assert(g_hump_state.phase == HUMP_IDLE && !g_b_hump_armed);
 
     /* Not re-armed until S4_HUMP_REARM_FLAT_SAMPLES level samples. */
-    assert(!feed(S4_HUMP_REARM_FLAT_SAMPLES - 1u, 0, TRUE, 2) && !hump_armed);
+    assert(!feed(S4_HUMP_REARM_FLAT_SAMPLES - 1u, 0, TRUE, 2) && !g_b_hump_armed);
     feed(1, 0, TRUE, 2);
-    assert(hump_armed);
+    assert(g_b_hump_armed);
 
     /* A climb that never levels off (robot stalled on the ramp) times out
        after S4_HUMP_TIMEOUT_SAMPLES with no event. */
     hump_fresh();
     feed(S4_HUMP_ENTRY_CONFIRM_SAMPLES, 60, TRUE, 2);
     assert(!feed(S4_HUMP_TIMEOUT_SAMPLES, 60, FALSE, 0));
-    assert(hump_state.phase == HUMP_FIRST_SLOPE);
+    assert(g_hump_state.phase == HUMP_FIRST_SLOPE);
     assert(!feed(1, 60, FALSE, 0));
-    assert(hump_state.phase == HUMP_IDLE && !hump_armed);
+    assert(g_hump_state.phase == HUMP_IDLE && !g_b_hump_armed);
 }
 
 int main(void)
 {
     reset_hump_detector(); reset_height_tracker();
-    hump_state.first_sign = 1;
+    g_hump_state.first_sign = 1;
     for (unsigned i = 0; i < 100; ++i) update_height_estimate(1, 200);
-    assert(current_height_mm == RISE_20_MM && peak_height_mm == (UW)RISE_20_MM && height_distance_seen);
+    assert(g_current_height_mm == RISE_20_MM && g_peak_height_mm == (UW)RISE_20_MM && g_b_height_distance_seen);
     /* #5 (decided 20 Nov 2026): S4 reports the highest rise, so the descent
-       must not reduce it. current_height_mm is internal and never published,
+       must not reduce it. g_current_height_mm is internal and never published,
        so its value after the descent is not checked. */
     for (unsigned i = 0; i < 100; ++i) update_height_estimate(1, -200);
-    assert(peak_height_mm == (UW)RISE_20_MM);
-    reset_height_tracker(); hump_state.first_sign = -1;
+    assert(g_peak_height_mm == (UW)RISE_20_MM);
+    reset_height_tracker(); g_hump_state.first_sign = -1;
     for (unsigned i = 0; i < 100; ++i) update_height_estimate(1, -200);
-    assert(current_height_mm == RISE_20_MM && peak_height_mm == (UW)RISE_20_MM);
+    assert(g_current_height_mm == RISE_20_MM && g_peak_height_mm == (UW)RISE_20_MM);
     update_height_estimate(10000, -500);
-    assert(current_height_mm == S4_MAX_RAMP_HEIGHT_MM);
+    assert(g_current_height_mm == S4_MAX_RAMP_HEIGHT_MM);
     update_height_estimate(10000, 500);
-    assert(peak_height_mm == S4_MAX_RAMP_HEIGHT_MM);
+    assert(g_peak_height_mm == S4_MAX_RAMP_HEIGHT_MM);
     reset_height_tracker(); update_height_estimate(0, 200);
-    assert(!height_distance_seen && peak_height_mm == 0);
+    assert(!g_b_height_distance_seen && g_peak_height_mm == 0);
 
     WHEEL_ODOMETRY o;
     uint8_t mm;
@@ -293,7 +293,7 @@ int main(void)
     LSM303_SAMPLE sample = {0};
     publish_snapshot(&sample, 0, 0, 1000, 300, 10, 20, TRUE,
                      IMU_MOTION_HUMP, IMU_EVENT_HUMP, TRUE, TRUE, 1, FALSE);
-    assert(s4_imu_data.ramp_height_valid && s4_imu_data.ramp_height_mm == 20);
+    assert(g_s4_imu_data.ramp_height_valid && g_s4_imu_data.ramp_height_mm == 20);
     lift_checks();
     /* S4-U15 (21 Nov 2026 robot log): every failed IMU cycle printed a line,
        ~100/s once the core could not block. First failure prints at once,
@@ -302,7 +302,7 @@ int main(void)
     for (unsigned i = 0; i < 2033; ++i) { report_error("init", E_CTX); fake_ms += 10; }
     /* 20.33 s of failures: first line + one per second. */
     assert(prints >= 20 && prints <= 22);
-    assert(err_unreported < 2033);
+    assert(g_err_unreported < 2033);
 
     /* A healthy kernel: the retry delay works, motors are not touched. */
     prints = motor_stops = 0; dly_result = E_OK;
@@ -315,9 +315,9 @@ int main(void)
     s4_delay(S4_RETRY_MAX_MS);
     assert(motor_stops == 1 && prints == 1 && fake_primask == 0U);
     /* Follow-up kernel report: not before 5 s, exactly once after. */
-    wedge_followup(); assert(!wedge_followup_done);
-    fake_ms += S4_WEDGE_FOLLOWUP_MS; wedge_followup(); assert(wedge_followup_done);
-    wedge_followup(); assert(wedge_followup_done);
+    wedge_followup(); assert(!g_b_wedge_followup_done);
+    fake_ms += S4_WEDGE_FOLLOWUP_MS; wedge_followup(); assert(g_b_wedge_followup_done);
+    wedge_followup(); assert(g_b_wedge_followup_done);
     assert(ena_dsp_calls == 0);
     /* Still stuck (dispatch disabled): motors stopped again, no new FATAL
        line, dispatching re-enabled. */
@@ -344,9 +344,9 @@ int main(void)
     /* Bus fault (E_IO) for 60 s of retries: delays grow, the bus is freed
        every third failure, the data is marked invalid, and the console gets
        about one line per second, never one per retry. */
-    fail_streak = 0; bus_recoveries = 0; bus_recover_calls = 0;
-    err_reported = FALSE; err_unreported = 0; prints = 0;
-    s4_imu_data.sensor_ok = TRUE; s4_imu_data.read_errors = 0;
+    g_fail_streak = 0; g_bus_recoveries = 0; bus_recover_calls = 0;
+    g_b_err_reported = FALSE; g_err_unreported = 0; prints = 0;
+    g_s4_imu_data.sensor_ok = TRUE; g_s4_imu_data.read_errors = 0;
     {
         uint32_t t0 = fake_ms;
         unsigned fails = 0;
@@ -360,13 +360,13 @@ int main(void)
         assert(fails < 80u);                       /* not thousands */
         assert(bus_recover_calls == fails / S4_RECOVER_EVERY_FAILS);
         assert(prints >= 55u && prints <= fails);  /* ~1 per second */
-        assert(!s4_imu_data.sensor_ok && s4_imu_data.motion_state == IMU_MOTION_FAULT);
-        assert(s4_imu_data.read_errors == fails);
+        assert(!g_s4_imu_data.sensor_ok && g_s4_imu_data.motion_state == IMU_MOTION_FAULT);
+        assert(g_s4_imu_data.read_errors == fails);
     }
     /* A good read ends the streak (one INFO line) and the back-off restarts. */
     prints = 0;
     imu_read_ok();
-    assert(fail_streak == 0u && prints == 1u);
+    assert(g_fail_streak == 0u && prints == 1u);
     imu_read_ok();
     assert(prints == 1u);
 
@@ -374,7 +374,7 @@ int main(void)
        on 22 Nov): no bus recovery (not a bus fault), and the loop still waits
        the back-off on the hardware timer, so 60 s of this is a few dozen
        retries and about 60 lines, not 10 000. */
-    fail_streak = 0; bus_recover_calls = 0; prints = 0; spins = 0; spun_ms = 0;
+    g_fail_streak = 0; bus_recover_calls = 0; prints = 0; spins = 0; spun_ms = 0;
     motor_stops = 0;
     dly_result = E_CTX;
     {

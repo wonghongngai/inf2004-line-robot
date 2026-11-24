@@ -15,11 +15,11 @@ EXPORT void s5_exec_set_following(S5_EXEC * p_x, BOOL b_following)
     p_x->b_following = b_following;
     if (b_following)
     {
-        (void)tk_set_flg(flg_s5_evt, S5_EVT_FOLLOWING);
+        (void)tk_set_flg(g_flg_s5_evt, S5_EVT_FOLLOWING);
     }
     else
     {
-        (void)tk_clr_flg(flg_s5_evt, ~S5_EVT_FOLLOWING);
+        (void)tk_clr_flg(g_flg_s5_evt, ~S5_EVT_FOLLOWING);
     }
 }
 
@@ -39,7 +39,7 @@ static void exec_finish(S5_EXEC * p_x, const S5_EXEC_OPS * p_ops, void * p_ctx,
 {
     p_ops->stop(p_ctx);
     p_x->b_replied = TRUE;
-    (void)tk_set_flg(flg_s5_evt, bits);
+    (void)tk_set_flg(g_flg_s5_evt, bits);
 }
 
 /* One control step */

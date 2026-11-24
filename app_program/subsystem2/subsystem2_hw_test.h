@@ -42,7 +42,7 @@ IMPORT volatile uint32_t g_s2_bench_stop_ms;
 #endif
 
 #if S2_MOTOR_HW_TEST
-IMPORT void subsystem2_hw_test_task(INT stacd, void * exinf);
+IMPORT void subsystem2_hw_test_task(INT stacd, void * p_exinf);
 #endif
 
 #endif

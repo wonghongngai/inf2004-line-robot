@@ -13,7 +13,7 @@
 /* Start a tone for ms milliseconds and return at once; a one-shot alarm
  * handler stops it. Task context only (not an ISR). A new beep restarts the
  * timer. Returns E_OK, E_PAR for ms == 0, or the PWM/alarm setup error. */
-IMPORT ER buzzer_beep(UINT ms);
+IMPORT ER buzzer_beep(UINT duration_ms);
 
 /* Wi-Fi link-up hook (declared in cyw43_utk.h); beeps when enabled above. */
 IMPORT void wifi_utk_link_up(void);

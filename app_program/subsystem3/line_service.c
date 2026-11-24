@@ -30,26 +30,26 @@ static unsigned           g_debug_black, g_debug_white;
 static uint8_t            g_debug_level, g_debug_letter = 0xffu;
 static uint32_t           g_debug_edge_ms;
 static unsigned           g_debug_raw, g_debug_raw_rises, g_debug_raw_falls;
-static bool               g_debug_raw_valid;
+static bool               g_b_debug_raw_valid;
 static line_service_barcode_frame_t g_debug_frame;
 
-void line_service_barcode_frame(line_service_barcode_frame_t * frame)
+void line_service_barcode_frame(line_service_barcode_frame_t * p_frame)
 {
     if (tk_loc_mtx(g_h_line_mutex, TMO_FEVR) == E_OK)
     {
-        *frame = g_debug_frame;
+        *p_frame = g_debug_frame;
         (void)tk_unl_mtx(g_h_line_mutex);
     }
 }
 
-void line_service_barcode_raw(unsigned * level, unsigned * rises,
-                              unsigned * falls)
+void line_service_barcode_raw(unsigned * p_level, unsigned * p_rises,
+                              unsigned * p_falls)
 {
     if (tk_loc_mtx(g_h_line_mutex, TMO_FEVR) == E_OK)
     {
-        *level = g_debug_raw;
-        *rises = g_debug_raw_rises;
-        *falls = g_debug_raw_falls;
+        *p_level = g_debug_raw;
+        *p_rises = g_debug_raw_rises;
+        *p_falls = g_debug_raw_falls;
         (void)tk_unl_mtx(g_h_line_mutex);
     }
 }
@@ -63,46 +63,46 @@ static struct
 static unsigned g_debug_read, g_debug_write;
 static uint32_t g_debug_dropped;
 
-bool line_service_barcode_run(uint32_t * ms, unsigned * black,
-                              uint32_t * dropped)
+bool line_service_barcode_run(uint32_t * p_run_ms, unsigned * p_black,
+                              uint32_t * p_dropped)
 {
-    bool available = false;
+    bool b_available = false;
     if (tk_loc_mtx(g_h_line_mutex, TMO_FEVR) == E_OK)
     {
-        *dropped = g_debug_dropped;
+        *p_dropped = g_debug_dropped;
         if (g_debug_read != g_debug_write)
         {
-            *ms          = g_debug_runs[g_debug_read].ms;
-            *black       = g_debug_runs[g_debug_read].black;
+            *p_run_ms    = g_debug_runs[g_debug_read].ms;
+            *p_black     = g_debug_runs[g_debug_read].black;
             g_debug_read = (g_debug_read + 1u) % BARCODE_DEBUG_RUNS;
-            available    = true;
+            b_available  = true;
         }
         (void)tk_unl_mtx(g_h_line_mutex);
     }
-    return available;
+    return b_available;
 }
 
 
-void line_service_barcode_level(unsigned * black, uint32_t * age_ms)
+void line_service_barcode_level(unsigned * p_black, uint32_t * p_age_ms)
 {
     if (tk_loc_mtx(g_h_line_mutex, TMO_FEVR) == E_OK)
     {
         SYSTIM now = {0};
         (void)tk_get_tim(&now);
-        *black  = g_debug_level;
-        *age_ms = now.lo - g_debug_edge_ms;
+        *p_black  = g_debug_level;
+        *p_age_ms = now.lo - g_debug_edge_ms;
         (void)tk_unl_mtx(g_h_line_mutex);
     }
 }
 
-void line_service_barcode_debug(unsigned * black, unsigned * white,
-                                uint8_t * letter)
+void line_service_barcode_debug(unsigned * p_black, unsigned * p_white,
+                                uint8_t * p_letter)
 {
     if (tk_loc_mtx(g_h_line_mutex, TMO_FEVR) == E_OK)
     {
-        *black  = g_debug_black;
-        *white  = g_debug_white;
-        *letter = g_debug_letter;
+        *p_black  = g_debug_black;
+        *p_white  = g_debug_white;
+        *p_letter = g_debug_letter;
         (void)tk_unl_mtx(g_h_line_mutex);
     }
 }
@@ -376,22 +376,22 @@ static void line_service_tick(void * p_extra)
 /* Hand one finished capture to S1 for <id>/barcode. Nonblocking; called by the
  * sampling task with the line mutex held. Only a full queue is reported:
  * E_NOSPT (no MQTT in this build) and E_OBJ (S1 not started) are expected. */
-static void publish_barcode_result(const line_service_barcode_frame_t * frame)
+static void publish_barcode_result(const line_service_barcode_frame_t * p_frame)
 {
     S1_BARCODE_RESULT result;
-    result.id   = (unsigned int)frame->sequence;
-    result.runs = frame->count > S1_BARCODE_RUNS_MAX
+    result.id   = (unsigned int)p_frame->sequence;
+    result.runs = p_frame->count > S1_BARCODE_RUNS_MAX
                       ? (unsigned char)S1_BARCODE_RUNS_MAX
-                      : frame->count;
+                      : p_frame->count;
     result.letter =
-        frame->event == LINE_BARCODE_EVT_BARCODE && frame->letter < 26u
-            ? (unsigned char)('A' + frame->letter)
+        p_frame->event == LINE_BARCODE_EVT_BARCODE && p_frame->letter < 26u
+            ? (unsigned char)('A' + p_frame->letter)
             : 0u;
-    ER er = subsystem1_publish_barcode(&result);
-    if (er < E_OK && er != E_NOSPT && er != E_OBJ)
+    ER ercd = subsystem1_publish_barcode(&result);
+    if (ercd < E_OK && ercd != E_NOSPT && ercd != E_OBJ)
     {
         LOG_ERR(TAG_S3_BARCODE,
-                "MQTT enqueue=%d frame=%u (queue full or invalid)", (int)er,
+                "MQTT enqueue=%d frame=%u (queue full or invalid)", (int)ercd,
                 result.id);
     }
 }
@@ -439,7 +439,7 @@ static void line_service_task(INT start_code, void * p_extra)
                 g_debug_letter                = 0xffu;
                 g_debug_edge_ms               = now.lo;
                 g_debug_raw_rises = g_debug_raw_falls = 0u;
-                g_debug_raw_valid                     = false;
+                g_b_debug_raw_valid                   = false;
                 g_debug_read = g_debug_write = 0u;
                 g_debug_dropped              = 0u;
                 g_fault_interval_ms          = 0u;
@@ -447,7 +447,7 @@ static void line_service_task(INT start_code, void * p_extra)
             g_sample_ms          = now.lo;
             uint8_t  raw_inputs  = read_sensors();
             unsigned raw_barcode = (raw_inputs >> 2u) & 1u;
-            if (g_debug_raw_valid && raw_barcode != g_debug_raw)
+            if (g_b_debug_raw_valid && raw_barcode != g_debug_raw)
             {
                 if (raw_barcode)
                 {
@@ -458,9 +458,9 @@ static void line_service_task(INT start_code, void * p_extra)
                     ++g_debug_raw_falls;
                 }
             }
-            g_debug_raw       = raw_barcode;
-            g_debug_raw_valid = true;
-            uint8_t sensors   = (uint8_t)(~(raw_inputs ^ g_black_raw) & 7u);
+            g_debug_raw         = raw_barcode;
+            g_b_debug_raw_valid = true;
+            uint8_t sensors     = (uint8_t)(~(raw_inputs ^ g_black_raw) & 7u);
             line_barcode_msg_t msg =
                 line_barcode_pack(sensors, 6u, 0u, LINE_BARCODE_PAUSED,
                                   LINE_BARCODE_EVT_STATUS, 0u);
@@ -484,10 +484,10 @@ static void line_service_task(INT start_code, void * p_extra)
                         capture_event == LINE_BARCODE_EVT_BARCODE
                             ? (msg.data[2] & LINE_BARCODE_LETTER_MASK)
                             : 0xffu;
-                    for (unsigned i = 0; i < g_debug_frame.count; ++i)
+                    for (unsigned idx = 0; idx < g_debug_frame.count; ++idx)
                     {
-                        g_debug_frame.widths[i] =
-                            line_barcode_run_width(&context, (uint8_t)i);
+                        g_debug_frame.widths[idx] =
+                            line_barcode_run_width(&context, (uint8_t)idx);
                     }
                     publish_barcode_result(&g_debug_frame);
                 }

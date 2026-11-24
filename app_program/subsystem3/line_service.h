@@ -56,16 +56,16 @@ uint32_t line_service_fault_interval_ms(void);
  * Caller supplies three non-null output pointers. */
 /* Pop a completed debounced run. Non-null outputs; dropped is cumulative.
  * White runs may be margins; this is a diagnostic stream, not a frame. */
-bool line_service_barcode_run(uint32_t * ms, unsigned * black,
-                              uint32_t * dropped);
+bool line_service_barcode_run(uint32_t * p_run_ms, unsigned * p_black,
+                              uint32_t * p_dropped);
 /* Current accepted level and time since its last accepted change.
  * Outputs are meaningful while the service is enabled. Non-null pointers. */
 /* Sampled digital input and session HIGH/LOW edge totals, before debounce. */
-void line_service_barcode_raw(unsigned * level, unsigned * rises,
-                              unsigned * falls);
-void line_service_barcode_level(unsigned * black, uint32_t * age_ms);
-void line_service_barcode_debug(unsigned * black, unsigned * white,
-                                uint8_t * letter);
+void line_service_barcode_raw(unsigned * p_level, unsigned * p_rises,
+                              unsigned * p_falls);
+void line_service_barcode_level(unsigned * p_black, uint32_t * p_age_ms);
+void line_service_barcode_debug(unsigned * p_black, unsigned * p_white,
+                                uint8_t * p_letter);
 ER   line_service_receive(line_barcode_msg_t * p_msg, TMO timeout);
 /* Latest completed/rejected capture, copied outside the sampling task.
  * sequence lets the logger detect a newer frame. Widths are elapsed ms. */
@@ -75,6 +75,6 @@ typedef struct
     uint16_t widths[LINE_BARCODE_FRAME_RUNS];
     uint8_t  count, letter, event;
 } line_service_barcode_frame_t;
-void line_service_barcode_frame(line_service_barcode_frame_t * frame);
+void line_service_barcode_frame(line_service_barcode_frame_t * p_frame);
 
 #endif /* LINE_SERVICE_H */

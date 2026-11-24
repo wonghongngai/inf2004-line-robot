@@ -7,6 +7,22 @@ differs from the plan is in [DEVIATIONS.md](DEVIATIONS.md); what is done is in
 
 Decided 13 Nov 2026: `integrated` is the final firmware (#4, see `STATUS.md`).
 
+## 24 Nov 2026: BARR-C deviations (#60)
+
+The team agreed the seven deviations proposed in
+[BARR_C_REVIEW.md](BARR_C_REVIEW.md); each owner signed off their
+subsystem's rows. The reasons are in the review's deviations table.
+
+| ID | Rule | Decision |
+| --- | --- | --- |
+| D1 | 5.2 | **Agreed:** T-Kernel types (`ER`, `ID`, `INT`, `UINT`, `BOOL`, `TMO`) at RTOS calls, and `long` / `unsigned long` casts for `printf`. Packed and wire data keeps fixed-width types |
+| D2 | 5.1 | **Agreed:** existing uppercase typedef names stay; new types end in `_t` |
+| D3 | 6.2 | **Agreed:** early `return` on error |
+| D4 | 6.2 | **Agreed:** the `*_test()` runners and task main loops may exceed 100 lines |
+| D5 | 8.6 | **Agreed:** constant on the right of `==` / `!=`, relying on `-Wall` (on for all team code since 24 Nov, 0 warnings) |
+| D6 | 1.7 | **Agreed:** the forward `goto startup_failed` in `usermain()` |
+| D7 | 1.1 | **Agreed:** `-std=gnu11` for the whole build |
+
 ## 23 Nov 2026: the hump tests (#27)
 
 | Issue | Decision | Follow-up |

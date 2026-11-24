@@ -104,83 +104,85 @@ static const FIELD_LAYOUT fields[S1_FIELD_COUNT] = {
     {120, TICKS_BITS, 0, (int)S1_TICKS_MASK},
     {136, TICKS_BITS, 0, (int)S1_TICKS_MASK}};
 
-int s1_telemetry_set(S1_TELEMETRY * packet, S1_FIELD field, int value)
+int s1_telemetry_set(S1_TELEMETRY * p_packet, S1_FIELD field, int value)
 {
-    unsigned int         i, encoded;
-    const FIELD_LAYOUT * layout;
-    if (packet == 0 || (unsigned int)field >= S1_FIELD_COUNT)
+    unsigned int         idx, encoded;
+    const FIELD_LAYOUT * p_layout;
+    if (p_packet == 0 || (unsigned int)field >= S1_FIELD_COUNT)
     {
         return 0;
     }
-    layout = &fields[field];
-    if (value < layout->minimum || value > layout->maximum)
+    p_layout = &fields[field];
+    if (value < p_layout->minimum || value > p_layout->maximum)
     {
         return 0;
     }
-    encoded = (unsigned int)(value - layout->minimum);
-    for (i = 0; i < layout->width; ++i)
+    encoded = (unsigned int)(value - p_layout->minimum);
+    for (idx = 0; idx < p_layout->width; ++idx)
     {
-        unsigned int    bit  = layout->offset + i;
-        unsigned char   mask = (unsigned char)(1U << (bit % 8U));
-        unsigned char * byte = &packet->bytes[bit / 8U];
-        *byte                = (unsigned char)((*byte & (unsigned char)~mask) |
-                                (((encoded >> i) & 1U) ? mask : 0U));
+        unsigned int    bit    = p_layout->offset + idx;
+        unsigned char   mask   = (unsigned char)(1U << (bit % 8U));
+        unsigned char * p_byte = &p_packet->bytes[bit / 8U];
+        *p_byte = (unsigned char)((*p_byte & (unsigned char)~mask) |
+                                  (((encoded >> idx) & 1U) ? mask : 0U));
     }
     return 1;
 }
 
-int s1_telemetry_get(const S1_TELEMETRY * packet, S1_FIELD field, int * value)
+int s1_telemetry_get(const S1_TELEMETRY * p_packet, S1_FIELD field,
+                     int * p_value)
 {
-    unsigned int         i, encoded = 0;
-    const FIELD_LAYOUT * layout;
-    if (packet == 0 || value == 0 || (unsigned int)field >= S1_FIELD_COUNT)
+    unsigned int         idx, encoded = 0;
+    const FIELD_LAYOUT * p_layout;
+    if (p_packet == 0 || p_value == 0 || (unsigned int)field >= S1_FIELD_COUNT)
     {
         return 0;
     }
-    layout = &fields[field];
-    for (i = 0; i < layout->width; ++i)
+    p_layout = &fields[field];
+    for (idx = 0; idx < p_layout->width; ++idx)
     {
-        unsigned int bit = layout->offset + i;
-        encoded |= ((unsigned int)(packet->bytes[bit / 8U] >> (bit % 8U)) & 1U)
-                   << i;
+        unsigned int bit = p_layout->offset + idx;
+        encoded |=
+            ((unsigned int)(p_packet->bytes[bit / 8U] >> (bit % 8U)) & 1U)
+            << idx;
     }
-    if (encoded > (unsigned int)(layout->maximum - layout->minimum))
+    if (encoded > (unsigned int)(p_layout->maximum - p_layout->minimum))
     {
         return 0;
     }
-    *value = (int)encoded + layout->minimum;
+    *p_value = (int)encoded + p_layout->minimum;
     return 1;
 }
 
-void s1_telemetry_init(S1_TELEMETRY * packet)
+void s1_telemetry_init(S1_TELEMETRY * p_packet)
 {
-    unsigned int i;
-    if (packet == 0)
+    unsigned int idx;
+    if (p_packet == 0)
     {
         return;
     }
-    for (i = 0; i < S1_TELEMETRY_BYTES; ++i)
+    for (idx = 0; idx < S1_TELEMETRY_BYTES; ++idx)
     {
-        packet->bytes[i] = 0;
+        p_packet->bytes[idx] = 0;
     }
     /* Encoded speed zero means -200; initialize logical speed to zero. */
-    (void)s1_telemetry_set(packet, S1_FIELD_SPEED_CMS, 0);
+    (void)s1_telemetry_set(p_packet, S1_FIELD_SPEED_CMS, 0);
 }
 
-int s1_telemetry_valid(const S1_TELEMETRY * packet)
+int s1_telemetry_valid(const S1_TELEMETRY * p_packet)
 {
-    unsigned int i;
+    unsigned int idx;
     int          value;
     /* Reserved, must be zero: bits 11-14 (byte 1, 0x78) and bit 87 (byte 10, 0x80).
        Bit 86 is the map flag (#38); bits 8-10 are the S5 faults (#46). */
-    if (packet == 0 || (packet->bytes[1] & 0x78U) != 0U ||
-        (packet->bytes[10] & 0x80U) != 0U)
+    if (p_packet == 0 || (p_packet->bytes[1] & 0x78U) != 0U ||
+        (p_packet->bytes[10] & 0x80U) != 0U)
     {
         return 0;
     }
-    for (i = 0; i < S1_FIELD_COUNT; ++i)
+    for (idx = 0; idx < S1_FIELD_COUNT; ++idx)
     {
-        if (!s1_telemetry_get(packet, (S1_FIELD)i, &value))
+        if (!s1_telemetry_get(p_packet, (S1_FIELD)idx, &value))
         {
             return 0;
         }
@@ -188,47 +190,47 @@ int s1_telemetry_valid(const S1_TELEMETRY * packet)
     return 1;
 }
 
-int s1_command_set(S1_COMMAND * packet, unsigned int code)
+int s1_command_set(S1_COMMAND * p_packet, unsigned int code)
 {
-    if (packet == 0 || code > S1_COMMAND_MAX)
+    if (p_packet == 0 || code > S1_COMMAND_MAX)
     {
         return 0;
     }
-    packet->bytes[0] = (unsigned char)code;
+    p_packet->bytes[0] = (unsigned char)code;
     return 1;
 }
 
-int s1_command_valid(const S1_COMMAND * packet)
+int s1_command_valid(const S1_COMMAND * p_packet)
 {
-    return packet != 0 && packet->bytes[0] <= S1_COMMAND_MAX;
+    return p_packet != 0 && p_packet->bytes[0] <= S1_COMMAND_MAX;
 }
 
-int s1_mapping_get(const S1_MAPPING * packet,
+int s1_mapping_get(const S1_MAPPING * p_packet,
                    unsigned char      letters[S1_MAP_SLOTS])
 {
     unsigned char decoded[S1_MAP_SLOTS];
     unsigned int  slot, other, bit;
-    if (packet == 0 || letters == 0)
+    if (p_packet == 0 || letters == 0)
     {
         return 0;
     }
     for (bit = S1_MAP_SLOTS * MAP_LETTER_BITS; bit < S1_MAPPING_BYTES * 8U;
          ++bit)
     {
-        if (((packet->bytes[bit / 8U] >> (bit % 8U)) & 1U) != 0U)
+        if (((p_packet->bytes[bit / 8U] >> (bit % 8U)) & 1U) != 0U)
         {
             return 0;
         }
     }
     for (slot = 0; slot < S1_MAP_SLOTS; ++slot)
     {
-        unsigned int i, value = 0;
-        for (i = 0; i < MAP_LETTER_BITS; ++i)
+        unsigned int idx, value = 0;
+        for (idx = 0; idx < MAP_LETTER_BITS; ++idx)
         {
-            bit = slot * MAP_LETTER_BITS + i;
+            bit = slot * MAP_LETTER_BITS + idx;
             value |=
-                ((unsigned int)(packet->bytes[bit / 8U] >> (bit % 8U)) & 1U)
-                << i;
+                ((unsigned int)(p_packet->bytes[bit / 8U] >> (bit % 8U)) & 1U)
+                << idx;
         }
         if (value > S1_MAP_LETTER_MAX)
         {
@@ -250,13 +252,13 @@ int s1_mapping_get(const S1_MAPPING * packet,
     return 1;
 }
 
-int s1_mapping_set(S1_MAPPING *        packet,
+int s1_mapping_set(S1_MAPPING *        p_packet,
                    const unsigned char letters[S1_MAP_SLOTS])
 {
     S1_MAPPING    encoded = {{0}};
     unsigned char check[S1_MAP_SLOTS];
-    unsigned int  slot, i;
-    if (packet == 0 || letters == 0)
+    unsigned int  slot, idx;
+    if (p_packet == 0 || letters == 0)
     {
         return 0;
     }
@@ -266,10 +268,10 @@ int s1_mapping_set(S1_MAPPING *        packet,
         {
             return 0;
         }
-        for (i = 0; i < MAP_LETTER_BITS; ++i)
+        for (idx = 0; idx < MAP_LETTER_BITS; ++idx)
         {
-            unsigned int bit = slot * MAP_LETTER_BITS + i;
-            if (((letters[slot] >> i) & 1U) != 0U)
+            unsigned int bit = slot * MAP_LETTER_BITS + idx;
+            if (((letters[slot] >> idx) & 1U) != 0U)
             {
                 encoded.bytes[bit / 8U] |= (unsigned char)(1U << (bit % 8U));
             }
@@ -279,56 +281,56 @@ int s1_mapping_set(S1_MAPPING *        packet,
     {
         return 0; /* duplicate letters */
     }
-    *packet = encoded;
+    *p_packet = encoded;
     return 1;
 }
 
-int s1_barcode_result_valid(const S1_BARCODE_RESULT * result)
+int s1_barcode_result_valid(const S1_BARCODE_RESULT * p_result)
 {
-    if (result == 0 || result->runs > S1_BARCODE_RUNS_MAX)
+    if (p_result == 0 || p_result->runs > S1_BARCODE_RUNS_MAX)
     {
         return 0;
     }
-    return result->letter == 0U ||
-           (result->letter >= 'A' && result->letter <= 'Z');
+    return p_result->letter == 0U ||
+           (p_result->letter >= 'A' && p_result->letter <= 'Z');
 }
 
 /* All 32 bits as one little-endian value: bit 0 is the LSB of byte 0. */
-int s1_barcode_pack(const S1_BARCODE_RESULT * result,
-                    S1_BARCODE_PACKET *       packet)
+int s1_barcode_pack(const S1_BARCODE_RESULT * p_result,
+                    S1_BARCODE_PACKET *       p_packet)
 {
     unsigned long word;
-    unsigned int  i;
-    if (packet == 0 || !s1_barcode_result_valid(result))
+    unsigned int  idx;
+    if (p_packet == 0 || !s1_barcode_result_valid(p_result))
     {
         return 0;
     }
-    word = (unsigned long)(result->id & S1_BARCODE_FRAME_MASK);
-    if (result->letter != 0U)
+    word = (unsigned long)(p_result->id & S1_BARCODE_FRAME_MASK);
+    if (p_result->letter != 0U)
     {
-        word |= (unsigned long)(result->letter - 'A' + 1U)
+        word |= (unsigned long)(p_result->letter - 'A' + 1U)
                 << BARCODE_LETTER_OFFSET;
     }
-    word |= (unsigned long)result->runs << BARCODE_RUNS_OFFSET;
-    for (i = 0; i < S1_BARCODE_BYTES; ++i)
+    word |= (unsigned long)p_result->runs << BARCODE_RUNS_OFFSET;
+    for (idx = 0; idx < S1_BARCODE_BYTES; ++idx)
     {
-        packet->bytes[i] = (unsigned char)((word >> (8U * i)) & 0xFFU);
+        p_packet->bytes[idx] = (unsigned char)((word >> (8U * idx)) & 0xFFU);
     }
     return 1;
 }
 
-int s1_barcode_unpack(const S1_BARCODE_PACKET * packet,
-                      S1_BARCODE_RESULT *       result)
+int s1_barcode_unpack(const S1_BARCODE_PACKET * p_packet,
+                      S1_BARCODE_RESULT *       p_result)
 {
     unsigned long word = 0;
-    unsigned int  i, letter, runs;
-    if (packet == 0 || result == 0)
+    unsigned int  idx, letter, runs;
+    if (p_packet == 0 || p_result == 0)
     {
         return 0;
     }
-    for (i = 0; i < S1_BARCODE_BYTES; ++i)
+    for (idx = 0; idx < S1_BARCODE_BYTES; ++idx)
     {
-        word |= (unsigned long)packet->bytes[i] << (8U * i);
+        word |= (unsigned long)p_packet->bytes[idx] << (8U * idx);
     }
     letter = (unsigned int)((word >> BARCODE_LETTER_OFFSET) &
                             ((1U << BARCODE_LETTER_BITS) - 1U));
@@ -339,8 +341,8 @@ int s1_barcode_unpack(const S1_BARCODE_PACKET * packet,
     {
         return 0;
     }
-    result->id     = (unsigned int)(word & S1_BARCODE_FRAME_MASK);
-    result->letter = letter == 0U ? 0U : (unsigned char)('A' + letter - 1U);
-    result->runs   = (unsigned char)runs;
+    p_result->id     = (unsigned int)(word & S1_BARCODE_FRAME_MASK);
+    p_result->letter = letter == 0U ? 0U : (unsigned char)('A' + letter - 1U);
+    p_result->runs   = (unsigned char)runs;
     return 1;
 }

@@ -1,0 +1,90 @@
+# BARR-C 7.1 naming, subsystem 5 (#60, fix 6), 24 Nov
+# base 713f9ab (docs/barr-c-review-60); renames uncommitted on s2-s4/barr-c-naming-60, on top of S1-S4
+# 16 renames (14 names plus 2 prototype parameters); whole-name length rule (p_x, b_up already comply)
+# rename tool fix: it only adds prefixes now; the first S5 dry run would have dropped the owner's g_ on
+#   const tables, b_ on a UB flag and p_b_ on a BOOL pointer. The S1-S4 plans dropped none (checked).
+# shared global flg_s5_evt -> g_flg_s5_evt, also in robot_host_test.c, s5_exec_host_stubs.h,
+#   test_event_bits.py, TEAM.md, DEVIATIONS.md and the S5 README; old name kept in the test logs
+# firmware: each mode built from HEAD and from the renamed tree (S1-S5), objcopy -O binary compared:
+#   SAME   all_test
+#   SAME   all_test_offline
+#   SAME   barcode_test
+#   SAME   integrated
+#   SAME   integrated_S4_TRACE_1
+#   DIFF   integrated_TEST_1  bytes=266445 size 416696/416692
+#   SAME   integrated_WIFI_none_NET_none_MQTT_0
+#   SAME   integrated_motor_test
+#   SAME   line_follow_test
+#   SAME   motion
+#   SAME   motion_MOTION_DEMO_1
+#   SAME   motion_MOTION_DEMO_1_PID_BENCH_1
+#   SAME   motion_MOTION_DEMO_1_PIVOT_BENCH_1
+#   SAME   motion_TEST_1
+#   SAME   motor_test
+#   integrated TEST=1: only line_barcode_test.o, subsystem4_test.o and subsystem5_test.o differ in code
+#   (every other object disassembles identically). Compiled with -D__LINE__=0, the HEAD and renamed
+#   versions of all three give identical disassembly (2895, 190 and 4830 lines).
+#   all 16 builds: exit 0, 0 warnings
+# host tests: 17 passed, 0 failed
+
+BARR-C:2018 heuristic scan of app_program/subsystem5
+14 files, 4752 lines
+
+check            rule    hits  files  what
+1.2-width        1.2        8      3  line longer than 80 characters
+1.3-brace        1.3        3      1  left brace not on a line by itself
+1.3-nobrace      1.3        0      0  if/else/for/while body without braces
+1.7-goto         1.7        0      0  goto used
+1.7-continue     1.7        1      1  continue used
+1.7-auto-reg     1.7        0      0  auto or register used
+3.4-indent       3.4        1      1  code indent not a multiple of 4 spaces
+3.5-tab          3.5        0      0  tab character in a line
+3.6-crlf         3.6        0      0  file stored with CRLF line endings
+4.2-guard        4.2        0      0  header without an #ifndef include guard
+4.3-inc-c        4.3        0      0  #include of a .c file
+5.1-typedef      5.1        4      2  typedef name does not end in _t
+5.2-int          5.2       63      5  plain int / INT / UINT for numeric data
+5.2-short-long   5.2        0      0  short or long keyword used
+6.1-fn-case      6.1        0      0  function name contains uppercase
+6.1-macro-case   6.1        0      0  macro name contains lowercase
+6.2-len          6.2        4      4  function body longer than 100 lines
+6.2-exit         6.2       44      6  function with more than one return
+6.3-fnmacro      6.3        0      0  function-like macro defined
+7.1-short        7.1        0      0  variable name shorter than 3 characters
+7.1-case         7.1        0      0  variable name contains uppercase
+7.1-global       7.1        1      1  file-scope variable without g_ prefix
+7.1-pointer      7.1        0      0  pointer variable without p_ prefix
+7.1-bool         7.1        0      0  Boolean variable without b_ prefix
+8.2-else         8.2        0      0  if ... else if chain without a final else
+8.3-default      8.3        0      0  switch without a default case
+8.5-exit         8.5        0      0  setjmp/longjmp/abort/exit used
+8.6-const-right  8.6        5      4  == or != with the constant on the right
+
+per file (checks with hits):
+  app_program/subsystem5/drv_servo.c: 6.2-exit=6, 8.6-const-right=1
+  app_program/subsystem5/drv_ultrasonic.c: 6.2-exit=4, 8.6-const-right=1
+  app_program/subsystem5/obstacle_logic.c: 1.2-width=1, 5.2-int=45, 6.2-len=1, 6.2-exit=18
+  app_program/subsystem5/obstacle_logic.h: 1.2-width=5, 5.2-int=2, 7.1-global=1
+  app_program/subsystem5/s5_executor.c: 5.2-int=1, 6.2-len=1, 6.2-exit=1
+  app_program/subsystem5/s5_executor.h: 5.1-typedef=2
+  app_program/subsystem5/subsystem5.h: 5.1-typedef=2, 5.2-int=1
+  app_program/subsystem5/subsystem5_test.c: 1.3-brace=3, 3.4-indent=1, 6.2-len=1, 6.2-exit=1, 8.6-const-right=2
+  app_program/subsystem5/task_obstacle.c: 1.2-width=2, 1.7-continue=1, 5.2-int=14, 6.2-len=1, 6.2-exit=14, 8.6-const-right=1
+
+# rename plan
+app_program/subsystem5/drv_rp2040.c           parameter us                         -> delay_us                       UW (rp2040_delay_us)
+app_program/subsystem5/drv_rp2040.h           proto     us                         -> delay_us                       UW (prototype:rp2040_delay_us)
+app_program/subsystem5/drv_servo.c            parameter a                          -> lhs                            UW (servo_abs_diff)
+app_program/subsystem5/drv_servo.c            parameter b                          -> rhs                            UW (servo_abs_diff)
+app_program/subsystem5/obstacle_logic.c       local     cm                         -> dist_cm                        UW (mm_to_cm_clamped)
+app_program/subsystem5/obstacle_logic.c       parameter a                          -> first                          UW (median3)
+app_program/subsystem5/obstacle_logic.c       parameter b                          -> second                         UW (median3)
+app_program/subsystem5/obstacle_logic.c       parameter c                          -> third                          UW (median3)
+app_program/subsystem5/obstacle_logic.c       parameter mm                         -> dist_mm                        UW (mm_to_cm_clamped)
+app_program/subsystem5/subsystem5.c           extern    flg_s5_evt                 -> g_flg_s5_evt                   ID
+app_program/subsystem5/subsystem5.h           proto     exinf                      -> p_exinf                        void * (prototype:obstacle_task)
+app_program/subsystem5/subsystem5_test.c      local     in                         -> input                          S5_REQUEST (request_round_trip)
+app_program/subsystem5/subsystem5_test.c      local     mm                         -> dist_mm                        UW (subsystem5_test)
+app_program/subsystem5/task_obstacle.c        local     on                         -> probe                          bypass_step_t (clear_ahead)
+app_program/subsystem5/task_obstacle.c        parameter cm                         -> dist_cm                        UW (s5_reverse)
+app_program/subsystem5/task_obstacle.c        parameter exinf                      -> p_exinf                        void * (obstacle_task)

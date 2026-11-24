@@ -71,7 +71,7 @@ EXPORT void subsystem2_test(void)
 
     MOTION_STATUS status;
 
-    bool ok;
+    bool b_ok;
 
     TEST_INIT();
 
@@ -85,7 +85,7 @@ EXPORT void subsystem2_test(void)
      */
     TEST_CHECK("S2-U01",
 
-               tk_ref_mbf(mbf_motion_cmd, &rmbf) == E_OK &&
+               tk_ref_mbf(g_mbf_motion_cmd, &rmbf) == E_OK &&
 
                    rmbf.maxmsz == (INT)sizeof(MOTION_COMMAND),
 
@@ -98,16 +98,16 @@ EXPORT void subsystem2_test(void)
      * Simulated forward movement reaches the target distance.
      * ------------------------------------------------------------
      */
-    ok = motion_control_init(&controller, &cfg, 0U, 0, 0);
+    b_ok = motion_control_init(&controller, &cfg, 0U, 0, 0);
 
     command.type = MOTION_CMD_FORWARD_CM;
 
     command.value = 10.0f;
 
-    ok = ok &&
+    b_ok = b_ok &&
 
-         (motion_control_command(&controller, &command, 0U, 0, 0) ==
-          MOTION_RESULT_OK);
+           (motion_control_command(&controller, &command, 0U, 0, 0) ==
+            MOTION_RESULT_OK);
 
     /*
      * At 10 ticks/cm:
@@ -125,7 +125,7 @@ EXPORT void subsystem2_test(void)
 
     TEST_CHECK("S2-U02",
 
-               ok &&
+               b_ok &&
 
                    status.state == MOTION_STATE_IDLE &&
 

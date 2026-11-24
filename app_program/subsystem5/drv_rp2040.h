@@ -17,7 +17,7 @@ IMPORT void rp2040_timer_start(void);
 IMPORT UW rp2040_time_us(void);
 
 /** Busy-wait 'us' microseconds.  Only for short waits (e.g. 12 us). */
-IMPORT void rp2040_delay_us(UW us);
+IMPORT void rp2040_delay_us(UW delay_us);
 
 /** Take the PWM block out of reset.  Safe to call more than once. */
 IMPORT void rp2040_pwm_unreset(void);

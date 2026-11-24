@@ -9,7 +9,7 @@
  *  robot_control_step()), interfaces IF-10 / IF-11 in TEAM.md:
  *    - S5 never drives the motors.  It publishes ONE request word that
  *      the VC reads every control step (subsystem5_get_request()).
- *    - The VC answers through the S5-owned event flag flg_s5_evt.
+ *    - The VC answers through the S5-owned event flag g_flg_s5_evt.
  *    - A request with a new seq is a new command; the VC acts on it once.
  *    - S5 asks for HOLD from boot until its servo has finished its first
  *      swing; the VC does not arm while S5 holds.
@@ -80,7 +80,7 @@ typedef struct
 #define S5_EVT_LINE_FOUND  (1U << 3) /* MOVE stopped early: line seen     */
 #define S5_EVT_MOVE_FAILED (1U << 4) /* MOVE rejected or timed out        */
 
-IMPORT ID flg_s5_evt;
+IMPORT ID g_flg_s5_evt;
 
 /**
  * Read the current S5 request.  Any task; never blocks.
@@ -130,6 +130,6 @@ IMPORT ER subsystem5_get_obstacle(S5_OBSTACLE_INFO * p_info);
  */
 IMPORT UW subsystem5_get_faults(void);
 
-IMPORT void obstacle_task(INT stacd, void * exinf);
+IMPORT void obstacle_task(INT stacd, void * p_exinf);
 
 #endif /* SUBSYSTEM5_H */

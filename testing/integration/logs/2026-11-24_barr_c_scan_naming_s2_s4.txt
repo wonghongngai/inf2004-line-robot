@@ -1,0 +1,530 @@
+# BARR-C 7.1 naming, subsystems 2 and 4 (#60, fix 6), 24 Nov
+# base 713f9ab (docs/barr-c-review-60); renames uncommitted on s2-s4/barr-c-naming-60
+# 436 renames (110 file-scope statics, 5 shared globals, 119 locals, 179 parameters, 23 prototype parameters)
+# plus one hand fix: straddle_step() ev -> frame (the first choice, event, clashed with a local)
+# shared globals renamed repo-wide: flg_motion_stop mbf_motion_cmd mtx_motion_status mtx_imu_data s4_imu_data -> g_...
+#   also in TEAM.md, DEVIATIONS.md A3 and testing/integration/test_event_bits.py
+# firmware: each mode built from HEAD and from the renamed tree, objcopy -O binary compared:
+#   SAME   all_test
+#   SAME   all_test_offline
+#   SAME   barcode_test
+#   SAME   integrated
+#   SAME   integrated_S4_TRACE_1
+#   DIFF   integrated_TEST_1  bytes=5 size 416696/416696
+#   SAME   integrated_motor_test
+#   SAME   line_follow_test
+#   SAME   motion
+#   SAME   motion_MOTION_DEMO_1
+#   SAME   motion_MOTION_DEMO_1_PID_BENCH_1
+#   SAME   motion_MOTION_DEMO_1_PIVOT_BENCH_1
+#   SAME   motion_TEST_1
+#   SAME   motor_test
+#   integrated TEST=1: 5 bytes, each +1: TEST_CHECK __LINE__ values in subsystem4_test.c after one wrapped line
+#   all 28 builds: exit 0, 0 warnings (-Wall -Wextra)
+# host tests: 17 passed, 0 failed
+
+# python -I tools/barr_c_check.py app_program/subsystem2 app_program/subsystem4 --files
+BARR-C:2018 heuristic scan of app_program/subsystem2, app_program/subsystem4
+23 files, 8238 lines
+
+check            rule    hits  files  what
+1.2-width        1.2       18      6  line longer than 80 characters
+1.3-brace        1.3        5      3  left brace not on a line by itself
+1.3-nobrace      1.3        0      0  if/else/for/while body without braces
+1.7-goto         1.7        0      0  goto used
+1.7-continue     1.7        7      3  continue used
+1.7-auto-reg     1.7        0      0  auto or register used
+3.4-indent       3.4        4      3  code indent not a multiple of 4 spaces
+3.5-tab          3.5        0      0  tab character in a line
+3.6-crlf         3.6        0      0  file stored with CRLF line endings
+4.2-guard        4.2        0      0  header without an #ifndef include guard
+4.3-inc-c        4.3        0      0  #include of a .c file
+5.1-typedef      5.1       26     10  typedef name does not end in _t
+5.2-int          5.2       77     12  plain int / INT / UINT for numeric data
+5.2-short-long   5.2       24      3  short or long keyword used
+6.1-fn-case      6.1        0      0  function name contains uppercase
+6.1-macro-case   6.1        0      0  macro name contains lowercase
+6.2-len          6.2        9      5  function body longer than 100 lines
+6.2-exit         6.2       63     12  function with more than one return
+6.3-fnmacro      6.3        8      3  function-like macro defined
+7.1-short        7.1        4      1  variable name shorter than 3 characters
+7.1-case         7.1        0      0  variable name contains uppercase
+7.1-global       7.1        4      3  file-scope variable without g_ prefix
+7.1-pointer      7.1        0      0  pointer variable without p_ prefix
+7.1-bool         7.1        0      0  Boolean variable without b_ prefix
+8.2-else         8.2        0      0  if ... else if chain without a final else
+8.3-default      8.3        0      0  switch without a default case
+8.5-exit         8.5        0      0  setjmp/longjmp/abort/exit used
+8.6-const-right  8.6      243     14  == or != with the constant on the right
+
+per file (checks with hits):
+  app_program/subsystem2/drv_encoder.c: 5.1-typedef=1, 5.2-int=7, 6.2-exit=1, 6.3-fnmacro=5, 8.6-const-right=3
+  app_program/subsystem2/drv_motor.c: 5.2-int=3, 6.2-exit=4, 6.3-fnmacro=1, 8.6-const-right=6
+  app_program/subsystem2/drv_motor.h: 5.1-typedef=1
+  app_program/subsystem2/loop_timing.h: 5.1-typedef=1
+  app_program/subsystem2/motion_control.c: 6.2-len=2, 6.2-exit=13, 8.6-const-right=54
+  app_program/subsystem2/motion_control.h: 1.2-width=1, 5.1-typedef=9, 7.1-global=2
+  app_program/subsystem2/motion_protocol.h: 5.1-typedef=2, 6.2-exit=6, 7.1-short=4, 8.6-const-right=7
+  app_program/subsystem2/robot_control.c: 1.2-width=3, 1.3-brace=3, 1.7-continue=4, 5.1-typedef=1, 5.2-int=30, 5.2-short-long=13, 6.2-len=2, 6.2-exit=16, 7.1-global=1, 8.6-const-right=105
+  app_program/subsystem2/robot_control.h: 1.2-width=3, 7.1-global=1
+  app_program/subsystem2/subsystem2.c: 5.2-int=4, 6.2-exit=4, 8.6-const-right=6
+  app_program/subsystem2/subsystem2.h: 1.2-width=6, 5.2-int=1
+  app_program/subsystem2/subsystem2_hw_test.c: 5.2-int=4, 5.2-short-long=5, 6.2-exit=1, 8.6-const-right=1
+  app_program/subsystem2/subsystem2_hw_test.h: 5.2-int=1, 8.6-const-right=1
+  app_program/subsystem2/subsystem2_test.c: 5.2-int=1, 6.2-len=1, 8.6-const-right=11
+  app_program/subsystem2/task_motion.c: 1.3-brace=1, 1.7-continue=1, 3.4-indent=1, 5.2-int=5, 5.2-short-long=6, 6.2-len=2, 6.2-exit=1, 8.6-const-right=11
+  app_program/subsystem2/wheel_odometry.h: 1.3-brace=1, 5.1-typedef=1, 6.2-exit=1
+  app_program/subsystem4/drv_lsm303dlhc.c: 3.4-indent=1, 6.2-exit=6, 8.6-const-right=7
+  app_program/subsystem4/drv_lsm303dlhc.h: 5.1-typedef=1
+  app_program/subsystem4/subsystem4.c: 6.2-exit=5, 8.6-const-right=2
+  app_program/subsystem4/subsystem4.h: 1.2-width=2, 5.1-typedef=5, 5.2-int=1
+  app_program/subsystem4/subsystem4_test.c: 5.2-int=6, 8.6-const-right=3
+  app_program/subsystem4/task_imu.c: 1.2-width=3, 1.7-continue=2, 3.4-indent=2, 5.1-typedef=4, 5.2-int=14, 6.2-len=2, 6.2-exit=5, 6.3-fnmacro=2, 8.6-const-right=26
+
+# remaining 7.1 hits in S2 (all false positives: prototype parameter lines, a const table, union members)
+app_program/subsystem2/motion_control.h:328: int32_t left_ticks, int32_t right_ticks);
+app_program/subsystem2/motion_control.h:354: int32_t left_ticks, int32_t right_ticks);
+app_program/subsystem2/robot_control.c:281: static const S5_EXEC_OPS vc_s5_ops = {
+app_program/subsystem2/robot_control.h:101: int32_t left, int32_t right);
+app_program/subsystem2/motion_protocol.h:100: float    f;
+app_program/subsystem2/motion_protocol.h:101: uint32_t u;
+app_program/subsystem2/motion_protocol.h:110: float    f;
+app_program/subsystem2/motion_protocol.h:111: uint32_t u;
+
+# rename plan (old -> new, type, scope)
+app_program/subsystem2/drv_encoder.c          local     er                         -> ercd                           ER (drv_encoder_init)
+app_program/subsystem2/drv_encoder.c          parameter channel                    -> p_channel                      ENCODER_CHANNEL * (update_channel)
+app_program/subsystem2/drv_encoder.c          parameter left_ticks                 -> p_left_ticks                   int32_t * (drv_encoder_get_counts)
+app_program/subsystem2/drv_encoder.c          parameter right_ticks                -> p_right_ticks                  int32_t * (drv_encoder_get_counts)
+app_program/subsystem2/drv_encoder.c          static    irq_defined                -> g_b_irq_defined                BOOL
+app_program/subsystem2/drv_encoder.c          static    left_encoder               -> g_left_encoder                 ENCODER_CHANNEL
+app_program/subsystem2/drv_encoder.c          static    right_encoder              -> g_right_encoder                ENCODER_CHANNEL
+app_program/subsystem2/drv_encoder.h          proto     left_ticks                 -> p_left_ticks                   int32_t * (prototype:drv_encoder_get_counts)
+app_program/subsystem2/drv_encoder.h          proto     right_ticks                -> p_right_ticks                  int32_t * (prototype:drv_encoder_get_counts)
+app_program/subsystem2/drv_motor.c            local     er                         -> ercd                           ER (drv_motor_init)
+app_program/subsystem2/drv_motor.c            local     er                         -> ercd                           ER (init_pwm_pin)
+app_program/subsystem2/drv_motor.c            local     i                          -> idx                            unsigned (drv_motor_diagnostics)
+app_program/subsystem2/drv_motor.c            parameter out                        -> p_out                          MOTOR_DIAGNOSTICS * (drv_motor_diagnostics)
+app_program/subsystem2/drv_motor.h            proto     out                        -> p_out                          MOTOR_DIAGNOSTICS * (prototype:drv_motor_diagnostics)
+app_program/subsystem2/loop_timing.h          parameter t                          -> p_timing                       LOOP_TIMING * (loop_timing_control)
+app_program/subsystem2/loop_timing.h          parameter t                          -> p_timing                       LOOP_TIMING * (loop_timing_new_window)
+app_program/subsystem2/loop_timing.h          parameter t                          -> p_timing                       LOOP_TIMING * (loop_timing_wake)
+app_program/subsystem2/motion_control.c       local     avoid                      -> b_avoid                        bool (run_left_turn)
+app_program/subsystem2/motion_control.c       local     avoid                      -> b_avoid                        bool (run_right_turn)
+app_program/subsystem2/motion_control.c       local     dt                         -> dt_capped                      float (run_forward)
+app_program/subsystem2/motion_control.c       local     from_follow                -> b_from_follow                  bool (motion_control_command)
+app_program/subsystem2/motion_control.c       local     left_done                  -> b_left_done                    bool (run_spin)
+app_program/subsystem2/motion_control.c       local     numbers                    -> b_numbers                      bool (motion_control_command)
+app_program/subsystem2/motion_control.c       local     profile                    -> b_profile                      bool (run_left_turn)
+app_program/subsystem2/motion_control.c       local     profile                    -> b_profile                      bool (run_right_turn)
+app_program/subsystem2/motion_control.c       local     profile_move               -> b_profile_move                 bool (motion_control_command)
+app_program/subsystem2/motion_control.c       local     right_done                 -> b_right_done                   bool (run_spin)
+app_program/subsystem2/motion_control.c       local     scan                       -> b_scan                         bool (run_forward)
+app_program/subsystem2/motion_control.c       local     v                          -> target                         float (run_forward)
+app_program/subsystem2/motion_control.c       parameter cfg                        -> p_cfg                          const MOTION_CONFIG * (config_is_valid)
+app_program/subsystem2/motion_control.c       parameter command                    -> p_command                      const MOTION_COMMAND * (motion_control_command)
+app_program/subsystem2/motion_control.c       parameter config                     -> p_config                       const MOTION_CONFIG * (motion_control_init)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (begin_motion)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (complete_motion)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (enter_fault)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (motion_control_command)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (motion_control_init)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (motion_control_set_profile)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (motion_control_set_scanning)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (motion_control_step)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (pid_update)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (reset_pid)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (run_forward)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (run_left_turn)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (run_right_turn)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (run_spin)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (run_uturn)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (stop_outputs)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   MOTION_CONTROLLER * (update_measurements)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   const MOTION_CONTROLLER * (motion_control_get_status)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   const MOTION_CONTROLLER * (moving_pwm)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   const MOTION_CONTROLLER * (profile_running)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   const MOTION_CONTROLLER * (ramp_follow_pwm)
+app_program/subsystem2/motion_control.c       parameter controller                 -> p_controller                   const MOTION_CONTROLLER * (ramp_move_pwm)
+app_program/subsystem2/motion_control.c       parameter left_spin                  -> b_left_spin                    bool (run_spin)
+app_program/subsystem2/motion_control.c       parameter scanning                   -> b_scanning                     bool (motion_control_set_scanning)
+app_program/subsystem2/motion_control.c       parameter status                     -> p_status                       MOTION_STATUS * (motion_control_get_status)
+app_program/subsystem2/motion_control.h       proto     command                    -> p_command                      const MOTION_COMMAND * (prototype:motion_control_command)
+app_program/subsystem2/motion_control.h       proto     config                     -> p_config                       const MOTION_CONFIG * (prototype:motion_control_init)
+app_program/subsystem2/motion_control.h       proto     controller                 -> p_controller                   MOTION_CONTROLLER * (prototype:motion_control_command)
+app_program/subsystem2/motion_control.h       proto     controller                 -> p_controller                   MOTION_CONTROLLER * (prototype:motion_control_init)
+app_program/subsystem2/motion_control.h       proto     controller                 -> p_controller                   MOTION_CONTROLLER * (prototype:motion_control_set_profile)
+app_program/subsystem2/motion_control.h       proto     controller                 -> p_controller                   MOTION_CONTROLLER * (prototype:motion_control_set_scanning)
+app_program/subsystem2/motion_control.h       proto     controller                 -> p_controller                   MOTION_CONTROLLER * (prototype:motion_control_step)
+app_program/subsystem2/motion_control.h       proto     controller                 -> p_controller                   const MOTION_CONTROLLER * (prototype:motion_control_get_status)
+app_program/subsystem2/motion_control.h       proto     scanning                   -> b_scanning                     bool (prototype:motion_control_set_scanning)
+app_program/subsystem2/motion_control.h       proto     status                     -> p_status                       MOTION_STATUS * (prototype:motion_control_get_status)
+app_program/subsystem2/motion_protocol.h      local     d                          -> delta                          uint32_t (s2_tick_delta)
+app_program/subsystem2/motion_protocol.h      local     i                          -> idx                            unsigned (s2_get_bits)
+app_program/subsystem2/motion_protocol.h      local     i                          -> idx                            unsigned (s2_put_bits)
+app_program/subsystem2/motion_protocol.h      local     i                          -> idx                            unsigned (s2_put_u32)
+app_program/subsystem2/motion_protocol.h      local     i                          -> idx                            unsigned (s2_status_pack)
+app_program/subsystem2/motion_protocol.h      parameter c                          -> p_cmd                          MOTION_COMMAND * (s2_command_unpack)
+app_program/subsystem2/motion_protocol.h      parameter c                          -> p_cmd                          const MOTION_COMMAND * (s2_command_pack)
+app_program/subsystem2/motion_protocol.h      parameter c                          -> p_cmd                          const MOTION_COMMAND * (s2_command_valid)
+app_program/subsystem2/motion_protocol.h      parameter hi                         -> high                           int32_t (s2_round_saturate)
+app_program/subsystem2/motion_protocol.h      parameter lo                         -> low                            int32_t (s2_round_saturate)
+app_program/subsystem2/motion_protocol.h      parameter p                          -> p_buf                          S2_PACKED_COMMAND * (s2_command_pack)
+app_program/subsystem2/motion_protocol.h      parameter p                          -> p_buf                          S2_PACKED_STATUS * (s2_status_pack)
+app_program/subsystem2/motion_protocol.h      parameter p                          -> p_buf                          const S2_PACKED_COMMAND * (s2_command_unpack)
+app_program/subsystem2/motion_protocol.h      parameter p                          -> p_buf                          const S2_PACKED_STATUS * (s2_status_unpack)
+app_program/subsystem2/motion_protocol.h      parameter p                          -> p_buf                          const uint8_t * (s2_get_bits)
+app_program/subsystem2/motion_protocol.h      parameter p                          -> p_buf                          const uint8_t * (s2_get_float)
+app_program/subsystem2/motion_protocol.h      parameter p                          -> p_buf                          const uint8_t * (s2_get_u32)
+app_program/subsystem2/motion_protocol.h      parameter p                          -> p_buf                          uint8_t * (s2_put_bits)
+app_program/subsystem2/motion_protocol.h      parameter p                          -> p_buf                          uint8_t * (s2_put_float)
+app_program/subsystem2/motion_protocol.h      parameter p                          -> p_buf                          uint8_t * (s2_put_u32)
+app_program/subsystem2/motion_protocol.h      parameter s                          -> p_status                       MOTION_STATUS * (s2_status_unpack)
+app_program/subsystem2/motion_protocol.h      parameter s                          -> p_status                       const MOTION_STATUS * (s2_status_pack)
+app_program/subsystem2/motion_protocol.h      parameter v                          -> value                          float (s2_finite)
+app_program/subsystem2/motion_protocol.h      parameter v                          -> value                          float (s2_put_float)
+app_program/subsystem2/motion_protocol.h      parameter v                          -> value                          float (s2_round_saturate)
+app_program/subsystem2/motion_protocol.h      parameter v                          -> value                          uint32_t (s2_put_u32)
+app_program/subsystem2/robot_control.c        local     active                     -> b_active                       bool (robot_control_step)
+app_program/subsystem2/robot_control.c        local     banner                     -> b_banner                       bool (robot_control_step)
+app_program/subsystem2/robot_control.c        local     c                          -> ctx                            VC_CTX (avoid_step)
+app_program/subsystem2/robot_control.c        local     c                          -> p_ctx                          VC_CTX * (vc_give_back)
+app_program/subsystem2/robot_control.c        local     c                          -> p_ctx                          VC_CTX * (vc_is_stopped)
+app_program/subsystem2/robot_control.c        local     c                          -> p_ctx                          VC_CTX * (vc_run_move)
+app_program/subsystem2/robot_control.c        local     c                          -> p_ctx                          VC_CTX * (vc_safe_stop)
+app_program/subsystem2/robot_control.c        local     c                          -> p_ctx                          VC_CTX * (vc_start_move)
+app_program/subsystem2/robot_control.c        local     c                          -> p_ctx                          VC_CTX * (vc_stop)
+app_program/subsystem2/robot_control.c        local     c                          -> p_ctx                          VC_CTX * (vc_take_control)
+app_program/subsystem2/robot_control.c        local     cm                         -> dist_cm                        float (lost_watch_mm)
+app_program/subsystem2/robot_control.c        local     dl                         -> delta_left                     int32_t (update_distance)
+app_program/subsystem2/robot_control.c        local     done                       -> b_done                         bool (robot_control_step)
+app_program/subsystem2/robot_control.c        local     dr                         -> delta_right                    int32_t (update_distance)
+app_program/subsystem2/robot_control.c        local     el                         -> left_cm                        float (robot_control_step)
+app_program/subsystem2/robot_control.c        local     er                         -> ercd                           ER (control_step)
+app_program/subsystem2/robot_control.c        local     er                         -> ercd                           ER (line_rearm_ready)
+app_program/subsystem2/robot_control.c        local     er                         -> ercd                           ER (report_telemetry)
+app_program/subsystem2/robot_control.c        local     er                         -> ercd                           ER (straddle_step)
+app_program/subsystem2/robot_control.c        local     er                         -> right_cm                       float (robot_control_step)
+app_program/subsystem2/robot_control.c        local     ev                         -> event                          line_barcode_msg_t (straddle_step)
+app_program/subsystem2/robot_control.c        local     fault                      -> b_fault                        bool (line_snapshot_ok)
+app_program/subsystem2/robot_control.c        local     first                      -> b_first                        bool (robot_control_step)
+app_program/subsystem2/robot_control.c        local     i                          -> idx                            unsigned (control_step)
+app_program/subsystem2/robot_control.c        local     i                          -> idx                            unsigned (poll_commands)
+app_program/subsystem2/robot_control.c        local     i                          -> idx                            unsigned (poll_mapping)
+app_program/subsystem2/robot_control.c        local     i                          -> idx                            unsigned (report_barcode_frame)
+app_program/subsystem2/robot_control.c        local     i                          -> idx                            unsigned (straddle_step)
+app_program/subsystem2/robot_control.c        local     left                       -> b_left                         bool (control_step)
+app_program/subsystem2/robot_control.c        local     lifted                     -> b_lifted                       bool (control_step)
+app_program/subsystem2/robot_control.c        local     mm                         -> dist_mm                        uint32_t (line_lost_check)
+app_program/subsystem2/robot_control.c        local     on_line                    -> b_on_line                      bool (line_rearm_ready)
+app_program/subsystem2/robot_control.c        local     ready                      -> b_ready                        bool (line_rearm_ready)
+app_program/subsystem2/robot_control.c        local     s                          -> slot                           unsigned (letter_direction)
+app_program/subsystem2/robot_control.c        local     s                          -> slot                           unsigned (poll_mapping)
+app_program/subsystem2/robot_control.c        local     s3                         -> s3_bits                        unsigned (report_telemetry)
+app_program/subsystem2/robot_control.c        local     stop_sent                  -> b_stop_sent                    bool (robot_control_step)
+app_program/subsystem2/robot_control.c        local     t                          -> elapsed_ms                     uint32_t (robot_control_step)
+app_program/subsystem2/robot_control.c        local     uturn                      -> b_uturn                        bool (control_step)
+app_program/subsystem2/robot_control.c        local     waiting                    -> b_waiting                      bool (robot_control_step)
+app_program/subsystem2/robot_control.c        local     waiting                    -> b_waiting                      bool (straddle_junction)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (avoid_step)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (control_step)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (halt)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (halt_line)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (line_lost_check)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (line_snapshot_ok)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (pause_robot)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (poll_commands)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (robot_control_step)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (stop_robot)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (straddle_junction)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (straddle_step)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          MOTION_CONTROLLER * (vc_stop_motors)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          const MOTION_CONTROLLER * (report_telemetry)
+app_program/subsystem2/robot_control.c        parameter ctl                        -> p_ctl                          const MOTION_CONTROLLER * (update_distance)
+app_program/subsystem2/robot_control.c        parameter er                         -> ercd                           ER (line_snapshot_ok)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (avoid_step)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (control_step)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (halt)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (halt_line)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (line_lost_check)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (line_rearm_ready)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (line_snapshot_ok)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (lost_watch_mm)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (pause_robot)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (poll_commands)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (report_telemetry)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (robot_control_step)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (stop_robot)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (straddle_junction)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (straddle_step)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (update_distance)
+app_program/subsystem2/robot_control.c        parameter l                          -> left_ticks                     int32_t (vc_stop_motors)
+app_program/subsystem2/robot_control.c        parameter msg                        -> p_msg                          const line_barcode_msg_t * (line_snapshot_ok)
+app_program/subsystem2/robot_control.c        parameter need_position              -> b_need_position                bool (line_snapshot_ok)
+app_program/subsystem2/robot_control.c        parameter p                          -> p_arg                          void * (vc_give_back)
+app_program/subsystem2/robot_control.c        parameter p                          -> p_arg                          void * (vc_is_stopped)
+app_program/subsystem2/robot_control.c        parameter p                          -> p_arg                          void * (vc_line_sensors)
+app_program/subsystem2/robot_control.c        parameter p                          -> p_arg                          void * (vc_may_follow)
+app_program/subsystem2/robot_control.c        parameter p                          -> p_arg                          void * (vc_run_move)
+app_program/subsystem2/robot_control.c        parameter p                          -> p_arg                          void * (vc_safe_stop)
+app_program/subsystem2/robot_control.c        parameter p                          -> p_arg                          void * (vc_start_move)
+app_program/subsystem2/robot_control.c        parameter p                          -> p_arg                          void * (vc_stop)
+app_program/subsystem2/robot_control.c        parameter p                          -> p_arg                          void * (vc_take_control)
+app_program/subsystem2/robot_control.c        parameter probe_steer                -> p_probe_steer                  float * (line_lost_check)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (avoid_step)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (control_step)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (halt)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (halt_line)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (line_lost_check)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (line_rearm_ready)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (line_snapshot_ok)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (lost_watch_mm)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (pause_robot)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (poll_commands)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (report_telemetry)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (robot_control_step)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (stop_robot)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (straddle_junction)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (straddle_step)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (update_distance)
+app_program/subsystem2/robot_control.c        parameter r                          -> right_ticks                    int32_t (vc_stop_motors)
+app_program/subsystem2/robot_control.c        parameter reason                     -> p_reason                       const char * (halt)
+app_program/subsystem2/robot_control.c        parameter reason                     -> p_reason                       const char * (halt_line)
+app_program/subsystem2/robot_control.c        parameter reason                     -> p_reason                       const char * (stop_robot)
+app_program/subsystem2/robot_control.c        parameter reason                     -> p_reason                       const char * (vc_safe_stop)
+app_program/subsystem2/robot_control.c        parameter recoverable                -> b_recoverable                  bool (stop_robot)
+app_program/subsystem2/robot_control.c        parameter req                        -> p_req                          const S5_REQUEST * (vc_run_move)
+app_program/subsystem2/robot_control.c        parameter req                        -> p_req                          const S5_REQUEST * (vc_start_move)
+app_program/subsystem2/robot_control.c        static    action_since               -> g_action_since                 uint32_t
+app_program/subsystem2/robot_control.c        static    armed                      -> g_b_armed                      bool
+app_program/subsystem2/robot_control.c        static    auto_start                 -> g_b_auto_start                 bool
+app_program/subsystem2/robot_control.c        static    candidate_since            -> g_candidate_since              uint32_t
+app_program/subsystem2/robot_control.c        static    clear_pending              -> g_b_clear_pending              bool
+app_program/subsystem2/robot_control.c        static    clear_since                -> g_clear_since                  uint32_t
+app_program/subsystem2/robot_control.c        static    configured                 -> g_b_configured                 bool
+app_program/subsystem2/robot_control.c        static    distance_cm                -> g_distance_cm                  float
+app_program/subsystem2/robot_control.c        static    frame_report_ms            -> g_frame_report_ms              uint32_t
+app_program/subsystem2/robot_control.c        static    frame_sequence             -> g_frame_sequence               uint32_t
+app_program/subsystem2/robot_control.c        static    halted                     -> g_b_halted                     bool
+app_program/subsystem2/robot_control.c        static    have_imu                   -> g_b_have_imu                   bool
+app_program/subsystem2/robot_control.c        static    imu_count                  -> g_imu_count                    uint32_t
+app_program/subsystem2/robot_control.c        static    imu_errors                 -> g_imu_errors                   uint32_t
+app_program/subsystem2/robot_control.c        static    in_avoid                   -> g_b_in_avoid                   bool
+app_program/subsystem2/robot_control.c        static    junction_done              -> g_junction_done                uint32_t
+app_program/subsystem2/robot_control.c        static    last_imu                   -> g_last_imu                     IMU_DATA
+app_program/subsystem2/robot_control.c        static    last_imu_sample            -> g_last_imu_sample              uint32_t
+app_program/subsystem2/robot_control.c        static    last_letter                -> g_last_letter                  unsigned
+app_program/subsystem2/robot_control.c        static    last_telemetry             -> g_last_telemetry               uint32_t
+app_program/subsystem2/robot_control.c        static    leaving_junction           -> g_b_leaving_junction           bool
+app_program/subsystem2/robot_control.c        static    line_halt                  -> g_b_line_halt                  bool
+app_program/subsystem2/robot_control.c        static    line_unsafe_active         -> g_b_line_unsafe_active         bool
+app_program/subsystem2/robot_control.c        static    line_unsafe_since          -> g_line_unsafe_since            uint32_t
+app_program/subsystem2/robot_control.c        static    lost_l0                    -> g_lost_l0                      int32_t
+app_program/subsystem2/robot_control.c        static    lost_last_step             -> g_lost_last_step               uint32_t
+app_program/subsystem2/robot_control.c        static    lost_max_mm                -> g_lost_max_mm                  uint32_t
+app_program/subsystem2/robot_control.c        static    lost_probe                 -> g_b_lost_probe                 bool
+app_program/subsystem2/robot_control.c        static    lost_r0                    -> g_lost_r0                      int32_t
+app_program/subsystem2/robot_control.c        static    lost_seen_black            -> g_b_lost_seen_black            bool
+app_program/subsystem2/robot_control.c        static    lost_side                  -> g_lost_side                    unsigned
+app_program/subsystem2/robot_control.c        static    lost_stop                  -> g_b_lost_stop                  bool
+app_program/subsystem2/robot_control.c        static    lost_watch                 -> g_b_lost_watch                 bool
+app_program/subsystem2/robot_control.c        static    map_letters                -> g_map_letters                  unsigned char[]
+app_program/subsystem2/robot_control.c        static    map_received               -> g_b_map_received               bool
+app_program/subsystem2/robot_control.c        static    odo_l                      -> g_odo_l                        int32_t
+app_program/subsystem2/robot_control.c        static    odo_r                      -> g_odo_r                        int32_t
+app_program/subsystem2/robot_control.c        static    odo_started                -> g_b_odo_started                bool
+app_program/subsystem2/robot_control.c        static    paused                     -> g_b_paused                     bool
+app_program/subsystem2/robot_control.c        static    pending_letter             -> g_pending_letter               uint8_t
+app_program/subsystem2/robot_control.c        static    pivot_l0                   -> g_pivot_l0                     int32_t
+app_program/subsystem2/robot_control.c        static    pivot_r0                   -> g_pivot_r0                     int32_t
+app_program/subsystem2/robot_control.c        static    ready_reported             -> g_b_ready_reported             bool
+app_program/subsystem2/robot_control.c        static    rearm_l                    -> g_rearm_l                      int32_t
+app_program/subsystem2/robot_control.c        static    rearm_r                    -> g_rearm_r                      int32_t
+app_program/subsystem2/robot_control.c        static    rearm_since                -> g_rearm_since                  uint32_t
+app_program/subsystem2/robot_control.c        static    resumed_at                 -> g_resumed_at                   uint32_t
+app_program/subsystem2/robot_control.c        static    start_requested            -> g_b_start_requested            bool
+app_program/subsystem2/robot_control.c        static    status_requested           -> g_b_status_requested           bool
+app_program/subsystem2/robot_control.c        static    steer_action               -> g_steer_action                 unsigned
+app_program/subsystem2/robot_control.c        static    steer_candidate            -> g_steer_candidate              unsigned
+app_program/subsystem2/robot_control.c        static    straddle                   -> g_b_straddle                   bool
+app_program/subsystem2/robot_control.c        static    telemetry_error            -> g_telemetry_error              ER
+app_program/subsystem2/robot_control.c        static    turn_cmd                   -> g_turn_cmd                     unsigned
+app_program/subsystem2/robot_control.c        static    turn_stage                 -> g_turn_stage                   unsigned
+app_program/subsystem2/robot_control.c        static    turn_started               -> g_turn_started                 uint32_t
+app_program/subsystem2/robot_control.c        static    turning                    -> g_b_turning                    bool
+app_program/subsystem2/robot_control.c        static    uturn_r0                   -> g_uturn_r0                     int32_t
+app_program/subsystem2/robot_control.c        static    vc_s5                      -> g_vc_s5                        S5_EXEC
+app_program/subsystem2/robot_control.h        proto     controller                 -> p_controller                   MOTION_CONTROLLER * (prototype:robot_control_step)
+app_program/subsystem2/subsystem2.c           extern    flg_motion_stop            -> g_flg_motion_stop              ID
+app_program/subsystem2/subsystem2.c           extern    mbf_motion_cmd             -> g_mbf_motion_cmd               ID
+app_program/subsystem2/subsystem2.c           extern    mtx_motion_status          -> g_mtx_motion_status            ID
+app_program/subsystem2/subsystem2.c           local     er                         -> ercd                           ER (subsystem2_get_status)
+app_program/subsystem2/subsystem2.c           local     er                         -> ercd                           ER (subsystem2_init)
+app_program/subsystem2/subsystem2.c           parameter command                    -> p_command                      const MOTION_COMMAND * (subsystem2_send_command)
+app_program/subsystem2/subsystem2.c           parameter status                     -> p_status                       MOTION_STATUS * (subsystem2_get_status)
+app_program/subsystem2/subsystem2.c           parameter status                     -> p_status                       const MOTION_STATUS * (subsystem2_publish_status)
+app_program/subsystem2/subsystem2.c           static    latest_status              -> g_latest_status                MOTION_STATUS
+app_program/subsystem2/subsystem2.h           proto     command                    -> p_command                      const MOTION_COMMAND * (prototype:subsystem2_send_command)
+app_program/subsystem2/subsystem2.h           proto     exinf                      -> p_exinf                        void * (prototype:motion_task)
+app_program/subsystem2/subsystem2.h           proto     status                     -> p_status                       MOTION_STATUS * (prototype:subsystem2_get_status)
+app_program/subsystem2/subsystem2.h           proto     status                     -> p_status                       const MOTION_STATUS * (prototype:subsystem2_publish_status)
+app_program/subsystem2/subsystem2_hw_test.c   local     ok                         -> b_ok                           bool (subsystem2_hw_test_task)
+app_program/subsystem2/subsystem2_hw_test.c   local     waited                     -> b_waited                       bool (run_stage)
+app_program/subsystem2/subsystem2_hw_test.c   parameter exinf                      -> p_exinf                        void * (subsystem2_hw_test_task)
+app_program/subsystem2/subsystem2_hw_test.c   parameter name                       -> p_name                         const char * (run_stage)
+app_program/subsystem2/subsystem2_hw_test.h   proto     exinf                      -> p_exinf                        void * (prototype:subsystem2_hw_test_task)
+app_program/subsystem2/subsystem2_test.c      local     ok                         -> b_ok                           bool (subsystem2_test)
+app_program/subsystem2/task_motion.c          local     done                       -> b_done                         bool (bench_stop_probe)
+app_program/subsystem2/task_motion.c          local     have_normal                -> b_have_normal                  bool (receive_latest_command)
+app_program/subsystem2/task_motion.c          local     i                          -> idx                            unsigned (receive_latest_command)
+app_program/subsystem2/task_motion.c          local     j                          -> discard                        unsigned (receive_latest_command)
+app_program/subsystem2/task_motion.c          local     manual_stop                -> b_manual_stop                  bool (motion_task)
+app_program/subsystem2/task_motion.c          local     off_logged                 -> b_off_logged                   bool (bench_stop_probe)
+app_program/subsystem2/task_motion.c          local     ready                      -> b_ready                        bool (motion_task)
+app_program/subsystem2/task_motion.c          local     t0                         -> stop_ms                        uint32_t (bench_stop_probe)
+app_program/subsystem2/task_motion.c          local     travelling                 -> b_travelling                   bool (motion_task)
+app_program/subsystem2/task_motion.c          parameter controller                 -> p_controller                   MOTION_CONTROLLER * (receive_latest_command)
+app_program/subsystem2/task_motion.c          parameter exinf                      -> p_exinf                        void * (motion_task)
+app_program/subsystem2/task_motion.c          parameter status                     -> p_status                       const MOTION_STATUS * (apply_outputs)
+app_program/subsystem2/task_motion.c          parameter status                     -> p_status                       const MOTION_STATUS * (bench_stop_probe)
+app_program/subsystem2/wheel_odometry.h       local     dl                         -> delta_left                     int64_t (wheel_odometry_step)
+app_program/subsystem2/wheel_odometry.h       local     dr                         -> delta_right                    int64_t (wheel_odometry_step)
+app_program/subsystem2/wheel_odometry.h       parameter mm                         -> p_step_mm                      uint8_t * (wheel_odometry_step)
+app_program/subsystem2/wheel_odometry.h       parameter o                          -> p_odo                          WHEEL_ODOMETRY * (wheel_odometry_init)
+app_program/subsystem2/wheel_odometry.h       parameter o                          -> p_odo                          WHEEL_ODOMETRY * (wheel_odometry_step)
+app_program/subsystem2/wheel_odometry.h       parameter travelling                 -> b_travelling                   bool (wheel_odometry_step)
+app_program/subsystem4/drv_lsm303dlhc.c       local     er                         -> ercd                           ER (lsm303dlhc_init)
+app_program/subsystem4/drv_lsm303dlhc.c       local     er                         -> ercd                           ER (lsm303dlhc_read)
+app_program/subsystem4/drv_lsm303dlhc.c       local     er                         -> ercd                           ER (read_acc_axis)
+app_program/subsystem4/drv_lsm303dlhc.c       local     er                         -> ercd                           ER (read_mag_axis)
+app_program/subsystem4/drv_lsm303dlhc.c       local     hi                         -> high_byte                      UB (read_acc_axis)
+app_program/subsystem4/drv_lsm303dlhc.c       local     hi                         -> high_byte                      UB (read_mag_axis)
+app_program/subsystem4/drv_lsm303dlhc.c       local     i                          -> idx                            UW (lsm303dlhc_recover_bus)
+app_program/subsystem4/drv_lsm303dlhc.c       local     lo                         -> low_byte                       UB (read_acc_axis)
+app_program/subsystem4/drv_lsm303dlhc.c       local     lo                         -> low_byte                       UB (read_mag_axis)
+app_program/subsystem4/drv_lsm303dlhc.c       local     sda_free                   -> b_sda_free                     BOOL (lsm303dlhc_recover_bus)
+app_program/subsystem4/drv_lsm303dlhc.c       parameter low                        -> b_low                          BOOL (bus_line)
+app_program/subsystem4/drv_lsm303dlhc.c       parameter sample                     -> p_sample                       LSM303_SAMPLE * (lsm303dlhc_read)
+app_program/subsystem4/drv_lsm303dlhc.c       parameter us                         -> delay_us                       UW (bus_wait_us)
+app_program/subsystem4/drv_lsm303dlhc.c       parameter value                      -> p_value                        UB * (read_reg)
+app_program/subsystem4/drv_lsm303dlhc.c       parameter value_mg                   -> p_value_mg                     W * (read_acc_axis)
+app_program/subsystem4/drv_lsm303dlhc.c       parameter value_raw                  -> p_value_raw                    W * (read_mag_axis)
+app_program/subsystem4/drv_lsm303dlhc.c       static    lsm303_dd                  -> g_lsm303_dd                    ID
+app_program/subsystem4/drv_lsm303dlhc.c       static    open_err_reported          -> g_b_open_err_reported          BOOL
+app_program/subsystem4/drv_lsm303dlhc.c       static    who_err_reported           -> g_b_who_err_reported           BOOL
+app_program/subsystem4/drv_lsm303dlhc.h       proto     sample                     -> p_sample                       LSM303_SAMPLE * (prototype:lsm303dlhc_read)
+app_program/subsystem4/subsystem4.c           extern    mtx_imu_data               -> g_mtx_imu_data                 ID
+app_program/subsystem4/subsystem4.c           extern    s4_imu_data                -> g_s4_imu_data                  IMU_DATA
+app_program/subsystem4/subsystem4.c           local     er                         -> ercd                           ER (subsystem4_add_distance_mm)
+app_program/subsystem4/subsystem4.c           local     er                         -> ercd                           ER (subsystem4_get_latest)
+app_program/subsystem4/subsystem4.c           local     er                         -> ercd                           ER (subsystem4_get_packed)
+app_program/subsystem4/subsystem4.c           local     er                         -> ercd                           ER (subsystem4_init)
+app_program/subsystem4/subsystem4.c           parameter data                       -> p_data                         const IMU_DATA * (pack_status)
+app_program/subsystem4/subsystem4.c           parameter out                        -> p_out                          IMU_DATA * (subsystem4_get_latest)
+app_program/subsystem4/subsystem4.c           parameter out                        -> p_out                          IMU_PACKED_MSG * (subsystem4_get_packed)
+app_program/subsystem4/subsystem4.c           static    pending_distance_mm        -> g_pending_distance_mm          UW
+app_program/subsystem4/subsystem4.h           proto     exinf                      -> p_exinf                        void * (prototype:imu_task)
+app_program/subsystem4/subsystem4.h           proto     out                        -> p_out                          IMU_DATA * (prototype:subsystem4_get_latest)
+app_program/subsystem4/subsystem4.h           proto     out                        -> p_out                          IMU_PACKED_MSG * (prototype:subsystem4_get_packed)
+app_program/subsystem4/subsystem4_test.c      local     er                         -> ercd                           ER (subsystem4_test)
+app_program/subsystem4/task_imu.c             local     a                          -> abs_filt                       W (trace_noise)
+app_program/subsystem4/task_imu.c             local     beyond_threshold           -> b_beyond_threshold             BOOL (update_tilt)
+app_program/subsystem4/task_imu.c             local     calibrated                 -> b_calibrated                   BOOL (imu_task)
+app_program/subsystem4/task_imu.c             local     cut                        -> b_cut                          BOOL (trace_freeze)
+app_program/subsystem4/task_imu.c             local     d                          -> diag                           KNL_LOCK_DIAG (report_kernel_lock)
+app_program/subsystem4/task_imu.c             local     dx                         -> delta_x                        W (imu_task)
+app_program/subsystem4/task_imu.c             local     dx                         -> delta_x                        W (print_periodic_status)
+app_program/subsystem4/task_imu.c             local     dy                         -> delta_y                        W (imu_task)
+app_program/subsystem4/task_imu.c             local     dy                         -> delta_y                        W (print_periodic_status)
+app_program/subsystem4/task_imu.c             local     er                         -> ercd                           ER (imu_task)
+app_program/subsystem4/task_imu.c             local     er                         -> ercd                           ER (publish_snapshot)
+app_program/subsystem4/task_imu.c             local     er                         -> ercd                           ER (s4_delay)
+app_program/subsystem4/task_imu.c             local     hump_completed             -> b_hump_completed               BOOL (imu_task)
+app_program/subsystem4/task_imu.c             local     hump_is_active             -> b_hump_is_active               BOOL (imu_task)
+app_program/subsystem4/task_imu.c             local     hump_was_active            -> b_hump_was_active              BOOL (imu_task)
+app_program/subsystem4/task_imu.c             local     i                          -> idx                            UW (estimate_pitch_deg)
+app_program/subsystem4/task_imu.c             local     i                          -> idx                            UW (reset_lift_detector)
+app_program/subsystem4/task_imu.c             local     i                          -> idx                            UW (trace_freeze)
+app_program/subsystem4/task_imu.c             local     k                          -> rec_idx                        UW (trace_dump_step)
+app_program/subsystem4/task_imu.c             local     last_ramp_height_valid     -> b_last_ramp_height_valid       BOOL (imu_task)
+app_program/subsystem4/task_imu.c             local     ms                         -> delay_ms                       UW (s4_retry_delay_ms)
+app_program/subsystem4/task_imu.c             local     r                          -> p_rec                          S4_TRACE_REC * (trace_record)
+app_program/subsystem4/task_imu.c             local     r                          -> p_rec                          const S4_TRACE_REC * (trace_dump_step)
+app_program/subsystem4/task_imu.c             local     sensor_ok                  -> b_sensor_ok                    BOOL (imu_task)
+app_program/subsystem4/task_imu.c             local     tilt_now                   -> b_tilt_now                     BOOL (imu_task)
+app_program/subsystem4/task_imu.c             local     timing_overrun             -> b_timing_overrun               BOOL (imu_task)
+app_program/subsystem4/task_imu.c             parameter baseline_x                 -> p_baseline_x                   W * (update_calibration)
+app_program/subsystem4/task_imu.c             parameter baseline_y                 -> p_baseline_y                   W * (update_calibration)
+app_program/subsystem4/task_imu.c             parameter baseline_z                 -> p_baseline_z                   W * (update_calibration)
+app_program/subsystem4/task_imu.c             parameter calibrated                 -> b_calibrated                   BOOL (publish_snapshot)
+app_program/subsystem4/task_imu.c             parameter completed_peak             -> p_completed_peak               W * (update_hump)
+app_program/subsystem4/task_imu.c             parameter er                         -> ercd                           ER (handle_unblockable_core)
+app_program/subsystem4/task_imu.c             parameter er                         -> ercd                           ER (imu_failed)
+app_program/subsystem4/task_imu.c             parameter er                         -> ercd                           ER (report_error)
+app_program/subsystem4/task_imu.c             parameter exinf                      -> p_exinf                        void * (imu_task)
+app_program/subsystem4/task_imu.c             parameter filtered_delta_mg          -> p_filtered_delta_mg            W * (update_lift)
+app_program/subsystem4/task_imu.c             parameter hump_active                -> b_hump_active                  BOOL (update_tilt)
+app_program/subsystem4/task_imu.c             parameter hump_idle                  -> b_hump_idle                    BOOL (trace_noise)
+app_program/subsystem4/task_imu.c             parameter label                      -> p_label                        const char * (report_kernel_lock)
+app_program/subsystem4/task_imu.c             parameter moving                     -> b_moving                       BOOL (trace_noise)
+app_program/subsystem4/task_imu.c             parameter moving                     -> b_moving                       BOOL (trace_record)
+app_program/subsystem4/task_imu.c             parameter moving                     -> b_moving                       BOOL (update_hump)
+app_program/subsystem4/task_imu.c             parameter ms                         -> duration_ms                    TMO (s4_delay)
+app_program/subsystem4/task_imu.c             parameter ms                         -> duration_ms                    UW (s4_spin_ms)
+app_program/subsystem4/task_imu.c             parameter n                          -> failures                       UW (s4_retry_delay_ms)
+app_program/subsystem4/task_imu.c             parameter n                          -> sample                         UW (trace_record)
+app_program/subsystem4/task_imu.c             parameter ramp_height_valid          -> b_ramp_height_valid            BOOL (print_periodic_status)
+app_program/subsystem4/task_imu.c             parameter ramp_height_valid          -> b_ramp_height_valid            BOOL (publish_snapshot)
+app_program/subsystem4/task_imu.c             parameter sample                     -> p_sample                       const LSM303_SAMPLE * (print_periodic_status)
+app_program/subsystem4/task_imu.c             parameter sample                     -> p_sample                       const LSM303_SAMPLE * (publish_snapshot)
+app_program/subsystem4/task_imu.c             parameter sample                     -> p_sample                       const LSM303_SAMPLE * (update_calibration)
+app_program/subsystem4/task_imu.c             parameter sensor_ok                  -> b_sensor_ok                    BOOL (publish_snapshot)
+app_program/subsystem4/task_imu.c             parameter timing_overrun             -> b_timing_overrun               BOOL (publish_snapshot)
+app_program/subsystem4/task_imu.c             parameter v                          -> value                          UW (trace_clamp8)
+app_program/subsystem4/task_imu.c             parameter v                          -> value                          W (trace_clamp16)
+app_program/subsystem4/task_imu.c             parameter what                       -> p_what                         const char * (imu_failed)
+app_program/subsystem4/task_imu.c             parameter what                       -> p_what                         const char * (report_error)
+app_program/subsystem4/task_imu.c             parameter why                        -> p_why                          const char * (trace_freeze)
+app_program/subsystem4/task_imu.c             static    bus_recoveries             -> g_bus_recoveries               UW
+app_program/subsystem4/task_imu.c             static    cal_state                  -> g_cal_state                    CAL_STATE
+app_program/subsystem4/task_imu.c             static    current_height_milli_mm    -> g_current_height_milli_mm      int64_t
+app_program/subsystem4/task_imu.c             static    current_height_mm          -> g_current_height_mm            W
+app_program/subsystem4/task_imu.c             static    entry_moving_samples       -> g_entry_moving_samples         UW
+app_program/subsystem4/task_imu.c             static    err_last_report_us         -> g_err_last_report_us           UW
+app_program/subsystem4/task_imu.c             static    err_reported               -> g_b_err_reported               BOOL
+app_program/subsystem4/task_imu.c             static    err_unreported             -> g_err_unreported               UW
+app_program/subsystem4/task_imu.c             static    fail_streak                -> g_fail_streak                  UW
+app_program/subsystem4/task_imu.c             static    height_distance_seen       -> g_b_height_distance_seen       BOOL
+app_program/subsystem4/task_imu.c             static    hump_armed                 -> g_b_hump_armed                 BOOL
+app_program/subsystem4/task_imu.c             static    hump_climb_sign            -> g_hump_climb_sign              INT
+app_program/subsystem4/task_imu.c             static    hump_entry_height_milli_mm -> g_hump_entry_height_milli_mm   int64_t
+app_program/subsystem4/task_imu.c             static    hump_rearm_count           -> g_hump_rearm_count             UW
+app_program/subsystem4/task_imu.c             static    hump_state                 -> g_hump_state                   HUMP_STATE
+app_program/subsystem4/task_imu.c             static    lift_confirm               -> g_lift_confirm                 UW
+app_program/subsystem4/task_imu.c             static    lift_count                 -> g_lift_count                   UW
+app_program/subsystem4/task_imu.c             static    lift_next                  -> g_lift_next                    UW
+app_program/subsystem4/task_imu.c             static    lift_reported              -> g_b_lift_reported              BOOL
+app_program/subsystem4/task_imu.c             static    lift_samples               -> g_lift_samples                 W[]
+app_program/subsystem4/task_imu.c             static    lift_sum                   -> g_lift_sum                     W
+app_program/subsystem4/task_imu.c             static    movement_hold_samples      -> g_movement_hold_samples        UW
+app_program/subsystem4/task_imu.c             static    noise_abs_sum              -> g_noise_abs_sum                W
+app_program/subsystem4/task_imu.c             static    noise_fmax                 -> g_noise_fmax                   W
+app_program/subsystem4/task_imu.c             static    noise_fmin                 -> g_noise_fmin                   W
+app_program/subsystem4/task_imu.c             static    noise_n                    -> g_noise_n                      UW
+app_program/subsystem4/task_imu.c             static    noise_rmax                 -> g_noise_rmax                   W
+app_program/subsystem4/task_imu.c             static    noise_rmin                 -> g_noise_rmin                   W
+app_program/subsystem4/task_imu.c             static    peak_height_mm             -> g_peak_height_mm               UW
+app_program/subsystem4/task_imu.c             static    start_blank_samples        -> g_start_blank_samples          UW
+app_program/subsystem4/task_imu.c             static    tilt_reported              -> g_b_tilt_reported              BOOL
+app_program/subsystem4/task_imu.c             static    tilt_samples               -> g_tilt_samples                 UW
+app_program/subsystem4/task_imu.c             static    trace_count                -> g_trace_count                  UW
+app_program/subsystem4/task_imu.c             static    trace_id                   -> g_trace_id                     UW
+app_program/subsystem4/task_imu.c             static    trace_last_cycle_ms        -> g_trace_last_cycle_ms          UW
+app_program/subsystem4/task_imu.c             static    trace_next                 -> g_trace_next                   UW
+app_program/subsystem4/task_imu.c             static    trace_out                  -> g_trace_out                    S4_TRACE_REC[]
+app_program/subsystem4/task_imu.c             static    trace_out_len              -> g_trace_out_len                UW
+app_program/subsystem4/task_imu.c             static    trace_out_pos              -> g_trace_out_pos                UW
+app_program/subsystem4/task_imu.c             static    trace_ring                 -> g_trace_ring                   S4_TRACE_REC[]
+app_program/subsystem4/task_imu.c             static    wedge_followup_done        -> g_b_wedge_followup_done        BOOL
+app_program/subsystem4/task_imu.c             static    wedge_report_us            -> g_wedge_report_us              UW
+app_program/subsystem4/task_imu.c             static    wedge_reported             -> g_b_wedge_reported             BOOL
