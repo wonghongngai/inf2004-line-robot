@@ -18,6 +18,12 @@
 #define ALL_TEST_TURN_TIMEOUT_MS 8000u
 /* After a movement, C/R both black drives straight instead of stopping. */
 #define ALL_TEST_TURN_SETTLE_MS  500u
+/* A rejected barcode frame: back up this far, straight on the encoders,
+ * then follow the line forward and scan it again. After this many retries
+ * the robot carries on forward without a letter. */
+#define ALL_TEST_REJECT_REVERSE_CM      30.0f
+#define ALL_TEST_REJECT_RETRIES         2u
+#define ALL_TEST_REJECT_REVERSE_TIMEOUT_MS 10000u
 #ifndef ALL_TEST_DURATION_MS
 /* Zero runs continuously until manually paused. */
 #define ALL_TEST_DURATION_MS 0u

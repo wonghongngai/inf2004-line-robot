@@ -40,8 +40,9 @@ static unsigned fake_black, fake_white;
 void line_service_barcode_debug(unsigned *black, unsigned *white, uint8_t *letter)
 { *black = fake_black; *white = fake_white; *letter = 0xffu; }
 static unsigned frame_calls;
+static uint8_t fake_frame_runs;   /* runs in S3's last completed/rejected frame */
 void line_service_barcode_frame(line_service_barcode_frame_t *frame)
-{ ++frame_calls; memset(frame, 0, sizeof(*frame)); }
+{ ++frame_calls; memset(frame, 0, sizeof(*frame)); frame->count = fake_frame_runs; }
 ER line_service_enable(bool on) { enabled = on; has_event = false; return E_OK; }
 ER line_service_snapshot(line_barcode_msg_t *msg) { *msg = snapshot; return snapshot_error; }
 ER line_service_receive(line_barcode_msg_t *msg, TMO timeout)
@@ -494,6 +495,8 @@ static void reset(MOTION_CONTROLLER *ctl)
     g_lost_l0 = g_lost_r0 = 0;
     g_lost_last_step = g_lost_max_mm = 0u;
     g_turn_stage = g_turn_cmd = 0u;
+    g_barcode_retries = 0u;
+    fake_frame_runs = 0u;
     has_event = enabled = false; snapshot_error = E_OK;
     memset(&fake_imu, 0, sizeof(fake_imu));
     fake_imu.sensor_ok = fake_imu.calibrated = TRUE;
@@ -1417,6 +1420,93 @@ static void alltest_robot_tests(void)
                 EXPECT(g_b_turning && g_turn_stage == TURN_PIVOT); /* kept turning */
             }
         }
+    }
+
+    /* A rejected barcode frame: back up S2_REJECT_REVERSE_CM (REVERSE
+     * profile, S3 paused), S2_REJECT_EXTRA_CM more once S2_REJECT_LONG_RUNS
+     * runs were read, then follow forward to rescan; after
+     * S2_REJECT_RETRIES the next rejection carries on forward. */
+    {
+        /* The full 29-run frame below backs up the longer distance. */
+        const float long_cm = S2_REJECT_REVERSE_CM + S2_REJECT_EXTRA_CM;
+        const int32_t back_l = -(int32_t)((long_cm + 1.0f) * S2_ENC_LEFT_TICKS_PER_CM);
+        const int32_t back_r = -(int32_t)((long_cm + 1.0f) * S2_ENC_RIGHT_TICKS_PER_CM);
+
+        /* The distance steps up at S2_REJECT_LONG_RUNS, not before. */
+        for (int longer = 0; longer < 2; ++longer) {
+            sfollow(&ctl);
+            fake_frame_runs = (uint8_t)(S2_REJECT_LONG_RUNS - (longer ? 0u : 1u));
+            queued = snapshot;
+            queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_INVALID << 3u);
+            has_event = true;
+            sstep(&ctl, 5040, 0, 0);
+            EXPECT(g_turn_stage == TURN_REVERSE &&
+                   ctl.target_value == (longer ? long_cm : S2_REJECT_REVERSE_CM));
+        }
+        /* A junction's cross line under the scanner is rejected as a
+         * one-run frame: not a barcode, so no reverse. */
+        sfollow(&ctl);
+        fake_frame_runs = 1u;
+        queued = snapshot;
+        queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_INVALID << 3u);
+        has_event = true;
+        sstep(&ctl, 5040, 0, 0);
+        EXPECT(!g_b_turning && !g_b_halted && enabled && g_barcode_retries == 0u &&
+               ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+        fake_frame_runs = (uint8_t)(S2_REJECT_MIN_RUNS - 1u);  /* still too few */
+        has_event = true;
+        sstep(&ctl, 5050, 0, 0);
+        EXPECT(!g_b_turning && g_barcode_retries == 0u);
+
+        sfollow(&ctl);
+        fake_frame_runs = LINE_BARCODE_FRAME_RUNS;          /* a full, bad frame */
+        now = msteps(&ctl, 5030, 20, 0, 0);                 /* cruising */
+        for (unsigned attempt = 1u; attempt <= S2_REJECT_RETRIES + 1u; ++attempt) {
+            queued = snapshot;
+            queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_INVALID << 3u);
+            has_event = true;
+            sstep(&ctl, now, 0, 0);
+            if (attempt > S2_REJECT_RETRIES) {              /* gave up */
+                EXPECT(!g_b_turning && !g_b_halted && enabled &&
+                       ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+                break;
+            }
+            EXPECT(g_b_turning && g_turn_stage == TURN_REVERSE && !enabled &&
+                   g_barcode_retries == attempt && ctl.target_value == long_cm &&
+                   ctl.active_profile == MOTION_PROFILE_REVERSE &&
+                   ctl.status.active_command == MOTION_CMD_FORWARD_CM);
+            now = msteps(&ctl, now, 30, back_l / 2, back_r / 2);
+            EXPECT(ctl.status.left_pwm_percent < 0.0f &&
+                   ctl.status.right_pwm_percent < 0.0f);    /* backwards */
+            sstep(&ctl, now, back_l / 2, back_r / 2);
+            EXPECT(g_b_turning);                            /* not there yet */
+            now = msteps(&ctl, now, 1, back_l, back_r);
+            EXPECT(ctl.status.state == MOTION_STATE_IDLE && ctl.status.motion_complete);
+            sstep(&ctl, now + 1u, back_l, back_r);
+            EXPECT(!g_b_turning && !g_b_halted && enabled && !g_b_leaving_junction);
+            now = msteps(&ctl, now + 1u, 5, 0, 0);
+            sstep(&ctl, now + 40u, 0, 0);                   /* past the resume gap */
+            EXPECT(ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+            now += 50u;
+        }
+        /* A good read resets the count for the next barcode. */
+        queued = snapshot;
+        queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_BARCODE << 3u);
+        queued.data[2] = 'A' - 'A';
+        has_event = true;
+        sstep(&ctl, now + 10u, 0, 0);
+        EXPECT(g_barcode_retries == 0u && (g_pending_letter & 0x80u));
+
+        /* A reverse that never covers the distance halts. */
+        sfollow(&ctl);
+        fake_frame_runs = S2_REJECT_MIN_RUNS;               /* the minimum counts */
+        queued = snapshot;
+        queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_INVALID << 3u);
+        has_event = true;
+        sstep(&ctl, 5040, 0, 0);
+        EXPECT(g_turn_stage == TURN_REVERSE && ctl.target_value == S2_REJECT_REVERSE_CM);
+        sstep(&ctl, 5040 + S2_REJECT_REVERSE_TIMEOUT_MS + 1u, 0, 0);
+        EXPECT(g_b_halted);
     }
 
     /* S5: moves use the AVOID profile, all_test's settle and timeout, and

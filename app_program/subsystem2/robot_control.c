@@ -28,7 +28,9 @@ static uint32_t g_lost_max_mm;        /* longest cleared watch this second */
 static void     straddle_reset_steer(void);
 #define TURN_ADVANCE 1u
 #define TURN_PIVOT   2u
+#define TURN_REVERSE 3u /* backing up to rescan a rejected barcode */
 static unsigned g_turn_stage, g_turn_cmd;
+static unsigned g_barcode_retries; /* reverse-and-rescan attempts so far */
 static int32_t  g_uturn_r0; /* right ticks when the U-turn began */
 static int32_t  g_pivot_l0,
     g_pivot_r0; /* wheel ticks when a left/right pivot began */
@@ -701,6 +703,7 @@ static bool straddle_junction(MOTION_CONTROLLER * p_ctl, uint32_t now,
     bool           b_waiting = (g_pending_letter & 0x80u) != 0u;
 
     g_pending_letter     = 0u;
+    g_barcode_retries    = 0u; /* the next barcode gets its own retries */
     g_b_leaving_junction = true;
     g_junction_done      = now;
     g_steer_action       = 0u;
@@ -746,6 +749,71 @@ static bool straddle_junction(MOTION_CONTROLLER * p_ctl, uint32_t now,
              : g_turn_cmd == LINE_BARCODE_CMD_RIGHT    ? "RIGHT"
              : g_turn_cmd == LINE_BARCODE_CMD_STRAIGHT ? "STRAIGHT"
                                                        : "U-TURN");
+    return true;
+}
+
+/* A rejected barcode frame: pause S3 (so the bars read backwards are not
+   decoded) and back up S2_REJECT_REVERSE_CM (plus S2_REJECT_EXTRA_CM when
+   S2_REJECT_LONG_RUNS or more runs were read); control_step's turn handling
+   resumes line following once the move is done, and the robot scans the
+   code again on the way forward. True when straddle_step must not send a
+   follow command this step (the reverse started, or the robot halted). */
+static bool start_barcode_retry(MOTION_CONTROLLER * p_ctl, uint32_t now,
+                                int32_t left_ticks, int32_t right_ticks)
+{
+    MOTION_COMMAND               cmd   = {MOTION_CMD_FORWARD_CM,
+                                          S2_REJECT_REVERSE_CM};
+    line_service_barcode_frame_t frame = {0};
+
+    /* S3 records the rejected frame in the same sample that queues the
+       event, so this is the frame just rejected. */
+    line_service_barcode_frame(&frame);
+    if (frame.count < S2_REJECT_MIN_RUNS)
+    {
+        LOG_INFO(TAG_S2_BARCODE,
+                 "reject had %u runs: not a barcode (junction line?), "
+                 "no retry",
+                 (unsigned)frame.count);
+        return false;
+    }
+    if (frame.count >= S2_REJECT_LONG_RUNS)
+    {
+        cmd.value += S2_REJECT_EXTRA_CM;
+    }
+    if (g_barcode_retries >= S2_REJECT_RETRIES)
+    {
+        LOG_WARN(TAG_S2_BARCODE, "gave up after %u retries; straight on",
+                 g_barcode_retries);
+        return false;
+    }
+    /* The REVERSE profile drives at move_*; without them it cannot run. */
+    if (p_ctl->cfg.move_left_pwm_percent <= 0.0f)
+    {
+        return false;
+    }
+    if (line_service_enable(false) < E_OK)
+    {
+        halt(p_ctl, now, left_ticks, right_ticks, "line pause failed");
+        return true;
+    }
+    vc_stop_motors(p_ctl, now, left_ticks, right_ticks);
+    motion_control_step(p_ctl, now, left_ticks,
+                        right_ticks); /* STOPPING -> IDLE */
+    motion_control_set_profile(p_ctl, MOTION_PROFILE_REVERSE);
+    if (motion_control_command(p_ctl, &cmd, now, left_ticks, right_ticks) !=
+        MOTION_RESULT_OK)
+    {
+        halt(p_ctl, now, left_ticks, right_ticks,
+             "barcode retry reverse rejected");
+        return true;
+    }
+    g_barcode_retries++;
+    g_b_turning    = true;
+    g_turn_started = now;
+    g_turn_stage   = TURN_REVERSE;
+    straddle_reset_steer();
+    LOG_WARN(TAG_S2_BARCODE, "retry %u/%u: reversing %d cm to rescan",
+             g_barcode_retries, S2_REJECT_RETRIES, (int)cmd.value);
     return true;
 }
 
@@ -927,11 +995,16 @@ static void straddle_step(MOTION_CONTROLLER * p_ctl, uint32_t now,
             LOG_WARN(TAG_S2_BARCODE,
                      "rejected invalid frame: check start/stop, narrow/wide "
                      "widths and white margins");
+            if (start_barcode_retry(p_ctl, now, left_ticks, right_ticks))
+            {
+                return; /* S3 is paused; nothing newer is queued */
+            }
         }
         if (event == LINE_BARCODE_EVT_BARCODE)
         {
             unsigned letter = frame.data[2] & LINE_BARCODE_LETTER_MASK;
             uint8_t  command;
+            g_barcode_retries = 0u;
             g_pending_letter = (uint8_t)(0x80u | letter);
             g_last_letter    = letter + 1u;
             LOG_INFO(TAG_S2_BARCODE,
@@ -1264,7 +1337,14 @@ static void control_step(MOTION_CONTROLLER * p_ctl, uint32_t now,
                                     right_ticks); /* STOPPING -> IDLE */
             }
         }
-        if ((uint32_t)(now - g_turn_started) > S2_ROBOT_TURN_TIMEOUT_MS)
+        if (g_turn_stage == TURN_REVERSE &&
+            (uint32_t)(now - g_turn_started) > S2_REJECT_REVERSE_TIMEOUT_MS)
+        {
+            halt(p_ctl, now, left_ticks, right_ticks,
+                 "barcode retry reverse timeout");
+        }
+        else if (g_turn_stage != TURN_REVERSE &&
+                 (uint32_t)(now - g_turn_started) > S2_ROBOT_TURN_TIMEOUT_MS)
         {
             halt(p_ctl, now, left_ticks, right_ticks, "turn timeout");
         }
@@ -1295,15 +1375,22 @@ static void control_step(MOTION_CONTROLLER * p_ctl, uint32_t now,
                 }
                 return;
             }
+            bool b_reversed = g_turn_stage == TURN_REVERSE;
             g_b_turning            = false;
             g_turn_stage           = 0u;
+            /* Resuming also clears any partial barcode before the rescan. */
             ercd                   = line_service_enable(true);
             g_resumed_at           = now;
             g_b_line_unsafe_active = false;
-            /* #8: the sensors may still be on the crossing just handled. */
-            g_b_leaving_junction = g_b_straddle;
+            /* #8: the sensors may still be on the crossing just handled
+               (a back-up is not at a crossing). */
+            g_b_leaving_junction = g_b_straddle && !b_reversed;
             g_junction_done      = now;
             g_steer_action       = 0u;
+            if (b_reversed)
+            {
+                LOG_INFO(TAG_S2_BARCODE, "backed up; rescanning");
+            }
             if (ercd < E_OK)
             {
                 halt(p_ctl, now, left_ticks, right_ticks, "line resume failed");
