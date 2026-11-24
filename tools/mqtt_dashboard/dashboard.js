@@ -1,6 +1,25 @@
-const states = ["Idle", "Following", "Turning", "Scanning", "Avoiding", "Recovering", "Finished", "Fault"];
-const faults = ["Motor stall", "Encoder fault", "IMU fault", "No echo", "Wi-Fi loss"];
-const s5Faults = ["S5 self-test failed (CAL_FAIL)", "S5 no path (NO_PATH)", "S5 line lost (LINE_LOST)"];
+const states = [
+  "Idle",
+  "Following",
+  "Turning",
+  "Scanning",
+  "Avoiding",
+  "Recovering",
+  "Finished",
+  "Fault",
+];
+const faults = [
+  "Motor stall",
+  "Encoder fault",
+  "IMU fault",
+  "No echo",
+  "Wi-Fi loss",
+];
+const s5Faults = [
+  "S5 self-test failed (CAL_FAIL)",
+  "S5 no path (NO_PATH)",
+  "S5 line lost (LINE_LOST)",
+];
 const directions = ["None", "Left", "Right", "Straight", "U-turn"];
 const sensorIds = ["left", "centre", "right"];
 const empty = "—";
@@ -19,11 +38,18 @@ function render(snapshot) {
   const data = snapshot.telemetry;
   const simulated = snapshot.demo;
   const faultBits = data?.faults ?? 0;
-  const hasFault = bit => Boolean(faultBits & (1 << bit));
-  const measure = (value, unit) => value == null ? empty : `${value} ${unit}`;
+  const hasFault = (bit) => Boolean(faultBits & (1 << bit));
+  const measure = (value, unit) => (value == null ? empty : `${value} ${unit}`);
 
   put("robot", simulated ? "Demo mode · Simulated robot" : snapshot.client_id);
-  put("heartbeat", snapshot.heartbeat === null ? "Waiting / expired" : snapshot.heartbeat ? "Online" : "Offline");
+  put(
+    "heartbeat",
+    snapshot.heartbeat === null
+      ? "Waiting / expired"
+      : snapshot.heartbeat
+        ? "Online"
+        : "Offline",
+  );
   put("telemetry-topic", snapshot.telemetry_topic);
   put("status-topic", snapshot.status_topic);
   put("barcode-topic", snapshot.barcode_topic ?? empty);
@@ -37,42 +63,112 @@ function render(snapshot) {
 
   put("state", states[data?.state] ?? empty);
   const s5Bits = data?.s5_faults ?? 0;
-  put("faults", data ? [...faults.filter((name, bit) => hasFault(bit)),
-                        ...s5Faults.filter((name, bit) => s5Bits & (1 << bit))].join(", ") || "None" : empty);
-  put("received", snapshot.telemetry_at == null ? empty : new Date(snapshot.telemetry_at * 1000).toLocaleTimeString());
-  put("distance", hasFault(1) ? "Unreliable" : measure(data?.distance_cm, "cm"));
-  put("speed", !data ? empty : hasFault(1) ? "Unreliable" :
-      data.speed_valid ? measure(data.speed_cms, "cm/s") : "Not published");
+  put(
+    "faults",
+    data
+      ? [
+          ...faults.filter((name, bit) => hasFault(bit)),
+          ...s5Faults.filter((name, bit) => s5Bits & (1 << bit)),
+        ].join(", ") || "None"
+      : empty,
+  );
+  put(
+    "received",
+    snapshot.telemetry_at == null
+      ? empty
+      : new Date(snapshot.telemetry_at * 1000).toLocaleTimeString(),
+  );
+  put(
+    "distance",
+    hasFault(1) ? "Unreliable" : measure(data?.distance_cm, "cm"),
+  );
+  put(
+    "speed",
+    !data
+      ? empty
+      : hasFault(1)
+        ? "Unreliable"
+        : data.speed_valid
+          ? measure(data.speed_cms, "cm/s")
+          : "Not published",
+  );
   /* #41: low 16 bits of each signed count, shown as int16 (wraps at ±32768). */
-  for (const [id, raw] of [["left-ticks", data?.left_ticks],
-                           ["right-ticks", data?.right_ticks]]) {
-    put(id, !data ? empty : raw == null ? "Not published" :
-        `${raw >= 32768 ? raw - 65536 : raw} ticks`);
+  for (const [id, raw] of [
+    ["left-ticks", data?.left_ticks],
+    ["right-ticks", data?.right_ticks],
+  ]) {
+    put(
+      id,
+      !data
+        ? empty
+        : raw == null
+          ? "Not published"
+          : `${raw >= 32768 ? raw - 65536 : raw} ticks`,
+    );
   }
   sensorIds.forEach((id, bit) => {
     const value = data ? (data.line_sensors >> bit) & 1 : empty;
     put(id, value).dataset.active = value;
   });
-  for (const [id, count] of [["barcode-black", data?.barcode_black],
-                             ["barcode-white", data?.barcode_white]]) {
-    put(id, !data ? empty : count == null ? "Not published" :
-        count === 65535 ? "65,535+" : count);
+  for (const [id, count] of [
+    ["barcode-black", data?.barcode_black],
+    ["barcode-white", data?.barcode_white],
+  ]) {
+    put(
+      id,
+      !data
+        ? empty
+        : count == null
+          ? "Not published"
+          : count === 65535
+            ? "65,535+"
+            : count,
+    );
   }
   const letter = data?.barcode_letter;
-  put("barcode-letter", !data ? empty : letter == null ? "Not published" :
-      letter === 0 ? "None yet" : String.fromCharCode(64 + letter));
+  put(
+    "barcode-letter",
+    !data
+      ? empty
+      : letter == null
+        ? "Not published"
+        : letter === 0
+          ? "None yet"
+          : String.fromCharCode(64 + letter),
+  );
   put("barcode", directions[data?.barcode] ?? empty);
-  const map = data?.map_received;   /* #38: telemetry bit 86 */
-  put("map-status", !data ? empty : map == null ? "Not published" :
-      map ? "Received" : "Waiting for map (straight at junctions)").dataset.state =
-      map == null ? "" : map ? "received" : "waiting";
-  put("hump", data?.highest_hump_mm > 0 ? measure(data.highest_hump_mm, "mm") :
-      hasFault(2) ? "Unreliable" : data ? "No measurement yet" : empty);
+  const map = data?.map_received; /* #38: telemetry bit 86 */
+  put(
+    "map-status",
+    !data
+      ? empty
+      : map == null
+        ? "Not published"
+        : map
+          ? "Received"
+          : "Waiting for map (straight at junctions)",
+  ).dataset.state = map == null ? "" : map ? "received" : "waiting";
+  put(
+    "hump",
+    data?.highest_hump_mm > 0
+      ? measure(data.highest_hump_mm, "mm")
+      : hasFault(2)
+        ? "Unreliable"
+        : data
+          ? "No measurement yet"
+          : empty,
+  );
   /* #40: S5's last obstacle scan. All 0 until a scan finds an obstacle
      (distance is never 0 for a real one: the sensor's minimum is 2 cm). */
   const scanned = data?.obstacle_cm > 0;
-  const obstacleMeasure = (value, unit) => simulated ? measure(value, unit) :
-      !data ? empty : scanned ? measure(value, unit) : "No obstacle yet";
+  const obstacleMeasure = (value, unit) =>
+    simulated
+      ? measure(value, unit)
+      : !data
+        ? empty
+        : scanned
+          ? measure(value, unit)
+          : "No obstacle yet";
   put("obstacle", obstacleMeasure(data?.obstacle_cm, "cm"));
   put("angle", obstacleMeasure(data?.scan_deg, "°"));
   put("width", obstacleMeasure(data?.obstacle_width_cm, "cm"));
@@ -80,31 +176,47 @@ function render(snapshot) {
 
 function renderScans(scans, total) {
   const latest = scans[0];
-  const latestText = !latest ? empty : latest.letter ? `${latest.letter} (frame ${latest.frame})` :
-      `Rejected (frame ${latest.frame})`;
+  const latestText = !latest
+    ? empty
+    : latest.letter
+      ? `${latest.letter} (frame ${latest.frame})`
+      : `Rejected (frame ${latest.frame})`;
   put("scan-latest", latestText).dataset.status = latest?.status ?? "";
-  put("scan-total", total === 0 ? "No scans yet" :
-      `${total} scan${total === 1 ? "" : "s"} this session${total > scans.length ? `, last ${scans.length} shown` : ""}`);
-  const key = scans.map(s => `${s.frame}:${s.letter}:${s.runs}:${s.received_at}`).join("|");
+  put(
+    "scan-total",
+    total === 0
+      ? "No scans yet"
+      : `${total} scan${total === 1 ? "" : "s"} this session${total > scans.length ? `, last ${scans.length} shown` : ""}`,
+  );
+  const key = scans
+    .map((s) => `${s.frame}:${s.letter}:${s.runs}:${s.received_at}`)
+    .join("|");
   const body = document.getElementById("scan-rows");
   if (body.dataset.key === key) return;
   body.dataset.key = key;
   if (scans.length === 0) {
-    body.innerHTML = '<tr><td colspan="5" class="scan-empty">Waiting for the first scan</td></tr>';
+    body.innerHTML =
+      '<tr><td colspan="5" class="scan-empty">Waiting for the first scan</td></tr>';
     return;
   }
-  body.replaceChildren(...scans.map(scan => {
-    const row = document.createElement("tr");
-    row.dataset.status = scan.status;
-    for (const value of [new Date(scan.received_at * 1000).toLocaleTimeString(), scan.frame,
-                         scan.status === "valid" ? "Decoded" : "Rejected",
-                         scan.letter ?? empty, `${scan.runs} / 29`]) {
-      const cell = document.createElement("td");
-      cell.textContent = value;
-      row.append(cell);
-    }
-    return row;
-  }));
+  body.replaceChildren(
+    ...scans.map((scan) => {
+      const row = document.createElement("tr");
+      row.dataset.status = scan.status;
+      for (const value of [
+        new Date(scan.received_at * 1000).toLocaleTimeString(),
+        scan.frame,
+        scan.status === "valid" ? "Decoded" : "Rejected",
+        scan.letter ?? empty,
+        `${scan.runs} / 29`,
+      ]) {
+        const cell = document.createElement("td");
+        cell.textContent = value;
+        row.append(cell);
+      }
+      return row;
+    }),
+  );
 }
 
 const controls = document.querySelectorAll("[data-command]");
@@ -115,7 +227,8 @@ let sendingCommand = false;
 let sendingBarcode = false;
 
 function updateControls() {
-  for (const button of controls) button.disabled = !liveControls || sendingCommand;
+  for (const button of controls)
+    button.disabled = !liveControls || sendingCommand;
   barcodeFields.disabled = !liveControls || sendingBarcode;
 }
 
@@ -143,7 +256,10 @@ async function publishBarcodeActions(event) {
     if (!response.ok) throw new Error("Barcode publish failed");
     put("barcode-action-status", "Barcode actions sent to the broker.");
   } catch {
-    put("barcode-action-status", "Publish unconfirmed. Check the broker and press Enter to retry.");
+    put(
+      "barcode-action-status",
+      "Publish unconfirmed. Check the broker and press Enter to retry.",
+    );
   } finally {
     sendingBarcode = false;
     updateControls();
@@ -167,13 +283,20 @@ async function sendCommand(command) {
 
 async function waitForStopped(sentAt) {
   for (let attempt = 0; attempt < 5; attempt++) {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    const response = await fetch("api/telemetry", { signal: AbortSignal.timeout(1000) });
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    const response = await fetch("api/telemetry", {
+      signal: AbortSignal.timeout(1000),
+    });
     if (!response.ok) throw new Error("Telemetry request failed");
     const packet = await response.json();
     const data = packet.telemetry;
-    if (!packet.stale && packet.telemetry_at >= sentAt &&
-        data && [0, 6, 7].includes(data.state) && (!data.speed_valid || data.speed_cms === 0)) {
+    if (
+      !packet.stale &&
+      packet.telemetry_at >= sentAt &&
+      data &&
+      [0, 6, 7].includes(data.state) &&
+      (!data.speed_valid || data.speed_cms === 0)
+    ) {
       return true;
     }
   }
@@ -195,14 +318,23 @@ for (const button of controls) {
           put("command-status", "Waiting for the robot to report stopped…");
           stopped = await waitForStopped(sentAt);
         }
-        put("command-status", stopped ? "Robot reports stopped." : "Stop unconfirmed. Check the robot.");
+        put(
+          "command-status",
+          stopped
+            ? "Robot reports stopped."
+            : "Stop unconfirmed. Check the robot.",
+        );
       } else {
         await sendCommand(command);
         put("command-status", button.textContent + " sent to broker");
       }
     } catch {
-      put("command-status", command === "pause" ? "Stop unconfirmed. Check the robot." :
-          "Could not confirm publish. Check the broker connection.");
+      put(
+        "command-status",
+        command === "pause"
+          ? "Stop unconfirmed. Check the robot."
+          : "Could not confirm publish. Check the broker connection.",
+      );
     } finally {
       sendingCommand = false;
       updateControls();
@@ -212,7 +344,9 @@ for (const button of controls) {
 
 async function refresh() {
   try {
-    const response = await fetch("api/telemetry", { signal: AbortSignal.timeout(4000) });
+    const response = await fetch("api/telemetry", {
+      signal: AbortSignal.timeout(4000),
+    });
     if (!response.ok) throw new Error("Telemetry request failed");
     const packet = await response.json();
     render(packet);
