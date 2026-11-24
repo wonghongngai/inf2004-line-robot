@@ -84,10 +84,10 @@ static BOOL window_is(const scan_point_t * p_coarse, UW start_deg, UW end_deg)
 /* Check that a request survives pack + unpack unchanged */
 static BOOL request_round_trip(UB kind, UB move, UB seq, BOOL b_line, UH value)
 {
-    S5_REQUEST in  = {kind, move, seq, b_line, value, FALSE, FALSE, FALSE};
-    S5_REQUEST out = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE, FALSE};
+    S5_REQUEST input = {kind, move, seq, b_line, value, FALSE, FALSE, FALSE};
+    S5_REQUEST out   = {0U, 0U, 0U, FALSE, 0U, FALSE, FALSE, FALSE};
 
-    if (!s5_request_unpack(s5_request_pack(&in), &out))
+    if (!s5_request_unpack(s5_request_pack(&input), &out))
     {
         return FALSE;
     }
@@ -837,43 +837,46 @@ EXPORT void subsystem5_test(void)
 
     /* S5-U03: echo time -> status and distance (NFR5-5).  d = t x 343 / 2000 */
     {
-        UW mm = 7U;
+        UW dist_mm = 7U;
 
         TEST_CHECK(
             "S5-U03",
-            ((ULTRASONIC_NO_ECHO == ultrasonic_classify(0U, FALSE, &mm)) &&
-             (0U == mm)),
+            ((ULTRASONIC_NO_ECHO == ultrasonic_classify(0U, FALSE, &dist_mm)) &&
+             (0U == dist_mm)),
             "(a) 0 us (ECHO never high): NO_ECHO, 0 mm");
-        mm = 7U;
-        TEST_CHECK(
-            "S5-U03",
-            ((ULTRASONIC_NO_ECHO == ultrasonic_classify(1750U, TRUE, &mm)) &&
-             (0U == mm)),
-            "(b) ECHO still high at the window end: NO_ECHO");
-        TEST_CHECK(
-            "S5-U03",
-            ((ULTRASONIC_TOO_NEAR == ultrasonic_classify(116U, FALSE, &mm)) &&
-             (0U == mm)),
-            "(c) 116 us = 19 mm < 2 cm: TOO_NEAR, 0 mm");
+        dist_mm = 7U;
         TEST_CHECK("S5-U03",
-                   ((ULTRASONIC_OK == ultrasonic_classify(117U, FALSE, &mm)) &&
-                    (20U == mm)),
-                   "(d) 117 us = 20 mm: OK (lower limit is valid)");
+                   ((ULTRASONIC_NO_ECHO ==
+                     ultrasonic_classify(1750U, TRUE, &dist_mm)) &&
+                    (0U == dist_mm)),
+                   "(b) ECHO still high at the window end: NO_ECHO");
         TEST_CHECK("S5-U03",
-                   ((ULTRASONIC_OK == ultrasonic_classify(1750U, FALSE, &mm)) &&
-                    (300U == mm)),
-                   "(e) 1750 us = 300 mm: OK");
+                   ((ULTRASONIC_TOO_NEAR ==
+                     ultrasonic_classify(116U, FALSE, &dist_mm)) &&
+                    (0U == dist_mm)),
+                   "(c) 116 us = 19 mm < 2 cm: TOO_NEAR, 0 mm");
         TEST_CHECK(
             "S5-U03",
-            ((ULTRASONIC_OK == ultrasonic_classify(23324U, FALSE, &mm)) &&
-             (4000U == mm)),
+            ((ULTRASONIC_OK == ultrasonic_classify(117U, FALSE, &dist_mm)) &&
+             (20U == dist_mm)),
+            "(d) 117 us = 20 mm: OK (lower limit is valid)");
+        TEST_CHECK(
+            "S5-U03",
+            ((ULTRASONIC_OK == ultrasonic_classify(1750U, FALSE, &dist_mm)) &&
+             (300U == dist_mm)),
+            "(e) 1750 us = 300 mm: OK");
+        TEST_CHECK(
+            "S5-U03",
+            ((ULTRASONIC_OK == ultrasonic_classify(23324U, FALSE, &dist_mm)) &&
+             (4000U == dist_mm)),
             "(f) 23324 us = 4000 mm: OK (upper limit is valid)");
-        TEST_CHECK(
-            "S5-U03",
-            ((ULTRASONIC_TOO_FAR == ultrasonic_classify(23330U, FALSE, &mm)) &&
-             (0U == mm) &&
-             (ULTRASONIC_TOO_FAR == ultrasonic_classify(65535U, FALSE, &mm))),
-            "(g) 4001 mm and the 65535 us counter limit: TOO_FAR, 0 mm");
+        TEST_CHECK("S5-U03",
+                   ((ULTRASONIC_TOO_FAR ==
+                     ultrasonic_classify(23330U, FALSE, &dist_mm)) &&
+                    (0U == dist_mm) &&
+                    (ULTRASONIC_TOO_FAR ==
+                     ultrasonic_classify(65535U, FALSE, &dist_mm))),
+                   "(g) 4001 mm and the 65535 us counter limit: TOO_FAR, 0 mm");
         TEST_CHECK(
             "S5-U03",
             (ULTRASONIC_NO_ECHO == ultrasonic_classify(1750U, FALSE, NULL)),

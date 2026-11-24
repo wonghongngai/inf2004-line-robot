@@ -69,9 +69,9 @@ static UW servo_clamp_ddeg(UW angle_ddeg)
 }
 
 /* Distance between two angles (unsigned, either order) */
-static UW servo_abs_diff(UW a, UW b)
+static UW servo_abs_diff(UW lhs, UW rhs)
 {
-    return (a > b) ? (a - b) : (b - a);
+    return (lhs > rhs) ? (lhs - rhs) : (rhs - lhs);
 }
 
 /*

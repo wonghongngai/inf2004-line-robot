@@ -239,18 +239,18 @@ static int field(S1_FIELD f)
 #if S5_REAL_EXECUTOR
 /* INT-13 (int/robot_avoidance): the REAL S5 executor (s5_executor.c) runs
  * behind the VC. Only its kernel boundary is faked: the event flag
- * flg_s5_evt, and the request word S5's task would publish. The word is
+ * g_flg_s5_evt, and the request word S5's task would publish. The word is
  * packed and unpacked by the real s5_request_pack/unpack (obstacle_logic.c),
  * exactly as task_obstacle.c's subsystem5_get_request() does. */
 #include "../../app_program/subsystem5/obstacle_logic.h"
-ID flg_s5_evt = 42;
-static UINT s5_flags;   /* bits set in flg_s5_evt */
+ID g_flg_s5_evt = 42;
+static UINT s5_flags;   /* bits set in g_flg_s5_evt */
 static UW s5_word;      /* S5's published request word */
 static UB s5_seq;
 ER tk_set_flg(ID flgid, UINT setptn)
-{ assert(flgid == flg_s5_evt); s5_flags |= setptn; return E_OK; }
+{ assert(flgid == g_flg_s5_evt); s5_flags |= setptn; return E_OK; }
 ER tk_clr_flg(ID flgid, UINT clrptn)
-{ assert(flgid == flg_s5_evt); s5_flags &= clrptn; return E_OK; }
+{ assert(flgid == g_flg_s5_evt); s5_flags &= clrptn; return E_OK; }
 ER subsystem5_get_request(S5_REQUEST *p_req)
 {
     if (p_req == NULL) return E_PAR;

@@ -3,7 +3,7 @@
  * of the real S5 executor (app_program/subsystem5/s5_executor.c).
  *
  * Force-included after robot_host_stubs.h.  The executor talks to S5 only
- * through flg_s5_evt (tk_set_flg / tk_clr_flg) and subsystem5_get_request();
+ * through g_flg_s5_evt (tk_set_flg / tk_clr_flg) and subsystem5_get_request();
  * robot_host_test.c (built with S5_REAL_EXECUTOR=1) fakes exactly those
  * three, so the controller and the executor run as production C.
  */

@@ -61,14 +61,14 @@ check('g_flg_motion_stop waited on (consumer: motion_task)', waits, {'subsystem2
 if not all('TWF_CLR' in args for _, args in waits):
     failures.append('g_flg_motion_stop: the consumer must clear on read (TWF_CLR)')
 
-# ---- S5_EVT_* bits, flg_s5_evt (S5) ---------------------------------------
-check('flg_s5_evt set (producer: VC executor)',
-      calls('tk_set_flg', 'flg_s5_evt'), {'subsystem5/s5_executor.c'})
-clears = calls('tk_clr_flg', 'flg_s5_evt')
-check('flg_s5_evt cleared (VC: FOLLOWING; S5: its reply bits)', clears,
+# ---- S5_EVT_* bits, g_flg_s5_evt (S5) ---------------------------------------
+check('g_flg_s5_evt set (producer: VC executor)',
+      calls('tk_set_flg', 'g_flg_s5_evt'), {'subsystem5/s5_executor.c'})
+clears = calls('tk_clr_flg', 'g_flg_s5_evt')
+check('g_flg_s5_evt cleared (VC: FOLLOWING; S5: its reply bits)', clears,
       {'subsystem5/s5_executor.c', 'subsystem5/task_obstacle.c'})
-waits = calls('tk_wai_flg', 'flg_s5_evt')
-check('flg_s5_evt waited on (consumer: S5 obstacle task)', waits, {'subsystem5/task_obstacle.c'})
+waits = calls('tk_wai_flg', 'g_flg_s5_evt')
+check('g_flg_s5_evt waited on (consumer: S5 obstacle task)', waits, {'subsystem5/task_obstacle.c'})
 # tk_clr_flg keeps the bits that are set in its pattern.
 for name, args in clears:
     if name == 'subsystem5/s5_executor.c':

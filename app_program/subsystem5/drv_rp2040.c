@@ -30,11 +30,11 @@ EXPORT UW rp2040_time_us(void)
 }
 
 /* Busy-wait 'us' microseconds. Safe across TIMERAWL wrap-around. */
-EXPORT void rp2040_delay_us(UW us)
+EXPORT void rp2040_delay_us(UW delay_us)
 {
     UW start = in_w(TIMER_TIMERAWL);
 
-    while ((in_w(TIMER_TIMERAWL) - start) < us)
+    while ((in_w(TIMER_TIMERAWL) - start) < delay_us)
     {
         /* spin: do nothing until enough time has passed */
     }
