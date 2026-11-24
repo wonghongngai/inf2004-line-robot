@@ -200,8 +200,12 @@ static bool receive_latest_command(MOTION_CONTROLLER * controller,
         (void)motion_control_command(controller, &command, now_ms, left_ticks,
                                      right_ticks);
         for (unsigned i = 0; i < S2_COMMAND_QUEUE_DEPTH; ++i)
+        {
             if (tk_rcv_mbf(mbf_motion_cmd, &latest_normal, TMO_POL) <= 0)
+            {
                 break;
+            }
+        }
         return true;
     }
 
@@ -233,8 +237,12 @@ static bool receive_latest_command(MOTION_CONTROLLER * controller,
             /* Discard the rest of this batch so STOP cannot be followed by
                a stale movement request on the next poll. */
             for (unsigned j = 0; j < S2_COMMAND_QUEUE_DEPTH; ++j)
+            {
                 if (tk_rcv_mbf(mbf_motion_cmd, &latest_normal, TMO_POL) <= 0)
+                {
                     break;
+                }
+            }
             return true;
         }
 
@@ -420,7 +428,9 @@ EXPORT void motion_task(INT stacd, void * exinf)
          */
         if (receive_latest_command(&controller, now_ms, left_ticks,
                                    right_ticks))
+        {
             manual_stop = true;
+        }
 
 #if APP_ROBOT_INTEGRATED || S2_MOTION_DEMO
         if (manual_stop)

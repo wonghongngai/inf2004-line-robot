@@ -53,7 +53,7 @@
  * Placeholders until the S4-U12 bench test (lift 5x, humps 5x).
  */
 #define S4_LIFT_DELTA_MG        200
-#define S4_LIFT_CLIP_MG 400 /* 2 x threshold: half the window must agree */
+#define S4_LIFT_CLIP_MG         400 /* 2 x threshold: half the window must agree */
 #define S4_LIFT_FILTER_SAMPLES  10U /* 200 ms moving average */
 #define S4_LIFT_CONFIRM_SAMPLES 3U  /* 60 ms */
 /*

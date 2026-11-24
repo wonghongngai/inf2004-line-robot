@@ -389,9 +389,11 @@ static void publish_barcode_result(const line_service_barcode_frame_t * frame)
             : 0u;
     ER er = subsystem1_publish_barcode(&result);
     if (er < E_OK && er != E_NOSPT && er != E_OBJ)
+    {
         LOG_ERR(TAG_S3_BARCODE,
                 "MQTT enqueue=%d frame=%u (queue full or invalid)", (int)er,
                 result.id);
+    }
 }
 
 static void line_service_task(INT start_code, void * p_extra)
@@ -421,7 +423,9 @@ static void line_service_task(INT start_code, void * p_extra)
         uint32_t elapsed_ms = now.lo - previous_ms;
         /* A queued wakeup is not another elapsed sampling period. */
         if (elapsed_ms == 0u)
+        {
             continue;
+        }
         previous_ms    = now.lo;
         ER lock_result = tk_loc_mtx(g_h_line_mutex, TMO_FEVR);
         if (E_OK == lock_result)
@@ -446,9 +450,13 @@ static void line_service_task(INT start_code, void * p_extra)
             if (g_debug_raw_valid && raw_barcode != g_debug_raw)
             {
                 if (raw_barcode)
+                {
                     ++g_debug_raw_rises;
+                }
                 else
+                {
                     ++g_debug_raw_falls;
+                }
             }
             g_debug_raw       = raw_barcode;
             g_debug_raw_valid = true;
@@ -477,13 +485,17 @@ static void line_service_task(INT start_code, void * p_extra)
                             ? (msg.data[2] & LINE_BARCODE_LETTER_MASK)
                             : 0xffu;
                     for (unsigned i = 0; i < g_debug_frame.count; ++i)
+                    {
                         g_debug_frame.widths[i] =
                             line_barcode_run_width(&context, (uint8_t)i);
+                    }
                     publish_barcode_result(&g_debug_frame);
                 }
                 if ((msg.data[1] & 7u) == LINE_BARCODE_FAULT &&
                     (g_control_flags & SERVICE_FLAG_PROCESS_FAULT) == 0u)
+                {
                     g_fault_interval_ms = elapsed_ms;
+                }
             }
             if (E_OK != result)
             {
@@ -517,14 +529,18 @@ static void line_service_task(INT start_code, void * p_extra)
                     {
                         if (g_debug_black != 0u &&
                             now.lo - g_debug_edge_ms < 1000u)
+                        {
                             ++g_debug_white;
+                        }
                         ++g_debug_black;
                     }
                     g_debug_level   = black;
                     g_debug_edge_ms = now.lo;
                 }
                 if (((msg.data[1] >> 3u) & 7u) == LINE_BARCODE_EVT_BARCODE)
+                {
                     g_debug_letter = msg.data[2] & LINE_BARCODE_LETTER_MASK;
+                }
             }
             publish_sample(msg);
             (void)tk_unl_mtx(g_h_line_mutex);

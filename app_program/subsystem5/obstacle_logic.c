@@ -490,7 +490,7 @@ EXPORT void obstacle_plan(const obstacle_profile_t * p_profile, UW retries,
      * sides seen to be clear; a side never seen past (UNSEEN) is used only
      * when neither side was seen clear, and the plan says so. */
     b_left_fits  = ((p_profile->clear_left_mm >= PASS_GAP_MM) &&
-                    (CLEARANCE_UNSEEN_MM != p_profile->clear_left_mm))
+                   (CLEARANCE_UNSEEN_MM != p_profile->clear_left_mm))
                        ? TRUE
                        : FALSE;
     b_right_fits = ((p_profile->clear_right_mm >= PASS_GAP_MM) &&
@@ -928,10 +928,10 @@ EXPORT UW s5_obstacle_pack(const S5_OBSTACLE_INFO * p_info)
     distance = (p_info->distance_cm > S5_OBS_DISTANCE_MAX_CM)
                    ? S5_OBS_DISTANCE_MAX_CM
                    : (UW)p_info->distance_cm;
-    angle = (p_info->angle_deg > S5_OBS_ANGLE_MAX_DEG) ? S5_OBS_ANGLE_MAX_DEG
-                                                       : (UW)p_info->angle_deg;
-    width = (p_info->width_cm > S5_OBS_WIDTH_MAX_CM) ? S5_OBS_WIDTH_MAX_CM
-                                                     : (UW)p_info->width_cm;
+    angle    = (p_info->angle_deg > S5_OBS_ANGLE_MAX_DEG) ? S5_OBS_ANGLE_MAX_DEG
+                                                          : (UW)p_info->angle_deg;
+    width    = (p_info->width_cm > S5_OBS_WIDTH_MAX_CM) ? S5_OBS_WIDTH_MAX_CM
+                                                        : (UW)p_info->width_cm;
 
     return ((distance & OBS_DIST_MASK) << OBS_DIST_SHIFT) |
            ((angle & OBS_ANGLE_MASK) << OBS_ANGLE_SHIFT) |

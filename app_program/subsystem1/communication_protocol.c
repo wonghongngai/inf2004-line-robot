@@ -2,17 +2,17 @@
 
 /* Change ranges above, and widths/offsets here together when revising the
  * protocol. The wire layout is explicit, independent of C struct bitfields. */
-#define STATE_BITS    3U
-#define FAULT_BITS    5U
-#define S5_FAULT_BITS 3U /* bits 8-10 (#46); the battery field was removed */
-#define SPEED_BITS    9U
-#define DISTANCE_BITS 16U
-#define LINE_BITS     3U
-#define BARCODE_BITS  3U
-#define HUMP_BITS     8U
-#define OBSTACLE_BITS 9U
-#define SCAN_BITS     8U
-#define WIDTH_BITS    9U
+#define STATE_BITS          3U
+#define FAULT_BITS          5U
+#define S5_FAULT_BITS       3U /* bits 8-10 (#46); the battery field was removed */
+#define SPEED_BITS          9U
+#define DISTANCE_BITS       16U
+#define LINE_BITS           3U
+#define BARCODE_BITS        3U
+#define HUMP_BITS           8U
+#define OBSTACLE_BITS       9U
+#define SCAN_BITS           8U
+#define WIDTH_BITS          9U
 #define BARCODE_LETTER_BITS 5U
 #define SPEED_VALID_BITS    1U
 #define BARCODE_COUNT_BITS  16U
@@ -52,9 +52,9 @@ _Static_assert(sizeof(S1_BARCODE_PACKET) == S1_BARCODE_BYTES,
 
 /* Fail compilation if a later range edit no longer fits its allocation,
  * or would leave unnecessary bits. Revisit layout and decoder in that case. */
-#define CHECK_BITS(name, low, high, bits)                       \
-    _Static_assert((high) - (low) < (1U << (bits)) &&           \
-                       (high) - (low) >= (1U << ((bits) - 1U)), \
+#define CHECK_BITS(name, low, high, bits)                     \
+    _Static_assert((high) - (low) < (1U << (bits)) &&         \
+                       (high) - (low) >= (1U << ((bits)-1U)), \
                    name)
 CHECK_BITS("state bits", S1_STATE_MIN, S1_STATE_MAX, STATE_BITS);
 CHECK_BITS("fault bits", S1_FAULTS_MIN, S1_FAULTS_MAX, FAULT_BITS);
@@ -123,7 +123,7 @@ int s1_telemetry_set(S1_TELEMETRY * packet, S1_FIELD field, int value)
         unsigned int    bit  = layout->offset + i;
         unsigned char   mask = (unsigned char)(1U << (bit % 8U));
         unsigned char * byte = &packet->bytes[bit / 8U];
-        *byte = (unsigned char)((*byte & (unsigned char)~mask) |
+        *byte                = (unsigned char)((*byte & (unsigned char)~mask) |
                                 (((encoded >> i) & 1U) ? mask : 0U));
     }
     return 1;
@@ -175,7 +175,9 @@ int s1_telemetry_valid(const S1_TELEMETRY * packet)
        Bit 86 is the map flag (#38); bits 8-10 are the S5 faults (#46). */
     if (packet == 0 || (packet->bytes[1] & 0x78U) != 0U ||
         (packet->bytes[10] & 0x80U) != 0U)
+    {
         return 0;
+    }
     for (i = 0; i < S1_FIELD_COUNT; ++i)
     {
         if (!s1_telemetry_get(packet, (S1_FIELD)i, &value))
@@ -331,7 +333,7 @@ int s1_barcode_unpack(const S1_BARCODE_PACKET * packet,
     letter = (unsigned int)((word >> BARCODE_LETTER_OFFSET) &
                             ((1U << BARCODE_LETTER_BITS) - 1U));
     runs   = (unsigned int)((word >> BARCODE_RUNS_OFFSET) &
-                            ((1U << BARCODE_RUNS_BITS) - 1U));
+                          ((1U << BARCODE_RUNS_BITS) - 1U));
     if ((word >> BARCODE_USED_BITS) != 0UL || letter > S1_BARCODE_LETTER_MAX ||
         runs > S1_BARCODE_RUNS_MAX)
     {

@@ -232,28 +232,40 @@ EXPORT ER lsm303dlhc_read(LSM303_SAMPLE * sample)
 
     er = read_acc_axis(LSM303_OUT_X_L_A, LSM303_OUT_X_H_A, &sample->ax_mg);
     if (er < E_OK)
+    {
         return er;
+    }
 
     er = read_acc_axis(LSM303_OUT_Y_L_A, LSM303_OUT_Y_H_A, &sample->ay_mg);
     if (er < E_OK)
+    {
         return er;
+    }
 
     er = read_acc_axis(LSM303_OUT_Z_L_A, LSM303_OUT_Z_H_A, &sample->az_mg);
     if (er < E_OK)
+    {
         return er;
+    }
 
     /* Magnetometer output order is X, Z, Y and is big-endian. */
     er = read_mag_axis(LSM303_OUT_X_H_M, LSM303_OUT_X_L_M, &sample->mx_raw);
     if (er < E_OK)
+    {
         return er;
+    }
 
     er = read_mag_axis(LSM303_OUT_Y_H_M, LSM303_OUT_Y_L_M, &sample->my_raw);
     if (er < E_OK)
+    {
         return er;
+    }
 
     er = read_mag_axis(LSM303_OUT_Z_H_M, LSM303_OUT_Z_L_M, &sample->mz_raw);
     if (er < E_OK)
+    {
         return er;
+    }
 
     return E_OK;
 }

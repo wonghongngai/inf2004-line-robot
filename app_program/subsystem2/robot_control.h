@@ -94,7 +94,7 @@
 #define S2_PIVOT_LINE_MIN_FRACTION      0.9f
 /* Left pivot only: 0.9 overshot the line, so it may stop on the line from 80 %. */
 #define S2_PIVOT_LINE_MIN_FRACTION_LEFT 0.8f
-#define S2_JUNCTION_SETTLE_MS 500u /* ignore the crossing just handled */
+#define S2_JUNCTION_SETTLE_MS           500u /* ignore the crossing just handled */
 
 /* Called only by the motor-owning task; no second writer to motor GPIO. */
 void robot_control_step(MOTION_CONTROLLER * controller, uint32_t now,

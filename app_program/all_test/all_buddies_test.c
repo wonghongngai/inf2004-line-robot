@@ -54,23 +54,23 @@ enum
 #define ALL_STRAIGHT_TRIM_RATE     S2_FOLLOW_STRAIGHT_TRIM_RATE
 #define ALL_STRAIGHT_DEADBAND_CM   S2_FOLLOW_STRAIGHT_DEADBAND_CM
 #define ALL_LINE_STEER_BOOST       S2_FOLLOW_BOOST_PWM_PERCENT /* outer wheel */
-#define ALL_LINE_INNER_PWM      S2_FOLLOW_INNER_PWM_PERCENT /* 0 = full pivot */
+#define ALL_LINE_INNER_PWM         S2_FOLLOW_INNER_PWM_PERCENT /* 0 = full pivot */
 /* A correction still needed after this long is a tight bend: stop the inner
  * wheel (pivot). 5/19 held for 2.5 s still ran wide on 2026-11-11. */
-#define ALL_LINE_HARD_MS        150u
-#define ALL_LINE_HARD_INNER_PWM S2_FOLLOW_HARD_INNER_PWM_PERCENT
+#define ALL_LINE_HARD_MS           150u
+#define ALL_LINE_HARD_INNER_PWM    S2_FOLLOW_HARD_INNER_PWM_PERCENT
 /* Inner (left) wheel during a LEFT correction while a barcode is being
  * scanned: no pivot. GP28 sits on the left, so stopping the left wheel
  * nearly stopped the scanner and stretched one element mid-character
  * (19 Nov: a 165 ms narrow space read 391 ms during six LEFT corrections,
  * frame rejected). 6.25 stalled from rest; scaled by the scan factor. */
-#define ALL_LINE_SCAN_INNER_PWM S2_FOLLOW_SCAN_LEFT_INNER_PWM_PERCENT
-#define ALL_LINE_PWM_RATE       S2_FOLLOW_RAMP_PWM_PER_S /* speed-ups only */
-#define ALL_LINE_CONFIRM_MS     5u /* only when reversing direction */
+#define ALL_LINE_SCAN_INNER_PWM    S2_FOLLOW_SCAN_LEFT_INNER_PWM_PERCENT
+#define ALL_LINE_PWM_RATE          S2_FOLLOW_RAMP_PWM_PER_S /* speed-ups only */
+#define ALL_LINE_CONFIRM_MS        5u /* only when reversing direction */
 /* Scanner edges older than this (GP28 white since) are not a barcode in
  * progress; one stray 193 ms black 10 s earlier faulted a junction. */
-#define ALL_BARCODE_STALE_MS    1000u
-#define ALL_WHITE_CLEAR_MS 30u /* hold a correction this long after white */
+#define ALL_BARCODE_STALE_MS       1000u
+#define ALL_WHITE_CLEAR_MS         30u /* hold a correction this long after white */
 
 typedef struct
 {
@@ -172,9 +172,13 @@ static const char * const command_names[4] = {"LEFT", "RIGHT", "STRAIGHT",
 static float approach_pwm(float current, float target, float step)
 {
     if (target > current + step)
+    {
         return current + step;
+    }
     if (target < current - step)
+    {
         return current - step;
+    }
     return target;
 }
 
@@ -183,12 +187,16 @@ static void apply_follow_pwm(ALL_TEST * t, float left, float right,
 {
     /* Preserve the left/right straight-travel trim in the slower trial. */
     if (right == ALL_BASE_PWM)
+    {
         right = ALL_RIGHT_BASE_PWM;
+    }
     uint32_t elapsed =
         t->pwm_clock_started ? now - t->pwm_updated : LINE_BARCODE_PERIOD_MS;
     /* A delayed cycle/resume must not turn into a sudden full-power step. */
     if (elapsed > 2u * LINE_BARCODE_PERIOD_MS)
+    {
         elapsed = 2u * LINE_BARCODE_PERIOD_MS;
+    }
     t->pwm_updated       = now;
     t->pwm_clock_started = true;
     if (t->pwm_ramp_per_second > 0.0f)
@@ -226,7 +234,9 @@ static void apply_line_pwm(ALL_TEST * t, float left, float right, uint32_t now)
     uint32_t elapsed =
         t->pwm_clock_started ? now - t->pwm_updated : LINE_BARCODE_PERIOD_MS;
     if (elapsed > 20u)
+    {
         elapsed = 20u;
+    }
     float step = ALL_LINE_PWM_RATE * (float)elapsed / 1000.0f;
     t->left    = left < t->left ? left : approach_pwm(t->left, left, step);
     t->right   = right < t->right ? right : approach_pwm(t->right, right, step);
@@ -268,7 +278,9 @@ static void wait_for_line(ALL_TEST * t)
     t->left = t->right = 0.0f;
     s5_exec_set_following(&t->s5, FALSE);
     if (t->phase == LINE_WAIT)
+    {
         return;
+    }
     /* Keep sampling raw inputs while navigation is paused. This prevents
      * ordinary line absence from becoming S3's permanent search timeout.
      * Fault snapshots/events must be checked before calling this helper. */
@@ -292,7 +304,9 @@ static bool corner_step(ALL_TEST * t, uint32_t now)
 {
     if (!ALL_TEST_CORNER_SEARCH ||
         ALL_TEST_LINE_LAYOUT != LINE_BARCODE_LAYOUT_TRACK)
+    {
         return false;
+    }
     unsigned sensors = t->line.data[0] & 7u;
     unsigned state   = t->line.data[1] & 7u;
     if (state == LINE_BARCODE_PAUSED || state == LINE_BARCODE_JUNCTION ||
@@ -321,7 +335,9 @@ static bool corner_step(ALL_TEST * t, uint32_t now)
     if (!t->corner_active)
     {
         if (direction == 0)
+        {
             return false;
+        }
         t->corner_active    = true;
         t->centre_pending   = false;
         t->corner_direction = direction;
@@ -390,7 +406,9 @@ static unsigned barcode_action(unsigned letter)
 {
     uint8_t command;
     if (line_service_lookup((uint8_t)letter, &command) != E_OK)
+    {
         return S1_BARCODE_NONE;
+    }
     return command == LINE_BARCODE_CMD_LEFT       ? S1_BARCODE_LEFT
            : command == LINE_BARCODE_CMD_RIGHT    ? S1_BARCODE_RIGHT
            : command == LINE_BARCODE_CMD_STRAIGHT ? S1_BARCODE_STRAIGHT
@@ -417,7 +435,9 @@ static bool start_junction_turn(ALL_TEST * t, uint32_t now)
 {
     uint8_t command;
     if (!ALL_TEST_BARCODE_TURNS || (t->pending_letter & 0x80u) == 0u)
+    {
         return false;
+    }
     unsigned letter   = t->pending_letter & LINE_BARCODE_LETTER_MASK;
     t->pending_letter = 0u;
     if (line_service_lookup((uint8_t)letter, &command) != E_OK)
@@ -443,10 +463,14 @@ static bool junction_unmapped_letter(ALL_TEST * t)
     uint8_t  command;
     unsigned level = 0u;
     if ((t->pending_letter & 0x80u) == 0u)
+    {
         return false;
+    }
     unsigned letter = t->pending_letter & LINE_BARCODE_LETTER_MASK;
     if (line_service_lookup((uint8_t)letter, &command) == E_OK)
+    {
         return false;
+    }
     t->pending_letter = 0u;
     line_service_barcode_raw(&level, &t->barcode_consumed_rises,
                              &t->barcode_consumed_falls);
@@ -461,12 +485,16 @@ static bool junction_unmapped_letter(ALL_TEST * t)
 static bool junction_barcode_seen(const ALL_TEST * t)
 {
     if ((t->pending_letter & 0x80u) != 0u)
+    {
         return true;
+    }
     unsigned black    = 1u;
     uint32_t white_ms = 0u;
     line_service_barcode_level(&black, &white_ms);
     if (black == 0u && white_ms >= ALL_BARCODE_STALE_MS)
+    {
         return false;
+    }
     unsigned level = 1u, rises = t->barcode_consumed_rises;
     unsigned falls = t->barcode_consumed_falls;
     line_service_barcode_raw(&level, &rises, &falls);
@@ -537,8 +565,8 @@ static void turn_step(ALL_TEST * t, uint32_t now)
     bool     right_turn = t->turn_command == LINE_BARCODE_CMD_RIGHT;
     float    target     = 90.0f * (right_turn ? S2_LEFT_TURN_TICKS_PER_DEGREE
                                               : S2_RIGHT_TURN_TICKS_PER_DEGREE);
-    uint32_t moved = right_turn ? tick_delta(t->left_ticks, t->turn_left0)
-                                : tick_delta(t->right_ticks, t->turn_right0);
+    uint32_t moved      = right_turn ? tick_delta(t->left_ticks, t->turn_left0)
+                                     : tick_delta(t->right_ticks, t->turn_right0);
     if ((float)moved >= target)
     {
         finish_turn(t, now);
@@ -571,25 +599,37 @@ static void white_straight_step(ALL_TEST * t, uint32_t now)
         t->straight_trim    = 0.0f;
         t->straight_updated = now;
     }
-    float left_cm  = (float)tick_delta(t->left_ticks, t->straight_left0) /
-                     S5_LEFT_TICKS_PER_CM;
+    float left_cm = (float)tick_delta(t->left_ticks, t->straight_left0) /
+                    S5_LEFT_TICKS_PER_CM;
     float right_cm = (float)tick_delta(t->right_ticks, t->straight_right0) /
                      S5_RIGHT_TICKS_PER_CM;
-    float error    = right_cm - left_cm;
+    float error = right_cm - left_cm;
     if (error > ALL_STRAIGHT_DEADBAND_CM)
+    {
         error -= ALL_STRAIGHT_DEADBAND_CM;
+    }
     else if (error < -ALL_STRAIGHT_DEADBAND_CM)
+    {
         error += ALL_STRAIGHT_DEADBAND_CM;
+    }
     else
+    {
         error = 0.0f;
+    }
     float target = ALL_STRAIGHT_KP * error;
     if (target > ALL_STRAIGHT_MAX_TRIM)
+    {
         target = ALL_STRAIGHT_MAX_TRIM;
+    }
     if (target < -ALL_STRAIGHT_MAX_TRIM)
+    {
         target = -ALL_STRAIGHT_MAX_TRIM;
+    }
     uint32_t elapsed = now - t->straight_updated;
     if (elapsed > 20u)
+    {
         elapsed = 20u;
+    }
     t->straight_updated = now;
     t->straight_trim =
         approach_pwm(t->straight_trim, target,
@@ -597,9 +637,13 @@ static void white_straight_step(ALL_TEST * t, uint32_t now)
     float left_pwm = ALL_CRUISE_LEFT_PWM, right_pwm = ALL_CRUISE_RIGHT_PWM;
     /* Boost only: correction never removes the power needed to cruise. */
     if (t->straight_trim > 0.0f)
+    {
         left_pwm += t->straight_trim;
+    }
     else
+    {
         right_pwm -= t->straight_trim;
+    }
     apply_line_pwm(t, left_pwm, right_pwm, now);
 }
 
@@ -615,7 +659,9 @@ static void white_follow_step(ALL_TEST * t, uint32_t now)
      * Re-arm junction detection only after the settling period and exit. */
     if (t->leaving_junction && sensors != 3u &&
         (uint32_t)(now - t->turn_done) >= ALL_TEST_TURN_SETTLE_MS)
+    {
         t->leaving_junction = false;
+    }
 
     t->corner_active = t->centre_pending = false;
     t->last_side                         = 0;
@@ -634,7 +680,9 @@ static void white_follow_step(ALL_TEST * t, uint32_t now)
                 ALL_LINE_CONFIRM_MS)
         {
             if (t->steering_action != sensors)
+            {
                 t->steering_action_since = now;
+            }
             t->steering_action = sensors;
         }
         t->white_clear_pending = false;
@@ -654,18 +702,24 @@ static void white_follow_step(ALL_TEST * t, uint32_t now)
             /* Correction over: put the slowed inner wheel straight back to
              * cruise, or its ramp keeps turning the robot past the line. */
             if (t->left < ALL_CRUISE_LEFT_PWM)
+            {
                 t->left = ALL_CRUISE_LEFT_PWM;
+            }
             if (t->right < ALL_CRUISE_RIGHT_PWM)
+            {
                 t->right = ALL_CRUISE_RIGHT_PWM;
+            }
         }
     }
     if (sensors == 0u)
+    {
         t->steering_candidate = 0u;
+    }
     unsigned action = t->steering_action;
     float    inner_pwm =
         (uint32_t)(now - t->steering_action_since) >= ALL_LINE_HARD_MS
-            ? ALL_LINE_HARD_INNER_PWM
-            : ALL_LINE_INNER_PWM;
+               ? ALL_LINE_HARD_INNER_PWM
+               : ALL_LINE_INNER_PWM;
     if (!t->white_reported || sensors != t->white_report_pattern ||
         action != t->white_report_action)
     {
@@ -797,15 +851,25 @@ static UB at_run_move(void * p, const S5_REQUEST * req)
         float err = S5_HEADING_KP * (right_cm - left_cm); /* > 0: right ahead */
         float left_pwm = ALL_BASE_PWM, right_pwm = ALL_RIGHT_BASE_PWM;
         if ((left_cm + right_cm) * 0.5f >= (float)req->value)
+        {
             return S5_EXEC_DONE;
+        }
         if (err > 0.0f)
+        {
             right_pwm -= err;
+        }
         else
+        {
             left_pwm += err;
+        }
         if (left_pwm < 0.0f)
+        {
             left_pwm = 0.0f;
+        }
         if (right_pwm < 0.0f)
+        {
             right_pwm = 0.0f;
+        }
         if (req->b_reverse)
         { /* S5 back-off (23 Nov): backwards */
             left_pwm  = -left_pwm;
@@ -829,11 +893,17 @@ static UB at_run_move(void * p, const S5_REQUEST * req)
                                   S2_AVOID_RIGHT_TURN_TICKS_PER_DEGREE);
         float pwm = S2_AVOID_SPIN_PWM_PERCENT;
         if (left_done && right_done)
+        {
             return S5_EXEC_DONE;
+        }
         if (left_done)
+        {
             t->left = 0.0f;
+        }
         if (right_done)
+        {
             t->right = 0.0f;
+        }
         apply_follow_pwm(t, left_done ? 0.0f : (left_spin ? -pwm : pwm),
                          right_done ? 0.0f : (left_spin ? pwm : -pwm), c->now);
     }
@@ -842,7 +912,9 @@ static UB at_run_move(void * p, const S5_REQUEST * req)
         /* Right pivot moves the left wheel (as turn_step). */
         if ((float)tick_delta(t->left_ticks, t->s5_left0) >=
             s5_pivot_ticks(req->value, S2_AVOID_LEFT_TURN_TICKS_PER_DEGREE))
+        {
             return S5_EXEC_DONE;
+        }
         t->right = 0.0f;
         apply_follow_pwm(t, S5_PIVOT_PWM, 0.0f, c->now);
     }
@@ -851,7 +923,9 @@ static UB at_run_move(void * p, const S5_REQUEST * req)
         /* Left pivot moves the right wheel. */
         if ((float)tick_delta(t->right_ticks, t->s5_right0) >=
             s5_pivot_ticks(req->value, S2_AVOID_RIGHT_TURN_TICKS_PER_DEGREE))
+        {
             return S5_EXEC_DONE;
+        }
         t->left = 0.0f;
         apply_follow_pwm(t, 0.0f, S5_PIVOT_PWM, c->now);
     }
@@ -961,22 +1035,36 @@ static void report_motor_outputs(void)
 static const char * imu_status_reason(const ALL_TEST * t, uint32_t now)
 {
     if (t->imu_er != E_OK)
+    {
         return "IMU snapshot API failed";
+    }
     if (!t->imu.sensor_ok)
+    {
         return "IMU sensor reports not OK";
+    }
     if (!t->imu.calibrated)
+    {
         return "IMU calibration not ready";
+    }
     if (t->imu_count == 0u)
+    {
         return "IMU has no samples";
+    }
     /* #53: lifting the robot stops it (replaces collision detection). */
     if (t->imu.motion_state == IMU_MOTION_LIFTED ||
         t->imu.event == IMU_EVENT_LIFT)
+    {
         return "robot lifted (IMU)";
+    }
     if (t->imu.motion_state == IMU_MOTION_FAULT ||
         t->imu.event == IMU_EVENT_FAULT)
+    {
         return "IMU processing fault";
+    }
     if ((uint32_t)(now - t->imu_updated) > ALL_IMU_STALE_MS)
+    {
         return "IMU samples stale (over 100ms)";
+    }
     return NULL;
 }
 
@@ -989,7 +1077,9 @@ static void report_telemetry(ALL_TEST * t, uint32_t now)
 {
     uint32_t elapsed_ms = now - t->last_telemetry;
     if (!t->force_status && elapsed_ms < 1000u)
+    {
         return;
+    }
     S1_TELEMETRY packet;
     unsigned     state   = t->phase == STOPPED     ? t->terminal_state
                            : t->phase == LINE_WAIT ? S1_STATE_RECOVERING
@@ -1025,7 +1115,9 @@ static void report_telemetry(ALL_TEST * t, uint32_t now)
         white_gaps > S1_BARCODE_COUNT_MAX ? S1_BARCODE_COUNT_MAX : white_gaps);
     unsigned height = t->imu.ramp_height_mm;
     if (height > S1_HUMP_MAX)
+    {
         height = S1_HUMP_MAX;
+    }
     (void)s1_telemetry_set(&packet, S1_FIELD_HIGHEST_HUMP_MM, height);
     (void)s1_telemetry_set(&packet, S1_FIELD_DISTANCE_CM, t->distance_mm / 10u);
     /* #41: low 16 bits of the raw counts; the PC takes int16 differences. */
@@ -1050,13 +1142,19 @@ static void report_telemetry(ALL_TEST * t, uint32_t now)
     if (er != t->telemetry_error)
     {
         if (er == E_TMOUT)
+        {
             tm_printf((UB *)"[ALL TEST] telemetry queue full; waiting for MQTT "
                             "to drain it\n");
+        }
         else if (er < E_OK)
+        {
             tm_printf((UB *)"[ALL TEST] telemetry queue=%d\n", er);
+        }
         else
+        {
             tm_printf(
                 (UB *)"[ALL TEST] telemetry queue accepting packets again\n");
+        }
         t->telemetry_error = er;
     }
     t->last_telemetry          = now;
@@ -1072,7 +1170,9 @@ static void commands(ALL_TEST * t, uint32_t now)
         S1_COMMAND cmd;
         INT        len = subsystem1_receive_command(&cmd, TMO_POL);
         if (len == E_TMOUT)
+        {
             break;
+        }
         if (len != S1_COMMAND_BYTES || !s1_command_valid(&cmd))
         {
             stop_test(t, "MQTT command queue failed", S1_STATE_FAULT);
@@ -1161,9 +1261,13 @@ static void commands(ALL_TEST * t, uint32_t now)
         S1_MAPPING mapping;
         INT        len = subsystem1_receive_mapping(&mapping, TMO_POL);
         if (len == E_TMOUT)
+        {
             break;
+        }
         if (len < E_OK)
+        {
             break;
+        }
         unsigned char letters[S1_MAP_SLOTS];
         if (len != S1_MAPPING_BYTES || !s1_mapping_get(&mapping, letters))
         {
@@ -1206,12 +1310,16 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
     {
         ER er = subsystem4_add_distance_mm(travelled_mm);
         if (er < E_OK)
+        {
             stop_test(t, "IMU distance input failed", S1_STATE_FAULT);
+        }
         /* Telemetry's centimetre field saturates instead of wrapping. */
         t->telemetry_travel_mm += travelled_mm;
         t->distance_mm += travelled_mm;
         if (t->distance_mm > S1_DISTANCE_MAX * 10u)
+        {
             t->distance_mm = S1_DISTANCE_MAX * 10u;
+        }
     }
     t->imu_er = subsystem4_get_latest(&t->imu);
     if (t->imu_er == E_OK && t->imu.sample_count != t->imu_count)
@@ -1231,7 +1339,9 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
         const char * reason = imu_status_reason(t, now);
         t->imu_fault = reason != NULL || t->imu.read_errors != t->imu_errors;
         if (reason != NULL)
+        {
             t->stop_reason = reason;
+        }
         t->imu_errors = t->imu.read_errors;
         if (t->phase == WAITING && t->start_requested &&
             (uint32_t)(now - t->boot) >= ALL_START_MS)
@@ -1240,7 +1350,9 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
             t->phase = RUNNING;
         }
         if (t->phase == SETTLING || t->phase == LINE_WAIT)
+        {
             t->phase = RUNNING;
+        }
         if (t->phase == RUNNING)
         {
             if (!t->started_once)
@@ -1253,7 +1365,9 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
                 line_barcode_msg_t event;
                 ER                 er = line_service_receive(&event, TMO_POL);
                 if (er == E_TMOUT)
+                {
                     break;
+                }
                 if (er < E_OK)
                 {
                     t->stop_reason = "line queue failed";
@@ -1296,7 +1410,9 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
                 if (state == LINE_BARCODE_FAULT ||
                     state == LINE_BARCODE_PAUSED ||
                     state == LINE_BARCODE_JUNCTION)
+                {
                     (void)line_service_enable(true);
+                }
             }
             else
             {
@@ -1321,7 +1437,9 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
     {
         const char * reason = imu_status_reason(t, now);
         if (reason == NULL && t->imu.read_errors != t->imu_errors)
+        {
             reason = "IMU read-error count changed";
+        }
         if (reason != NULL)
         {
             t->imu_fault = true;
@@ -1377,8 +1495,10 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
              (t->line.data[1] & 7u) == LINE_BARCODE_PAUSED))
         {
             if ((uint32_t)(now - t->settled) >= ALL_LINE_READY_MS)
+            {
                 stop_test(t, "no fresh line sample after enable",
                           S1_STATE_FAULT);
+            }
         }
         else if (t->line_er < E_OK)
         {
@@ -1415,7 +1535,9 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
                 line_barcode_msg_t event;
                 ER                 er = line_service_receive(&event, TMO_POL);
                 if (er == E_TMOUT)
+                {
                     break;
+                }
                 if (er < E_OK)
                 {
                     stop_test(t, "line queue failed", S1_STATE_FAULT);
@@ -1508,10 +1630,14 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
                                 ? (sensors & 3u) == 0u
                                 : sensors == 0u;
                         if (absent)
+                        {
                             wait_for_line(t);
+                        }
                         else
+                        {
                             stop_test(t, "ambiguous L/C/R pattern or junction",
                                       S1_STATE_FAULT);
+                        }
                     }
                 }
             }
@@ -1568,10 +1694,12 @@ report_status:
                 frame.letter < 26u ? 'A' + frame.letter : '?',
                 (unsigned long)(frame.sequence - last_frame_sequence - 1u));
             for (unsigned i = 0; i < frame.count; ++i)
+            {
                 tm_printf(
                     (UB *)"[BARCODE WIDTH] frame=%lu run=%u %s width_ms=%u\n",
                     (unsigned long)frame.sequence, (UINT)(i + 1u),
                     (i & 1u) ? "WHITE" : "BLACK", (UINT)frame.widths[i]);
+            }
             last_frame_sequence = frame.sequence;
         }
         unsigned sensors = t->line.data[0] & 7u;
@@ -1580,7 +1708,9 @@ report_status:
             uint32_t duration = 0u, dropped = 0u;
             unsigned black = 0u;
             if (!line_service_barcode_run(&duration, &black, &dropped))
+            {
                 break;
+            }
             tm_printf((UB *)"[BARCODE RUN] %s duration=%lums too_short=%u "
                             "dropped=%lu (white may be margin)\n",
                       black ? "BLACK" : "WHITE", (unsigned long)duration,
@@ -1590,10 +1720,12 @@ report_status:
         if (ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_SIDE)
         {
             if (t->phase != RUNNING)
+            {
                 tm_printf(
                     (UB *)"[BARCODE INFO] phase=%u; last recorded "
                           "counts/result below; scanning may be inactive\n",
                     t->phase);
+            }
             unsigned raw_level = 0u, rises = 0u, falls = 0u;
             line_service_barcode_raw(&raw_level, &rises, &falls);
             tm_printf((UB *)"[BARCODE RAW] GP28=%u rises=%u falls=%u (before "
@@ -1638,7 +1770,9 @@ report_status:
             t->imu.ramp_height_valid, t->stop_reason ? t->stop_reason : "none");
         t->last_report = now;
         if (ALL_TEST_WHITE_FOLLOW)
+        {
             report_motor_outputs();
+        }
     }
     report_telemetry(t, now);
 }
@@ -1676,7 +1810,9 @@ static void encoder_cal_task(void)
             dr          = right - right0;
             ratio_x1000 = (dl != 0) ? (dr * 1000) / dl : 0;
             if (ratio_x1000 < 0)
+            {
                 ratio_x1000 = -ratio_x1000;
+            }
             /* Integers only: ticks/cm = count / 100 printed as x.yy */
             tm_printf((UB *)"[ENC CAL] left=%ld right=%ld | if %d cm: "
                             "L=%ld.%02ld R=%ld.%02ld ticks/cm, R/L=%ld.%03ld\n",
@@ -1716,17 +1852,21 @@ static void all_task(INT stacd, void * exinf)
              "[ALL TEST] telemetry: unmeasured battery/obstacle/scan fields=0 "
              "placeholders\n");
     if (ALL_TEST_WHITE_FOLLOW)
+    {
         tm_printf(
             (UB *)"[ALL TEST] WHITE TRACK: GP27 centre + GP0 right; GP28 "
                   "ignored for steering\n"
                   "[ALL TEST] C/R=0/0 straight, 0/1 gradual right, 1/0 gradual "
                   "left, 1/1 junction (forward if no barcode); 1=black\n");
+    }
     else
+    {
         tm_printf((UB *)"[ALL TEST] sensor response=%s; missing/invalid line "
                         "stops motors; valid black auto-resumes; manual pause "
                         "remains active\n",
                   ALL_TEST_CONTINUE_ON_SENSOR ? "LOG ONLY (keep motors moving)"
                                               : "STOP/RECOVER");
+    }
     tm_printf((UB *)"[ALL TEST] layout=%s\n",
               ALL_TEST_LINE_LAYOUT == LINE_BARCODE_LAYOUT_TRACK
                   ? "TRACK (three line sensors; barcode decoding disabled)"
@@ -1756,8 +1896,10 @@ static void all_task(INT stacd, void * exinf)
                         S5_RIGHT_TICKS_PER_CM, test.left_ticks,
                         test.right_ticks);
     if (!test.odometry.available)
+    {
         tm_printf((UB *)"[ALL TEST] height/distance unavailable: check "
                         "S5_LEFT/RIGHT_TICKS_PER_CM; raw ticks are logged\n");
+    }
     tm_printf((UB *)"[ALL TEST] run limit=%lu ms (0=continuous)\n",
               (unsigned long)test.duration_ms);
     test.force_status = true;
@@ -1791,38 +1933,64 @@ ER all_buddies_test_start(void)
     ER                er = drv_motor_init();
     MOTOR_DIAGNOSTICS diagnostics;
     if (er == E_OK)
+    {
         er = drv_motor_diagnostics(&diagnostics);
+    }
     if (er == E_OK)
+    {
         er = drv_encoder_init();
+    }
     /* Create all objects before any application task is started. */
     if (er == E_OK)
+    {
         er = subsystem1_init();
+    }
     if (er == E_OK)
+    {
         er = line_service_init();
+    }
     if (er == E_OK)
+    {
         er = line_service_calibrate(7u, 0u);
+    }
     if (er == E_OK)
+    {
         er = line_service_set_layout(ALL_TEST_LINE_LAYOUT);
+    }
     /* No built-in letter map (#38): the instructor sends it over MQTT. */
     if (er == E_OK)
+    {
         er = subsystem4_init();
+    }
     if (er == E_OK)
+    {
         er = subsystem5_init();
+    }
     if (er == E_OK)
+    {
         er = subsystem1_start();
+    }
     if (er == E_OK)
+    {
         er = line_service_start();
+    }
     if (er == E_OK)
+    {
         er = subsystem4_start();
+    }
     if (er == E_OK)
+    {
         er = subsystem5_start();
+    }
     if (er == E_OK)
     {
         ID tid = app_start_task(all_task, 15, TP_PRC2, "all_buddies_test");
         er     = tid < E_OK ? tid : E_OK;
     }
     if (er < E_OK)
+    {
         drv_motor_stop();
+    }
     return er;
 }
 #endif

@@ -60,7 +60,7 @@ EXPORT ID app_start_task(FP entry, PRI pri, UW prc, const char * name)
     ctsk.itskpri = pri;             /* initial priority (1 = highest) */
     ctsk.stksz   = TASK_STACK_SIZE; /* kernel allocates the stack */
     ctsk.tskatr  = TA_HLNG          /* written in a high-level language (C) */
-                   | TA_RNG3;       /* runs at user protection level */
+                  | TA_RNG3;        /* runs at user protection level */
 #if TK_SUPPORT_SMP
     if (prc != 0)
     {
@@ -130,11 +130,17 @@ EXPORT INT usermain(void)
     /* No motion task or robot adapter: the demo alone owns S3 events. */
     ER bench_er = drv_motor_init();
     if (bench_er == E_OK)
+    {
         bench_er = line_service_init();
+    }
     if (bench_er == E_OK)
+    {
         bench_er = line_service_start();
+    }
     if (bench_er == E_OK)
+    {
         bench_er = line_demo_start();
+    }
     CHECK(bench_er, "barcode_bench_start");
     LOG_INFO(TAG_APP,
              "BARCODE BENCH: motors OFF; scanner GP28, centre GP27, right GP0");
@@ -146,49 +152,69 @@ EXPORT INT usermain(void)
     ER er = subsystem1_init();
     CHECK(er, "subsystem1_init");
     if (er < E_OK)
+    {
         goto startup_failed;
+    }
     er = subsystem2_init();
     CHECK(er, "subsystem2_init");
     if (er < E_OK)
+    {
         goto startup_failed;
+    }
 #if APP_ROBOT_INTEGRATED
     er = subsystem3_init();
     CHECK(er, "subsystem3_init");
     if (er < E_OK)
+    {
         goto startup_failed;
+    }
     er = subsystem4_init();
     CHECK(er, "subsystem4_init");
     if (er < E_OK)
+    {
         goto startup_failed;
+    }
     er = subsystem5_init();
     CHECK(er, "subsystem5_init");
     if (er < E_OK)
+    {
         goto startup_failed;
+    }
 #endif
 
     /* Phase 2: every subsystem starts its tasks */
     er = subsystem1_start();
     CHECK(er, "subsystem1_start");
     if (er < E_OK)
+    {
         goto startup_failed;
+    }
 #if APP_ROBOT_INTEGRATED
     er = subsystem3_start();
     CHECK(er, "subsystem3_start");
     if (er < E_OK)
+    {
         goto startup_failed;
+    }
     er = subsystem4_start();
     CHECK(er, "subsystem4_start");
     if (er < E_OK)
+    {
         goto startup_failed;
+    }
     er = subsystem5_start();
     CHECK(er, "subsystem5_start");
     if (er < E_OK)
+    {
         goto startup_failed;
+    }
 #endif
     er = subsystem2_start();
     CHECK(er, "subsystem2_start");
     if (er < E_OK)
+    {
         goto startup_failed;
+    }
 
 #if APP_ROBOT_INTEGRATED
 #if S2_MOTOR_HW_TEST

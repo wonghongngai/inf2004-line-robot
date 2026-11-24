@@ -189,7 +189,9 @@ static inline int32_t s2_tick_delta(int32_t now, int32_t before)
 static inline bool s2_command_valid(const MOTION_COMMAND * c)
 {
     if (!c || !s2_finite(c->value))
+    {
         return false;
+    }
     switch (c->type)
     {
         case MOTION_CMD_STOP:
@@ -208,7 +210,9 @@ static inline bool s2_command_pack(S2_PACKED_COMMAND *    p,
                                    const MOTION_COMMAND * c)
 {
     if (!p || !s2_command_valid(c))
+    {
         return false;
+    }
     p->data[0] = (uint8_t)c->type;
     s2_put_float(p->data + 1, c->value);
     return true;
@@ -218,11 +222,15 @@ static inline bool s2_command_unpack(MOTION_COMMAND *          c,
                                      const S2_PACKED_COMMAND * p)
 {
     if (!p || !c || (p->data[0] & 0xf8))
+    {
         return false;
+    }
     MOTION_COMMAND tmp = {(MOTION_COMMAND_TYPE)p->data[0],
                           s2_get_float(p->data + 1)};
     if (!s2_command_valid(&tmp))
+    {
         return false;
+    }
     *c = tmp;
     return true;
 }
@@ -291,12 +299,14 @@ static inline bool s2_status_unpack(MOTION_STATUS *          s,
                                     const S2_PACKED_STATUS * p)
 {
     if (!p || !s)
+    {
         return false;
+    }
     uint32_t state    = s2_get_bits(p->data, S2_STATUS_BIT_STATE, 3U);
     uint32_t command  = s2_get_bits(p->data, S2_STATUS_BIT_COMMAND, 3U);
     int32_t  left_pwm = s2_sign_extend(
-        s2_get_bits(p->data, S2_STATUS_BIT_LEFT_PWM, S2_STATUS_PWM_BITS),
-        S2_STATUS_PWM_BITS);
+         s2_get_bits(p->data, S2_STATUS_BIT_LEFT_PWM, S2_STATUS_PWM_BITS),
+         S2_STATUS_PWM_BITS);
     int32_t right_pwm = s2_sign_extend(
         s2_get_bits(p->data, S2_STATUS_BIT_RIGHT_PWM, S2_STATUS_PWM_BITS),
         S2_STATUS_PWM_BITS);

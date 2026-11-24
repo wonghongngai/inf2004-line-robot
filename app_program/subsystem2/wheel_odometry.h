@@ -51,14 +51,20 @@ static inline bool wheel_odometry_step(WHEEL_ODOMETRY * o, int32_t left,
         return true;
     }
     if (dl < 0)
+    {
         dl = -dl;
+    }
     if (dr < 0)
+    {
         dr = -dr;
+    }
     float distance =
         o->remainder_mm + 5.0f * ((float)dl / o->left_ticks_per_cm +
                                   (float)dr / o->right_ticks_per_cm);
     if (!wheel_odometry_finite(distance) || distance >= 256.0f)
+    {
         return false;
+    }
     *mm             = (uint8_t)distance;
     o->remainder_mm = distance - *mm;
     return true;

@@ -295,13 +295,21 @@ LOCAL void trace_noise(BOOL moving, BOOL hump_idle, W raw, W filt)
         noise_abs_sum           = 0;
     }
     if (filt < noise_fmin)
+    {
         noise_fmin = filt;
+    }
     if (filt > noise_fmax)
+    {
         noise_fmax = filt;
+    }
     if (raw < noise_rmin)
+    {
         noise_rmin = raw;
+    }
     if (raw > noise_rmax)
+    {
         noise_rmax = raw;
+    }
     noise_abs_sum += a;
     noise_n++;
 

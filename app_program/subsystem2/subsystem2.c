@@ -72,7 +72,9 @@ EXPORT ER subsystem2_init(void)
     cflg.flgatr     = TA_TFIFO;
     flg_motion_stop = tk_cre_flg(&cflg);
     if (flg_motion_stop < E_OK)
+    {
         return flg_motion_stop;
+    }
 
     latest_status.state           = MOTION_STATE_INITIALISING;
     latest_status.active_command  = MOTION_CMD_NONE;
@@ -123,7 +125,9 @@ EXPORT ER subsystem2_send_command(const MOTION_COMMAND * command)
     return E_OBJ; /* Bench pulses bypass the closed-loop command consumer. */
 #else
     if (command->type == MOTION_CMD_STOP)
+    {
         return tk_set_flg(flg_motion_stop, 1u);
+    }
 #if APP_ROBOT_INTEGRATED || APP_TEST || S2_MOTION_DEMO
     return E_OBJ; /* Autonomous controller/test owns commands in these modes. */
 #endif

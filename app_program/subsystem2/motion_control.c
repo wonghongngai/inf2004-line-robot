@@ -856,7 +856,9 @@ static void run_forward(MOTION_CONTROLLER * controller, uint32_t now_ms,
                runs during 17/5 and 19/5 corrections). The right wheel still
                slows, so the robot still turns right. */
             if (!scan)
+            {
                 l_target += controller->cfg.follow_boost_pwm_percent;
+            }
             r_target = v >= 1.0f ? controller->cfg.follow_hard_inner_pwm_percent
                                  : controller->cfg.follow_inner_pwm_percent;
         }
@@ -1172,11 +1174,11 @@ static void run_spin(MOTION_CONTROLLER * controller, uint32_t now_ms,
                      int32_t left_ticks, int32_t right_ticks, bool left_spin,
                      float dt_s)
 {
-    float left_target  = controller->target_value * 0.5f *
-                         controller->cfg.avoid_left_turn_ticks_per_degree;
+    float left_target = controller->target_value * 0.5f *
+                        controller->cfg.avoid_left_turn_ticks_per_degree;
     float right_target = controller->target_value * 0.5f *
                          controller->cfg.avoid_right_turn_ticks_per_degree;
-    bool  left_done =
+    bool left_done =
         (float)abs_i32(left_ticks - controller->command_start_left_ticks) >=
         left_target;
     bool right_done =

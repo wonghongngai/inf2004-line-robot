@@ -227,7 +227,9 @@ static uint16_t decode_character(uint16_t const * p_runs, bool b_reverse)
         {
             uint16_t width = p_runs[i];
             if (width < BARCODE_MIN_RUN_MS || width > LINE_BARCODE_RUN_MAX_MS)
+            {
                 return 0u;
+            }
             unsigned j = count++;
             while (j > 0u && p_runs[order[j - 1u]] < width)
             {
@@ -241,9 +243,13 @@ static uint16_t decode_character(uint16_t const * p_runs, bool b_reverse)
         uint32_t longest_narrow = p_runs[order[wide]];
         if (shortest_wide * BARCODE_SEPARATION_DEN <
             longest_narrow * BARCODE_SEPARATION_NUM)
+        {
             return 0u;
+        }
         for (unsigned k = 0u; k < wide; ++k)
+        {
             is_wide |= (uint16_t)(1u << order[k]);
+        }
     }
     uint16_t pattern = 0u;
     for (unsigned i = 0u; i < BARCODE_ELEMENTS; ++i)
@@ -345,7 +351,7 @@ static void write_width(line_barcode_ctx_t * p_ctx, uint8_t index,
     uint8_t  shift  = bit % 8u;
     uint8_t  offset = bit / 8u;
     uint16_t pair   = (uint16_t)(p_ctx->runs[offset] |
-                                 ((uint16_t)p_ctx->runs[offset + 1u] << 8u));
+                               ((uint16_t)p_ctx->runs[offset + 1u] << 8u));
     pair =
         (uint16_t)((pair & ~(0x3ffu << shift)) | ((width & 0x3ffu) << shift));
     p_ctx->runs[offset]      = (uint8_t)pair;
@@ -402,7 +408,7 @@ static uint8_t finish_frame(line_barcode_ctx_t * p_ctx, uint8_t * p_letter)
         /* Scan-speed reference for the following junction. */
         p_ctx->last_narrow = narrow;
     }
-    p_ctx->flags &= (uint8_t)~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
+    p_ctx->flags &= (uint8_t) ~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
     return (b_valid ? LINE_BARCODE_EVT_BARCODE : LINE_BARCODE_EVT_INVALID);
 }
 
@@ -433,7 +439,7 @@ static uint8_t barcode_update(line_barcode_ctx_t * p_ctx, uint16_t elapsed_ms,
         }
         p_ctx->run_ms = 0u;
         p_ctx->flags  = (uint8_t)((p_ctx->flags & ~BARCODE_FLAG_BLACK) |
-                                  (b_black ? BARCODE_FLAG_BLACK : 0u));
+                                 (b_black ? BARCODE_FLAG_BLACK : 0u));
         verify_start(p_ctx);
     }
     uint16_t quiet_required = BARCODE_MIN_QUIET_UNITS * first_narrow(p_ctx);
@@ -451,7 +457,7 @@ static uint8_t barcode_update(line_barcode_ctx_t * p_ctx, uint16_t elapsed_ms,
                     ? LINE_BARCODE_EVT_INVALID
                     : LINE_BARCODE_EVT_STATUS;
         p_ctx->flags &=
-            (uint8_t)~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
+            (uint8_t) ~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
         p_ctx->run_count = 0u;
     }
     else
@@ -492,7 +498,7 @@ static uint8_t side_junction_update(line_barcode_ctx_t * p_ctx)
         /* Report once per crossing and drop the partial "barcode". */
         p_ctx->flags |= BARCODE_FLAG_CROSSED;
         p_ctx->flags &=
-            (uint8_t)~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
+            (uint8_t) ~(BARCODE_FLAG_CAPTURE | BARCODE_FLAG_CONFIRMED);
         p_ctx->run_count = 0u;
         event            = LINE_BARCODE_EVT_JUNCTION;
     }
@@ -585,7 +591,9 @@ line_barcode_msg_t line_barcode_step(line_barcode_ctx_t * p_ctx,
             p_ctx->candidate_ms[bit] =
                 age < LINE_BARCODE_DEBOUNCE_MS ? age : LINE_BARCODE_DEBOUNCE_MS;
             if (p_ctx->candidate_ms[bit] >= LINE_BARCODE_DEBOUNCE_MS)
+            {
                 p_ctx->stable = (p_ctx->stable & ~mask) | (sensors & mask);
+            }
         }
     }
     uint8_t position       = track_position(p_ctx);

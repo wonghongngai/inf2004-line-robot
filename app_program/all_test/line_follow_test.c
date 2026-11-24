@@ -35,12 +35,18 @@ static void follow_task(INT stacd, void * exinf)
                     "GP10/11\n",
               (int)FOLLOW_BASE_PWM, (int)FOLLOW_INNER_PWM);
     if (tk_dly_tsk(FOLLOW_START_MS) < E_OK)
+    {
         goto stopped;
+    }
     if (line_service_enable(true) < E_OK)
+    {
         goto stopped;
+    }
     /* Allow the two-sample debounce to settle before checking the line. */
     if (tk_dly_tsk(30u) < E_OK || tk_get_tim(&start) < E_OK)
+    {
         goto stopped;
+    }
 
     for (;;)
     {
@@ -62,7 +68,9 @@ static void follow_task(INT stacd, void * exinf)
         {
             er = line_service_receive(&msg, TMO_POL);
             if (er == E_TMOUT)
+            {
                 break;
+            }
             if (er < E_OK)
             {
                 reason = "sensor queue failed";
@@ -134,7 +142,9 @@ static void follow_task(INT stacd, void * exinf)
         /* Trim only the outer/straight wheel, retaining the inner-wheel
          * setting when steering right and zero output on line loss. */
         if (right == FOLLOW_BASE_PWM)
+        {
             right = FOLLOW_RIGHT_BASE_PWM;
+        }
         drv_motor_set(left, right);
         if ((uint32_t)(now.lo - last_report) >= 250u)
         {
@@ -164,23 +174,35 @@ ER line_follow_test_start(void)
     ER                er = drv_motor_init();
     MOTOR_DIAGNOSTICS diagnostics;
     if (er == E_OK)
+    {
         er = drv_motor_diagnostics(&diagnostics);
+    }
     if (er == E_OK)
+    {
         er = line_service_init();
+    }
     /* User confirmed all inputs read 1 on black and 0 on white. */
     if (er == E_OK)
+    {
         er = line_service_calibrate(7u, 0u);
+    }
     if (er == E_OK)
+    {
         er = line_service_set_layout(LINE_BARCODE_LAYOUT_TRACK);
+    }
     if (er == E_OK)
+    {
         er = line_service_start();
+    }
     if (er == E_OK)
     {
         ID tid = app_start_task(follow_task, 15, TP_PRC2, "line_follow_test");
         er     = (tid < E_OK) ? tid : E_OK;
     }
     if (er < E_OK)
+    {
         drv_motor_stop();
+    }
     return er;
 }
 #endif

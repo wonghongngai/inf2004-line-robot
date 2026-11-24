@@ -95,7 +95,9 @@ static bool line_rearm_ready(uint32_t now, int32_t l, int32_t r)
     /* After a lost-line stop both white proves nothing: wait until C or R
        has seen the tape (the robot put back across it). */
     if (lost_stop && er >= E_OK && (msg.data[0] & 3u) != 0u)
+    {
         lost_seen_black = true;
+    }
     bool ready = er >= E_OK && on_line && (!lost_stop || lost_seen_black) &&
                  l == rearm_l && r == rearm_r;
 
@@ -394,7 +396,9 @@ static void poll_commands(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
     {
         S1_COMMAND command;
         if (subsystem1_receive_command(&command, TMO_POL) < E_OK)
+        {
             return;
+        }
         switch (command.bytes[0])
         {
             case S1_COMMAND_STATUS: status_requested = true; break;
@@ -435,9 +439,13 @@ static void poll_mapping(void)
         S1_MAPPING    mapping;
         unsigned char letters[S1_MAP_SLOTS];
         if (subsystem1_receive_mapping(&mapping, TMO_POL) < E_OK)
+        {
             return;
+        }
         if (!s1_mapping_get(&mapping, letters))
+        {
             continue;
+        }
         if (line_service_set_mapping((char)('A' + letters[S1_MAP_LEFT]),
                                      (char)('A' + letters[S1_MAP_RIGHT]),
                                      (char)('A' + letters[S1_MAP_STRAIGHT]),
@@ -448,7 +456,9 @@ static void poll_mapping(void)
             continue;
         }
         for (unsigned s = 0u; s < S1_MAP_SLOTS; ++s)
+        {
             map_letters[s] = letters[s];
+        }
         map_received = true;
         LOG_INFO(TAG_S2_ROBOT,
                  "MQTT map applied: %c=left %c=right %c=straight %c=U-turn",
@@ -461,11 +471,15 @@ static void poll_mapping(void)
 static unsigned letter_direction(void)
 {
     if (!map_received || last_letter == 0u)
+    {
         return S1_BARCODE_NONE;
+    }
     for (unsigned s = 0u; s < S1_MAP_SLOTS; ++s)
     {
         if (map_letters[s] == last_letter - 1u)
+        {
             return S1_BARCODE_LEFT + s;
+        }
     }
     return S1_BARCODE_NONE;
 }
@@ -477,9 +491,13 @@ static void update_distance(const MOTION_CONTROLLER * ctl, int32_t l, int32_t r)
     {
         int32_t dl = l - odo_l, dr = r - odo_r;
         if (dl < 0)
+        {
             dl = -dl;
+        }
         if (dr < 0)
+        {
             dr = -dr;
+        }
         distance_cm += 0.5f * ((float)dl / ctl->cfg.left_ticks_per_cm +
                                (float)dr / ctl->cfg.right_ticks_per_cm);
     }
@@ -491,11 +509,17 @@ static void update_distance(const MOTION_CONTROLLER * ctl, int32_t l, int32_t r)
 static unsigned robot_state(void)
 {
     if (halted)
+    {
         return line_halt ? S1_STATE_RECOVERING : S1_STATE_FAULT;
+    }
     if (paused || !armed)
+    {
         return S1_STATE_IDLE;
+    }
     if (in_avoid)
+    {
         return S1_STATE_AVOIDING;
+    }
     return turning ? S1_STATE_TURNING : S1_STATE_FOLLOWING;
 }
 
@@ -508,11 +532,15 @@ static void report_barcode_frame(uint32_t now)
     line_service_barcode_frame_t frame = {0};
 
     if ((uint32_t)(now - frame_report_ms) < 500u)
+    {
         return;
+    }
     frame_report_ms = now;
     line_service_barcode_frame(&frame);
     if (frame.sequence == frame_sequence)
+    {
         return;
+    }
     LOG_INFO(TAG_S2_BARCODE,
              "frame id=%lu runs=%u/29 black=%u white=%u result=%c skipped=%lu",
              (unsigned long)frame.sequence, (unsigned)frame.count,
@@ -520,9 +548,11 @@ static void report_barcode_frame(uint32_t now)
              frame.letter < 26u ? 'A' + frame.letter : '?',
              (unsigned long)(frame.sequence - frame_sequence - 1u));
     for (unsigned i = 0; i < frame.count; ++i)
+    {
         LOG_INFO(TAG_S2_BARCODE, "width frame=%lu run=%u %s width_ms=%u",
                  (unsigned long)frame.sequence, i + 1u,
                  (i & 1u) ? "WHITE" : "BLACK", (unsigned)frame.widths[i]);
+    }
     frame_sequence = frame.sequence;
 }
 
@@ -539,14 +569,20 @@ static void report_telemetry(const MOTION_CONTROLLER * ctl, uint32_t now,
     ER                 er;
 
     if (!status_requested && (uint32_t)(now - last_telemetry) < 1000u)
+    {
         return;
+    }
     status_requested = false;
     last_telemetry   = now;
     if (!imu_healthy(now))
+    {
         faults |= S1_FAULT_IMU;
+    }
     if (ctl->status.fault == MOTION_FAULT_LEFT_ENCODER_STALL ||
         ctl->status.fault == MOTION_FAULT_RIGHT_ENCODER_STALL)
+    {
         faults |= S1_FAULT_MOTOR_STALL;
+    }
     if (line_service_snapshot(&msg) >= E_OK)
     {
         unsigned s3 = msg.data[0] & 7u; /* S3: L/C/R bits 2/1/0; wire: 0/1/2 */
@@ -556,9 +592,13 @@ static void report_telemetry(const MOTION_CONTROLLER * ctl, uint32_t now,
     hump  = have_imu ? last_imu.ramp_height_mm : 0u;
     speed = 0.5f * (ctl->status.left_speed_cm_s + ctl->status.right_speed_cm_s);
     if (speed > (float)S1_SPEED_MAX)
+    {
         speed = (float)S1_SPEED_MAX;
+    }
     if (speed < (float)S1_SPEED_MIN)
+    {
         speed = (float)S1_SPEED_MIN;
+    }
 
     s1_telemetry_init(&packet);
     (void)s1_telemetry_set(&packet, S1_FIELD_STATE, (int)robot_state());
@@ -705,7 +745,9 @@ static bool line_lost_check(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
     /* Not following for a while (turn, avoidance, pause): the start ticks
        are stale. */
     if ((uint32_t)(now - lost_last_step) > S2_LINE_LOST_GAP_MS)
+    {
         lost_watch = lost_probe = false;
+    }
     lost_last_step = now;
     if (sensors != 0u)
     {
@@ -713,11 +755,15 @@ static bool line_lost_check(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
         {
             uint32_t mm = lost_watch_mm(l, r);
             if (mm > lost_max_mm)
+            {
                 lost_max_mm = mm;
+            }
             if (lost_probe)
+            {
                 LOG_INFO(TAG_S2_ROBOT,
                          "line probe found the tape after %u mm; following",
                          (unsigned)mm);
+            }
         }
         lost_watch = lost_probe = false;
         return false;
@@ -737,7 +783,9 @@ static bool line_lost_check(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
     }
     uint32_t mm = lost_watch_mm(l, r);
     if (mm < S2_LINE_LOST_MM)
+    {
         return false;
+    }
     if (!lost_probe && S2_LINE_PROBE_MM > 0u)
     {
         lost_probe = true;
@@ -808,7 +856,9 @@ static void straddle_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
             line_unsafe_since  = now;
         }
         if ((uint32_t)(now - line_unsafe_since) >= S2_LINE_UNSAFE_MS)
+        {
             halt_line(ctl, now, l, r, "line snapshot unsafe or stale");
+        }
         return;
     }
     line_unsafe_active = false;
@@ -824,7 +874,9 @@ static void straddle_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
         line_barcode_msg_t ev;
         er = line_service_receive(&ev, TMO_POL);
         if (er == E_TMOUT)
+        {
             break;
+        }
         if (er < E_OK)
         {
             halt(ctl, now, l, r, "line receive failed");
@@ -837,9 +889,11 @@ static void straddle_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
             return;
         }
         if (event == LINE_BARCODE_EVT_INVALID)
+        {
             LOG_WARN(TAG_S2_BARCODE,
                      "rejected invalid frame: check start/stop, narrow/wide "
                      "widths and white margins");
+        }
         if (event == LINE_BARCODE_EVT_BARCODE)
         {
             unsigned letter = ev.data[2] & LINE_BARCODE_LETTER_MASK;
@@ -861,12 +915,18 @@ static void straddle_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
     sensors = msg.data[0] & 3u; /* C bit 1, R bit 0; the scanner is ignored */
     float probe_steer;
     if (line_lost_check(ctl, now, l, r, sensors, &probe_steer))
+    {
         return;
+    }
     if (leaving_junction && sensors != 3u &&
         (uint32_t)(now - junction_done) >= S2_JUNCTION_SETTLE_MS)
+    {
         leaving_junction = false;
+    }
     if (sensors == 3u && !leaving_junction && straddle_junction(ctl, now, l, r))
+    {
         return;
+    }
 
     if (sensors == 1u || sensors == 2u)
     {
@@ -880,7 +940,9 @@ static void straddle_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
             (uint32_t)(now - candidate_since) >= S2_LINE_CONFIRM_MS)
         {
             if (steer_action != sensors)
+            {
                 action_since = now;
+            }
             steer_action = sensors;
         }
         clear_pending = false;
@@ -900,7 +962,9 @@ static void straddle_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
         }
     }
     if (sensors == 0u)
+    {
         steer_candidate = 0u;
+    }
 
     /* S2-U09 diagnosis (22 Nov): once a second, how many control steps each
        sensor pattern and each steering action lasted. sensors: 0 neither
@@ -910,7 +974,9 @@ static void straddle_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
         static uint32_t log_t0, log_n;
         static uint16_t sens_n[4], act_n[3];
         if (log_n == 0u)
+        {
             log_t0 = now;
+        }
         log_n++;
         sens_n[sensors & 3u]++;
         act_n[steer_action > 2u ? 0u : steer_action]++;
@@ -929,9 +995,13 @@ static void straddle_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
             log_n       = 0u;
             lost_max_mm = 0u;
             for (unsigned i = 0; i < 4u; ++i)
+            {
                 sens_n[i] = 0u;
+            }
             for (unsigned i = 0; i < 3u; ++i)
+            {
                 act_n[i] = 0u;
+            }
         }
     }
 
@@ -946,7 +1016,9 @@ static void straddle_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
                 : steer_action == 2u   ? -strength
                                        : 0.0f;
     if (motion_control_command(ctl, &cmd, now, l, r) != MOTION_RESULT_OK)
+    {
         halt(ctl, now, l, r, "follow command rejected");
+    }
 }
 
 static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
@@ -1005,11 +1077,15 @@ static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
         /* Remain stationary throughout IMU baseline calibration, and while
            S5 holds at start-up (its servo swing shakes the IMU). */
         if (s5_exec_startup_hold())
+        {
             return;
+        }
         if (!S2_LINE_CALIBRATION_READY || now < S2_ROBOT_START_MS ||
             !imu.sensor_ok || !imu.calibrated || imu_count == 0 ||
             (uint32_t)(now - last_imu_sample) > S2_IMU_STALE_MS)
+        {
             return;
+        }
         /* Ready (#48): initialised, motors off, waiting for START. */
         if (!auto_start && !start_requested)
         {
@@ -1025,10 +1101,14 @@ static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
         {
             er = line_service_calibrate(S2_LINE_BLACK_RAW, S2_LINE_WHITE_RAW);
             if (er == E_OK)
+            {
                 er = line_service_set_layout(S2_LINE_LAYOUT);
+            }
             /* No built-in letter map (#72): the map arrives over MQTT. */
             if (er == E_OK)
+            {
                 er = line_service_enable(true);
+            }
             if (er < E_OK)
             {
                 halt(ctl, now, l, r, "line configuration failed");
@@ -1070,7 +1150,9 @@ static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
     /* S5 obstacle avoidance takes control while it has a request. */
     in_avoid = avoid_step(ctl, now, l, r);
     if (in_avoid)
+    {
         return;
+    }
     /* Hump is terrain information; keep following, without inventing speed
        compensation before physical tuning. */
     if (turning)
@@ -1087,7 +1169,9 @@ static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
             int32_t moved = r - uturn_r0;
             float target = 180.0f * ctl->cfg.right_turn_ticks_per_degree * 0.5f;
             if (moved < 0)
+            {
                 moved = -moved;
+            }
             if ((float)moved >= target && line_service_snapshot(&msg) >= E_OK &&
                 (msg.data[0] & LINE_BARCODE_CENTRE) != 0u)
             {
@@ -1109,10 +1193,12 @@ static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
                 turn_cmd ==
                 LINE_BARCODE_CMD_LEFT; /* left pivot: right wheel drives */
             int32_t moved = left ? r - pivot_r0 : l - pivot_l0;
-            float   arc = 90.0f * (left ? ctl->cfg.right_turn_ticks_per_degree
-                                        : ctl->cfg.left_turn_ticks_per_degree);
+            float   arc   = 90.0f * (left ? ctl->cfg.right_turn_ticks_per_degree
+                                          : ctl->cfg.left_turn_ticks_per_degree);
             if (moved < 0)
+            {
                 moved = -moved;
+            }
             if ((float)moved >= arc * (left ? S2_PIVOT_LINE_MIN_FRACTION_LEFT
                                             : S2_PIVOT_LINE_MIN_FRACTION) &&
                 line_service_snapshot(&msg) >= E_OK &&
@@ -1150,7 +1236,9 @@ static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
                 pivot_r0   = r;
                 if (motion_control_command(ctl, &cmd, now, l, r) !=
                     MOTION_RESULT_OK)
+                {
                     halt(ctl, now, l, r, "turn rejected");
+                }
                 return;
             }
             turning            = false;
@@ -1163,13 +1251,17 @@ static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
             junction_done    = now;
             steer_action     = 0u;
             if (er < E_OK)
+            {
                 halt(ctl, now, l, r, "line resume failed");
+            }
         }
         return;
     }
     /* Permit two sensor periods after enable/reset, with zero motor output. */
     if ((uint32_t)(now - resumed_at) < 30u)
+    {
         return;
+    }
     if (straddle)
     {
         straddle_step(ctl, now, l, r);
@@ -1179,14 +1271,18 @@ static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
     /* A newer snapshot fault must win over an older queued turn command. */
     er = line_service_snapshot(&msg);
     if (!line_snapshot_ok(ctl, now, l, r, er, &msg, false))
+    {
         return;
+    }
 
     /* Drain events with a fixed budget so control cannot starve. */
     for (unsigned i = 0; i < 24u; ++i)
     {
         er = line_service_receive(&msg, TMO_POL);
         if (er == E_TMOUT)
+        {
             break;
+        }
         if (er < E_OK)
         {
             halt(ctl, now, l, r, "line receive failed");
@@ -1195,7 +1291,9 @@ static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
         uint8_t event = (msg.data[1] >> 3u) & 7u;
         if (event == LINE_BARCODE_EVT_BARCODE ||
             event == LINE_BARCODE_EVT_COMMAND)
+        {
             last_letter = (msg.data[2] & LINE_BARCODE_LETTER_MASK) + 1u;
+        }
         if (event == LINE_BARCODE_EVT_JUNCTION)
         {
             /* #72 (decided 21 Nov): a junction without a mapped barcode before
@@ -1214,7 +1312,9 @@ static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
         {
             unsigned action = msg.data[0] >> 6u;
             if (action == LINE_BARCODE_CMD_STRAIGHT)
+            {
                 continue;
+            }
             er = line_service_enable(false);
             if (er < E_OK)
             {
@@ -1242,13 +1342,17 @@ static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
     }
     er = line_service_snapshot(&msg);
     if (!line_snapshot_ok(ctl, now, l, r, er, &msg, true))
+    {
         return;
+    }
     unsigned pos = (msg.data[0] >> 3u) & 7u;
     cmd.type     = MOTION_CMD_FOLLOW_LINE;
     /* S3's positions increase from far-left to far-right. */
     cmd.value = pos <= 4u ? ((float)pos - 2.0f) * 0.5f : 0.0f;
     if (motion_control_command(ctl, &cmd, now, l, r) != MOTION_RESULT_OK)
+    {
         halt(ctl, now, l, r, "follow command rejected");
+    }
 }
 
 void robot_control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
@@ -1404,7 +1508,9 @@ void robot_control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
         return;
     }
     if (ctl->status.state == MOTION_STATE_FAULT)
+    {
         return;
+    }
     if (waiting)
     {
         if (ctl->status.state == MOTION_STATE_IDLE &&
@@ -1472,7 +1578,9 @@ void robot_control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
         return;
     }
     if (ctl->status.state == MOTION_STATE_FAULT)
+    {
         return;
+    }
     if (waiting)
     {
         if (ctl->status.state == MOTION_STATE_IDLE &&

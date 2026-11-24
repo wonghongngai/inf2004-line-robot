@@ -389,7 +389,7 @@ static UW coarse_scan(scan_point_t * p_points)
 
         p_points[index].angle_deg = angle_deg;
         p_points[index].status    = ultrasonic_measure_mm(
-            ULTRASONIC_WINDOW_SCAN_MS, &p_points[index].distance_mm);
+               ULTRASONIC_WINDOW_SCAN_MS, &p_points[index].distance_mm);
 
         tk_dly_tsk(COARSE_DWELL_MS);
     }

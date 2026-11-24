@@ -20,7 +20,7 @@
  */
 #include "drv_motor.h"
 
-#define MOTOR_PWM_REG(slice, offset) (PWM_BASE + (slice) * 0x14u + (offset))
+#define MOTOR_PWM_REG(slice, offset) (PWM_BASE + (slice)*0x14u + (offset))
 
 #define MOTOR_LEFT_FORWARD_PIN 8U
 #define MOTOR_LEFT_REVERSE_PIN 9U
@@ -194,7 +194,9 @@ ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS * out)
     const UW left_slice  = (MOTOR_LEFT_FORWARD_PIN >> 1u) & 7u;
     const UW right_slice = (MOTOR_RIGHT_FORWARD_PIN >> 1u) & 7u;
     if (out == 0)
+    {
         return E_PAR;
+    }
     out->reset_done    = in_w(RESETS_RESET_DONE) & RESETS_RESET_PWM;
     out->left_csr      = in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CSR));
     out->right_csr     = in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CSR));
@@ -206,24 +208,34 @@ ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS * out)
     for (unsigned i = 0; i < 64u; ++i)
     {
         if (in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_CTR)) != left_start)
+        {
             out->left_counting = TRUE;
+        }
         if (in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_CTR)) != right_start)
+        {
             out->right_counting = TRUE;
+        }
     }
     if (!out->reset_done || !out->left_counting || !out->right_counting ||
         !(out->left_csr & PWM_CH_CSR_EN) || !(out->right_csr & PWM_CH_CSR_EN))
+    {
         return E_IO;
+    }
     if (in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_DIV)) != MOTOR_PWM_DIV_16 ||
         in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_DIV)) != MOTOR_PWM_DIV_16 ||
         in_w(MOTOR_PWM_REG(left_slice, PWM_CHx_TOP)) != MOTOR_PWM_WRAP ||
         in_w(MOTOR_PWM_REG(right_slice, PWM_CHx_TOP)) != MOTOR_PWM_WRAP)
+    {
         return E_IO;
+    }
     for (UINT pin = MOTOR_LEFT_FORWARD_PIN; pin <= MOTOR_RIGHT_REVERSE_PIN;
          ++pin)
     {
         if (in_w(GPIO_CTRL(pin)) != GPIO_CTRL_FUNCSEL_PWM ||
             (in_w(GPIO(pin)) & GPIO_OD))
+        {
             return E_IO;
+        }
     }
     return E_OK;
 }

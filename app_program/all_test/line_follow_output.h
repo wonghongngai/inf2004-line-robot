@@ -16,14 +16,18 @@ static inline bool line_follow_output(uint8_t sensors, uint8_t layout,
     {
         sensors &= 3u;
         if (sensors == 0u)
+        {
             return false;
+        }
         *left  = sensors == 2u ? inner : base;
         *right = sensors == 1u ? inner : base;
     }
     else
     {
         if (sensors == 0u || sensors == 5u || sensors == 7u)
+        {
             return false;
+        }
         *left  = (sensors & LINE_BARCODE_LEFT) ? inner : base;
         *right = (sensors & LINE_BARCODE_RIGHT) ? inner : base;
     }
