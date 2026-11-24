@@ -66,6 +66,10 @@ static void stop_robot(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
     {
         line_halt = false;
     }
+    else
+    {
+        /* No action needed in any other case. */
+    }
     halted = true;
 }
 
@@ -420,6 +424,10 @@ static void poll_commands(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
                              ready_reported
                                  ? ""
                                  : "; starts once initialisation finishes");
+                }
+                else
+                {
+                    /* No action needed in any other case. */
                 }
                 break;
             default: /* RESET_STATS, REVERSE: defined, not supported here */
@@ -961,6 +969,10 @@ static void straddle_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
             clear_pending = false;
         }
     }
+    else
+    {
+        /* No action needed in any other case. */
+    }
     if (sensors == 0u)
     {
         steer_candidate = 0u;
@@ -1255,6 +1267,10 @@ static void control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
                 halt(ctl, now, l, r, "line resume failed");
             }
         }
+        else
+        {
+            /* No action needed in any other case. */
+        }
         return;
     }
     /* Permit two sensor periods after enable/reset, with zero motor output. */
@@ -1539,6 +1555,10 @@ void robot_control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
             done = true;
             LOG_WARN(TAG_S2_BENCH, "timeout; motors OFF");
         }
+        else
+        {
+            /* No action needed in any other case. */
+        }
     }
     else if ((int32_t)(now - pause_until) >= 0)
     {
@@ -1555,6 +1575,14 @@ void robot_control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
             LOG_WARN(TAG_S2_BENCH, "turn %u rejected: result=%d state=%d",
                      stage + 1u, (int)res, (int)ctl->status.state);
         }
+        else
+        {
+            /* No action needed in any other case. */
+        }
+    }
+    else
+    {
+        /* No action needed in any other case. */
     }
 }
 #else
@@ -1600,6 +1628,10 @@ void robot_control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
             done = true;
             LOG_WARN(TAG_S2_DEMO, "timeout; motors OFF");
         }
+        else
+        {
+            /* No action needed in any other case. */
+        }
     }
     else if ((int32_t)(now - pause_until) >= 0)
     {
@@ -1610,6 +1642,10 @@ void robot_control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
             started = now;
             LOG_INFO(TAG_S2_DEMO, "stage %u started", stage + 1u);
         }
+    }
+    else
+    {
+        /* No action needed in any other case. */
     }
 }
 #endif /* S2_PID_BENCH / S2_PIVOT_BENCH */

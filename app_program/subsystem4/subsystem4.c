@@ -148,6 +148,10 @@ EXPORT ER subsystem4_get_packed(IMU_PACKED_MSG * out)
     {
         pitch = 90;
     }
+    else
+    {
+        /* No action needed in any other case. */
+    }
     out->pitch_encoded = (UB)(pitch + 90);
 
     peak = s4_imu_data.hump_peak_mg;

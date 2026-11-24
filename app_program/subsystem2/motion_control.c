@@ -872,6 +872,10 @@ static void run_forward(MOTION_CONTROLLER * controller, uint32_t now_ms,
                            ? controller->cfg.follow_hard_inner_pwm_percent
                            : controller->cfg.follow_inner_pwm_percent;
         }
+        else
+        {
+            /* No action needed in any other case. */
+        }
 
         if (v == 0.0f && controller->cfg.follow_straight_kp > 0.0f)
         {

@@ -94,6 +94,10 @@ static void incoming_publish_cb(void * arg, const char * topic, u32_t tot_len)
     {
         rx_kind = RX_MAPPING;
     }
+    else
+    {
+        /* No action needed in any other case. */
+    }
     if (rx_log)
     {
         LOG_INFO(TAG_S1_MQTT, "RX topic=%s length=%lu", topic,

@@ -711,6 +711,10 @@ static void white_follow_step(ALL_TEST * t, uint32_t now)
             }
         }
     }
+    else
+    {
+        /* No action needed in any other case. */
+    }
     if (sensors == 0u)
     {
         t->steering_candidate = 0u;
@@ -1210,6 +1214,10 @@ static void commands(ALL_TEST * t, uint32_t now)
                         tm_printf((UB *)"[ALL TEST] MQTT pause\n");
                     }
                 }
+                else
+                {
+                    /* No action needed in any other case. */
+                }
                 t->force_status = true;
                 break;
             case S1_COMMAND_START: /* #48: same as RESUME in this test loop */
@@ -1252,6 +1260,10 @@ static void commands(ALL_TEST * t, uint32_t now)
                 tm_printf((UB *)"[ALL TEST] reset statistics unsupported; "
                                 "reboot instead\n");
                 t->force_status = true;
+                break;
+            default:
+                /* REVERSE passes s1_command_valid() but is not used by
+                   this test loop: ignore it, as before. */
                 break;
         }
     }
@@ -1320,6 +1332,10 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
         {
             t->distance_mm = S1_DISTANCE_MAX * 10u;
         }
+    }
+    else
+    {
+        /* No action needed in any other case. */
     }
     t->imu_er = subsystem4_get_latest(&t->imu);
     if (t->imu_er == E_OK && t->imu.sample_count != t->imu_count)
@@ -1392,6 +1408,10 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
                 {
                     tm_printf((UB *)"[ALL TEST] line event=%u; continuing\n",
                               code);
+                }
+                else
+                {
+                    /* No action needed in any other case. */
                 }
             }
             float left = ALL_BASE_PWM, right = ALL_BASE_PWM;
@@ -1483,6 +1503,10 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
                 t->phase   = SETTLING;
                 t->settled = now;
             }
+        }
+        else
+        {
+            /* No action needed in any other case. */
         }
     }
     if (t->phase == SETTLING && (uint32_t)(now - t->settled) >= 30u)
@@ -1642,6 +1666,10 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
                 }
             }
         }
+        else
+        {
+            /* No action needed in any other case. */
+        }
     }
     if (t->phase == LINE_WAIT)
     {
@@ -1676,6 +1704,10 @@ static void all_test_step(ALL_TEST * t, uint32_t now)
                 tm_printf((UB *)"[ALL TEST] black line stable; automatically "
                                 "resuming\n");
             }
+        }
+        else
+        {
+            /* No action needed in any other case. */
         }
     }
 report_status:

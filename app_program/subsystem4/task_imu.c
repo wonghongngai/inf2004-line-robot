@@ -775,6 +775,10 @@ LOCAL BOOL update_lift(W az_mg, W baseline_az_mg, W * filtered_delta_mg)
     {
         deviation = -S4_LIFT_CLIP_MG;
     }
+    else
+    {
+        /* No action needed in any other case. */
+    }
 
     if (lift_count == S4_LIFT_FILTER_SAMPLES)
     {

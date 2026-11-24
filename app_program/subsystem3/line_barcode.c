@@ -278,6 +278,10 @@ static uint16_t largest_narrow_space(uint16_t const * p_runs)
         {
             second = width;
         }
+        else
+        {
+            /* No action needed in any other case. */
+        }
     }
     return second;
 }
