@@ -145,7 +145,7 @@ Last updated: 2026-11-23, S5 on the robot (#31, #35, #46): S5-U41/U42 9 of 9, IN
 
 ## Housekeeping
 
-- [ ] BARR-C review (#60): drafted 24 Nov in [BARR_C_REVIEW.md](BARR_C_REVIEW.md) (`python tools/barr_c_check.py` re-runs the scan). clang-format run over `app_program/` the same day and braces added to every `if`/`else`/`for`/`while` body (`InsertBraces`; `integrated`, `all_test` and `motion` images byte-identical, host tests 17 of 17). Next: each owner reads their subsystem rows, the team agrees deviations D1 to D7, then fixes 2 and 3 (final `else`, renames).
+- [ ] BARR-C review (#60): drafted 24 Nov in [BARR_C_REVIEW.md](BARR_C_REVIEW.md) (`python tools/barr_c_check.py` re-runs the scan). clang-format run over `app_program/` the same day and braces added to every `if`/`else`/`for`/`while` body (`InsertBraces`; `integrated`, `all_test` and `motion` images byte-identical, host tests 17 of 17). Fixes 2, 3, 4 and 7 also done 24 Nov (final `else`, `default:`, renames, tabs, `-Wall -Wextra` with 0 warnings; images unchanged). Next: each owner reads their subsystem rows and the team agrees deviations D1 to D7 (record in `DECISIONS.md`). Left: fix 6 (naming prefixes), new code only unless owners opt in.
 - [ ] Fill in `TEAM.md` (owners, GitHub usernames, pins, interfaces). It still has the template's example rows.
 - [ ] One shared build script with relative paths and `PICO_SDK_PATH` from the environment (#11). `sh build.sh <mode>` replaces the old per-machine `build_*_current.sh` scripts; tick this once every buddy has built `integrated` with it.
 - [x] Delete the duplicate copies with " 2" in the name (done 2026-11-13: 8 files removed, all identical to or older than the originals).
