@@ -18,6 +18,9 @@ after braces were added (fix 1), and after fixes 2, 3, 4 and 7. Scan output:
 - after formatting: [`testing/integration/logs/2026-11-24_barr_c_scan_formatted.txt`](testing/integration/logs/2026-11-24_barr_c_scan_formatted.txt)
 - after braces: [`testing/integration/logs/2026-11-24_barr_c_scan_braces.txt`](testing/integration/logs/2026-11-24_barr_c_scan_braces.txt)
 - after fixes 2, 3, 4 and 7: [`testing/integration/logs/2026-11-24_barr_c_scan_fixes.txt`](testing/integration/logs/2026-11-24_barr_c_scan_fixes.txt)
+- after fix 6 in subsystems 2 and 4: [`testing/integration/logs/2026-11-24_barr_c_scan_naming_s2_s4.txt`](testing/integration/logs/2026-11-24_barr_c_scan_naming_s2_s4.txt) (includes the full rename list)
+- after fix 6 in subsystems 1 and 3: [`testing/integration/logs/2026-11-24_barr_c_scan_naming_s1_s3.txt`](testing/integration/logs/2026-11-24_barr_c_scan_naming_s1_s3.txt) (includes the full rename list)
+- after fix 6 in subsystem 5: [`testing/integration/logs/2026-11-24_barr_c_scan_naming_s5.txt`](testing/integration/logs/2026-11-24_barr_c_scan_naming_s5.txt)
 
 ## Scope
 
@@ -145,6 +148,83 @@ Checked: all four images (`integrated`, `all_test`, `integrated TEST=1`,
 `motion`) are byte-identical to the braces commit, and the host tests pass
 17 of 17.
 
+## Fix 6 in subsystems 2 and 4 (24 Nov)
+
+Every variable, local and parameter in `app_program/subsystem2/` and
+`subsystem4/` now follows rule 7.1: 436 renames, done by script from a
+Universal Ctags inventory, so each rename stays in its scope.
+
+- **File-scope variables** take `g_` (`armed` → `g_b_armed`,
+  `trace_ring` → `g_trace_ring`). `const` tables keep their names.
+- **Pointers** take `p_`, **Booleans** take `b_` (`controller` →
+  `p_controller`, `moving` → `b_moving`). Prototype parameter names in
+  the headers were changed to match.
+- **Names under 3 characters** got real names: `er` → `ercd` (the
+  T-Kernel convention), `l`/`r` → `left_ticks`/`right_ticks`,
+  `i` → `idx`, `p` → `p_arg`, `c` → `p_ctx`, and per-function names
+  such as `dl` → `delta_left`, `ms` → `delay_ms`.
+- **Shared kernel objects and S4's snapshot** are now `g_flg_motion_stop`,
+  `g_mbf_motion_cmd`, `g_mtx_motion_status`, `g_mtx_imu_data` and
+  `g_s4_imu_data`, also in `TEAM.md`, `DEVIATIONS.md` (A3) and
+  `testing/integration/test_event_bits.py`. Old names stay in the test
+  logs, which record what was true at the time.
+- The host tests that `#include` `robot_control.c` and `task_imu.c` were
+  renamed with them.
+
+Checked: all 14 build variants (the 11 in `build.sh` plus
+`integrated S4_TRACE=1` and the PID and pivot benches) build with 0
+warnings, and 13 are byte-identical to the commit before. The 14th,
+`integrated TEST=1`, differs in 5 bytes, each one higher: the `TEST_CHECK`
+line numbers in `subsystem4_test.c`, which gained one wrapped line. Host
+tests 17 of 17.
+
+## Fix 6 in subsystems 1 and 3 (24 Nov)
+
+The same approach, 140 renames: 18 file-scope statics in S1 (`client` →
+`g_p_client`, the four queues → `g_..._queue`), pointer parameters such as
+`packet` → `p_packet` and `black` → `p_black`, five Booleans, and short
+names (`i` → `idx`; in `decode_character()` `i`/`j`/`k` → `elem`/`slot`/
+`rank`; in `line_barcode_test()` `i` → `loop_idx`, as `idx` was taken).
+Nothing outside S1 and S3 changed apart from the two host tests that
+`#include` S1 sources.
+
+**Rename tool fix.** The collision check in the S2/S4 pass never fired
+(a broken regex). Re-run, fixed, against the S2/S4 sources before the
+rename, it finds exactly one clash, `ev` → `event` in `straddle_step()`,
+the one the host tests had already caught and that was fixed by hand. The
+check reads the source, so it also covers `#if` branches no build
+compiles. S1 and S3 ran with the fixed check.
+
+Checked against the commit before any renames (S1 to S4 together): 14 of
+15 build variants are byte-identical (the 14 above plus `integrated` with
+`WIFI=none NET=none MQTT=0`). `integrated TEST=1` grows by 4 bytes, all in
+`line_barcode_test.o`: its `TEST_CHECK` line numbers moved, and on the
+Cortex-M0+ some of them now take a literal-pool load instead of a shifted
+`movs` (592 is `148 << 2`; 593 is not). Compiled with `__LINE__` fixed at
+0, the old and new `line_barcode_test.c` give identical code. 0 warnings;
+host tests 17 of 17.
+
+## Fix 6 in subsystem 5 (24 Nov)
+
+Subsystem 5 was written with the prefixes, so it needed only 14 names:
+`median3()`'s `a`/`b`/`c` → `first`/`second`/`third`, `servo_abs_diff()`'s
+`a`/`b` → `lhs`/`rhs`, `mm`/`cm` → `dist_mm`/`dist_cm`, `us` → `delay_us`,
+`in` → `input`, `on` → `probe`, `exinf` → `p_exinf`, and the event flag
+`flg_s5_evt` → `g_flg_s5_evt` (also in two S2 host-test files,
+`test_event_bits.py`, `TEAM.md`, `DEVIATIONS.md` and the S5 README).
+Names such as `p_x` and `b_up` already meet 7.1, which counts the whole
+name. The rename tool now only adds prefixes: its first S5 plan would have
+removed the owner's `g_` from `const` tables and `b_` from a `UB` flag.
+The S1 to S4 plans removed none.
+
+Checked against the commit before any renames (S1 to S5 together): 14 of
+15 build variants are byte-identical. In `integrated TEST=1` only the three
+test runners (`line_barcode_test.o`, `subsystem4_test.o`,
+`subsystem5_test.o`) differ, and each compiles to identical code with
+`__LINE__` fixed. 0 warnings; host tests 17 of 17.
+
+Only `all_test` (the test harness) was not renamed.
+
 ## Verdict
 
 The code **partly conforms**. The structural rules that matter most for
@@ -161,8 +241,8 @@ body now has braces (217 → 0), the one finding with a real bug risk. Every
 team code compiles with no warnings under `-Wall -Wextra`. The firmware
 image did not change. What is left:
 
-- **Naming prefixes** (`g_`, `p_`, `b_`) and short names, mainly in
-  subsystem 2, subsystem 4 and `all_test` (fix 6).
+- **Naming prefixes** (`g_`, `p_`, `b_`) and short names in `all_test`
+  only (fix 6 is done for subsystems 1 to 5).
 - **Deviations D1 to D7**, which the team still has to agree.
 
 ## Results by rule
@@ -194,11 +274,11 @@ files have at least one hit, after both passes. "Before" is `deb7ade`;
 | 6.2 | More than one `return` | 151 | 151 | 26 | Deviation proposed (D3) |
 | 6.3 | Function-like macro | 17 | 17 | 8 | Partial: mostly register-address and test macros |
 | 6.5 | Interrupt handler naming | 1 | 0 | 0 | Conforms (fix 3: `encoder_isr`) |
-| 7.1 | Variable name under 3 characters | 140 | 144 | 28 | Partial: mostly `er`, `i`, `t`, `l`, `r` |
+| 7.1 | Variable name under 3 characters | 140 | 30 | 4 | Conforms in S1 to S5 (fix 6; the hits left there are union members); 24 in `all_test` |
 | 7.1 | Variable name with uppercase | 0 | 0 | 0 | Conforms |
-| 7.1 | File-scope variable without `g_` | 55 | 53 | 10 | Partial (S5 nearly conforms: 1) |
-| 7.1 | Pointer variable without `p_` | 26 | 26 | 7 | Partial (S3, S5 conform) |
-| 7.1 | Boolean variable without `b_` | 69 | 69 | 12 | Partial (S5 conforms) |
+| 7.1 | File-scope variable without `g_` | 55 | 9 | 7 | Conforms (fix 6): the 9 left are `const` tables and prototype parameter lines |
+| 7.1 | Pointer variable without `p_` | 26 | 11 | 2 | Conforms in S1 to S5; 11 in `all_test` |
+| 7.1 | Boolean variable without `b_` | 69 | 12 | 2 | Conforms in S1 to S5; 12 in `all_test` |
 | 8.2 | `else if` chain without a final `else` | 21 | 0 | 0 | Conforms (fix 2) |
 | 8.3 | `switch` without `default` | 1 | 0 | 0 | Conforms (fix 2) |
 | 8.5 | `setjmp`/`longjmp`/`abort`/`exit` | 0 | 0 | 0 | Conforms |
@@ -283,9 +363,9 @@ nothing has been assigned yet.
 4. ~~**Tabs in comments (3.5).**~~ Done 24 Nov.
 5. ~~**Run clang-format** over `app_program/`.~~ Done 24 Nov, firmware
    unchanged (see "Formatting pass").
-6. **Naming prefixes (7.1)** `g_`, `p_`, `b_` and names of 3 or more
-   characters: new code only, unless an owner wants to rename their own
-   files. Subsystems 3 and 5 can be used as the reference style.
+6. ~~**Naming prefixes (7.1)** `g_`, `p_`, `b_` and names of 3 or more
+   characters.~~ Done 24 Nov for subsystems 1 to 5. `all_test` is a test
+   harness and was left as it is.
 7. ~~**Turn on compiler warnings for `app_program/`.**~~ Done 24 Nov:
    `-Wall -Wextra` on the app compile rule, 0 warnings in four modes. Keep
    the build at 0: a new warning in a build log is now worth reading.
