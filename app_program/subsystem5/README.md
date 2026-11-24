@@ -156,7 +156,7 @@ a left pass (a right pass is the mirror image):
 | Step | Move |
 |---|---|
 | T1 | Pivot left 90° |
-| F1 | Forward the plan's shift + `LOOK_SIDE_EXTRA_MM` (120 mm), limited to 10–40 cm |
+| F1 | Forward the plan's shift + `LOOK_SIDE_EXTRA_MM` (60 mm; 120 until 24 Nov, #62), limited to 10–40 cm |
 | T2 | Pivot right 90°, so the robot is parallel to its original path with the box on its right |
 | F2 | **Looked pass:** drive on in 10 cm steps. After each step, **spin on the spot** 90° towards the box, take 3 readings square on, then spin back. Once the box has been seen and a later look is clear, drive on far enough for the tail and the next turn to clear it. Maximum 80 cm |
 | T3 | Pivot right 90°, then look ahead. If the box is still in the way, turn back, go 15 cm further and try again (up to 5 times) |
