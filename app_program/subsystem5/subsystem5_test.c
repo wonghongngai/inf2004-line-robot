@@ -1,7 +1,7 @@
 /*
- *	subsystem5_test.c
- *	On-target tests for subsystem 5.  Built only with: make TEST=1
- *	Record results in testing/subsystem5/TEST_LOG.md.  IDs: S5-U01, ...
+ *  subsystem5_test.c
+ *  On-target tests for subsystem 5.  Built only with: make TEST=1
+ *  Record results in testing/subsystem5/TEST_LOG.md.  IDs: S5-U01, ...
  */
 
 #include "subsystem5.h"

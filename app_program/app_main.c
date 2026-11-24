@@ -1,36 +1,36 @@
 /*
- *	app_main.c
- *	START HERE.  usermain() below is your program's entry point.
+ *  app_main.c
+ *  START HERE.  usermain() below is your program's entry point.
  *
- *	How micro T-Kernel starts your code
- *	-----------------------------------
- *	  reset -> kernel initialises itself -> creates the "initial task"
- *	        -> initial task calls usermain()
+ *  How micro T-Kernel starts your code
+ *  -----------------------------------
+ *    reset -> kernel initialises itself -> creates the "initial task"
+ *          -> initial task calls usermain()
  *
- *	usermain() runs inside that initial task at priority 1 (the highest).
- *	On a single core nothing you create runs until usermain() blocks, but
- *	on the dual-core build the OTHER core may start a new task at once.
- *	So usermain() works in two phases:
- *	  1. every subsystem creates its kernel objects  (subsystemN_init)
- *	  2. every subsystem starts its tasks             (subsystemN_start)
- *	and then puts the initial task to sleep forever.
- *	If usermain() RETURNS, the kernel shuts the whole system down.
+ *  usermain() runs inside that initial task at priority 1 (the highest).
+ *  On a single core nothing you create runs until usermain() blocks, but
+ *  on the dual-core build the OTHER core may start a new task at once.
+ *  So usermain() works in two phases:
+ *    1. every subsystem creates its kernel objects  (subsystemN_init)
+ *    2. every subsystem starts its tasks             (subsystemN_start)
+ *  and then puts the initial task to sleep forever.
+ *  If usermain() RETURNS, the kernel shuts the whole system down.
  *
- *	The robot: one subsystem per folder
- *	------------------------------------
- *	  subsystem1/  WiFi/MQTT telemetry and PC commands
- *	  subsystem2/  motors, encoders, PID and the Vehicle Controller
- *	  subsystem3/  IR line following and barcode
- *	  subsystem4/  IMU: terrain, humps, tilt
- *	  subsystem5/  ultrasonic obstacle detection and avoidance
+ *  The robot: one subsystem per folder
+ *  ------------------------------------
+ *    subsystem1/  WiFi/MQTT telemetry and PC commands
+ *    subsystem2/  motors, encoders, PID and the Vehicle Controller
+ *    subsystem3/  IR line following and barcode
+ *    subsystem4/  IMU: terrain, humps, tilt
+ *    subsystem5/  ultrasonic obstacle detection and avoidance
  *
- *	The tasks, priorities and cores are in TEAM.md section 4; the
- *	interfaces between subsystems (IF-05 onwards) are in TEAM.md
- *	section 5.  The subsystem that RECEIVES or OWNS the data creates the
- *	object and publishes its ID or access function in its header; the
- *	other side just uses it.
+ *  The tasks, priorities and cores are in TEAM.md section 4; the
+ *  interfaces between subsystems (IF-05 onwards) are in TEAM.md
+ *  section 5.  The subsystem that RECEIVES or OWNS the data creates the
+ *  object and publishes its ID or access function in its header; the
+ *  other side just uses it.
  *
- *	Output appears on the USB serial port (115200 8N1 in any terminal).
+ *  Output appears on the USB serial port (115200 8N1 in any terminal).
  */
 
 #include "app.h"
@@ -232,8 +232,8 @@ EXPORT INT usermain(void)
 
 #if APP_TEST
     /* Test build (make TEST=1): run every subsystem's tests in turn,
-	   here in the initial task, while the system is running.  Tests may
-	   call tk_dly_tsk() to let the other tasks work for a while. */
+       here in the initial task, while the system is running.  Tests may
+       call tk_dly_tsk() to let the other tasks work for a while. */
     tm_printf(
         (UB *)"[TEST] Connect serial monitor now; tests start in 10 seconds\n");
     tk_dly_tsk(10000);

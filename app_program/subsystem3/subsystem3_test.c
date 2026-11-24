@@ -1,7 +1,7 @@
 /*
- *	subsystem3_test.c
- *	On-target tests for subsystem 3.  Built only with: make TEST=1
- *	Record results in testing/subsystem3/TEST_LOG.md.
+ *  subsystem3_test.c
+ *  On-target tests for subsystem 3.  Built only with: make TEST=1
+ *  Record results in testing/subsystem3/TEST_LOG.md.
  */
 
 #include "subsystem3.h"
@@ -15,7 +15,7 @@ EXPORT void subsystem3_test(void)
     line_barcode_test();
 
     /* S3-U01 and INT-01 retired (#74): they tested the course template's
-	   example producer/consumer tasks, which are no longer built. */
+       example producer/consumer tasks, which are no longer built. */
 
     TEST_CHECK("S3-U14", E_PAR == line_service_calibrate(0u, 0u),
                "calibration rejects indistinguishable surfaces");
