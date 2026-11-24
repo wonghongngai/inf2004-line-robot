@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Serve a local dashboard for robot MQTT telemetry and controls."""
+
 import argparse
 import errno
 import json
@@ -15,15 +16,36 @@ from urllib.parse import parse_qs, urlsplit
 
 from collections import deque
 
-from mqtt_binary import (COMMANDS, decode_barcode, decode_telemetry, encode_barcode,
-                         encode_mapping, encode_telemetry)
+from mqtt_binary import (
+    COMMANDS,
+    decode_barcode,
+    decode_telemetry,
+    encode_barcode,
+    encode_mapping,
+    encode_telemetry,
+)
 
 ASSETS = Path(__file__).with_suffix("")
-EXAMPLE = dict(state=1, speed_cms=28, speed_valid=1, distance_cm=140, map_received=1,
-               line_sensors=2, barcode=1, barcode_letter=6, barcode_black=15, barcode_white=14, highest_hump_mm=22, obstacle_cm=34,
-               scan_deg=90, obstacle_width_cm=16, left_ticks=16492, right_ticks=16562)
+EXAMPLE = dict(
+    state=1,
+    speed_cms=28,
+    speed_valid=1,
+    distance_cm=140,
+    map_received=1,
+    line_sensors=2,
+    barcode=1,
+    barcode_letter=6,
+    barcode_black=15,
+    barcode_white=14,
+    highest_hump_mm=22,
+    obstacle_cm=34,
+    scan_deg=90,
+    obstacle_width_cm=16,
+    left_ticks=16492,
+    right_ticks=16562,
+)
 BARCODE_HISTORY = 20
-DEMO_SCANS = ("A", "F", None, "Z", "W")   # None = a rejected capture
+DEMO_SCANS = ("A", "F", None, "Z", "W")  # None = a rejected capture
 
 
 class Feed:
@@ -36,7 +58,7 @@ class Feed:
         self.heartbeat = None
         self.heartbeat_at = None
         self.rejected = 0
-        self.barcodes = deque(maxlen=BARCODE_HISTORY)   # newest first
+        self.barcodes = deque(maxlen=BARCODE_HISTORY)  # newest first
         self.barcode_total = 0
 
     def receive(self, line):
@@ -72,34 +94,54 @@ class Feed:
             heartbeat_at = self.heartbeat_at
             if self.args.demo:
                 step = int(monotonic() - self.started)
-                telemetry = decode_telemetry(encode_telemetry({
-                    **EXAMPLE, "distance_cm": (140 + step * 28) % 65536,
-                    "line_sensors": (2, 2, 3, 2, 6)[step % 5],
-                    "obstacle_cm": 34 + step % 12,
-                    "scan_deg": 60 + step % 7 * 10,
-                    # #41: ~118 ticks/cm (S2_ENC_*) at 28 cm/s, wrapping at 16 bits
-                    "left_ticks": (16492 + step * 3298) % 65536,
-                    "right_ticks": (16562 + step * 3312) % 65536,
-                }))
+                telemetry = decode_telemetry(
+                    encode_telemetry(
+                        {
+                            **EXAMPLE,
+                            "distance_cm": (140 + step * 28) % 65536,
+                            "line_sensors": (2, 2, 3, 2, 6)[step % 5],
+                            "obstacle_cm": 34 + step % 12,
+                            "scan_deg": 60 + step % 7 * 10,
+                            # #41: ~118 ticks/cm (S2_ENC_*) at 28 cm/s, wrapping at 16 bits
+                            "left_ticks": (16492 + step * 3298) % 65536,
+                            "right_ticks": (16562 + step * 3312) % 65536,
+                        }
+                    )
+                )
                 heartbeat, telemetry_at, heartbeat_at = True, now, now
-                count = step // 4 + 1           # one simulated scan every 4 s
-                barcodes = [{**decode_barcode(encode_barcode(
-                                 frame, DEMO_SCANS[(frame - 1) % len(DEMO_SCANS)],
-                                 29 if DEMO_SCANS[(frame - 1) % len(DEMO_SCANS)] else 17)),
-                             "received_at": now - (count - frame) * 4}
-                            for frame in range(count, max(0, count - BARCODE_HISTORY), -1)]
+                count = step // 4 + 1  # one simulated scan every 4 s
+                barcodes = [
+                    {
+                        **decode_barcode(
+                            encode_barcode(
+                                frame,
+                                DEMO_SCANS[(frame - 1) % len(DEMO_SCANS)],
+                                29 if DEMO_SCANS[(frame - 1) % len(DEMO_SCANS)] else 17,
+                            )
+                        ),
+                        "received_at": now - (count - frame) * 4,
+                    }
+                    for frame in range(count, max(0, count - BARCODE_HISTORY), -1)
+                ]
                 barcode_total = count
             else:
                 barcodes = list(self.barcodes)
                 barcode_total = self.barcode_total
-            if heartbeat is not False and (heartbeat_at is None or now - heartbeat_at > 15):
+            if heartbeat is not False and (
+                heartbeat_at is None or now - heartbeat_at > 15
+            ):
                 heartbeat = None
             return dict(
-                demo=self.args.demo, client_id=self.args.client_id,
-                telemetry_topic=self.args.telemetry_topic, status_topic=self.args.status_topic,
+                demo=self.args.demo,
+                client_id=self.args.client_id,
+                telemetry_topic=self.args.telemetry_topic,
+                status_topic=self.args.status_topic,
                 barcode_topic=self.args.barcode_topic,
-                barcodes=barcodes, barcode_total=barcode_total,
-                telemetry=telemetry, telemetry_at=telemetry_at, heartbeat=heartbeat,
+                barcodes=barcodes,
+                barcode_total=barcode_total,
+                telemetry=telemetry,
+                telemetry_at=telemetry_at,
+                heartbeat=heartbeat,
                 stale=telemetry_at is not None and now - telemetry_at > 5,
                 rejected=self.rejected,
             )
@@ -120,10 +162,12 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         prefix = "/api/command/"
         request = urlsplit(self.path)
         path = request.path
-        command = path[len(prefix):]
+        command = path[len(prefix) :]
         args = self.feed.args
         mapping = path == "/api/mapping"
-        if not mapping and not (path.startswith(prefix) and command in ("pause", "resume", "start")):
+        if not mapping and not (
+            path.startswith(prefix) and command in ("pause", "resume", "start")
+        ):
             self.send_error(404)
             return
         if self.headers.get("X-Dashboard-Command") != "1":
@@ -148,9 +192,21 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             topic = args.command_topic
         try:
             subprocess.run(
-                ["mosquitto_pub", "-h", args.broker, "-p", str(args.mqtt_port),
-                 "-q", "1", "-t", topic, "-s"],
-                input=payload, check=True, timeout=3,
+                [
+                    "mosquitto_pub",
+                    "-h",
+                    args.broker,
+                    "-p",
+                    str(args.mqtt_port),
+                    "-q",
+                    "1",
+                    "-t",
+                    topic,
+                    "-s",
+                ],
+                input=payload,
+                check=True,
+                timeout=3,
             )
         except (OSError, subprocess.SubprocessError):
             self.send_error(502, "MQTT publish failed")
@@ -177,14 +233,27 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 def subscribe(feed):
     args = feed.args
     command = [
-        "mosquitto_sub", "-h", args.broker, "-p", str(args.mqtt_port),
-        "-q", "1", "-t", args.telemetry_topic, "-t", args.status_topic,
-        "-t", args.barcode_topic,
-        "-F", "%t\t%x",
+        "mosquitto_sub",
+        "-h",
+        args.broker,
+        "-p",
+        str(args.mqtt_port),
+        "-q",
+        "1",
+        "-t",
+        args.telemetry_topic,
+        "-t",
+        args.status_topic,
+        "-t",
+        args.barcode_topic,
+        "-F",
+        "%t\t%x",
     ]
     while True:
         try:
-            with subprocess.Popen(command, stdout=subprocess.PIPE, text=True) as process:
+            with subprocess.Popen(
+                command, stdout=subprocess.PIPE, text=True
+            ) as process:
                 try:
                     for line in process.stdout:
                         feed.receive(line)
@@ -195,11 +264,17 @@ def subscribe(feed):
                             process.wait(timeout=3)
                         except subprocess.TimeoutExpired:
                             process.kill()
-            print(f"MQTT subscriber exited ({process.returncode}). Retrying in 2 seconds.",
-                  file=sys.stderr, flush=True)
+            print(
+                f"MQTT subscriber exited ({process.returncode}). Retrying in 2 seconds.",
+                file=sys.stderr,
+                flush=True,
+            )
         except OSError as error:
-            print(f"MQTT subscriber error: {error}. Retrying in 2 seconds.",
-                  file=sys.stderr, flush=True)
+            print(
+                f"MQTT subscriber error: {error}. Retrying in 2 seconds.",
+                file=sys.stderr,
+                flush=True,
+            )
         sleep(2)
 
 
@@ -207,14 +282,22 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--broker", default="127.0.0.1", help="MQTT broker host")
     parser.add_argument("--mqtt-port", type=int, default=1883)
-    parser.add_argument("--client-id", default="group17-robot", help="robot topic prefix")
+    parser.add_argument(
+        "--client-id", default="group17-robot", help="robot topic prefix"
+    )
     parser.add_argument("--telemetry-topic", help="override <client-id>/telemetry")
     parser.add_argument("--status-topic", help="override <client-id>/status")
     parser.add_argument("--mapping-topic", help="override <client-id>/mapping")
     parser.add_argument("--command-topic", help="override <client-id>/command")
     parser.add_argument("--barcode-topic", help="override <client-id>/barcode")
-    parser.add_argument("--port", type=int, help="local HTTP port (default: 8000, or a free port if busy)")
-    parser.add_argument("--demo", action="store_true", help="preview with simulated data")
+    parser.add_argument(
+        "--port",
+        type=int,
+        help="local HTTP port (default: 8000, or a free port if busy)",
+    )
+    parser.add_argument(
+        "--demo", action="store_true", help="preview with simulated data"
+    )
     args = parser.parse_args()
     args.telemetry_topic = args.telemetry_topic or f"{args.client_id}/telemetry"
     args.status_topic = args.status_topic or f"{args.client_id}/status"
@@ -235,7 +318,9 @@ def main():
         if error.errno != errno.EADDRINUSE:
             raise
         if args.port is not None:
-            parser.error(f"Dashboard port {port} is in use. Try --port 0 for a free port.")
+            parser.error(
+                f"Dashboard port {port} is in use. Try --port 0 for a free port."
+            )
         print(f"Dashboard port {port} is in use. Choosing a free port.", flush=True)
         server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
     with server:

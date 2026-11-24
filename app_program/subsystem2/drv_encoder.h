@@ -24,10 +24,7 @@ void drv_encoder_poll(void);
 /*
  * Copy current encoder counts.
  */
-void drv_encoder_get_counts(
-    int32_t *left_ticks,
-    int32_t *right_ticks
-);
+void drv_encoder_get_counts(int32_t * left_ticks, int32_t * right_ticks);
 
 /*
  * Reset both counters to zero.

@@ -45,6 +45,7 @@ boot), '[S1:CMD] commands rx=.. queued=.. invalid=.. dropped=..' and
 '[S2:MOTION] ctrl late=<late>/<steps> gap_max=.. loop_max=.. ms'. Capture it
 alongside this log.
 """
+
 import argparse
 import queue
 import shutil
@@ -57,11 +58,24 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from mqtt_binary import (COMMANDS, TELEMETRY_BYTES, decode_barcode,  # noqa: E402
-                         decode_telemetry, encode_mapping)
+from mqtt_binary import (
+    COMMANDS,
+    TELEMETRY_BYTES,
+    decode_barcode,  # noqa: E402
+    decode_telemetry,
+    encode_mapping,
+)
 
-STATES = ["IDLE", "FOLLOWING", "TURNING", "SCANNING", "AVOIDING", "RECOVERING",
-          "FINISHED", "FAULT"]
+STATES = [
+    "IDLE",
+    "FOLLOWING",
+    "TURNING",
+    "SCANNING",
+    "AVOIDING",
+    "RECOVERING",
+    "FINISHED",
+    "FAULT",
+]
 DIRECTIONS = ["none", "LEFT", "RIGHT", "STRAIGHT", "U-TURN"]
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -71,7 +85,7 @@ class Log:
 
     def __init__(self, path):
         self.path = path
-        self.lock = threading.Lock()   # S1-U16 logs from its reader thread too
+        self.lock = threading.Lock()  # S1-U16 logs from its reader thread too
         path.parent.mkdir(parents=True, exist_ok=True)
         self.file = open(path, "w", encoding="utf-8")
 
@@ -101,9 +115,23 @@ class Telemetry:
             self.process.terminate()
         args = self.args
         self.process = subprocess.Popen(
-            ["mosquitto_sub", "-h", args.broker, "-p", str(args.port), "-q", "1",
-             "-t", f"{args.client_id}/telemetry", "-F", "%x"],
-            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+            [
+                "mosquitto_sub",
+                "-h",
+                args.broker,
+                "-p",
+                str(args.port),
+                "-q",
+                "1",
+                "-t",
+                f"{args.client_id}/telemetry",
+                "-F",
+                "%x",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
         threading.Thread(target=self._read, args=(self.process,), daemon=True).start()
 
     def _read(self, process):
@@ -140,9 +168,23 @@ class Telemetry:
 
 def publish(args, topic, payload, host=None):
     # -n sends a zero-length message; -s sends stdin as the payload.
-    subprocess.run(["mosquitto_pub", "-h", host or args.broker, "-p", str(args.port), "-q", "1",
-                    "-t", f"{args.client_id}/{topic}", "-n" if payload == b"" else "-s"],
-                   input=payload, check=True, timeout=5)
+    subprocess.run(
+        [
+            "mosquitto_pub",
+            "-h",
+            host or args.broker,
+            "-p",
+            str(args.port),
+            "-q",
+            "1",
+            "-t",
+            f"{args.client_id}/{topic}",
+            "-n" if payload == b"" else "-s",
+        ],
+        input=payload,
+        check=True,
+        timeout=5,
+    )
 
 
 def command(args, name):
@@ -181,9 +223,11 @@ def wait_with_countdown(log, seconds, what, watch=None):
 
 
 def describe(data):
-    return (f"state={STATES[data['state']]} speed={data['speed_cms']} "
-            f"line={data['line_sensors']:03b} letter={data.get('barcode_letter', '-')} "
-            f"map={data.get('map_received', '-')}")
+    return (
+        f"state={STATES[data['state']]} speed={data['speed_cms']} "
+        f"line={data['line_sensors']:03b} letter={data.get('barcode_letter', '-')} "
+        f"map={data.get('map_received', '-')}"
+    )
 
 
 def test_s1_u12(args, log, telemetry):
@@ -205,12 +249,22 @@ def test_s1_u12(args, log, telemetry):
     max_gap = max(gaps) if gaps else float("inf")
     rate = len(stamps) / duration if duration else 0.0
     wrong_size = sum(1 for size in sizes if size != TELEMETRY_BYTES)
-    log(f"packets={len(stamps)} rate={rate:.2f}/s max_gap={max_gap:.2f}s "
-        f"invalid={len(invalid)} not_{TELEMETRY_BYTES}_bytes={wrong_size}")
+    log(
+        f"packets={len(stamps)} rate={rate:.2f}/s max_gap={max_gap:.2f}s "
+        f"invalid={len(invalid)} not_{TELEMETRY_BYTES}_bytes={wrong_size}"
+    )
     for error in invalid[:5]:
         log(f"  invalid packet: {error}")
-    ok = stamps and 0.8 <= rate <= 1.5 and max_gap <= 3.0 and not invalid and not wrong_size
-    log(f"S1-U12 {'PASS' if ok else 'FAIL'} (expect ~1/s, all {TELEMETRY_BYTES} bytes and valid, no gap > 3 s)")
+    ok = (
+        stamps
+        and 0.8 <= rate <= 1.5
+        and max_gap <= 3.0
+        and not invalid
+        and not wrong_size
+    )
+    log(
+        f"S1-U12 {'PASS' if ok else 'FAIL'} (expect ~1/s, all {TELEMETRY_BYTES} bytes and valid, no gap > 3 s)"
+    )
     return bool(ok)
 
 
@@ -225,7 +279,9 @@ def test_s1_u14(args, log, telemetry):
         got = telemetry.wait_for(lambda d: True, args.timeout)
         ok = got is not None
         results["status"] += ok
-        log(f"[{i}] STATUS -> {'packet after %.0f ms (%s)' % ((got[0] - sent) * 1000, describe(got[1])) if ok else 'no packet'}")
+        log(
+            f"[{i}] STATUS -> {'packet after %.0f ms (%s)' % ((got[0] - sent) * 1000, describe(got[1])) if ok else 'no packet'}"
+        )
 
         telemetry.drain()
         sent = time.monotonic()
@@ -234,7 +290,9 @@ def test_s1_u14(args, log, telemetry):
         got = telemetry.wait_for(lambda d: d["state"] == 0, args.timeout)
         ok = got is not None
         results["pause"] += ok
-        log(f"[{i}] PAUSE  -> {'IDLE after %.0f ms' % ((got[0] - sent) * 1000) if ok else 'not paused within %.1f s' % args.timeout}")
+        log(
+            f"[{i}] PAUSE  -> {'IDLE after %.0f ms' % ((got[0] - sent) * 1000) if ok else 'not paused within %.1f s' % args.timeout}"
+        )
         time.sleep(0.5)
 
         telemetry.drain()
@@ -244,13 +302,22 @@ def test_s1_u14(args, log, telemetry):
         got = telemetry.wait_for(lambda d: d["state"] in (1, 2, 4, 5), args.timeout)
         ok = got is not None
         results["resume"] += ok
-        log(f"[{i}] RESUME -> {'%s after %.0f ms' % (STATES[got[1]['state']], (got[0] - sent) * 1000) if ok else 'not resumed within %.1f s' % args.timeout}")
+        log(
+            f"[{i}] RESUME -> {'%s after %.0f ms' % (STATES[got[1]['state']], (got[0] - sent) * 1000) if ok else 'not resumed within %.1f s' % args.timeout}"
+        )
         time.sleep(0.5)
-    log(f"broker side: STATUS {results['status']}/{args.repeats}, "
-        f"PAUSE {results['pause']}/{args.repeats}, RESUME {results['resume']}/{args.repeats}")
-    wheels = ask(log, f"Did the wheels stop at every PAUSE (within ~0.5 s) and restart at every RESUME?")
+    log(
+        f"broker side: STATUS {results['status']}/{args.repeats}, "
+        f"PAUSE {results['pause']}/{args.repeats}, RESUME {results['resume']}/{args.repeats}"
+    )
+    wheels = ask(
+        log,
+        f"Did the wheels stop at every PAUSE (within ~0.5 s) and restart at every RESUME?",
+    )
     ok = all(v == args.repeats for v in results.values()) and wheels
-    log(f"S1-U14 {'PASS' if ok else 'FAIL'} (expect {args.repeats}/{args.repeats} each; PAUSE stops within 500 ms)")
+    log(
+        f"S1-U14 {'PASS' if ok else 'FAIL'} (expect {args.repeats}/{args.repeats} each; PAUSE stops within 500 ms)"
+    )
     return ok
     return ok
 
@@ -278,8 +345,11 @@ def poll_until(up, want, limit):
 def laptop_ssid():
     """SSID this laptop's Wi-Fi is connected to (Windows netsh), or None when
     disconnected; raises OSError where netsh is not available."""
-    out = subprocess.run(["netsh", "wlan", "show", "interfaces"], capture_output=True,
-                         timeout=5).stdout.decode("utf-8", errors="replace")  # netsh writes the SSID as UTF-8
+    out = subprocess.run(
+        ["netsh", "wlan", "show", "interfaces"], capture_output=True, timeout=5
+    ).stdout.decode(
+        "utf-8", errors="replace"
+    )  # netsh writes the SSID as UTF-8
     state = ssid = None
     for line in out.splitlines():
         key, sep, value = line.partition(":")
@@ -293,7 +363,9 @@ def laptop_ssid():
     return ssid if state == "connected" else None
 
 
-def outage_case(args, log, telemetry, name, stop, start, during=None, up=None, what=None):
+def outage_case(
+    args, log, telemetry, name, stop, start, during=None, up=None, what=None
+):
     """One S1-U13 case: telemetry flowing, outage, time until it is back.
 
     The outage start and end are detected by polling up() (default: the
@@ -310,8 +382,10 @@ def outage_case(args, log, telemetry, name, stop, start, during=None, up=None, w
     log(f"OPERATOR asked: {stop}")
     down = poll_until(up, False, args.react_wait)
     if down is None:
-        log(f"{name}: FAIL, {what} still up after {args.react_wait:.0f} s; "
-            f"the outage never started")
+        log(
+            f"{name}: FAIL, {what} still up after {args.react_wait:.0f} s; "
+            f"the outage never started"
+        )
         return False
     log(f"{name}: {what} down (outage started)")
     # Keep polling during the countdown: if the broker or hotspot comes back
@@ -322,51 +396,76 @@ def outage_case(args, log, telemetry, name, stop, start, during=None, up=None, w
     early = None
     if during is not None:
         # Give the robot a few seconds to lose the link before acting.
-        early = wait_with_countdown(log, min(5.0, args.outage),
-                                    f"{name} outage, before the offline step", watch=reachable)
+        early = wait_with_countdown(
+            log,
+            min(5.0, args.outage),
+            f"{name} outage, before the offline step",
+            watch=reachable,
+        )
         if early is None:
             during()
-            early = wait_with_countdown(log, max(args.outage - 5.0, 0.0), f"{name} outage",
-                                        watch=reachable)
+            early = wait_with_countdown(
+                log, max(args.outage - 5.0, 0.0), f"{name} outage", watch=reachable
+            )
         else:
             log(f"{name}: back before the offline step; it was skipped")
     else:
         early = wait_with_countdown(log, args.outage, f"{name} outage", watch=reachable)
     if early is not None:
         back = early
-        log(f"{name}: WARN back after only {back - down:.1f} s, before the {args.outage:.0f} s "
-            f"outage ended (restored too early?); timing from then")
+        log(
+            f"{name}: WARN back after only {back - down:.1f} s, before the {args.outage:.0f} s "
+            f"outage ended (restored too early?); timing from then"
+        )
     else:
         print(f"  >> {start} (detected automatically)", flush=True)
         log(f"OPERATOR asked: {start}")
         back = poll_until(up, True, args.react_wait)
         if back is None:
-            log(f"{name}: FAIL, {what} not up again within {args.react_wait:.0f} s "
-                f"of asking; nothing to time")
+            log(
+                f"{name}: FAIL, {what} not up again within {args.react_wait:.0f} s "
+                f"of asking; nothing to time"
+            )
             return False
-    log(f"{name}: {what} up again after {back - down:.1f} s off; timing telemetry from here")
+    log(
+        f"{name}: {what} up again after {back - down:.1f} s off; timing telemetry from here"
+    )
     # The subscriber lost the broker too; resubscribe until telemetry arrives.
     got = None
     deadline = back + args.recover_wait
     while got is None and time.monotonic() < deadline:
         telemetry.restart()
         telemetry.drain()
-        got = telemetry.wait_for(lambda d: True, min(2.0, max(deadline - time.monotonic(), 0.1)))
+        got = telemetry.wait_for(
+            lambda d: True, min(2.0, max(deadline - time.monotonic(), 0.1))
+        )
     if got is None:
-        log(f"{name}: no telemetry within {args.recover_wait:.0f} s of {what} being back")
+        log(
+            f"{name}: no telemetry within {args.recover_wait:.0f} s of {what} being back"
+        )
         return False
     recovered = got[0] - back
-    log(f"{name}: telemetry back {recovered:.1f} s after {what} was back "
-        f"({describe(got[1])})")
+    log(
+        f"{name}: telemetry back {recovered:.1f} s after {what} was back "
+        f"({describe(got[1])})"
+    )
     return recovered <= 10.0
 
 
 def test_s1_u13(args, log, telemetry):
     log(f"== S1-U13 reconnect: broker and hotspot off for {args.outage:.0f} s each ==")
-    pause_for(log, "Robot STARTed and following (or wheels raised and turning), serial console captured.")
-    broker = outage_case(args, log, telemetry, "broker",
-                         "Stop the broker now (Ctrl-C the mosquitto window).",
-                         "Start the broker again.")
+    pause_for(
+        log,
+        "Robot STARTed and following (or wheels raised and turning), serial console captured.",
+    )
+    broker = outage_case(
+        args,
+        log,
+        telemetry,
+        "broker",
+        "Stop the broker now (Ctrl-C the mosquitto window).",
+        "Start the broker again.",
+    )
     offline_sent = []
 
     def offline_pause():
@@ -374,7 +473,9 @@ def test_s1_u13(args, log, telemetry):
         try:
             command_at(args, "pause", args.local_broker)
             offline_sent.append(time.monotonic())
-            log(f"S1-U20: PAUSE published via {args.local_broker} while the robot is offline")
+            log(
+                f"S1-U20: PAUSE published via {args.local_broker} while the robot is offline"
+            )
         except (subprocess.SubprocessError, OSError) as error:
             log(f"S1-U20: could not publish the offline PAUSE ({error})")
 
@@ -387,29 +488,50 @@ def test_s1_u13(args, log, telemetry):
     except (OSError, subprocess.SubprocessError):
         hotspot_ssid = None
     if hotspot_ssid:
-        log(f"hotspot: watching this laptop's Wi-Fi (SSID {hotspot_ssid!r}) for the outage")
+        log(
+            f"hotspot: watching this laptop's Wi-Fi (SSID {hotspot_ssid!r}) for the outage"
+        )
 
         def hotspot_up():
             try:
                 return laptop_ssid() == hotspot_ssid and broker_reachable(args)
             except (OSError, subprocess.SubprocessError):
                 return False
+
         hotspot_what = f"laptop on {hotspot_ssid!r}"
     else:
-        log("hotspot: WARN cannot read this laptop's Wi-Fi state (netsh); falling back to "
-            "the broker port, which can miss the outage")
+        log(
+            "hotspot: WARN cannot read this laptop's Wi-Fi state (netsh); falling back to "
+            "the broker port, which can miss the outage"
+        )
         hotspot_up = hotspot_what = None
-    hotspot = outage_case(args, log, telemetry, "hotspot",
-                          "Turn the hotspot (AP) off now.",
-                          "Turn the hotspot back on.", during=offline_pause,
-                          up=hotspot_up, what=hotspot_what)
-    args.extra_results["S1-U20"] = test_s1_u20(args, log, telemetry, hotspot, bool(offline_sent))
-    log("Firmware times: compare the 'wifi: link up ... t=' and '[S1:MQTT] connected ... t=' "
-        "lines in the console with the moment each outage ended.")
-    wheels = ask(log, "Did the wheels keep turning (or the robot keep following) through both outages?")
+    hotspot = outage_case(
+        args,
+        log,
+        telemetry,
+        "hotspot",
+        "Turn the hotspot (AP) off now.",
+        "Turn the hotspot back on.",
+        during=offline_pause,
+        up=hotspot_up,
+        what=hotspot_what,
+    )
+    args.extra_results["S1-U20"] = test_s1_u20(
+        args, log, telemetry, hotspot, bool(offline_sent)
+    )
+    log(
+        "Firmware times: compare the 'wifi: link up ... t=' and '[S1:MQTT] connected ... t=' "
+        "lines in the console with the moment each outage ended."
+    )
+    wheels = ask(
+        log,
+        "Did the wheels keep turning (or the robot keep following) through both outages?",
+    )
     ok = broker and hotspot and wheels
-    log(f"S1-U13 {'PASS' if ok else 'FAIL'} (expect telemetry back within 10 s of each restart; "
-        f"Wi-Fi loss must not stop driving)")
+    log(
+        f"S1-U13 {'PASS' if ok else 'FAIL'} (expect telemetry back within 10 s of each restart; "
+        f"Wi-Fi loss must not stop driving)"
+    )
     return ok
 
 
@@ -441,17 +563,23 @@ def test_s1_u20(args, log, telemetry, reconnected, offline_sent):
         log("S1-U20 FAIL: the offline PAUSE was never published (nothing to check)")
         return False
     if not reconnected:
-        log("S1-U20 FAIL (inconclusive): no telemetry after the reconnect, so the "
-            "robot's state cannot be read")
+        log(
+            "S1-U20 FAIL (inconclusive): no telemetry after the reconnect, so the "
+            "robot's state cannot be read"
+        )
         return False
 
     # 1. The PAUSE sent while offline must not arrive late.
     states = states_for(telemetry, args.stale_watch)
     paused = [s for s in states if s == 0]
-    log(f"after the reconnect: {len(states)} packets in {args.stale_watch:.0f} s, "
-        f"states={sorted({STATES[s] for s in states}) or 'none'}")
+    log(
+        f"after the reconnect: {len(states)} packets in {args.stale_watch:.0f} s, "
+        f"states={sorted({STATES[s] for s in states}) or 'none'}"
+    )
     stale_ok = bool(states) and not paused
-    log(f"offline PAUSE {'never applied' if stale_ok else 'APPLIED LATE or no telemetry'}")
+    log(
+        f"offline PAUSE {'never applied' if stale_ok else 'APPLIED LATE or no telemetry'}"
+    )
 
     # 2. PAUSE twice: paused once, and stays paused.
     telemetry.drain()
@@ -460,7 +588,9 @@ def test_s1_u20(args, log, telemetry, reconnected, offline_sent):
     command(args, "status")
     got = telemetry.wait_for(lambda d: d["state"] == 0, args.timeout)
     held = got is not None and all(s == 0 for s in states_for(telemetry, 2.0))
-    log(f"PAUSE x2 -> {'IDLE and stayed IDLE' if held else 'not paused, or did not stay paused'}")
+    log(
+        f"PAUSE x2 -> {'IDLE and stayed IDLE' if held else 'not paused, or did not stay paused'}"
+    )
 
     # 3. RESUME twice: following again.
     telemetry.drain()
@@ -469,7 +599,9 @@ def test_s1_u20(args, log, telemetry, reconnected, offline_sent):
     command(args, "status")
     got = telemetry.wait_for(lambda d: d["state"] in DRIVING, args.timeout)
     resumed = got is not None and all(s in DRIVING for s in states_for(telemetry, 2.0))
-    log(f"RESUME x2 -> {'driving and stayed driving' if resumed else 'not resumed, or stopped again'}")
+    log(
+        f"RESUME x2 -> {'driving and stayed driving' if resumed else 'not resumed, or stopped again'}"
+    )
 
     # 4. START while armed: ignored, keeps driving.
     telemetry.drain()
@@ -477,34 +609,63 @@ def test_s1_u20(args, log, telemetry, reconnected, offline_sent):
     command(args, "status")
     states = states_for(telemetry, 2.0)
     start_kept = bool(states) and all(s in DRIVING for s in states)
-    log(f"START while armed -> {'still driving' if start_kept else 'state changed or no telemetry'}")
-    console = ask(log, "Did the console print 'START ignored: already started' once, and no "
-                       "PAUSE being applied right after the reconnect?")
+    log(
+        f"START while armed -> {'still driving' if start_kept else 'state changed or no telemetry'}"
+    )
+    console = ask(
+        log,
+        "Did the console print 'START ignored: already started' once, and no "
+        "PAUSE being applied right after the reconnect?",
+    )
     ok = stale_ok and held and resumed and start_kept and console
-    log(f"S1-U20 {'PASS' if ok else 'FAIL'} (expect the offline PAUSE never applied, duplicates "
-        f"harmless, START while armed ignored)")
+    log(
+        f"S1-U20 {'PASS' if ok else 'FAIL'} (expect the offline PAUSE never applied, duplicates "
+        f"harmless, START while armed ignored)"
+    )
     return ok
 
 
 def test_s1_u17(args, log, telemetry):
     log(f"== S1-U17 command flood: {args.flood} STATUS commands in about 1 s ==")
-    pause_for(log, "Robot STARTed and following (or wheels raised and turning), serial console captured.")
+    pause_for(
+        log,
+        "Robot STARTed and following (or wheels raised and turning), serial console captured.",
+    )
     telemetry.drain()
     before = telemetry.wait_for(lambda d: True, 5.0)
     if before is None:
         log("S1-U17 FAIL: no telemetry before the flood (check the setup)")
         return False
     log(f"before: {describe(before[1])}")
-    late_before = input("  >> Type the last 'ctrl late=X/Y' X value from the console: ").strip()
+    late_before = input(
+        "  >> Type the last 'ctrl late=X/Y' X value from the console: "
+    ).strip()
     log(f"OPERATOR: ctrl late before = {late_before}")
 
     telemetry.drain()
     started = time.monotonic()
     # One client, --repeat: a new mosquitto_pub per message would be too slow.
-    subprocess.run(["mosquitto_pub", "-h", args.broker, "-p", str(args.port), "-q", "1",
-                    "-t", f"{args.client_id}/command", "-s",
-                    "--repeat", str(args.flood), "--repeat-delay", f"{1.0 / args.flood:.4f}"],
-                   input=bytes([COMMANDS["status"]]), check=True, timeout=30)
+    subprocess.run(
+        [
+            "mosquitto_pub",
+            "-h",
+            args.broker,
+            "-p",
+            str(args.port),
+            "-q",
+            "1",
+            "-t",
+            f"{args.client_id}/command",
+            "-s",
+            "--repeat",
+            str(args.flood),
+            "--repeat-delay",
+            f"{1.0 / args.flood:.4f}",
+        ],
+        input=bytes([COMMANDS["status"]]),
+        check=True,
+        timeout=30,
+    )
     sent_s = time.monotonic() - started
     log(f"sent {args.flood} STATUS in {sent_s:.2f} s")
 
@@ -522,25 +683,36 @@ def test_s1_u17(args, log, telemetry):
     stamps.append(time.monotonic())
     max_gap = max(b - a for a, b in zip(stamps, stamps[1:]))
     stopped = [STATES[s] for s in states if s not in (1, 2, 4, 5)]
-    log(f"telemetry during/after: packets={len(stamps) - 2} max_gap={max_gap:.2f}s "
-        f"not-driving states={sorted(set(stopped)) or 'none'}")
+    log(
+        f"telemetry during/after: packets={len(stamps) - 2} max_gap={max_gap:.2f}s "
+        f"not-driving states={sorted(set(stopped)) or 'none'}"
+    )
 
     telemetry.drain()
     sent = time.monotonic()
     command(args, "pause")
     command(args, "status")
     paused = telemetry.wait_for(lambda d: d["state"] == 0, args.timeout)
-    log(f"PAUSE after the flood -> {'IDLE after %.0f ms' % ((paused[0] - sent) * 1000) if paused else 'not paused'}")
+    log(
+        f"PAUSE after the flood -> {'IDLE after %.0f ms' % ((paused[0] - sent) * 1000) if paused else 'not paused'}"
+    )
     command(args, "resume")
 
-    late_after = input("  >> Type the 'ctrl late=X/Y' X value from the console now: ").strip()
+    late_after = input(
+        "  >> Type the 'ctrl late=X/Y' X value from the console now: "
+    ).strip()
     log(f"OPERATOR: ctrl late after = {late_after}")
-    counted = ask(log, f"Did a '[S1:CMD] commands rx=..' line appear, with every STATUS counted "
-                       f"(rx = queued + invalid + dropped)?")
+    counted = ask(
+        log,
+        f"Did a '[S1:CMD] commands rx=..' line appear, with every STATUS counted "
+        f"(rx = queued + invalid + dropped)?",
+    )
     no_late = late_before != "" and late_before == late_after
     ok = max_gap <= 3.0 and not stopped and paused is not None and no_late and counted
-    log(f"S1-U17 {'PASS' if ok else 'FAIL'} (expect no telemetry gap > 3 s, still following, "
-        f"PAUSE works, ctrl late unchanged, every command counted)")
+    log(
+        f"S1-U17 {'PASS' if ok else 'FAIL'} (expect no telemetry gap > 3 s, still following, "
+        f"PAUSE works, ctrl late unchanged, every command counted)"
+    )
     return ok
 
 
@@ -549,12 +721,26 @@ class BarcodeEvents:
 
     def __init__(self, args, log):
         self.log = log
-        self.events = []          # (hex payload, decoded dict or None, error or None)
+        self.events = []  # (hex payload, decoded dict or None, error or None)
         self.lock = threading.Lock()
         self.process = subprocess.Popen(
-            ["mosquitto_sub", "-h", args.broker, "-p", str(args.port), "-q", "1",
-             "-t", f"{args.client_id}/barcode", "-F", "%x"],
-            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+            [
+                "mosquitto_sub",
+                "-h",
+                args.broker,
+                "-p",
+                str(args.port),
+                "-q",
+                "1",
+                "-t",
+                f"{args.client_id}/barcode",
+                "-F",
+                "%x",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
         threading.Thread(target=self._read, daemon=True).start()
 
     def _read(self):
@@ -570,8 +756,10 @@ class BarcodeEvents:
             if error:
                 self.log(f"barcode #{n}: {hex_payload or '-'} UNDECODABLE ({error})")
             else:
-                self.log(f"barcode #{n}: {hex_payload} frame={data['frame']} "
-                         f"letter={data['letter'] or 'rejected'} runs={data['runs']}")
+                self.log(
+                    f"barcode #{n}: {hex_payload} frame={data['frame']} "
+                    f"letter={data['letter'] or 'rejected'} runs={data['runs']}"
+                )
 
     def snapshot(self):
         with self.lock:
@@ -608,14 +796,22 @@ def check_barcode_events(events, expected, letters=None):
                 gaps.append((frames[-1], frame, step - 1))
         frames.append(frame)
         payloads[frame] = hex_payload
-    got = "".join(decode_barcode(bytes.fromhex(payloads[f]))["letter"] or "?" for f in frames)
-    lines = [f"received {len(events)} events: {len(frames)} distinct frames "
-             f"(expect {expected}), {duplicates} QoS 1 duplicates, {undecodable} undecodable"]
+    got = "".join(
+        decode_barcode(bytes.fromhex(payloads[f]))["letter"] or "?" for f in frames
+    )
+    lines = [
+        f"received {len(events)} events: {len(frames)} distinct frames "
+        f"(expect {expected}), {duplicates} QoS 1 duplicates, {undecodable} undecodable"
+    ]
     if frames:
-        lines.append(f"frames {frames[0]}..{frames[-1]}, letters {got} (? = rejected capture)")
+        lines.append(
+            f"frames {frames[0]}..{frames[-1]}, letters {got} (? = rejected capture)"
+        )
     lines += [f"GAP: frame {a} -> {b} ({lost} event(s) lost)" for a, b, lost in gaps]
     lines += [f"OUT OF ORDER: frame {a} -> {b}" for a, b in backwards]
-    lines += [f"CONFLICT: frame {f} arrived twice with different payloads" for f in conflicts]
+    lines += [
+        f"CONFLICT: frame {f} arrived twice with different payloads" for f in conflicts
+    ]
     ok = len(frames) == expected and not (undecodable or gaps or backwards or conflicts)
     if letters is not None:
         match = got == letters
@@ -626,15 +822,21 @@ def check_barcode_events(events, expected, letters=None):
 
 def test_s1_u16(args, log, telemetry):
     log(f"== S1-U16 barcode result events: {args.barcodes} barcodes on <id>/barcode ==")
-    pause_for(log, "Boot the robot (integrated), wait for Wi-Fi + MQTT, and keep the serial "
-                   "console captured.")
+    pause_for(
+        log,
+        "Boot the robot (integrated), wait for Wi-Fi + MQTT, and keep the serial "
+        "console captured.",
+    )
     events = BarcodeEvents(args, log)
     try:
-        time.sleep(1.0)                       # let the subscription settle
+        time.sleep(1.0)  # let the subscription settle
         start = len(events.snapshot())
         if start:
             log(f"note: {start} event(s) arrived before the run (ignored)")
-        pause_for(log, f"Drive the robot over {args.barcodes} barcodes (START, or push it by hand).")
+        pause_for(
+            log,
+            f"Drive the robot over {args.barcodes} barcodes (START, or push it by hand).",
+        )
         log(f"waiting {args.settle:.0f} s for late events (QoS 1 retries)")
         time.sleep(args.settle)
         received = events.snapshot()[start:]
@@ -643,11 +845,16 @@ def test_s1_u16(args, log, telemetry):
     ok, lines = check_barcode_events(received, args.barcodes, args.letters)
     for line in lines:
         log(line)
-    console = ask(log, f"Did the console show {args.barcodes} '[S1:MQTT] barcode acked frame=' "
-                       f"lines and no '[S3:BARCODE] ERR MQTT enqueue=' line?")
+    console = ask(
+        log,
+        f"Did the console show {args.barcodes} '[S1:MQTT] barcode acked frame=' "
+        f"lines and no '[S3:BARCODE] ERR MQTT enqueue=' line?",
+    )
     ok = ok and console
-    log(f"S1-U16 {'PASS' if ok else 'FAIL'} (expect {args.barcodes}/{args.barcodes} events, "
-        f"frame IDs consecutive, every packet valid)")
+    log(
+        f"S1-U16 {'PASS' if ok else 'FAIL'} (expect {args.barcodes}/{args.barcodes} events, "
+        f"frame IDs consecutive, every packet valid)"
+    )
     return ok
 
 
@@ -660,14 +867,19 @@ def map_flag(args, telemetry):
 
 def test_s1_u15(args, log, telemetry):
     log("== S1-U15 letter map over MQTT ==")
-    pause_for(log, "Reboot the robot (no map), wait for Wi-Fi + MQTT, and keep the serial console open.")
+    pause_for(
+        log,
+        "Reboot the robot (no map), wait for Wi-Fi + MQTT, and keep the serial console open.",
+    )
     flag = map_flag(args, telemetry)
     log(f"map flag after reboot = {flag}")
     if flag != 0:
         log("S1-U15 FAIL: the flag must be 0 before any map is sent")
         return False
-    bad = {"duplicate letters A/A/A/A": bytes.fromhex("000000"),
-           "reserved bit set (A/B/C/Z + bit 20)": bytes.fromhex("20881c")}
+    bad = {
+        "duplicate letters A/A/A/A": bytes.fromhex("000000"),
+        "reserved bit set (A/B/C/Z + bit 20)": bytes.fromhex("20881c"),
+    }
     rejected = True
     for name, payload in bad.items():
         publish(args, "mapping", payload)
@@ -675,19 +887,32 @@ def test_s1_u15(args, log, telemetry):
         flag = map_flag(args, telemetry)
         log(f"sent {name} ({payload.hex()}) -> map flag {flag}")
         rejected &= flag == 0
-    console = ask(log, "Did the console print 'Buddy 1: invalid barcode map rejected' twice?")
+    console = ask(
+        log, "Did the console print 'Buddy 1: invalid barcode map rejected' twice?"
+    )
     letters = [args.map[i] for i in range(4)]
     publish(args, "mapping", encode_mapping(letters))
     time.sleep(0.5)
     flag = map_flag(args, telemetry)
-    log(f"sent valid map L={letters[0]} R={letters[1]} S={letters[2]} U={letters[3]} -> map flag {flag}")
-    applied = flag == 1 and ask(log, "Did the console print '[ROBOT] MQTT map applied: ...' with those letters?")
-    publish(args, "mapping", bytes.fromhex("000000"))   # an invalid map after a valid one
+    log(
+        f"sent valid map L={letters[0]} R={letters[1]} S={letters[2]} U={letters[3]} -> map flag {flag}"
+    )
+    applied = flag == 1 and ask(
+        log, "Did the console print '[ROBOT] MQTT map applied: ...' with those letters?"
+    )
+    publish(
+        args, "mapping", bytes.fromhex("000000")
+    )  # an invalid map after a valid one
     log("sent the duplicate-letter map again: the valid map must be kept")
-    drive = ask(log, f"Drive over barcode '{letters[1]}' then a junction: did the robot turn RIGHT "
-                     f"(the old map kept, not changed by the bad one)?")
+    drive = ask(
+        log,
+        f"Drive over barcode '{letters[1]}' then a junction: did the robot turn RIGHT "
+        f"(the old map kept, not changed by the bad one)?",
+    )
     ok = rejected and console and applied and drive
-    log(f"S1-U15 {'PASS' if ok else 'FAIL'} (expect both invalid maps rejected, valid map applied and kept)")
+    log(
+        f"S1-U15 {'PASS' if ok else 'FAIL'} (expect both invalid maps rejected, valid map applied and kept)"
+    )
     return ok
 
 
@@ -728,8 +953,11 @@ def held(telemetry, args, want, seconds):
 
 def test_int_15(args, log, telemetry):
     log("== INT-15 invalid or corrupted commands, S1 -> VC -> S2 (#51) ==")
-    pause_for(log, "Reboot the robot (integrated, no auto-start) on the line, or with the "
-                   "wheels raised. Wait for Wi-Fi + MQTT; keep the serial console captured.")
+    pause_for(
+        log,
+        "Reboot the robot (integrated, no auto-start) on the line, or with the "
+        "wheels raised. Wait for Wi-Fi + MQTT; keep the serial console captured.",
+    )
     ready = lambda d: d["state"] == 0 and d["speed_cms"] == 0
     driving = lambda d: d["state"] in DRIVING
     sent = 0
@@ -740,10 +968,12 @@ def test_int_15(args, log, telemetry):
         publish(args, "command", payload)
         sent += 1
         good, states = held(telemetry, args, ready, 1.5)
-        log(f"Ready  + {name:24s} ({payload.hex() or '-'}) -> "
-            f"{'still Ready, 0 cm/s' if good else 'CHANGED: ' + describe(states[-1]) if states else 'no telemetry'}")
+        log(
+            f"Ready  + {name:24s} ({payload.hex() or '-'}) -> "
+            f"{'still Ready, 0 cm/s' if good else 'CHANGED: ' + describe(states[-1]) if states else 'no telemetry'}"
+        )
         ok &= good
-    publish(args, "commands", bytes([COMMANDS["start"]]))   # wrong topic: not a command
+    publish(args, "commands", bytes([COMMANDS["start"]]))  # wrong topic: not a command
     good, _ = held(telemetry, args, ready, 1.5)
     log(f"Ready  + START on <id>/commands -> {'still Ready' if good else 'CHANGED'}")
     ok &= good
@@ -763,15 +993,19 @@ def test_int_15(args, log, telemetry):
         publish(args, "command", payload)
         sent += 1
     good, states = held(telemetry, args, driving, 3.0)
-    log(f"driving + {len(BAD_COMMANDS)} bad payloads -> "
-        f"{'kept driving' if good else 'STOPPED or changed: ' + str(sorted({STATES[d['state']] for d in states}))}")
+    log(
+        f"driving + {len(BAD_COMMANDS)} bad payloads -> "
+        f"{'kept driving' if good else 'STOPPED or changed: ' + str(sorted({STATES[d['state']] for d in states}))}"
+    )
     ok &= good
     telemetry.drain()
     t0 = time.monotonic()
     command(args, "pause")
     command(args, "status")
     paused = telemetry.wait_for(lambda d: d["state"] == 0, args.timeout)
-    log(f"valid PAUSE -> {'IDLE after %.0f ms' % ((paused[0] - t0) * 1000) if paused else 'NOT paused'}")
+    log(
+        f"valid PAUSE -> {'IDLE after %.0f ms' % ((paused[0] - t0) * 1000) if paused else 'NOT paused'}"
+    )
     ok &= paused is not None
 
     # (c) Paused: a corrupted RESUME keeps it stopped.
@@ -779,8 +1013,10 @@ def test_int_15(args, log, telemetry):
         publish(args, "command", payload)
         sent += 1
     good, _ = held(telemetry, args, lambda d: d["state"] == 0, 3.0)
-    log(f"paused + {len(BAD_RESUMES)} corrupted RESUMEs "
-        f"({' '.join(p.hex() for p in BAD_RESUMES)}) -> {'stayed paused' if good else 'RESUMED'}")
+    log(
+        f"paused + {len(BAD_RESUMES)} corrupted RESUMEs "
+        f"({' '.join(p.hex() for p in BAD_RESUMES)}) -> {'stayed paused' if good else 'RESUMED'}"
+    )
     ok &= good
     telemetry.drain()
     command(args, "resume")
@@ -790,48 +1026,93 @@ def test_int_15(args, log, telemetry):
     ok &= resumed
     command(args, "pause")
 
-    wheels = ask(log, "Did the wheels keep turning through the bad payloads while following, stop at "
-                      "the PAUSE, stay stopped through the bad RESUMEs, and restart at RESUME?")
-    invalid = input(f"  >> Type the invalid= value from the last '[S1:CMD] commands' console line "
-                    f"(expect {sent}): ").strip()
+    wheels = ask(
+        log,
+        "Did the wheels keep turning through the bad payloads while following, stop at "
+        "the PAUSE, stay stopped through the bad RESUMEs, and restart at RESUME?",
+    )
+    invalid = input(
+        f"  >> Type the invalid= value from the last '[S1:CMD] commands' console line "
+        f"(expect {sent}): "
+    ).strip()
     log(f"OPERATOR: console invalid = {invalid} (sent {sent} bad payloads since boot)")
     ok &= wheels and invalid == str(sent)
-    log(f"INT-15 {'PASS' if ok else 'FAIL'} (expect every bad payload rejected with no effect in "
-        f"Ready, following and paused; valid START/PAUSE/RESUME still work; invalid = {sent})")
+    log(
+        f"INT-15 {'PASS' if ok else 'FAIL'} (expect every bad payload rejected with no effect in "
+        f"Ready, following and paused; valid START/PAUSE/RESUME still work; invalid = {sent})"
+    )
     return bool(ok)
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--broker", required=True)
     parser.add_argument("--port", type=int, default=1883)
     parser.add_argument("--client-id", default="group17-robot")
     parser.add_argument("--minutes", type=float, default=5.0, help="S1-U12 duration")
     parser.add_argument("--repeats", type=int, default=10, help="S1-U14 repetitions")
-    parser.add_argument("--timeout", type=float, default=1.5, help="seconds to see an effect")
+    parser.add_argument(
+        "--timeout", type=float, default=1.5, help="seconds to see an effect"
+    )
     parser.add_argument("--outage", type=float, default=30.0, help="S1-U13 seconds off")
-    parser.add_argument("--recover-wait", type=float, default=30.0,
-                        help="S1-U13 seconds to wait for telemetry after the broker is back")
-    parser.add_argument("--react-wait", type=float, default=180.0,
-                        help="S1-U13 seconds to wait for the operator to stop or restore "
-                             "the broker or hotspot")
-    parser.add_argument("--local-broker", default="127.0.0.1",
-                        help="S1-U20 address of the same broker that still works with the "
-                             "hotspot off (the broker must run on this laptop)")
-    parser.add_argument("--stale-watch", type=float, default=10.0,
-                        help="S1-U20 seconds to watch for a late PAUSE after the reconnect")
-    parser.add_argument("--barcodes", type=int, default=5, help="S1-U16 barcodes to drive over")
-    parser.add_argument("--letters", help="S1-U16 expected letters in order, e.g. AZAZ... "
-                                          "('?' for a capture meant to be rejected)")
-    parser.add_argument("--settle", type=float, default=5.0,
-                        help="S1-U16 seconds to wait for late events after the last barcode")
-    parser.add_argument("--flood", type=int, default=100, help="S1-U17 commands in about 1 s")
-    parser.add_argument("--map", default="FAZW",
-                        help="valid map for S1-U15 as LRSU letters (default FAZW: A turns right)")
-    parser.add_argument("--only", choices=TESTS, action="append",
-                        help="run only these tests (repeatable); default all")
-    parser.add_argument("--out", type=Path, help="log path (default testing/integration/logs/...)")
+    parser.add_argument(
+        "--recover-wait",
+        type=float,
+        default=30.0,
+        help="S1-U13 seconds to wait for telemetry after the broker is back",
+    )
+    parser.add_argument(
+        "--react-wait",
+        type=float,
+        default=180.0,
+        help="S1-U13 seconds to wait for the operator to stop or restore "
+        "the broker or hotspot",
+    )
+    parser.add_argument(
+        "--local-broker",
+        default="127.0.0.1",
+        help="S1-U20 address of the same broker that still works with the "
+        "hotspot off (the broker must run on this laptop)",
+    )
+    parser.add_argument(
+        "--stale-watch",
+        type=float,
+        default=10.0,
+        help="S1-U20 seconds to watch for a late PAUSE after the reconnect",
+    )
+    parser.add_argument(
+        "--barcodes", type=int, default=5, help="S1-U16 barcodes to drive over"
+    )
+    parser.add_argument(
+        "--letters",
+        help="S1-U16 expected letters in order, e.g. AZAZ... "
+        "('?' for a capture meant to be rejected)",
+    )
+    parser.add_argument(
+        "--settle",
+        type=float,
+        default=5.0,
+        help="S1-U16 seconds to wait for late events after the last barcode",
+    )
+    parser.add_argument(
+        "--flood", type=int, default=100, help="S1-U17 commands in about 1 s"
+    )
+    parser.add_argument(
+        "--map",
+        default="FAZW",
+        help="valid map for S1-U15 as LRSU letters (default FAZW: A turns right)",
+    )
+    parser.add_argument(
+        "--only",
+        choices=TESTS,
+        action="append",
+        help="run only these tests (repeatable); default all",
+    )
+    parser.add_argument(
+        "--out", type=Path, help="log path (default testing/integration/logs/...)"
+    )
     args = parser.parse_args()
     args.map = args.map.upper()
     if args.letters is not None:
@@ -843,15 +1124,23 @@ def main():
     for tool in ("mosquitto_sub", "mosquitto_pub"):
         if shutil.which(tool) is None:
             parser.error(f"{tool} is not on PATH")
-    out = args.out or ROOT / "testing/integration/logs" / f"{datetime.now():%Y-%m-%d_%H%M}_robot_mqtt_test.txt"
+    out = (
+        args.out
+        or ROOT
+        / "testing/integration/logs"
+        / f"{datetime.now():%Y-%m-%d_%H%M}_robot_mqtt_test.txt"
+    )
     log = Log(out)
     log(f"robot_mqtt_test.py broker={args.broker}:{args.port} client={args.client_id}")
-    commit = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"],
-                            capture_output=True, text=True).stdout.strip()
+    commit = subprocess.run(
+        ["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"],
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
     log(f"repo commit {commit or 'unknown'} (record the firmware's commit in TEST_LOG)")
     telemetry = Telemetry(args)
     results = {}
-    args.extra_results = {}   # results a test records for another ID (S1-U13 -> S1-U20)
+    args.extra_results = {}  # results a test records for another ID (S1-U13 -> S1-U20)
     try:
         tests = args.only or list(TESTS)
         for name, test in TESTS.items():
@@ -864,15 +1153,24 @@ def main():
         log("interrupted")
     finally:
         telemetry.close()
-        summary = ", ".join(f"{k} {'PASS' if v else 'FAIL'}" for k, v in results.items())
+        summary = ", ".join(
+            f"{k} {'PASS' if v else 'FAIL'}" for k, v in results.items()
+        )
         log(f"SUMMARY: {summary or 'no test completed'}")
         log(f"log saved to {out}")
         log.close()
     return 0 if results and all(results.values()) else 1
 
 
-TESTS = {"S1-U12": test_s1_u12, "S1-U13": test_s1_u13, "S1-U14": test_s1_u14,
-         "S1-U15": test_s1_u15, "S1-U16": test_s1_u16, "S1-U17": test_s1_u17, "INT-15": test_int_15}
+TESTS = {
+    "S1-U12": test_s1_u12,
+    "S1-U13": test_s1_u13,
+    "S1-U14": test_s1_u14,
+    "S1-U15": test_s1_u15,
+    "S1-U16": test_s1_u16,
+    "S1-U17": test_s1_u17,
+    "INT-15": test_int_15,
+}
 
 
 if __name__ == "__main__":

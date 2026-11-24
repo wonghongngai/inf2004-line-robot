@@ -35,17 +35,13 @@ static MOTION_CONFIG build_config(void)
     /*
      * Real physical values after calibration.
      */
-    cfg.left_ticks_per_cm =
-        S2_LEFT_TICKS_PER_CM;
+    cfg.left_ticks_per_cm = S2_LEFT_TICKS_PER_CM;
 
-    cfg.right_ticks_per_cm =
-        S2_RIGHT_TICKS_PER_CM;
+    cfg.right_ticks_per_cm = S2_RIGHT_TICKS_PER_CM;
 
-    cfg.left_turn_ticks_per_degree =
-        S2_LEFT_TURN_TICKS_PER_DEGREE;
+    cfg.left_turn_ticks_per_degree = S2_LEFT_TURN_TICKS_PER_DEGREE;
 
-    cfg.right_turn_ticks_per_degree =
-        S2_RIGHT_TURN_TICKS_PER_DEGREE;
+    cfg.right_turn_ticks_per_degree = S2_RIGHT_TURN_TICKS_PER_DEGREE;
 
 #else
 
@@ -55,98 +51,86 @@ static MOTION_CONFIG build_config(void)
      *
      * This ensures the real motors do not move using guessed values.
      */
-    cfg.left_ticks_per_cm =
-        0.0f;
+    cfg.left_ticks_per_cm = 0.0f;
 
-    cfg.right_ticks_per_cm =
-        0.0f;
+    cfg.right_ticks_per_cm = 0.0f;
 
-    cfg.left_turn_ticks_per_degree =
-        0.0f;
+    cfg.left_turn_ticks_per_degree = 0.0f;
 
-    cfg.right_turn_ticks_per_degree =
-        0.0f;
+    cfg.right_turn_ticks_per_degree = 0.0f;
 
 #endif
 
-    cfg.base_pwm_percent =
-        S2_BASE_PWM_PERCENT;
+    cfg.base_pwm_percent = S2_BASE_PWM_PERCENT;
 #if S2_PIVOT_BENCH
-    cfg.base_pwm_percent = S2_PIVOT_BENCH_PWM; /* S2-U07: slow, like the junction pivots */
+    cfg.base_pwm_percent =
+        S2_PIVOT_BENCH_PWM; /* S2-U07: slow, like the junction pivots */
 #endif
 #if S2_PID_BENCH
     /* S2-U10/U11: a slow, safe drive, and the interrupt-encoder ticks per cm.
        S2_LEFT/RIGHT_TICKS_PER_CM (23.1 / 18.8) are about 5x too small, which
        would make a commanded 100 cm run about 5 m. */
-    cfg.base_pwm_percent = S2_PID_BENCH_PWM;
-    cfg.left_ticks_per_cm = S2_ENC_LEFT_TICKS_PER_CM;
+    cfg.base_pwm_percent   = S2_PID_BENCH_PWM;
+    cfg.left_ticks_per_cm  = S2_ENC_LEFT_TICKS_PER_CM;
     cfg.right_ticks_per_cm = S2_ENC_RIGHT_TICKS_PER_CM;
 #endif
 
-    cfg.minimum_effective_pwm_percent =
-        S2_MIN_EFFECTIVE_PWM_PERCENT;
+    cfg.minimum_effective_pwm_percent = S2_MIN_EFFECTIVE_PWM_PERCENT;
 
-    cfg.maximum_pwm_percent =
-        S2_MAX_PWM_PERCENT;
+    cfg.maximum_pwm_percent = S2_MAX_PWM_PERCENT;
 
-    cfg.distance_tolerance_cm =
-        S2_DISTANCE_TOLERANCE_CM;
+    cfg.distance_tolerance_cm = S2_DISTANCE_TOLERANCE_CM;
 
-    cfg.angle_tolerance_deg =
-        S2_ANGLE_TOLERANCE_DEG;
+    cfg.angle_tolerance_deg = S2_ANGLE_TOLERANCE_DEG;
 
-    cfg.encoder_stall_timeout_ms =
-        S2_ENCODER_STALL_TIMEOUT_MS;
+    cfg.encoder_stall_timeout_ms = S2_ENCODER_STALL_TIMEOUT_MS;
 
-    cfg.kp =
-        S2_PID_KP;
+    cfg.kp = S2_PID_KP;
 
-    cfg.ki =
-        S2_PID_KI;
+    cfg.ki = S2_PID_KI;
 
-    cfg.kd =
-        S2_PID_KD;
+    cfg.kd = S2_PID_KD;
 
-    cfg.integral_limit =
-        S2_PID_INTEGRAL_LIMIT;
+    cfg.integral_limit = S2_PID_INTEGRAL_LIMIT;
 
-    cfg.correction_limit =
-        S2_PID_CORRECTION_LIMIT;
+    cfg.correction_limit = S2_PID_CORRECTION_LIMIT;
 
-    cfg.follow_left_pwm_percent = S2_FOLLOW_LEFT_PWM_PERCENT;
-    cfg.follow_right_pwm_percent = S2_FOLLOW_RIGHT_PWM_PERCENT;
-    cfg.follow_boost_pwm_percent = S2_FOLLOW_BOOST_PWM_PERCENT;
-    cfg.follow_inner_pwm_percent = S2_FOLLOW_INNER_PWM_PERCENT;
+    cfg.follow_left_pwm_percent       = S2_FOLLOW_LEFT_PWM_PERCENT;
+    cfg.follow_right_pwm_percent      = S2_FOLLOW_RIGHT_PWM_PERCENT;
+    cfg.follow_boost_pwm_percent      = S2_FOLLOW_BOOST_PWM_PERCENT;
+    cfg.follow_inner_pwm_percent      = S2_FOLLOW_INNER_PWM_PERCENT;
     cfg.follow_hard_inner_pwm_percent = S2_FOLLOW_HARD_INNER_PWM_PERCENT;
-    cfg.follow_ramp_pwm_per_s = S2_FOLLOW_RAMP_PWM_PER_S;
+    cfg.follow_ramp_pwm_per_s         = S2_FOLLOW_RAMP_PWM_PER_S;
 
 #if APP_ROBOT_INTEGRATED && S2_CALIBRATION_READY
     /* Everything else all_test drives with (#8): the interrupt-encoder
        distance calibration (speed, distance, S5 legs), straight trim,
        barcode-scan slow-down and the junction / U-turn / S5 profiles.
        Pivots at junctions keep the S2 turn calibration, as all_test. */
-    cfg.left_ticks_per_cm = S2_ENC_LEFT_TICKS_PER_CM;
-    cfg.right_ticks_per_cm = S2_ENC_RIGHT_TICKS_PER_CM;
-    cfg.follow_straight_kp = S2_FOLLOW_STRAIGHT_KP;
-    cfg.follow_straight_max_trim = S2_FOLLOW_STRAIGHT_MAX_TRIM;
-    cfg.follow_straight_trim_rate = S2_FOLLOW_STRAIGHT_TRIM_RATE;
+    cfg.left_ticks_per_cm           = S2_ENC_LEFT_TICKS_PER_CM;
+    cfg.right_ticks_per_cm          = S2_ENC_RIGHT_TICKS_PER_CM;
+    cfg.follow_straight_kp          = S2_FOLLOW_STRAIGHT_KP;
+    cfg.follow_straight_max_trim    = S2_FOLLOW_STRAIGHT_MAX_TRIM;
+    cfg.follow_straight_trim_rate   = S2_FOLLOW_STRAIGHT_TRIM_RATE;
     cfg.follow_straight_deadband_cm = S2_FOLLOW_STRAIGHT_DEADBAND_CM;
-    cfg.follow_straight_ki = S2_FOLLOW_STRAIGHT_KI;
-    cfg.follow_straight_max_bias = S2_FOLLOW_STRAIGHT_MAX_BIAS;
-    cfg.follow_scan_scale = S2_FOLLOW_SCAN_SCALE;
-    cfg.follow_scan_left_inner_pwm_percent = S2_FOLLOW_SCAN_LEFT_INNER_PWM_PERCENT;
-    cfg.move_left_pwm_percent = S2_MOVE_LEFT_PWM_PERCENT;
-    cfg.move_right_pwm_percent = S2_MOVE_RIGHT_PWM_PERCENT;
-    cfg.move_ramp_pwm_per_s = S2_MOVE_RAMP_PWM_PER_S;
+    cfg.follow_straight_ki          = S2_FOLLOW_STRAIGHT_KI;
+    cfg.follow_straight_max_bias    = S2_FOLLOW_STRAIGHT_MAX_BIAS;
+    cfg.follow_scan_scale           = S2_FOLLOW_SCAN_SCALE;
+    cfg.follow_scan_left_inner_pwm_percent =
+        S2_FOLLOW_SCAN_LEFT_INNER_PWM_PERCENT;
+    cfg.move_left_pwm_percent            = S2_MOVE_LEFT_PWM_PERCENT;
+    cfg.move_right_pwm_percent           = S2_MOVE_RIGHT_PWM_PERCENT;
+    cfg.move_ramp_pwm_per_s              = S2_MOVE_RAMP_PWM_PER_S;
     cfg.junction_right_pivot_pwm_percent = S2_JUNCTION_RIGHT_PIVOT_PWM_PERCENT;
-    cfg.junction_left_pivot_pwm_percent = S2_JUNCTION_LEFT_PIVOT_PWM_PERCENT;
-    cfg.uturn_left_pwm_percent = S2_UTURN_LEFT_PWM_PERCENT;
-    cfg.uturn_right_pwm_percent = S2_UTURN_RIGHT_PWM_PERCENT;
-    cfg.avoid_heading_kp = S2_AVOID_HEADING_KP;
-    cfg.avoid_pivot_pwm_percent = S2_AVOID_PIVOT_PWM_PERCENT;
-    cfg.avoid_spin_pwm_percent = S2_AVOID_SPIN_PWM_PERCENT;
+    cfg.junction_left_pivot_pwm_percent  = S2_JUNCTION_LEFT_PIVOT_PWM_PERCENT;
+    cfg.uturn_left_pwm_percent           = S2_UTURN_LEFT_PWM_PERCENT;
+    cfg.uturn_right_pwm_percent          = S2_UTURN_RIGHT_PWM_PERCENT;
+    cfg.avoid_heading_kp                 = S2_AVOID_HEADING_KP;
+    cfg.avoid_pivot_pwm_percent          = S2_AVOID_PIVOT_PWM_PERCENT;
+    cfg.avoid_spin_pwm_percent           = S2_AVOID_SPIN_PWM_PERCENT;
     cfg.avoid_left_turn_ticks_per_degree = S2_AVOID_LEFT_TURN_TICKS_PER_DEGREE;
-    cfg.avoid_right_turn_ticks_per_degree = S2_AVOID_RIGHT_TURN_TICKS_PER_DEGREE;
+    cfg.avoid_right_turn_ticks_per_degree =
+        S2_AVOID_RIGHT_TURN_TICKS_PER_DEGREE;
 #endif
 
     return cfg;
@@ -167,31 +151,24 @@ static uint32_t current_ms(void)
 /*
  * Convert Motion Control's requested output into physical motor outputs.
  */
-static void apply_outputs(
-    const MOTION_STATUS *status
-)
+static void apply_outputs(const MOTION_STATUS * status)
 {
     /*
      * These states must never drive the motors.
      */
-    if (
-        (status->state == MOTION_STATE_FAULT) ||
+    if ((status->state == MOTION_STATE_FAULT) ||
 
         (status->state == MOTION_STATE_IDLE) ||
 
         (status->state == MOTION_STATE_STOPPING) ||
 
-        (status->state == MOTION_STATE_INITIALISING)
-    ) {
-
+        (status->state == MOTION_STATE_INITIALISING))
+    {
         drv_motor_stop();
-
-    } else {
-
-        drv_motor_set(
-            status->left_pwm_percent,
-            status->right_pwm_percent
-        );
+    }
+    else
+    {
+        drv_motor_set(status->left_pwm_percent, status->right_pwm_percent);
     }
 }
 
@@ -204,12 +181,9 @@ static void apply_outputs(
  * STOP:
  *   always immediately takes precedence.
  */
-static bool receive_latest_command(
-    MOTION_CONTROLLER *controller,
-    uint32_t now_ms,
-    int32_t left_ticks,
-    int32_t right_ticks
-)
+static bool receive_latest_command(MOTION_CONTROLLER * controller,
+                                   uint32_t now_ms, int32_t left_ticks,
+                                   int32_t right_ticks)
 {
     MOTION_COMMAND command;
 
@@ -217,14 +191,21 @@ static bool receive_latest_command(
 
     bool have_normal = false;
 
-    INT len;
+    INT  len;
     UINT pattern;
-    if (tk_wai_flg(flg_motion_stop, 1u, TWF_ORW | TWF_CLR,
-                   &pattern, TMO_POL) == E_OK) {
+    if (tk_wai_flg(flg_motion_stop, 1u, TWF_ORW | TWF_CLR, &pattern, TMO_POL) ==
+        E_OK)
+    {
         command = (MOTION_COMMAND){MOTION_CMD_STOP, 0.0f};
-        (void)motion_control_command(controller, &command, now_ms, left_ticks, right_ticks);
+        (void)motion_control_command(controller, &command, now_ms, left_ticks,
+                                     right_ticks);
         for (unsigned i = 0; i < S2_COMMAND_QUEUE_DEPTH; ++i)
-            if (tk_rcv_mbf(mbf_motion_cmd, &latest_normal, TMO_POL) <= 0) break;
+        {
+            if (tk_rcv_mbf(mbf_motion_cmd, &latest_normal, TMO_POL) <= 0)
+            {
+                break;
+            }
+        }
         return true;
     }
 
@@ -232,68 +213,54 @@ static bool receive_latest_command(
      * Drain available messages so old normal movement requests cannot build
      * up and execute much later.
      */
-    for (unsigned i = 0; i < S2_COMMAND_QUEUE_DEPTH &&
-        (len =
-            tk_rcv_mbf(
-                mbf_motion_cmd,
-                &command,
-                TMO_POL
-            )
-        ) > 0; ++i
-    ) {
-
+    for (unsigned i = 0;
+         i < S2_COMMAND_QUEUE_DEPTH &&
+         (len = tk_rcv_mbf(mbf_motion_cmd, &command, TMO_POL)) > 0;
+         ++i)
+    {
         /*
          * Ignore malformed message sizes.
          */
-        if (len !=
-            (INT)sizeof(MOTION_COMMAND)) {
-
+        if (len != (INT)sizeof(MOTION_COMMAND))
+        {
             continue;
         }
 
         /*
          * STOP immediately wins over pending normal commands.
          */
-        if (command.type ==
-            MOTION_CMD_STOP) {
-
-            (void)motion_control_command(
-                controller,
-                &command,
-                now_ms,
-                left_ticks,
-                right_ticks
-            );
+        if (command.type == MOTION_CMD_STOP)
+        {
+            (void)motion_control_command(controller, &command, now_ms,
+                                         left_ticks, right_ticks);
 
             /* Discard the rest of this batch so STOP cannot be followed by
                a stale movement request on the next poll. */
             for (unsigned j = 0; j < S2_COMMAND_QUEUE_DEPTH; ++j)
-                if (tk_rcv_mbf(mbf_motion_cmd, &latest_normal, TMO_POL) <= 0) break;
+            {
+                if (tk_rcv_mbf(mbf_motion_cmd, &latest_normal, TMO_POL) <= 0)
+                {
+                    break;
+                }
+            }
             return true;
         }
 
         /*
          * Keep the newest normal command.
          */
-        latest_normal =
-            command;
+        latest_normal = command;
 
-        have_normal =
-            true;
+        have_normal = true;
     }
 
     /*
      * Give Motion Control the latest normal command.
      */
-    if (have_normal) {
-
-        (void)motion_control_command(
-            controller,
-            &latest_normal,
-            now_ms,
-            left_ticks,
-            right_ticks
-        );
+    if (have_normal)
+    {
+        (void)motion_control_command(controller, &latest_normal, now_ms,
+                                     left_ticks, right_ticks);
     }
     return false;
 }
@@ -308,45 +275,46 @@ static bool receive_latest_command(
  * has just cut PWM). "wheels still" = the last encoder tick seen before 50 ms
  * of no change. Both are measured from the moment robot_control sent STOP.
  */
-static void bench_stop_probe(uint32_t now_ms, const MOTION_STATUS *status,
+static void bench_stop_probe(uint32_t now_ms, const MOTION_STATUS * status,
                              int32_t left_ticks, int32_t right_ticks)
 {
     static uint32_t last_change_ms;
-    static int32_t last_sum;
-    static bool off_logged, done;
-    uint32_t t0 = s2_bench_stop_ms;
-    int32_t sum = left_ticks + right_ticks;
+    static int32_t  last_sum;
+    static bool     off_logged, done;
+    uint32_t        t0  = g_s2_bench_stop_ms;
+    int32_t         sum = left_ticks + right_ticks;
 
-    if (sum != last_sum) {
-        last_sum = sum;
+    if (sum != last_sum)
+    {
+        last_sum       = sum;
         last_change_ms = now_ms;
     }
-    if (t0 == 0u || done) {
+    if (t0 == 0u || done)
+    {
         return;
     }
     if (!off_logged && (status->state == MOTION_STATE_STOPPING ||
-                        status->state == MOTION_STATE_IDLE)) {
+                        status->state == MOTION_STATE_IDLE))
+    {
         off_logged = true;
         LOG_INFO(TAG_S2_BENCH, "STOP: motors off at +%lu ms",
-                  (unsigned long)(now_ms - t0));
+                 (unsigned long)(now_ms - t0));
     }
-    if (off_logged && (uint32_t)(now_ms - last_change_ms) >= 50u) {
+    if (off_logged && (uint32_t)(now_ms - last_change_ms) >= 50u)
+    {
         done = true;
-        LOG_INFO(TAG_S2_BENCH, "STOP: wheels still at +%lu ms (latency, +/-2 ms)",
-                  (unsigned long)(last_change_ms - t0));
+        LOG_INFO(TAG_S2_BENCH,
+                 "STOP: wheels still at +%lu ms (latency, +/-2 ms)",
+                 (unsigned long)(last_change_ms - t0));
     }
 }
 #endif
 
-EXPORT void motion_task(
-    INT stacd,
-    void *exinf
-)
+EXPORT void motion_task(INT stacd, void * exinf)
 {
     MOTION_CONTROLLER controller;
 
-    MOTION_CONFIG cfg =
-        build_config();
+    MOTION_CONFIG cfg = build_config();
 
     MOTION_STATUS status;
 
@@ -356,9 +324,9 @@ EXPORT void motion_task(
 
     uint32_t next_control_ms;
 
-    uint32_t now_ms;
-    uint32_t last_report_ms = 0u;
-    LOOP_TIMING timing = {0};
+    uint32_t    now_ms;
+    uint32_t    last_report_ms = 0u;
+    LOOP_TIMING timing         = {0};
 
     bool ready;
     bool manual_stop = false;
@@ -376,13 +344,9 @@ EXPORT void motion_task(
     /*
      * Read starting encoder position.
      */
-    drv_encoder_get_counts(
-        &left_ticks,
-        &right_ticks
-    );
+    drv_encoder_get_counts(&left_ticks, &right_ticks);
 
-    now_ms =
-        current_ms();
+    now_ms = current_ms();
 #if APP_ROBOT_INTEGRATED
     /* S4's hump height needs real distance: the interrupt-encoder
        calibration, as all_test (S2_*_TICKS_PER_CM predate it). */
@@ -393,13 +357,7 @@ EXPORT void motion_task(
 #if S2_CALIBRATION_READY
 
     ready =
-        motion_control_init(
-            &controller,
-            &cfg,
-            now_ms,
-            left_ticks,
-            right_ticks
-        );
+        motion_control_init(&controller, &cfg, now_ms, left_ticks, right_ticks);
 
 #else
 
@@ -410,42 +368,28 @@ EXPORT void motion_task(
      * instead of allowing physical movement.
      */
     ready =
-        motion_control_init(
-            &controller,
-            &cfg,
-            now_ms,
-            left_ticks,
-            right_ticks
-        );
+        motion_control_init(&controller, &cfg, now_ms, left_ticks, right_ticks);
 
-    LOG_WARN(TAG_S2_MOTION,
-        "calibration not set; motors remain OFF"
-    );
+    LOG_WARN(TAG_S2_MOTION, "calibration not set; motors remain OFF");
 
 #endif
 
-    if (!ready) {
-
+    if (!ready)
+    {
         drv_motor_stop();
     }
 
     /*
      * Publish initial status.
      */
-    motion_control_get_status(
-        &controller,
-        &status
-    );
+    motion_control_get_status(&controller, &status);
 
-    subsystem2_publish_status(
-        &status
-    );
+    subsystem2_publish_status(&status);
 
-    next_control_ms =
-        now_ms;
+    next_control_ms = now_ms;
 
-    while (1) {
-
+    while (1)
+    {
         /*
          * TEMPORARY ENCODER FALLBACK:
          *
@@ -456,22 +400,23 @@ EXPORT void motion_task(
          */
         drv_encoder_poll();
 
-        drv_encoder_get_counts(
-            &left_ticks,
-            &right_ticks
-        );
+        drv_encoder_get_counts(&left_ticks, &right_ticks);
 
-        now_ms =
-            current_ms();
+        now_ms = current_ms();
         loop_timing_wake(&timing, now_ms);
 #if APP_ROBOT_INTEGRATED
         uint8_t travelled_mm;
-        bool travelling = controller.status.state == MOTION_STATE_MOVING_FORWARD;
-        if (!wheel_odometry_step(&odometry, left_ticks, right_ticks, travelling, &travelled_mm) ||
-            (travelled_mm != 0u && subsystem4_add_distance_mm(travelled_mm) < E_OK)) {
-            manual_stop = true;
+        bool    travelling =
+            controller.status.state == MOTION_STATE_MOVING_FORWARD;
+        if (!wheel_odometry_step(&odometry, left_ticks, right_ticks, travelling,
+                                 &travelled_mm) ||
+            (travelled_mm != 0u &&
+             subsystem4_add_distance_mm(travelled_mm) < E_OK))
+        {
+            manual_stop         = true;
             MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
-            (void)motion_control_command(&controller, &stop, now_ms, left_ticks, right_ticks);
+            (void)motion_control_command(&controller, &stop, now_ms, left_ticks,
+                                         right_ticks);
             LOG_ERR(TAG_S2_MOTION, "stopped: wheel-distance input failed");
         }
 #endif
@@ -481,22 +426,27 @@ EXPORT void motion_task(
          *
          * This means STOP does not need to wait for the slower PID period.
          */
-        if (receive_latest_command(
-            &controller,
-            now_ms,
-            left_ticks,
-            right_ticks
-        )) manual_stop = true;
+        if (receive_latest_command(&controller, now_ms, left_ticks,
+                                   right_ticks))
+        {
+            manual_stop = true;
+        }
 
 #if APP_ROBOT_INTEGRATED || S2_MOTION_DEMO
-        if (manual_stop) {
+        if (manual_stop)
+        {
             MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
-            (void)motion_control_command(&controller, &stop, now_ms, left_ticks, right_ticks);
-        } else
+            (void)motion_control_command(&controller, &stop, now_ms, left_ticks,
+                                         right_ticks);
+        }
+        else
+        {
+            robot_control_step(&controller, now_ms, left_ticks, right_ticks);
+        }
 #else
         (void)manual_stop;
-#endif
         robot_control_step(&controller, now_ms, left_ticks, right_ticks);
+#endif
 
         /*
          * Immediately apply safety-related command changes.
@@ -511,18 +461,11 @@ EXPORT void motion_task(
          *
          * without waiting for the next 10 ms PID execution.
          */
-        motion_control_get_status(
-            &controller,
-            &status
-        );
+        motion_control_get_status(&controller, &status);
 
-        apply_outputs(
-            &status
-        );
+        apply_outputs(&status);
 
-        subsystem2_publish_status(
-            &status
-        );
+        subsystem2_publish_status(&status);
 
 #if S2_PID_BENCH
         bench_stop_probe(now_ms, &status, left_ticks, right_ticks);
@@ -531,49 +474,34 @@ EXPORT void motion_task(
         /*
          * Run PID/state calculations at the Motion Control period.
          */
-        if (
-            (uint32_t)(
-                now_ms -
-                next_control_ms
-            ) >=
-            S2_CONTROL_PERIOD_MS
-        ) {
-
+        if ((uint32_t)(now_ms - next_control_ms) >= S2_CONTROL_PERIOD_MS)
+        {
             loop_timing_control(&timing, now_ms - next_control_ms,
                                 S2_CONTROL_PERIOD_MS);
 
-            motion_control_step(
-                &controller,
-                now_ms,
-                left_ticks,
-                right_ticks
-            );
+            motion_control_step(&controller, now_ms, left_ticks, right_ticks);
 
-            motion_control_get_status(
-                &controller,
-                &status
-            );
+            motion_control_get_status(&controller, &status);
 
-            apply_outputs(
-                &status
-            );
+            apply_outputs(&status);
 
-            subsystem2_publish_status(
-                &status
-            );
+            subsystem2_publish_status(&status);
 
-            next_control_ms =
-                now_ms;
+            next_control_ms = now_ms;
         }
 
-        if ((uint32_t)(now_ms - last_report_ms) >= 1000u) {
-            LOG_INFO(TAG_S2_MOTION, "state=%d fault=%d ticks L=%ld R=%ld PWM=%d/%d",
-                      status.state, status.fault, (long)left_ticks, (long)right_ticks,
-                      (int)status.left_pwm_percent, (int)status.right_pwm_percent);
+        if ((uint32_t)(now_ms - last_report_ms) >= 1000u)
+        {
+            LOG_INFO(
+                TAG_S2_MOTION, "state=%d fault=%d ticks L=%ld R=%ld PWM=%d/%d",
+                status.state, status.fault, (long)left_ticks, (long)right_ticks,
+                (int)status.left_pwm_percent, (int)status.right_pwm_percent);
             /* S1-U17 / S2-U12 evidence: see loop_timing.h for the fields. */
-            LOG_INFO(TAG_S2_MOTION, "ctrl late=%lu/%lu gap_max=%lu loop_max=%lu ms",
-                      (unsigned long)timing.late, (unsigned long)timing.steps,
-                      (unsigned long)timing.gap_max_ms, (unsigned long)timing.loop_max_ms);
+            LOG_INFO(TAG_S2_MOTION,
+                     "ctrl late=%lu/%lu gap_max=%lu loop_max=%lu ms",
+                     (unsigned long)timing.late, (unsigned long)timing.steps,
+                     (unsigned long)timing.gap_max_ms,
+                     (unsigned long)timing.loop_max_ms);
             loop_timing_new_window(&timing);
             last_report_ms = now_ms;
         }
@@ -581,8 +509,6 @@ EXPORT void motion_task(
         /*
          * Sleep until next encoder service interval.
          */
-        tk_dly_tsk(
-            S2_ENCODER_POLL_MS
-        );
+        tk_dly_tsk(S2_ENCODER_POLL_MS);
     }
 }

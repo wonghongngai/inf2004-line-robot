@@ -1,18 +1,18 @@
 /*
- *	subsystem5.h
- *	Subsystem 5 -- Ultrasonic scanning, obstacle profiling & avoidance.
- *	Student ID: 2500434.
+ *  subsystem5.h
+ *  Subsystem 5 -- Ultrasonic scanning, obstacle profiling & avoidance.
+ *  Student ID: 2500434.
  *
- *	Public interface: only what OTHER subsystems may use.
+ *  Public interface: only what OTHER subsystems may use.
  *
- *	How S5 works with the Vehicle Controller (VC, in Buddy 2's
- *	robot_control_step()), interfaces IF-10 / IF-11 in TEAM.md:
- *	  - S5 never drives the motors.  It publishes ONE request word that
- *	    the VC reads every control step (subsystem5_get_request()).
- *	  - The VC answers through the S5-owned event flag flg_s5_evt.
- *	  - A request with a new seq is a new command; the VC acts on it once.
- *	  - S5 asks for HOLD from boot until its servo has finished its first
- *	    swing; the VC does not arm while S5 holds.
+ *  How S5 works with the Vehicle Controller (VC, in Buddy 2's
+ *  robot_control_step()), interfaces IF-10 / IF-11 in TEAM.md:
+ *    - S5 never drives the motors.  It publishes ONE request word that
+ *      the VC reads every control step (subsystem5_get_request()).
+ *    - The VC answers through the S5-owned event flag flg_s5_evt.
+ *    - A request with a new seq is a new command; the VC acts on it once.
+ *    - S5 asks for HOLD from boot until its servo has finished its first
+ *      swing; the VC does not arm while S5 holds.
  */
 
 #ifndef SUBSYSTEM5_H
@@ -54,7 +54,7 @@
 #define S5_MOVE_FWD    (0U)
 #define S5_MOVE_TURN_L (1U) /* pivot on one stopped wheel (or spin)  */
 #define S5_MOVE_TURN_R (2U)
-                            /* move 3 reserved = invalid             */
+/* move 3 reserved = invalid             */
 
 #define S5_REQ_VALUE_MAX (1023U) /* 10-bit value field */
 #define S5_REQ_SEQ_MASK  (0x0FU) /* 4-bit seq field    */

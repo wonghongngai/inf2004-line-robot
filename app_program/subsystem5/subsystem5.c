@@ -1,12 +1,12 @@
 /*
- *	subsystem5.c
- *	Subsystem 5 -- Ultrasonic scanning, obstacle profiling & avoidance.
+ *  subsystem5.c
+ *  Subsystem 5 -- Ultrasonic scanning, obstacle profiling & avoidance.
  *
- *	subsystem5_init():  creates flg_s5_evt (VC -> S5 replies, IF-11).
- *	subsystem5_start(): starts obstacle_task, which owns the HC-SR04P and
- *	                    the SG90 and publishes the S5 request word (IF-10).
+ *  subsystem5_init():  creates flg_s5_evt (VC -> S5 replies, IF-11).
+ *  subsystem5_start(): starts obstacle_task, which owns the HC-SR04P and
+ *                      the SG90 and publishes the S5 request word (IF-10).
  *
- *	Record every pin, task, object and interface in TEAM.md.
+ *  Record every pin, task, object and interface in TEAM.md.
  */
 
 #include "subsystem5.h"

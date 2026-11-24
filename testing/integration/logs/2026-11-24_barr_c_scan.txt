@@ -1,0 +1,183 @@
+# BARR-C heuristic scan, #60
+# commit deb7ade (main), working tree has no app_program changes
+# command: python -I tools/barr_c_check.py --files
+
+BARR-C:2018 heuristic scan of app_program
+65 files, 18193 lines
+
+check            rule    hits  files  what
+1.2-width        1.2      443     33  line longer than 80 characters
+1.3-brace        1.3      765     35  left brace not on a line by itself
+1.3-nobrace      1.3      231     18  if/else/for/while body without braces
+1.7-goto         1.7       16      3  goto used
+1.7-continue     1.7       13      7  continue used
+1.7-auto-reg     1.7        0      0  auto or register used
+3.4-indent       3.4        7      3  code indent not a multiple of 4 spaces
+3.5-tab          3.5      238     11  tab character in a line
+3.6-crlf         3.6        0      0  file stored with CRLF line endings
+4.2-guard        4.2        0      0  header without an #ifndef include guard
+4.3-inc-c        4.3        0      0  #include of a .c file
+5.1-typedef      5.1       40     16  typedef name does not end in _t
+5.2-int          5.2      279     34  plain int / INT / UINT for numeric data
+5.2-short-long   5.2       50      6  short or long keyword used
+6.1-fn-case      6.1        0      0  function name contains uppercase
+6.1-macro-case   6.1        1      1  macro name contains lowercase
+6.2-len          6.2       18     13  function body longer than 100 lines
+6.2-exit         6.2      151     26  function with more than one return
+6.3-fnmacro      6.3       17      8  function-like macro defined
+7.1-short        7.1      140     28  variable name shorter than 3 characters
+7.1-case         7.1        0      0  variable name contains uppercase
+7.1-global       7.1       55      9  file-scope variable without g_ prefix
+7.1-pointer      7.1       26      7  pointer variable without p_ prefix
+7.1-bool         7.1       69     12  Boolean variable without b_ prefix
+8.2-else         8.2       21      7  if ... else if chain without a final else
+8.3-default      8.3        1      1  switch without a default case
+8.5-exit         8.5        0      0  setjmp/longjmp/abort/exit used
+8.6-const-right  8.6      503     31  == or != with the constant on the right
+
+per file (checks with hits):
+  app_program/all_test/all_buddies_test.c: 1.2-width=126, 1.3-brace=140, 1.3-nobrace=84, 1.7-goto=1, 1.7-continue=3, 5.1-typedef=2, 5.2-int=25, 5.2-short-long=22, 6.2-len=1, 6.2-exit=14, 7.1-short=21, 7.1-global=2, 7.1-pointer=10, 7.1-bool=11, 8.2-else=7, 8.3-default=1, 8.6-const-right=140
+  app_program/all_test/line_follow_output.h: 1.3-brace=2, 1.3-nobrace=2, 6.2-exit=1, 8.6-const-right=5
+  app_program/all_test/line_follow_test.c: 1.2-width=5, 1.3-brace=18, 1.3-nobrace=11, 1.7-goto=5, 1.7-continue=1, 5.2-int=8, 7.1-short=3, 7.1-pointer=1, 7.1-bool=1, 8.6-const-right=12
+  app_program/app.h: 1.3-brace=2, 3.5-tab=15, 5.2-int=1, 6.3-fnmacro=1
+  app_program/app_log.h: 3.5-tab=33, 6.3-fnmacro=3
+  app_program/app_main.c: 1.2-width=6, 1.3-brace=3, 1.3-nobrace=17, 1.7-goto=10, 3.5-tab=117, 5.2-int=2, 6.2-len=1, 6.2-exit=2, 7.1-short=2, 8.6-const-right=4
+  app_program/subsystem1/communication_internal.h: 1.3-brace=1, 5.1-typedef=1, 5.2-int=9
+  app_program/subsystem1/communication_protocol.c: 1.2-width=14, 1.3-brace=34, 1.3-nobrace=1, 5.1-typedef=1, 5.2-int=37, 5.2-short-long=6, 6.2-exit=9, 6.3-fnmacro=1, 7.1-short=7, 7.1-global=1, 7.1-pointer=3, 8.6-const-right=22
+  app_program/subsystem1/communication_protocol.h: 1.2-width=8, 1.3-brace=6, 5.1-typedef=6, 5.2-int=11
+  app_program/subsystem1/drv_buzzer.c: 1.2-width=1, 1.3-brace=7, 5.2-int=2, 6.2-exit=2, 7.1-short=4, 8.6-const-right=2
+  app_program/subsystem1/drv_buzzer.h: 5.2-int=1
+  app_program/subsystem1/mqtt_manager.c: 1.2-width=10, 1.3-brace=42, 3.5-tab=2, 5.2-int=15, 5.2-short-long=1, 6.2-exit=2, 7.1-short=2, 7.1-global=9, 7.1-pointer=1, 8.2-else=1, 8.6-const-right=29
+  app_program/subsystem1/subsystem1.c: 1.2-width=5, 1.3-brace=29, 5.2-int=14, 6.2-exit=10, 7.1-short=1, 7.1-pointer=2, 8.6-const-right=8
+  app_program/subsystem1/subsystem1.h: 1.2-width=2, 5.2-int=2
+  app_program/subsystem1/subsystem1_test.c: 1.2-width=5, 5.2-int=1, 8.6-const-right=17
+  app_program/subsystem2/drv_encoder.c: 1.3-brace=9, 3.4-indent=1, 5.1-typedef=1, 5.2-int=12, 6.2-exit=1, 6.3-fnmacro=5, 7.1-short=1, 7.1-global=3, 7.1-bool=1, 8.6-const-right=3
+  app_program/subsystem2/drv_motor.c: 1.2-width=2, 1.3-brace=12, 1.3-nobrace=6, 5.2-int=3, 6.2-exit=4, 6.3-fnmacro=1, 7.1-short=3, 8.6-const-right=6
+  app_program/subsystem2/drv_motor.h: 1.3-brace=1, 5.1-typedef=1
+  app_program/subsystem2/loop_timing.h: 1.3-brace=5, 5.1-typedef=1
+  app_program/subsystem2/motion_control.c: 1.2-width=16, 1.3-brace=84, 1.3-nobrace=1, 6.2-len=3, 6.2-exit=13, 7.1-short=2, 7.1-bool=10, 8.2-else=1, 8.6-const-right=53
+  app_program/subsystem2/motion_control.h: 1.2-width=11, 1.3-brace=9, 5.1-typedef=9
+  app_program/subsystem2/motion_protocol.h: 1.2-width=29, 1.3-brace=15, 1.3-nobrace=5, 5.1-typedef=2, 6.2-exit=6, 7.1-short=5, 8.6-const-right=7
+  app_program/subsystem2/robot_control.c: 1.2-width=85, 1.3-brace=110, 1.3-nobrace=55, 1.7-continue=4, 5.1-typedef=1, 5.2-int=30, 5.2-short-long=13, 6.2-len=2, 6.2-exit=16, 7.1-short=30, 7.1-global=35, 7.1-pointer=7, 7.1-bool=21, 8.2-else=9, 8.6-const-right=107
+  app_program/subsystem2/robot_control.h: 1.2-width=7, 7.1-global=1
+  app_program/subsystem2/subsystem2.c: 1.2-width=1, 1.3-brace=11, 1.3-nobrace=3, 5.2-int=4, 6.2-exit=4, 7.1-short=2, 7.1-global=1, 8.6-const-right=6
+  app_program/subsystem2/subsystem2.h: 1.2-width=19, 5.2-int=1
+  app_program/subsystem2/subsystem2_hw_test.c: 1.2-width=2, 1.3-brace=10, 5.2-int=4, 5.2-short-long=3, 6.2-exit=1, 7.1-short=1, 7.1-bool=2, 8.6-const-right=1
+  app_program/subsystem2/subsystem2_hw_test.h: 1.2-width=2, 5.2-int=1, 8.6-const-right=1
+  app_program/subsystem2/subsystem2_test.c: 5.2-int=1, 6.2-len=1, 7.1-short=1, 7.1-bool=1, 8.6-const-right=1
+  app_program/subsystem2/task_motion.c: 1.2-width=16, 1.3-brace=18, 1.3-nobrace=9, 1.7-continue=1, 5.2-int=5, 5.2-short-long=5, 6.2-len=2, 6.2-exit=1, 7.1-short=4, 7.1-bool=5, 8.6-const-right=10
+  app_program/subsystem2/wheel_odometry.h: 1.2-width=4, 1.3-brace=3, 1.3-nobrace=3, 5.1-typedef=1, 6.2-exit=1, 7.1-short=2
+  app_program/subsystem3/line_barcode.c: 1.2-width=4, 1.3-brace=10, 1.3-nobrace=4, 3.4-indent=1, 6.1-macro-case=1, 6.2-exit=4, 7.1-short=5, 8.2-else=1, 8.6-const-right=1
+  app_program/subsystem3/line_barcode.h: 1.2-width=2, 7.1-global=2
+  app_program/subsystem3/line_barcode_test.c: 1.2-width=17, 1.3-brace=5, 1.3-nobrace=8, 3.4-indent=5, 5.2-int=1, 6.2-len=1, 6.3-fnmacro=1, 7.1-short=7, 7.1-bool=4, 8.6-const-right=5
+  app_program/subsystem3/line_demo.c: 5.2-int=1
+  app_program/subsystem3/line_service.c: 1.2-width=9, 1.3-brace=15, 1.3-nobrace=9, 1.7-continue=1, 5.2-int=4, 6.2-len=1, 7.1-short=2, 7.1-bool=2, 8.6-const-right=19
+  app_program/subsystem3/line_service.h: 1.2-width=2, 1.3-brace=1
+  app_program/subsystem3/subsystem3.c: 1.3-brace=1, 3.5-tab=11, 7.1-short=1, 8.6-const-right=1
+  app_program/subsystem3/subsystem3.h: 3.5-tab=4
+  app_program/subsystem3/subsystem3_test.c: 3.5-tab=8
+  app_program/subsystem4/drv_lsm303dlhc.c: 1.3-brace=22, 1.3-nobrace=6, 6.2-exit=6, 7.1-short=9, 7.1-bool=1, 8.6-const-right=7
+  app_program/subsystem4/drv_lsm303dlhc.h: 1.3-brace=1, 5.1-typedef=1
+  app_program/subsystem4/subsystem4.c: 1.3-brace=16, 6.2-exit=5, 7.1-short=4, 8.2-else=1, 8.6-const-right=2
+  app_program/subsystem4/subsystem4.h: 1.2-width=4, 1.3-brace=4, 5.1-typedef=5, 5.2-int=1
+  app_program/subsystem4/subsystem4_test.c: 1.2-width=1, 5.2-int=6, 7.1-short=1, 8.6-const-right=3
+  app_program/subsystem4/task_imu.c: 1.2-width=17, 1.3-brace=113, 1.3-nobrace=5, 1.7-continue=2, 5.1-typedef=4, 5.2-int=13, 6.2-len=2, 6.2-exit=5, 6.3-fnmacro=2, 7.1-short=16, 7.1-pointer=2, 7.1-bool=10, 8.2-else=1, 8.6-const-right=26
+  app_program/subsystem5/drv_rp2040.c: 1.2-width=1
+  app_program/subsystem5/drv_servo.c: 6.2-exit=6, 8.6-const-right=1
+  app_program/subsystem5/drv_ultrasonic.c: 6.2-exit=4, 8.6-const-right=1
+  app_program/subsystem5/obstacle_logic.c: 5.2-int=45, 6.2-len=1, 6.2-exit=18, 7.1-short=1
+  app_program/subsystem5/obstacle_logic.h: 5.2-int=2, 7.1-global=1
+  app_program/subsystem5/s5_executor.c: 5.2-int=1, 6.2-len=1, 6.2-exit=1
+  app_program/subsystem5/s5_executor.h: 5.1-typedef=2
+  app_program/subsystem5/subsystem5.c: 3.5-tab=6
+  app_program/subsystem5/subsystem5.h: 3.5-tab=12, 5.1-typedef=2, 5.2-int=1
+  app_program/subsystem5/subsystem5_test.c: 1.2-width=8, 1.3-brace=3, 3.5-tab=3, 6.2-len=1, 6.2-exit=1, 7.1-short=2, 8.6-const-right=2
+  app_program/subsystem5/task_obstacle.c: 1.2-width=2, 1.3-nobrace=2, 1.7-continue=1, 5.2-int=14, 6.2-len=1, 6.2-exit=14, 7.1-short=1, 8.6-const-right=1
+  app_program/test_report.h: 1.3-brace=3, 3.5-tab=27, 5.2-int=1, 6.3-fnmacro=3
+
+# functions over 100 lines (--show 6.2-len)
+app_program/all_test/all_buddies_test.c:988: all_test_step(): 309 lines
+app_program/app_main.c:93: usermain(): 113 lines
+app_program/subsystem2/motion_control.c:499: motion_control_command(): 228 lines
+app_program/subsystem2/motion_control.c:876: run_forward(): 286 lines
+app_program/subsystem2/motion_control.c:1392: motion_control_step(): 117 lines
+app_program/subsystem2/robot_control.c:677: straddle_step(): 125 lines
+app_program/subsystem2/robot_control.c:806: control_step(): 236 lines
+app_program/subsystem2/subsystem2_test.c:78: subsystem2_test(): 257 lines
+app_program/subsystem2/task_motion.c:30: build_config(): 122 lines
+app_program/subsystem2/task_motion.c:345: motion_task(): 242 lines
+app_program/subsystem3/line_barcode_test.c:357: line_barcode_test(): 186 lines
+app_program/subsystem3/line_service.c:380: line_service_task(): 114 lines
+app_program/subsystem4/task_imu.c:797: update_hump(): 206 lines
+app_program/subsystem4/task_imu.c:1056: imu_task(): 347 lines
+app_program/subsystem5/obstacle_logic.c:254: obstacle_profile(): 142 lines
+app_program/subsystem5/s5_executor.c:49: s5_exec_step(): 118 lines
+app_program/subsystem5/subsystem5_test.c:140: subsystem5_test(): 840 lines
+app_program/subsystem5/task_obstacle.c:985: obstacle_task(): 186 lines
+
+# clang-format (app_program/.clang-format, v15.0.0) warnings per file
+0 app_program/all_test/line_follow_test.h
+0 app_program/subsystem1/drv_buzzer.h
+0 app_program/subsystem3/subsystem3.h
+0 app_program/subsystem5/drv_rp2040.h
+0 app_program/subsystem5/drv_servo.c
+0 app_program/subsystem5/drv_servo.h
+0 app_program/subsystem5/drv_ultrasonic.c
+0 app_program/subsystem5/drv_ultrasonic.h
+0 app_program/subsystem5/subsystem5.c
+1 app_program/subsystem5/subsystem5.h
+2 app_program/all_test/all_buddies_test.h
+2 app_program/subsystem4/drv_lsm303dlhc.h
+2 app_program/subsystem5/drv_rp2040.c
+2 app_program/subsystem5/s5_executor.h
+4 app_program/subsystem1/subsystem1.h
+5 app_program/subsystem2/drv_encoder.h
+5 app_program/subsystem2/subsystem2_hw_test.h
+5 app_program/subsystem5/s5_executor.c
+8 app_program/subsystem2/drv_motor.h
+8 app_program/subsystem3/line_demo.h
+8 app_program/subsystem3/subsystem3.c
+11 app_program/subsystem1/communication_internal.h
+11 app_program/subsystem5/obstacle_logic.c
+12 app_program/all_test/line_follow_output.h
+12 app_program/subsystem1/drv_buzzer.c
+14 app_program/subsystem2/loop_timing.h
+15 app_program/app.h
+15 app_program/subsystem4/subsystem4_test.c
+18 app_program/subsystem3/subsystem3_test.c
+20 app_program/subsystem5/obstacle_logic.h
+22 app_program/test_report.h
+24 app_program/subsystem2/robot_control.h
+26 app_program/subsystem3/line_service.h
+31 app_program/subsystem2/wheel_odometry.h
+34 app_program/app_log.h
+38 app_program/subsystem2/subsystem2_hw_test.c
+39 app_program/subsystem1/subsystem1_test.c
+39 app_program/subsystem2/subsystem2.c
+50 app_program/subsystem4/subsystem4.c
+52 app_program/subsystem4/subsystem4.h
+58 app_program/subsystem3/line_demo.c
+59 app_program/subsystem2/drv_motor.c
+63 app_program/subsystem1/subsystem1.c
+63 app_program/subsystem5/task_obstacle.c
+70 app_program/subsystem2/subsystem2.h
+71 app_program/all_test/line_follow_test.c
+74 app_program/subsystem3/line_barcode.h
+80 app_program/subsystem2/motion_control.h
+90 app_program/subsystem4/drv_lsm303dlhc.c
+94 app_program/subsystem2/drv_encoder.c
+112 app_program/subsystem1/communication_protocol.h
+122 app_program/subsystem1/communication_protocol.c
+127 app_program/subsystem5/subsystem5_test.c
+131 app_program/app_main.c
+131 app_program/subsystem2/motion_protocol.h
+136 app_program/subsystem1/mqtt_manager.c
+143 app_program/subsystem2/subsystem2_test.c
+169 app_program/subsystem3/line_service.c
+216 app_program/subsystem2/task_motion.c
+229 app_program/subsystem3/line_barcode.c
+412 app_program/subsystem3/line_barcode_test.c
+601 app_program/subsystem2/robot_control.c
+605 app_program/subsystem4/task_imu.c
+627 app_program/subsystem2/motion_control.c
+831 app_program/all_test/all_buddies_test.c

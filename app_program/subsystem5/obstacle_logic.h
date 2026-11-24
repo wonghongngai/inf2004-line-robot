@@ -56,15 +56,15 @@
  * limit (50 or 130 deg) on that side, so the space beyond is unknown, not
  * open (2026-11-08: a box running past 50 deg read "R 9999 = open"). */
 #define CLEARANCE_UNSEEN_MM (9998U)
-#define ROBOT_WIDTH_MM (150U) /* W_R: robot's widest point [VERIFY: measure] */
-#define PASS_MARGIN_MM (50U)  /* M: space kept from obstacles [VERIFY]       */
-#define CORRIDOR_HALF_MM ((ROBOT_WIDTH_MM / 2U) + PASS_MARGIN_MM) /* A5-1   */
-#define PASS_GAP_MM      (ROBOT_WIDTH_MM + (2U * PASS_MARGIN_MM)) /* to fit */
-#define MAX_RETRIES      (2U) /* reverse-and-rescan attempts before NO_PATH */
+#define ROBOT_WIDTH_MM      (150U) /* W_R: robot's widest point [VERIFY: measure] */
+#define PASS_MARGIN_MM      (50U) /* M: space kept from obstacles [VERIFY]       */
+#define CORRIDOR_HALF_MM    ((ROBOT_WIDTH_MM / 2U) + PASS_MARGIN_MM) /* A5-1   */
+#define PASS_GAP_MM         (ROBOT_WIDTH_MM + (2U * PASS_MARGIN_MM)) /* to fit */
+#define MAX_RETRIES         (2U) /* reverse-and-rescan attempts before NO_PATH */
 /* PLAN_REVERSE backs the robot straight back this far before it scans
  * again (23 Nov): from one close spot, an offset box's sloping face read
  * as a second object beside it, so both sides looked blocked.  [VERIFY] */
-#define REVERSE_CM       (15U)
+#define REVERSE_CM          (15U)
 
 typedef struct
 {
@@ -290,22 +290,22 @@ IMPORT BOOL bypass_step(const plan_t * p_plan, UW index,
  * The pivots: each 90 deg one-wheel pivot moves the robot's centre about
  * half a wheel spacing forward and half sideways, so T1 + T2 together
  * about PIVOT_STEP_MM each way.  [VERIFY all lengths on the robot] */
-#define PIVOT_STEP_MM       (100U) /* T1 + T2: forward and sideways   */
-#define ROBOT_TAIL_MM       (150U) /* sensor to the robot's rear      */
-#define BOX_UNSEEN_DEPTH_MM (60U)  /* depth assumed if never seen     */
-#define PASS_MAX_CM         (80U)  /* longest F2 (deepest box)        */
+#define PIVOT_STEP_MM        (100U) /* T1 + T2: forward and sideways   */
+#define ROBOT_TAIL_MM        (150U) /* sensor to the robot's rear      */
+#define BOX_UNSEEN_DEPTH_MM  (60U)  /* depth assumed if never seen     */
+#define PASS_MAX_CM          (80U)  /* longest F2 (deepest box)        */
 /* T4 pivots on one wheel and swings the robot's back corner about 15 cm
  * round towards the box: drive on this much more after "passed" so the
  * corner clears the box's far end (2026-11-08: it hit the box's corner
  * in the last turn).  [VERIFY] */
-#define TURN_SWEEP_MM       (100U)
+#define TURN_SWEEP_MM        (100U)
 /* After T3: anything straight ahead closer than gap + this is the box
  * still in the way.  2 x PASS_MARGIN_MM (100) let a 362 mm reading of the
  * box's corner through as "clear" (2026-11-08).  [VERIFY] */
-#define PROBE_MARGIN_MM     (200U)
-#define PROBE_STEP_CM       (15U)   /* box still ahead: this much on   */
-#define PROBE_TRIES         (5U)    /* ... at most this many times     */
-                                    /* (75 cm: up to a PASS_MAX_CM box) */
+#define PROBE_MARGIN_MM      (200U)
+#define PROBE_STEP_CM        (15U) /* box still ahead: this much on   */
+#define PROBE_TRIES          (5U)  /* ... at most this many times     */
+                                   /* (75 cm: up to a PASS_MAX_CM box) */
 /* Spin geometry.  The robot spins about the middle of its axle; the
  * sensor is SPIN_SENSOR_AHEAD_MM in front of that, so facing the box it is
  * that much nearer the face than the robot's centre line was.  While
@@ -315,8 +315,8 @@ IMPORT BOOL bypass_step(const plan_t * p_plan, UW index,
 #define SPIN_SENSOR_AHEAD_MM (80U)
 #define SPIN_SWEEP_MM        (120U)
 #define LOOK_MIN_GAP_MM      (SPIN_SWEEP_MM + PASS_MARGIN_MM)
-#define LOOK_INTO_MM         (30U)  /* first look: centre past the front */
-#define LOOK_STEP_CM         (10U)  /* drive this far between looks      */
+#define LOOK_INTO_MM         (30U) /* first look: centre past the front */
+#define LOOK_STEP_CM         (10U) /* drive this far between looks      */
 /* A look reading under the face's expected distance + this = the box */
 #define LOOK_MARGIN_MM       (100U)
 

@@ -6,7 +6,8 @@
 #include "subsystem5.h"
 #include "drv_rp2040.h"
 
-#define WATCHDOG_TICK_ADDR (0x40058000UL + 0x2CUL) /* watchdog block + TICK offset */
+#define WATCHDOG_TICK_ADDR \
+    (0x40058000UL + 0x2CUL)              /* watchdog block + TICK offset */
 #define WATCHDOG_TICK_ENABLE  (1UL << 9) /* bit 9: turn the tick on      */
 #define CLK_REF_CYCLES_PER_US (12UL)     /* 12 MHz crystal / 12 = 1 MHz  */
 
