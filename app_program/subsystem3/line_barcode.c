@@ -342,8 +342,6 @@ uint16_t line_barcode_run_width(line_barcode_ctx_t const * p_ctx, uint8_t index)
     return ((pair >> (bit % 8u)) & 0x3ffu);
 }
 
-#define read_width line_barcode_run_width
-
 static void write_width(line_barcode_ctx_t * p_ctx, uint8_t index,
                         uint16_t width)
 {
@@ -363,7 +361,7 @@ static uint16_t first_narrow(line_barcode_ctx_t const * p_ctx)
     uint16_t narrow = LINE_BARCODE_RUN_MAX_MS;
     for (uint8_t idx = 0u; idx < BARCODE_ELEMENTS; idx++)
     {
-        uint16_t width = read_width(p_ctx, idx);
+        uint16_t width = line_barcode_run_width(p_ctx, idx);
         narrow         = (width < narrow) ? width : narrow;
     }
     return (narrow);
@@ -377,7 +375,7 @@ static void verify_start(line_barcode_ctx_t * p_ctx)
         uint16_t widths[BARCODE_ELEMENTS] = {0u};
         for (uint8_t idx = 0u; idx < BARCODE_ELEMENTS; idx++)
         {
-            widths[idx] = read_width(p_ctx, idx);
+            widths[idx] = line_barcode_run_width(p_ctx, idx);
         }
         bool b_start = (BARCODE_STAR == decode_character(widths, false)) ||
                        (BARCODE_STAR == decode_character(widths, true));
@@ -397,7 +395,7 @@ static uint8_t finish_frame(line_barcode_ctx_t * p_ctx, uint8_t * p_letter)
     uint16_t widths[LINE_BARCODE_FRAME_RUNS] = {0u};
     for (uint8_t idx = 0u; idx < LINE_BARCODE_FRAME_RUNS; idx++)
     {
-        widths[idx] = read_width(p_ctx, idx);
+        widths[idx] = line_barcode_run_width(p_ctx, idx);
     }
     uint16_t narrow = first_narrow(p_ctx);
     bool     b_valid =
@@ -480,7 +478,7 @@ static uint8_t side_junction_update(line_barcode_ctx_t * p_ctx)
         (p_ctx->run_count > 0u))
     {
         /* Inside a frame: the first bar of '*' is narrow either way round. */
-        reference = read_width(p_ctx, 0u);
+        reference = line_barcode_run_width(p_ctx, 0u);
     }
     if (0u != reference)
     {

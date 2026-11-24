@@ -29,7 +29,7 @@
 #endif
 
 #if S2_PID_BENCH
-IMPORT volatile uint32_t s2_bench_stop_ms;
+IMPORT volatile uint32_t g_s2_bench_stop_ms;
 #endif
 
 #define S2_HW_TEST_PWM_PERCENT 20.0f

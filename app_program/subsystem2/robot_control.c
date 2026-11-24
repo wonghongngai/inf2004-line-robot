@@ -1381,7 +1381,7 @@ void robot_control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
 #elif S2_MOTION_DEMO && !APP_TEST
 
 #if S2_PID_BENCH
-volatile uint32_t s2_bench_stop_ms; /* set when run 2 sends STOP */
+volatile uint32_t g_s2_bench_stop_ms; /* set when run 2 sends STOP */
 /*
  * S2-U10 / S2-U11 floor bench (#18). Two 100 cm forward runs, 5 s apart.
  *   run 1 (U10): logs left-minus-right travel and PWM every 20 ms, so the
@@ -1443,7 +1443,7 @@ void robot_control_step(MOTION_CONTROLLER * ctl, uint32_t now, int32_t l,
         {
             stop_sent = true;
             LOG_INFO(TAG_S2_BENCH, "STOP sent at %lu ms", (unsigned long)t);
-            s2_bench_stop_ms = now ? now : 1u;
+            g_s2_bench_stop_ms = now ? now : 1u;
             (void)subsystem2_send_command(&stop);
         }
         if (ctl->status.state == MOTION_STATE_IDLE || t > S2_DEMO_TIMEOUT_MS ||

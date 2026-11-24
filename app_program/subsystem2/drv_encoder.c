@@ -143,7 +143,7 @@ static void clear_edges(void)
  * again instead of being lost.  The quadrature table ignores a wheel whose
  * levels did not change.
  */
-static void encoder_inthdr(UINT intno)
+static void encoder_isr(UINT intno)
 {
     UW levels;
 
@@ -232,7 +232,7 @@ ER drv_encoder_init(void)
      * Edge interrupts on all four pins, handled on this core.
      */
     dint.intatr = TA_HLNG;
-    dint.inthdr = (FP)encoder_inthdr;
+    dint.inthdr = (FP)encoder_isr;
     er          = tk_def_int(ENC_INTNO_IO_BANK0, &dint);
     if (er < E_OK)
     {

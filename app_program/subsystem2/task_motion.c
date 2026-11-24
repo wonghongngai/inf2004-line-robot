@@ -281,7 +281,7 @@ static void bench_stop_probe(uint32_t now_ms, const MOTION_STATUS * status,
     static uint32_t last_change_ms;
     static int32_t  last_sum;
     static bool     off_logged, done;
-    uint32_t        t0  = s2_bench_stop_ms;
+    uint32_t        t0  = g_s2_bench_stop_ms;
     int32_t         sum = left_ticks + right_ticks;
 
     if (sum != last_sum)
