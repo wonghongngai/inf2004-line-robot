@@ -159,13 +159,13 @@ The pin plan mostly holds; the IR sensor roles changed, and the agreed pin recor
 
 ## Process, testing and quality
 
-The evidence rules from the template are mostly not followed yet, and two assessed qualities (Barr-C conformance, resource efficiency) have no work recorded.
+The evidence rules from the template are mostly not followed yet, and resource efficiency has no work recorded on `main` yet (#61). Barr-C conformance was reviewed on 24 Nov (P3).
 
 | ID | Plan (source) | Current state | Type | Follow-up |
 | --- | --- | --- | --- | --- |
 | P1 | Template `testing/README.md`: every test has a TEST_LOG row with a commit and a saved log | S1, S2, S4 and system logs have no results; their test-case tables still describe template LED tests while the code checks S1-U01 to U10, S2-U01 to U04, S4-U01 to U07; many S5 rows say "console, not saved" | Partial | #14, #17, #21, #24, #28 |
 | P2 | PT: test packed interfaces before integration | Host suite (`testing/run_host_tests.sh`) passes 12 of 12 on branch `s1/barcode-queue` (6 all_test-only tests retired, #9). The 2 tests for lost code were resolved (#3): `s1/barcode_queue` now tests the reimplemented queue; `int/steering_ramp` dropped its terrain-boost and barcode slow-down checks (not requirements) and tests the current PWM ramp | Partial | #5, #9 |
-| P3 | WU p1: conform to the Barr C coding standard | Review drafted 24 Nov ([BARR_C_REVIEW.md](BARR_C_REVIEW.md)): partly conforms; clang-format pass done (firmware image unchanged); every control body braced, final else and switch default added, -Wall -Wextra on for app_program (0 warnings); firmware unchanged throughout; 7 deviations (D1 to D7) for the team to agree | Partial | #60 |
+| P3 | WU p1: conform to the Barr C coding standard | Reviewed 24 Nov ([BARR_C_REVIEW.md](BARR_C_REVIEW.md)): formatting, braces, final else / switch default, naming (S1 to S5) and `-Wall -Wextra` (0 warnings) done, firmware image unchanged; deviations D1 to D7 agreed (`DECISIONS.md`); 13 `continue`, 17 function-like macros and 48 long lines still open | Matches (with agreed deviations) | #60 (closed) |
 | P4 | WU p1, p11: resource efficiency is assessed; PT: measure timing before and after packing | No flash, RAM, stack or task-timing figures recorded | Missing | #61 |
 | P5 | WU p1: the car operates without remote control | MQTT START begins the run (#48); PAUSE and RESUME exist as manual overrides; the instructor's MQTT map is required. Navigation itself is autonomous: the demo must not rely on manual commands while driving | Matches | Team confirmed 21 Nov that a START command fits this wording (#48) |
 | P6 | PT: one shared build process | Build scripts hard-code one teammate's paths; build outputs were committed until 13 Nov (now ignored) | Partial | #11 |

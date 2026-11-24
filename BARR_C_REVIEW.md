@@ -378,9 +378,11 @@ Close #60 once each owner has read their subsystem's rows and the team has
 agreed D1 to D7 (record the result in `DECISIONS.md`). Owners: the
 formatting pass touched every file you own, so pull before editing.
 
-- [ ] Buddy 1: subsystem 1
-- [ ] Buddy 2: subsystem 2, D2, D4
-- [ ] Buddy 3: subsystem 3
-- [ ] Buddy 4: subsystem 4
-- [ ] Buddy 5: subsystem 5
-- [ ] Team: D1 to D7 agreed or rejected; fix list owners chosen
+Signed off 24 Nov 2026; D1 to D7 agreed (`DECISIONS.md`, 24 Nov).
+
+- [x] Buddy 1: subsystem 1
+- [x] Buddy 2: subsystem 2, D2, D4
+- [x] Buddy 3: subsystem 3
+- [x] Buddy 4: subsystem 4
+- [x] Buddy 5: subsystem 5
+- [x] Team: D1 to D7 agreed
