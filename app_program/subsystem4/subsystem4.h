@@ -169,19 +169,19 @@ typedef struct
 /* Buddy 2 -> Buddy 4 distance input. One update is 0..255 mm (8 bits). */
 typedef UB S4_DISTANCE_DELTA_MM;
 
-IMPORT ID       mtx_imu_data;
-IMPORT IMU_DATA s4_imu_data;
+IMPORT ID       g_mtx_imu_data;
+IMPORT IMU_DATA g_s4_imu_data;
 
-IMPORT void imu_task(INT stacd, void * exinf);
+IMPORT void imu_task(INT stacd, void * p_exinf);
 
 EXPORT ER subsystem4_init(void);
 EXPORT ER subsystem4_start(void);
 
 /* Full internal/diagnostic snapshot. */
-EXPORT ER subsystem4_get_latest(IMU_DATA * out);
+EXPORT ER subsystem4_get_latest(IMU_DATA * p_out);
 
 /* Compact output for Vehicle Controller / telemetry. */
-EXPORT ER subsystem4_get_packed(IMU_PACKED_MSG * out);
+EXPORT ER subsystem4_get_packed(IMU_PACKED_MSG * p_out);
 
 /*
  * Buddy 2 (or the Vehicle Controller) supplies distance travelled since the

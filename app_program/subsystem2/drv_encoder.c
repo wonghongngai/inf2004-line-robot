@@ -65,11 +65,11 @@ typedef struct
 
 } ENCODER_CHANNEL;
 
-static ENCODER_CHANNEL left_encoder;
+static ENCODER_CHANNEL g_left_encoder;
 
-static ENCODER_CHANNEL right_encoder;
+static ENCODER_CHANNEL g_right_encoder;
 
-static BOOL irq_defined = FALSE;
+static BOOL g_b_irq_defined = FALSE;
 
 /*
  * Extract one wheel's A and B from a GPIO_IN snapshot:
@@ -115,11 +115,11 @@ static int32_t quadrature_delta(UINT previous_ab, UINT current_ab)
 /*
  * Process one encoder A/B sample (interrupt handler only).
  */
-static void update_channel(ENCODER_CHANNEL * channel, UINT current_ab)
+static void update_channel(ENCODER_CHANNEL * p_channel, UINT current_ab)
 {
-    channel->count += quadrature_delta(channel->previous_ab, current_ab);
+    p_channel->count += quadrature_delta(p_channel->previous_ab, current_ab);
 
-    channel->previous_ab = current_ab;
+    p_channel->previous_ab = current_ab;
 }
 
 /*
@@ -152,10 +152,10 @@ static void encoder_isr(UINT intno)
     clear_edges();
     levels = in_w(ENC_SIO_GPIO_IN);
 
-    update_channel(&left_encoder, ab_from_levels(levels, ENCODER_LEFT_A_PIN,
-                                                 ENCODER_LEFT_B_PIN));
-    update_channel(&right_encoder, ab_from_levels(levels, ENCODER_RIGHT_A_PIN,
-                                                  ENCODER_RIGHT_B_PIN));
+    update_channel(&g_left_encoder, ab_from_levels(levels, ENCODER_LEFT_A_PIN,
+                                                   ENCODER_LEFT_B_PIN));
+    update_channel(&g_right_encoder, ab_from_levels(levels, ENCODER_RIGHT_A_PIN,
+                                                    ENCODER_RIGHT_B_PIN));
 }
 
 /*
@@ -171,59 +171,60 @@ static void enable_pin_edges(UINT pin, BOOL b_core1)
 
 ER drv_encoder_init(void)
 {
-    ER     er;
+    ER     ercd;
     T_DINT dint;
     BOOL   b_core1;
 
     /*
      * Left encoder inputs.
      */
-    er = gpio_set_pin(ENCODER_LEFT_A_PIN, GPIO_MODE_IN);
+    ercd = gpio_set_pin(ENCODER_LEFT_A_PIN, GPIO_MODE_IN);
 
-    if (er < E_OK)
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = gpio_set_pin(ENCODER_LEFT_B_PIN, GPIO_MODE_IN);
+    ercd = gpio_set_pin(ENCODER_LEFT_B_PIN, GPIO_MODE_IN);
 
-    if (er < E_OK)
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
     /*
      * Right encoder inputs.
      */
-    er = gpio_set_pin(ENCODER_RIGHT_A_PIN, GPIO_MODE_IN);
+    ercd = gpio_set_pin(ENCODER_RIGHT_A_PIN, GPIO_MODE_IN);
 
-    if (er < E_OK)
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    er = gpio_set_pin(ENCODER_RIGHT_B_PIN, GPIO_MODE_IN);
+    ercd = gpio_set_pin(ENCODER_RIGHT_B_PIN, GPIO_MODE_IN);
 
-    if (er < E_OK)
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
     /*
      * Start counters from zero, and remember the current A/B values so
      * the first edge has a valid previous state.
      */
-    left_encoder.count  = 0;
-    left_encoder.zero   = 0;
-    right_encoder.count = 0;
-    right_encoder.zero  = 0;
+    g_left_encoder.count  = 0;
+    g_left_encoder.zero   = 0;
+    g_right_encoder.count = 0;
+    g_right_encoder.zero  = 0;
 
-    left_encoder.previous_ab = read_ab(ENCODER_LEFT_A_PIN, ENCODER_LEFT_B_PIN);
+    g_left_encoder.previous_ab =
+        read_ab(ENCODER_LEFT_A_PIN, ENCODER_LEFT_B_PIN);
 
-    right_encoder.previous_ab =
+    g_right_encoder.previous_ab =
         read_ab(ENCODER_RIGHT_A_PIN, ENCODER_RIGHT_B_PIN);
 
-    if (irq_defined)
+    if (g_b_irq_defined)
     {
         return E_OK; /* already counting */
     }
@@ -233,10 +234,10 @@ ER drv_encoder_init(void)
      */
     dint.intatr = TA_HLNG;
     dint.inthdr = (FP)encoder_isr;
-    er          = tk_def_int(ENC_INTNO_IO_BANK0, &dint);
-    if (er < E_OK)
+    ercd        = tk_def_int(ENC_INTNO_IO_BANK0, &dint);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
     b_core1 = (in_w(ENC_SIO_CPUID) != 0U) ? TRUE : FALSE;
@@ -246,7 +247,7 @@ ER drv_encoder_init(void)
     enable_pin_edges(ENCODER_RIGHT_A_PIN, b_core1);
     enable_pin_edges(ENCODER_RIGHT_B_PIN, b_core1);
     EnableInt(ENC_INTNO_IO_BANK0, ENC_INTPRI);
-    irq_defined = TRUE;
+    g_b_irq_defined = TRUE;
 
     return E_OK;
 }
@@ -257,16 +258,16 @@ void drv_encoder_poll(void)
      * existing 1 ms callers still build. */
 }
 
-void drv_encoder_get_counts(int32_t * left_ticks, int32_t * right_ticks)
+void drv_encoder_get_counts(int32_t * p_left_ticks, int32_t * p_right_ticks)
 {
-    if (left_ticks != 0)
+    if (p_left_ticks != 0)
     {
-        *left_ticks = left_encoder.count - left_encoder.zero;
+        *p_left_ticks = g_left_encoder.count - g_left_encoder.zero;
     }
 
-    if (right_ticks != 0)
+    if (p_right_ticks != 0)
     {
-        *right_ticks = right_encoder.count - right_encoder.zero;
+        *p_right_ticks = g_right_encoder.count - g_right_encoder.zero;
     }
 }
 
@@ -276,7 +277,7 @@ void drv_encoder_reset(void)
      * The handler owns 'count' (it may run on the other core), so reset
      * by moving the zero point instead of writing the count.
      */
-    left_encoder.zero = left_encoder.count;
+    g_left_encoder.zero = g_left_encoder.count;
 
-    right_encoder.zero = right_encoder.count;
+    g_right_encoder.zero = g_right_encoder.count;
 }

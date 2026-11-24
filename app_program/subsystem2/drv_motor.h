@@ -31,6 +31,6 @@ typedef struct
     UW   left_compare, right_compare;
     BOOL left_counting, right_counting;
 } MOTOR_DIAGNOSTICS;
-ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS * out);
+ER drv_motor_diagnostics(MOTOR_DIAGNOSTICS * p_out);
 
 #endif /* S2_DRV_MOTOR_H */

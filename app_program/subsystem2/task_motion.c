@@ -151,24 +151,24 @@ static uint32_t current_ms(void)
 /*
  * Convert Motion Control's requested output into physical motor outputs.
  */
-static void apply_outputs(const MOTION_STATUS * status)
+static void apply_outputs(const MOTION_STATUS * p_status)
 {
     /*
      * These states must never drive the motors.
      */
-    if ((status->state == MOTION_STATE_FAULT) ||
+    if ((p_status->state == MOTION_STATE_FAULT) ||
 
-        (status->state == MOTION_STATE_IDLE) ||
+        (p_status->state == MOTION_STATE_IDLE) ||
 
-        (status->state == MOTION_STATE_STOPPING) ||
+        (p_status->state == MOTION_STATE_STOPPING) ||
 
-        (status->state == MOTION_STATE_INITIALISING))
+        (p_status->state == MOTION_STATE_INITIALISING))
     {
         drv_motor_stop();
     }
     else
     {
-        drv_motor_set(status->left_pwm_percent, status->right_pwm_percent);
+        drv_motor_set(p_status->left_pwm_percent, p_status->right_pwm_percent);
     }
 }
 
@@ -181,7 +181,7 @@ static void apply_outputs(const MOTION_STATUS * status)
  * STOP:
  *   always immediately takes precedence.
  */
-static bool receive_latest_command(MOTION_CONTROLLER * controller,
+static bool receive_latest_command(MOTION_CONTROLLER * p_controller,
                                    uint32_t now_ms, int32_t left_ticks,
                                    int32_t right_ticks)
 {
@@ -189,19 +189,19 @@ static bool receive_latest_command(MOTION_CONTROLLER * controller,
 
     MOTION_COMMAND latest_normal;
 
-    bool have_normal = false;
+    bool b_have_normal = false;
 
     INT  len;
     UINT pattern;
-    if (tk_wai_flg(flg_motion_stop, 1u, TWF_ORW | TWF_CLR, &pattern, TMO_POL) ==
-        E_OK)
+    if (tk_wai_flg(g_flg_motion_stop, 1u, TWF_ORW | TWF_CLR, &pattern,
+                   TMO_POL) == E_OK)
     {
         command = (MOTION_COMMAND){MOTION_CMD_STOP, 0.0f};
-        (void)motion_control_command(controller, &command, now_ms, left_ticks,
+        (void)motion_control_command(p_controller, &command, now_ms, left_ticks,
                                      right_ticks);
-        for (unsigned i = 0; i < S2_COMMAND_QUEUE_DEPTH; ++i)
+        for (unsigned idx = 0; idx < S2_COMMAND_QUEUE_DEPTH; ++idx)
         {
-            if (tk_rcv_mbf(mbf_motion_cmd, &latest_normal, TMO_POL) <= 0)
+            if (tk_rcv_mbf(g_mbf_motion_cmd, &latest_normal, TMO_POL) <= 0)
             {
                 break;
             }
@@ -213,10 +213,10 @@ static bool receive_latest_command(MOTION_CONTROLLER * controller,
      * Drain available messages so old normal movement requests cannot build
      * up and execute much later.
      */
-    for (unsigned i = 0;
-         i < S2_COMMAND_QUEUE_DEPTH &&
-         (len = tk_rcv_mbf(mbf_motion_cmd, &command, TMO_POL)) > 0;
-         ++i)
+    for (unsigned idx = 0;
+         idx < S2_COMMAND_QUEUE_DEPTH &&
+         (len = tk_rcv_mbf(g_mbf_motion_cmd, &command, TMO_POL)) > 0;
+         ++idx)
     {
         /*
          * Ignore malformed message sizes.
@@ -231,14 +231,15 @@ static bool receive_latest_command(MOTION_CONTROLLER * controller,
          */
         if (command.type == MOTION_CMD_STOP)
         {
-            (void)motion_control_command(controller, &command, now_ms,
+            (void)motion_control_command(p_controller, &command, now_ms,
                                          left_ticks, right_ticks);
 
             /* Discard the rest of this batch so STOP cannot be followed by
                a stale movement request on the next poll. */
-            for (unsigned j = 0; j < S2_COMMAND_QUEUE_DEPTH; ++j)
+            for (unsigned discard = 0; discard < S2_COMMAND_QUEUE_DEPTH;
+                 ++discard)
             {
-                if (tk_rcv_mbf(mbf_motion_cmd, &latest_normal, TMO_POL) <= 0)
+                if (tk_rcv_mbf(g_mbf_motion_cmd, &latest_normal, TMO_POL) <= 0)
                 {
                     break;
                 }
@@ -251,15 +252,15 @@ static bool receive_latest_command(MOTION_CONTROLLER * controller,
          */
         latest_normal = command;
 
-        have_normal = true;
+        b_have_normal = true;
     }
 
     /*
      * Give Motion Control the latest normal command.
      */
-    if (have_normal)
+    if (b_have_normal)
     {
-        (void)motion_control_command(controller, &latest_normal, now_ms,
+        (void)motion_control_command(p_controller, &latest_normal, now_ms,
                                      left_ticks, right_ticks);
     }
     return false;
@@ -275,42 +276,42 @@ static bool receive_latest_command(MOTION_CONTROLLER * controller,
  * has just cut PWM). "wheels still" = the last encoder tick seen before 50 ms
  * of no change. Both are measured from the moment robot_control sent STOP.
  */
-static void bench_stop_probe(uint32_t now_ms, const MOTION_STATUS * status,
+static void bench_stop_probe(uint32_t now_ms, const MOTION_STATUS * p_status,
                              int32_t left_ticks, int32_t right_ticks)
 {
     static uint32_t last_change_ms;
     static int32_t  last_sum;
-    static bool     off_logged, done;
-    uint32_t        t0  = g_s2_bench_stop_ms;
-    int32_t         sum = left_ticks + right_ticks;
+    static bool     b_off_logged, b_done;
+    uint32_t        stop_ms = g_s2_bench_stop_ms;
+    int32_t         sum     = left_ticks + right_ticks;
 
     if (sum != last_sum)
     {
         last_sum       = sum;
         last_change_ms = now_ms;
     }
-    if (t0 == 0u || done)
+    if (stop_ms == 0u || b_done)
     {
         return;
     }
-    if (!off_logged && (status->state == MOTION_STATE_STOPPING ||
-                        status->state == MOTION_STATE_IDLE))
+    if (!b_off_logged && (p_status->state == MOTION_STATE_STOPPING ||
+                          p_status->state == MOTION_STATE_IDLE))
     {
-        off_logged = true;
+        b_off_logged = true;
         LOG_INFO(TAG_S2_BENCH, "STOP: motors off at +%lu ms",
-                 (unsigned long)(now_ms - t0));
+                 (unsigned long)(now_ms - stop_ms));
     }
-    if (off_logged && (uint32_t)(now_ms - last_change_ms) >= 50u)
+    if (b_off_logged && (uint32_t)(now_ms - last_change_ms) >= 50u)
     {
-        done = true;
+        b_done = true;
         LOG_INFO(TAG_S2_BENCH,
                  "STOP: wheels still at +%lu ms (latency, +/-2 ms)",
-                 (unsigned long)(last_change_ms - t0));
+                 (unsigned long)(last_change_ms - stop_ms));
     }
 }
 #endif
 
-EXPORT void motion_task(INT stacd, void * exinf)
+EXPORT void motion_task(INT stacd, void * p_exinf)
 {
     MOTION_CONTROLLER controller;
 
@@ -328,8 +329,8 @@ EXPORT void motion_task(INT stacd, void * exinf)
     uint32_t    last_report_ms = 0u;
     LOOP_TIMING timing         = {0};
 
-    bool ready;
-    bool manual_stop = false;
+    bool b_ready;
+    bool b_manual_stop = false;
 #if APP_ROBOT_INTEGRATED
     WHEEL_ODOMETRY odometry;
 #endif
@@ -339,7 +340,7 @@ EXPORT void motion_task(INT stacd, void * exinf)
      */
     (void)stacd;
 
-    (void)exinf;
+    (void)p_exinf;
 
     /*
      * Read starting encoder position.
@@ -356,7 +357,7 @@ EXPORT void motion_task(INT stacd, void * exinf)
 
 #if S2_CALIBRATION_READY
 
-    ready =
+    b_ready =
         motion_control_init(&controller, &cfg, now_ms, left_ticks, right_ticks);
 
 #else
@@ -367,14 +368,14 @@ EXPORT void motion_task(INT stacd, void * exinf)
      * motion_control_init() therefore enters a configuration fault
      * instead of allowing physical movement.
      */
-    ready =
+    b_ready =
         motion_control_init(&controller, &cfg, now_ms, left_ticks, right_ticks);
 
     LOG_WARN(TAG_S2_MOTION, "calibration not set; motors remain OFF");
 
 #endif
 
-    if (!ready)
+    if (!b_ready)
     {
         drv_motor_stop();
     }
@@ -406,14 +407,14 @@ EXPORT void motion_task(INT stacd, void * exinf)
         loop_timing_wake(&timing, now_ms);
 #if APP_ROBOT_INTEGRATED
         uint8_t travelled_mm;
-        bool    travelling =
+        bool    b_travelling =
             controller.status.state == MOTION_STATE_MOVING_FORWARD;
-        if (!wheel_odometry_step(&odometry, left_ticks, right_ticks, travelling,
-                                 &travelled_mm) ||
+        if (!wheel_odometry_step(&odometry, left_ticks, right_ticks,
+                                 b_travelling, &travelled_mm) ||
             (travelled_mm != 0u &&
              subsystem4_add_distance_mm(travelled_mm) < E_OK))
         {
-            manual_stop         = true;
+            b_manual_stop       = true;
             MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
             (void)motion_control_command(&controller, &stop, now_ms, left_ticks,
                                          right_ticks);
@@ -429,11 +430,11 @@ EXPORT void motion_task(INT stacd, void * exinf)
         if (receive_latest_command(&controller, now_ms, left_ticks,
                                    right_ticks))
         {
-            manual_stop = true;
+            b_manual_stop = true;
         }
 
 #if APP_ROBOT_INTEGRATED || S2_MOTION_DEMO
-        if (manual_stop)
+        if (b_manual_stop)
         {
             MOTION_COMMAND stop = {MOTION_CMD_STOP, 0.0f};
             (void)motion_control_command(&controller, &stop, now_ms, left_ticks,
@@ -444,7 +445,7 @@ EXPORT void motion_task(INT stacd, void * exinf)
             robot_control_step(&controller, now_ms, left_ticks, right_ticks);
         }
 #else
-        (void)manual_stop;
+        (void)b_manual_stop;
         robot_control_step(&controller, now_ms, left_ticks, right_ticks);
 #endif
 

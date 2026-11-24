@@ -13,18 +13,19 @@ EXPORT void subsystem4_test(void)
     IMU_DATA       before;
     IMU_DATA       after;
     IMU_PACKED_MSG packed;
-    ER             er;
+    ER             ercd;
 
     TEST_INIT();
 
-    er = subsystem4_get_latest(&before);
-    TEST_CHECK("S4-U01", er == E_OK, "latest IMU snapshot can be read safely");
+    ercd = subsystem4_get_latest(&before);
+    TEST_CHECK("S4-U01", ercd == E_OK,
+               "latest IMU snapshot can be read safely");
 
     /* Allow 1 s calibration plus normal samples. */
     tk_dly_tsk(1500);
 
-    er = subsystem4_get_latest(&after);
-    TEST_CHECK("S4-U02", er == E_OK && after.sensor_ok,
+    ercd = subsystem4_get_latest(&after);
+    TEST_CHECK("S4-U02", ercd == E_OK && after.sensor_ok,
                "LSM303DLHC responds through Buddy 4 task");
 
     TEST_CHECK("S4-U03", after.calibrated,
@@ -47,8 +48,8 @@ EXPORT void subsystem4_test(void)
               (unsigned int)(after.sample_count - before.sample_count),
               (unsigned int)after.sample_count);
 
-    er = subsystem4_get_packed(&packed);
-    TEST_CHECK("S4-U06", er == E_OK && sizeof(IMU_PACKED_MSG) == 4U,
+    ercd = subsystem4_get_packed(&packed);
+    TEST_CHECK("S4-U06", ercd == E_OK && sizeof(IMU_PACKED_MSG) == 4U,
                "compact Buddy 4 output is exactly 4 bytes");
 
     TEST_CHECK("S4-U07", packed.ramp_height_mm <= S4_MAX_RAMP_HEIGHT_MM,

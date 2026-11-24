@@ -453,47 +453,47 @@ static bool all_numbers;
 static void reset(MOTION_CONTROLLER *ctl)
 {
     MOTION_CONFIG cfg = all_numbers ? alltest_config() : config();
-    uturn_r0 = 0;
-    frame_report_ms = frame_sequence = 0u;
-    armed = halted = turning = configured = false;
-    last_imu_sample = imu_count = imu_errors = resumed_at = turn_started = 0;
+    g_uturn_r0 = 0;
+    g_frame_report_ms = g_frame_sequence = 0u;
+    g_b_armed = g_b_halted = g_b_turning = g_b_configured = false;
+    g_last_imu_sample = g_imu_count = g_imu_errors = g_resumed_at = g_turn_started = 0;
     /* Controller state added after 2026-10-28 (line-stop debounce/re-arm, S5). */
-    line_halt = line_unsafe_active = false;
-    line_unsafe_since = rearm_since = 0;
-    rearm_l = rearm_r = 0;
-    memset(&vc_s5, 0, sizeof(vc_s5));
+    g_b_line_halt = g_b_line_unsafe_active = false;
+    g_line_unsafe_since = g_rearm_since = 0;
+    g_rearm_l = g_rearm_r = 0;
+    memset(&g_vc_s5, 0, sizeof(g_vc_s5));
     /* #48: these tests run with auto-start unless a test turns it off. */
-    auto_start = true;
-    start_requested = ready_reported = false;
+    g_b_auto_start = true;
+    g_b_start_requested = g_b_ready_reported = false;
     command_head = command_count = command_polls = 0u;
 #if S1_REAL_LINK
     s1_link_reset();
 #endif
     /* #72 state. */
-    paused = map_received = status_requested = have_imu = in_avoid = false;
-    odo_started = false;
-    last_letter = 0u;
-    last_telemetry = 0u;
-    telemetry_error = E_OK;
-    distance_cm = 0.0f;
-    memset(&last_imu, 0, sizeof(last_imu));
-    memset(map_letters, 0, sizeof(map_letters));
+    g_b_paused = g_b_map_received = g_b_status_requested = g_b_have_imu = g_b_in_avoid = false;
+    g_b_odo_started = false;
+    g_last_letter = 0u;
+    g_last_telemetry = 0u;
+    g_telemetry_error = E_OK;
+    g_distance_cm = 0.0f;
+    memset(&g_last_imu, 0, sizeof(g_last_imu));
+    memset(g_map_letters, 0, sizeof(g_map_letters));
     memset(applied_map, 0, sizeof(applied_map));
     has_map = false;
     publish_count = 0u;
     fake_black = fake_white = 0u;
     /* #8: the tests above were written for the S3 position model; the
      * straddle model has its own tests and turns this on itself. */
-    straddle = false;
-    steer_action = steer_candidate = 0u;
-    candidate_since = action_since = clear_since = junction_done = 0u;
-    clear_pending = leaving_junction = false;
-    pending_letter = 0u;
-    lost_watch = lost_probe = lost_stop = lost_seen_black = false;
-    lost_side = 0u;
-    lost_l0 = lost_r0 = 0;
-    lost_last_step = lost_max_mm = 0u;
-    turn_stage = turn_cmd = 0u;
+    g_b_straddle = false;
+    g_steer_action = g_steer_candidate = 0u;
+    g_candidate_since = g_action_since = g_clear_since = g_junction_done = 0u;
+    g_b_clear_pending = g_b_leaving_junction = false;
+    g_pending_letter = 0u;
+    g_b_lost_watch = g_b_lost_probe = g_b_lost_stop = g_b_lost_seen_black = false;
+    g_lost_side = 0u;
+    g_lost_l0 = g_lost_r0 = 0;
+    g_lost_last_step = g_lost_max_mm = 0u;
+    g_turn_stage = g_turn_cmd = 0u;
     has_event = enabled = false; snapshot_error = E_OK;
     memset(&fake_imu, 0, sizeof(fake_imu));
     fake_imu.sensor_ok = fake_imu.calibrated = TRUE;
@@ -506,7 +506,7 @@ static void follow(MOTION_CONTROLLER *ctl)
 {
     reset(ctl);
     robot_control_step(ctl, 5000, 0, 0);
-    EXPECT(armed && enabled);
+    EXPECT(g_b_armed && enabled);
     EXPECT(ctl->status.state == MOTION_STATE_IDLE);
     robot_control_step(ctl, 5030, 0, 0);
     motion_control_step(ctl, 5040, 1, 1);
@@ -517,13 +517,13 @@ static void follow(MOTION_CONTROLLER *ctl)
 static void stopped(MOTION_CONTROLLER *ctl, uint32_t now)
 {
     robot_control_step(ctl, now, 1, 1);
-    EXPECT(halted && !enabled);
+    EXPECT(g_b_halted && !enabled);
     EXPECT(ctl->status.left_pwm_percent == 0 && ctl->status.right_pwm_percent == 0);
     fake_imu.motion_state = IMU_MOTION_NORMAL;
     fake_imu.sensor_ok = TRUE;
     fake_imu.sample_count++;
     robot_control_step(ctl, now + 1, 1, 1);
-    EXPECT(halted && ctl->status.left_pwm_percent == 0);
+    EXPECT(g_b_halted && ctl->status.left_pwm_percent == 0);
 }
 
 /* A queued LOST event makes a recoverable line stop. */
@@ -533,7 +533,7 @@ static void line_stop(MOTION_CONTROLLER *ctl, uint32_t now)
     queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_LOST << 3u);
     has_event = true;
     robot_control_step(ctl, now, 1, 1);
-    EXPECT(halted && line_halt && !enabled);
+    EXPECT(g_b_halted && g_b_line_halt && !enabled);
     EXPECT(ctl->status.left_pwm_percent == 0 && ctl->status.right_pwm_percent == 0);
 }
 
@@ -542,13 +542,13 @@ static void line_stop(MOTION_CONTROLLER *ctl, uint32_t now)
 static void stopped_debounced(MOTION_CONTROLLER *ctl, uint32_t now)
 {
     robot_control_step(ctl, now, 1, 1);
-    EXPECT(!halted);
+    EXPECT(!g_b_halted);
     /* Keep the IMU heartbeat fresh (S2_IMU_STALE_MS) so only the line
      * condition can cause the stop. */
     for (uint32_t t = now + 50u; t < now + S2_LINE_UNSAFE_MS; t += 50u) {
         fake_imu.sample_count++;
         robot_control_step(ctl, t, 1, 1);
-        EXPECT(!halted);
+        EXPECT(!g_b_halted);
     }
     fake_imu.sample_count++;
     stopped(ctl, now + S2_LINE_UNSAFE_MS);
@@ -573,12 +573,12 @@ static void set_sensors(unsigned c_r)   /* C bit 1, R bit 0; S3 in SEARCH */
 static void sfollow(MOTION_CONTROLLER *ctl)
 {
     reset(ctl);
-    straddle = true;
+    g_b_straddle = true;
     set_sensors(0u);
     sstep(ctl, 5000, 0, 0);
-    EXPECT(armed && enabled);
+    EXPECT(g_b_armed && enabled);
     sstep(ctl, 5030, 0, 0);
-    EXPECT(!halted && ctl->status.active_command == MOTION_CMD_FOLLOW_LINE &&
+    EXPECT(!g_b_halted && ctl->status.active_command == MOTION_CMD_FOLLOW_LINE &&
            ctl->target_value == 0.0f);
 }
 
@@ -643,34 +643,34 @@ static void straddle_lost_tests(void)
      * again: plain following up to S2_LINE_LOST_MM, then the probe steers
      * right (soft) toward where the tape was, then a recoverable stop. */
     t = scorrect(&ctl, S2_LINE_LOST_ARM_MS, &ticks);
-    EXPECT(lost_watch && lost_side == 1u && !halted);
+    EXPECT(g_b_lost_watch && g_lost_side == 1u && !g_b_halted);
     t0 = ticks;
     t = sdrive(&ctl, t, &ticks, t0 + ticks_for_mm(lost - 10.0f), 20);
-    EXPECT(!halted && lost_watch && !lost_probe && ctl.target_value == 0.0f);
+    EXPECT(!g_b_halted && g_b_lost_watch && !g_b_lost_probe && ctl.target_value == 0.0f);
     t = sdrive(&ctl, t, &ticks, t0 + ticks_for_mm(lost + 5.0f), 20);
-    EXPECT(!halted && lost_probe && ctl.target_value == S2_LINE_PROBE_STEER);
+    EXPECT(!g_b_halted && g_b_lost_probe && ctl.target_value == S2_LINE_PROBE_STEER);
     t = sdrive(&ctl, t, &ticks, t0 + ticks_for_mm(stop - 10.0f), 20);
-    EXPECT(!halted && lost_probe && ctl.target_value == S2_LINE_PROBE_STEER);
+    EXPECT(!g_b_halted && g_b_lost_probe && ctl.target_value == S2_LINE_PROBE_STEER);
     t = sdrive(&ctl, t, &ticks, t0 + ticks_for_mm(stop + 5.0f), 20);
-    EXPECT(halted && line_halt && lost_stop && !lost_seen_black && !enabled &&
-           !lost_probe);
+    EXPECT(g_b_halted && g_b_line_halt && g_b_lost_stop && !g_b_lost_seen_black && !enabled &&
+           !g_b_lost_probe);
 
     /* Held still on white: both white proves nothing, so no re-arm. */
     for (uint32_t i = 0; i < 300u; ++i) { t += 10u; sstep(&ctl, t, ticks, ticks); }
-    EXPECT(halted && lost_stop);
+    EXPECT(g_b_halted && g_b_lost_stop);
     /* The tape under R once, then still: re-arms S2_LINE_REARM_MS later,
      * with no correction left over from before the stop. */
     set_sensors(1u);
     t += 10u;
     sstep(&ctl, t, ticks, ticks);
-    EXPECT(lost_seen_black && halted);
+    EXPECT(g_b_lost_seen_black && g_b_halted);
     set_sensors(0u);
     uint32_t seen = t;
     while (t < seen + S2_LINE_REARM_MS - 20u) { t += 10u; sstep(&ctl, t, ticks, ticks); }
-    EXPECT(halted);
+    EXPECT(g_b_halted);
     t += 20u;
     sstep(&ctl, t, ticks, ticks);
-    EXPECT(!halted && enabled && !lost_stop && steer_action == 0u && !lost_watch);
+    EXPECT(!g_b_halted && enabled && !g_b_lost_stop && g_steer_action == 0u && !g_b_lost_watch);
 
     /* The 23 Nov false stop: tape still between C and R. The probe steers
      * toward it, the other sensor (C) sees the tape, and following carries
@@ -678,38 +678,38 @@ static void straddle_lost_tests(void)
     t = scorrect(&ctl, S2_LINE_LOST_ARM_MS, &ticks);
     t0 = ticks;
     t = sdrive(&ctl, t, &ticks, t0 + ticks_for_mm(lost + 30.0f), 20);
-    EXPECT(lost_probe && !halted);
+    EXPECT(g_b_lost_probe && !g_b_halted);
     set_sensors(2u);
     t += 10u;
     ticks += 20;
     sstep(&ctl, t, ticks, ticks);
-    EXPECT(!halted && !lost_watch && !lost_probe && ctl.target_value < 0.0f);
-    EXPECT(lost_max_mm >= (uint32_t)lost + 25u);       /* shows in `watch max` */
+    EXPECT(!g_b_halted && !g_b_lost_watch && !g_b_lost_probe && ctl.target_value < 0.0f);
+    EXPECT(g_lost_max_mm >= (uint32_t)lost + 25u);       /* shows in `watch max` */
     set_sensors(0u);
     t = sdrive(&ctl, t, &ticks, ticks + ticks_for_mm(2.0f * stop), 20);
-    EXPECT(!halted);                 /* that C correction was short: no watch */
+    EXPECT(!g_b_halted);                 /* that C correction was short: no watch */
 
     /* A left correction (C black) probes left. */
     t = scorrect_on(&ctl, 2u, S2_LINE_LOST_ARM_MS, &ticks);
-    EXPECT(lost_watch && lost_side == 2u);
+    EXPECT(g_b_lost_watch && g_lost_side == 2u);
     t = sdrive(&ctl, t, &ticks, ticks + ticks_for_mm(lost + 5.0f), 20);
-    EXPECT(lost_probe && ctl.target_value == -S2_LINE_PROBE_STEER);
+    EXPECT(g_b_lost_probe && ctl.target_value == -S2_LINE_PROBE_STEER);
 
     /* PAUSE + RESUME after a lost stop re-arms without a black reading. */
     t = scorrect(&ctl, S2_LINE_LOST_ARM_MS, &ticks);
     t = sdrive(&ctl, t, &ticks, ticks + ticks_for_mm(stop + 5.0f), 20);
-    EXPECT(halted && lost_stop);
+    EXPECT(g_b_halted && g_b_lost_stop);
     send_command(S1_COMMAND_PAUSE);
     t += 10u;
     sstep(&ctl, t, ticks, ticks);
-    EXPECT(paused);
+    EXPECT(g_b_paused);
     send_command(S1_COMMAND_RESUME);
     t += 10u;
     sstep(&ctl, t, ticks, ticks);
-    EXPECT(!paused && lost_seen_black && halted);
+    EXPECT(!g_b_paused && g_b_lost_seen_black && g_b_halted);
     uint32_t resumed = t;
     while (t < resumed + S2_LINE_REARM_MS + 10u) { t += 10u; sstep(&ctl, t, ticks, ticks); }
-    EXPECT(!halted && enabled && !lost_stop);
+    EXPECT(!g_b_halted && enabled && !g_b_lost_stop);
 
     /* PAUSE in the middle of a correction, RESUME: the old correction (and
      * its hard timer) does not carry over. */
@@ -717,60 +717,60 @@ static void straddle_lost_tests(void)
     set_sensors(1u);
     t = 6000u;
     for (uint32_t i = 0; i <= S2_LINE_HARD_MS / 10u; ++i) { sstep(&ctl, t, 1, 1); t += 10u; }
-    EXPECT(steer_action == 1u && ctl.target_value == 1.0f);     /* hard */
+    EXPECT(g_steer_action == 1u && ctl.target_value == 1.0f);     /* hard */
     send_command(S1_COMMAND_PAUSE);
     sstep(&ctl, t, 1, 1);
-    EXPECT(paused);
+    EXPECT(g_b_paused);
     for (uint32_t i = 0; i < 200u; ++i) {           /* 2 s paused, motors stopping */
         t += 10u;
         motion_control_step(&ctl, t, 1, 1);
         sstep(&ctl, t, 1, 1);
     }
-    EXPECT(paused && !halted && steer_action == 1u);  /* kept while paused */
+    EXPECT(g_b_paused && !g_b_halted && g_steer_action == 1u);  /* kept while paused */
     t += 10u;
     send_command(S1_COMMAND_RESUME);
     sstep(&ctl, t, 1, 1);
-    EXPECT(!paused && steer_action == 0u && !lost_watch);
+    EXPECT(!g_b_paused && g_steer_action == 0u && !g_b_lost_watch);
     for (uint32_t i = 0; i < 4u; ++i) {          /* past the 30 ms settle */
         t += 10u;
         motion_control_step(&ctl, t, 1, 1);
         sstep(&ctl, t, 1, 1);
     }
-    EXPECT(steer_action == 1u && ctl.target_value == 0.5f);     /* soft again */
+    EXPECT(g_steer_action == 1u && ctl.target_value == 0.5f);     /* soft again */
 
     /* Black again within S2_LINE_LOST_MM: the watch clears, no probe, and
      * the distance is kept for the `steer ... watch max=` log. */
     t = scorrect(&ctl, S2_LINE_LOST_ARM_MS, &ticks);
     t0 = ticks;
     t = sdrive(&ctl, t, &ticks, t0 + ticks_for_mm(100.0f), 20);
-    EXPECT(!lost_probe);
+    EXPECT(!g_b_lost_probe);
     set_sensors(2u);
     t += 10u;
     sstep(&ctl, t, ticks, ticks);
-    EXPECT(!halted && !lost_watch && lost_max_mm >= 95u && lost_max_mm <= 115u);
+    EXPECT(!g_b_halted && !g_b_lost_watch && g_lost_max_mm >= 95u && g_lost_max_mm <= 115u);
 
     /* A correction shorter than S2_LINE_LOST_ARM_MS never starts a watch. */
     t = scorrect(&ctl, S2_LINE_LOST_ARM_MS - 20u, &ticks);
-    EXPECT(!lost_watch);
+    EXPECT(!g_b_lost_watch);
     t = sdrive(&ctl, t, &ticks, ticks + ticks_for_mm(3.0f * stop), 20);
-    EXPECT(!halted && ctl.target_value == 0.0f);
+    EXPECT(!g_b_halted && ctl.target_value == 0.0f);
 
     /* A gap in line following (turn, avoidance, pause) drops the watch and
      * any probe, so ticks counted elsewhere cannot trip it. */
     t = scorrect(&ctl, S2_LINE_LOST_ARM_MS, &ticks);
     t = sdrive(&ctl, t, &ticks, ticks + ticks_for_mm(lost + 5.0f), 20);
-    EXPECT(lost_probe);
+    EXPECT(g_b_lost_probe);
     ticks += ticks_for_mm(3.0f * stop);
     t += S2_LINE_LOST_GAP_MS + 10u;
     sstep(&ctl, t, ticks, ticks);
-    EXPECT(!halted && !lost_watch && !lost_probe);
+    EXPECT(!g_b_halted && !g_b_lost_watch && !g_b_lost_probe);
 
     /* A long straight with no correction never stops or probes (the 2 s
      * deadline's failure, 21 Nov). */
     sfollow(&ctl);
     ticks = 0;
     t = sdrive(&ctl, 6000u, &ticks, ticks_for_mm(20.0f * stop), 20);
-    EXPECT(!halted && !lost_watch && ctl.target_value == 0.0f);
+    EXPECT(!g_b_halted && !g_b_lost_watch && ctl.target_value == 0.0f);
 }
 
 static void straddle_tests(void)
@@ -784,7 +784,7 @@ static void straddle_tests(void)
     has_event = true;
     for (uint32_t t = 5040u; t <= 7000u; t += 20u) {
         sstep(&ctl, t, 1, 1);
-        EXPECT(!halted && ctl.target_value == 0.0f);
+        EXPECT(!g_b_halted && ctl.target_value == 0.0f);
     }
 
     /* Right black: steer right at once (soft), hard after S2_LINE_HARD_MS,
@@ -820,7 +820,7 @@ static void straddle_tests(void)
     sfollow(&ctl);
     set_sensors(3u);
     sstep(&ctl, 6000, 1, 1);
-    EXPECT(!turning && leaving_junction && ctl.target_value == 0.0f &&
+    EXPECT(!g_b_turning && g_b_leaving_junction && ctl.target_value == 0.0f &&
            ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
     /* Still on that crossing: a mapped letter read now must not turn here. */
     send_map("FAZW");
@@ -830,15 +830,15 @@ static void straddle_tests(void)
     queued.data[2] = 'A' - 'A';
     has_event = true;
     sstep(&ctl, 6020, 1, 1);
-    EXPECT(!turning && (pending_letter & 0x80u));        /* kept for the next one */
+    EXPECT(!g_b_turning && (g_pending_letter & 0x80u));        /* kept for the next one */
     set_sensors(0u);
     sstep(&ctl, 6100, 1, 1);
-    EXPECT(leaving_junction);
+    EXPECT(g_b_leaving_junction);
     sstep(&ctl, 6000 + S2_JUNCTION_SETTLE_MS, 1, 1);
-    EXPECT(!leaving_junction);
+    EXPECT(!g_b_leaving_junction);
     set_sensors(3u);                                       /* the next crossing */
     sstep(&ctl, 6000 + S2_JUNCTION_SETTLE_MS + 10u, 1, 1);
-    EXPECT(turning && turn_cmd == LINE_BARCODE_CMD_RIGHT);
+    EXPECT(g_b_turning && g_turn_cmd == LINE_BARCODE_CMD_RIGHT);
 
     /* Mapped letter: drive onto the crossing, pivot, then follow again. */
     sfollow(&ctl);
@@ -849,22 +849,22 @@ static void straddle_tests(void)
     queued.data[2] = 'A' - 'A';
     has_event = true;
     sstep(&ctl, 6010, 1, 1);
-    EXPECT((pending_letter & 0x80u) && last_letter == 1u);
+    EXPECT((g_pending_letter & 0x80u) && g_last_letter == 1u);
     set_sensors(3u);
     sstep(&ctl, 6020, 1, 1);
-    EXPECT(turning && turn_stage == TURN_ADVANCE && !enabled &&
+    EXPECT(g_b_turning && g_turn_stage == TURN_ADVANCE && !enabled &&
            ctl.status.active_command == MOTION_CMD_FORWARD_CM);
     motion_control_step(&ctl, 6030, 1, 1);
     motion_control_step(&ctl, 6040, 1 + 60, 1 + 60);      /* > 5 cm at 10 ticks/cm */
     EXPECT(ctl.status.state == MOTION_STATE_IDLE && ctl.status.motion_complete);
     sstep(&ctl, 6050, 61, 61);
-    EXPECT(turning && turn_stage == TURN_PIVOT &&
+    EXPECT(g_b_turning && g_turn_stage == TURN_PIVOT &&
            ctl.status.active_command == MOTION_CMD_TURN_RIGHT_DEG);
     motion_control_step(&ctl, 6060, 61, 61);
     motion_control_step(&ctl, 6070, 61 + 200, 61);        /* left wheel: 90 deg x 2 */
     EXPECT(ctl.status.state == MOTION_STATE_IDLE && ctl.status.motion_complete);
     sstep(&ctl, 6080, 261, 61);
-    EXPECT(!turning && enabled && leaving_junction && !halted);
+    EXPECT(!g_b_turning && enabled && g_b_leaving_junction && !g_b_halted);
 
     /* A letter with no mapping goes straight. */
     sfollow(&ctl);
@@ -877,7 +877,7 @@ static void straddle_tests(void)
     sstep(&ctl, 6010, 1, 1);
     set_sensors(3u);
     sstep(&ctl, 6020, 1, 1);
-    EXPECT(!turning && leaving_junction && !(pending_letter & 0x80u));
+    EXPECT(!g_b_turning && g_b_leaving_junction && !(g_pending_letter & 0x80u));
 
     /* S3-U33 (VC part, #23): an invalid frame stores no letter, so the next
      * junction goes straight on with no turn. */
@@ -888,10 +888,10 @@ static void straddle_tests(void)
     queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_INVALID << 3u);
     has_event = true;
     sstep(&ctl, 6010, 1, 1);
-    EXPECT(!halted && !(pending_letter & 0x80u));
+    EXPECT(!g_b_halted && !(g_pending_letter & 0x80u));
     set_sensors(3u);
     sstep(&ctl, 6020, 1, 1);
-    EXPECT(!turning && leaving_junction && !halted &&
+    EXPECT(!g_b_turning && g_b_leaving_junction && !g_b_halted &&
            ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
 
     /* An S3 fault stops at once and re-arms on a healthy snapshot held
@@ -899,22 +899,22 @@ static void straddle_tests(void)
     sfollow(&ctl);
     snapshot.data[1] = LINE_BARCODE_FAULT;
     sstep(&ctl, 6000, 1, 1);
-    EXPECT(halted && line_halt && !enabled);
+    EXPECT(g_b_halted && g_b_line_halt && !enabled);
     set_sensors(0u);
     sstep(&ctl, 6100, 1, 1);
     sstep(&ctl, 6100 + S2_LINE_REARM_MS - 101u, 1, 1);
-    EXPECT(halted);
+    EXPECT(g_b_halted);
     sstep(&ctl, 6000 + S2_LINE_REARM_MS, 1, 1);
-    EXPECT(!halted && enabled);
+    EXPECT(!g_b_halted && enabled);
 
     /* RESUME after PAUSE works on both-white in this model. */
     sfollow(&ctl);
     send_command(S1_COMMAND_PAUSE);
     sstep(&ctl, 6000, 1, 1);
-    EXPECT(paused);
+    EXPECT(g_b_paused);
     send_command(S1_COMMAND_RESUME);
     sstep(&ctl, 6010, 1, 1);
-    EXPECT(!paused && enabled);
+    EXPECT(!g_b_paused && enabled);
 }
 
 #define NEAR(a, b) (fabsf((a) - (b)) < 1e-3f)
@@ -1347,25 +1347,25 @@ static void alltest_robot_tests(void)
         sstep(&ctl, now, 0, 0);
         set_sensors(3u);
         sstep(&ctl, now + 1u, 0, 0);
-        EXPECT(turning && turn_stage == TURN_ADVANCE && turn_cmd == LINE_BARCODE_CMD_UTURN);
+        EXPECT(g_b_turning && g_turn_stage == TURN_ADVANCE && g_turn_cmd == LINE_BARCODE_CMD_UTURN);
         EXPECT(ctl.status.active_command == MOTION_CMD_FORWARD_CM &&
                ctl.status.left_pwm_percent > 10.0f);        /* not stopped first */
         now = msteps(&ctl, now + 1u, 1, adv, adv);          /* > the advance */
         EXPECT(ctl.status.state == MOTION_STATE_IDLE);
         sstep(&ctl, now + 1u, adv, adv);
-        EXPECT(turn_stage == TURN_PIVOT && ctl.active_profile == MOTION_PROFILE_UTURN &&
+        EXPECT(g_turn_stage == TURN_PIVOT && ctl.active_profile == MOTION_PROFILE_UTURN &&
                ctl.status.left_pwm_percent > 10.0f);        /* carried on */
         now = msteps(&ctl, now + 1u, 30, adv - 300, adv + 300);
         EXPECT(ctl.status.left_pwm_percent < 0.0f);         /* reversing */
         set_sensors(centre_late ? 0u : 2u);                 /* centre black early */
         sstep(&ctl, now, adv - half + 100, adv + half - 100);
-        EXPECT(turning);                                    /* arc not done yet */
+        EXPECT(g_b_turning);                                    /* arc not done yet */
         set_sensors(0u);
         sstep(&ctl, now + 1u, adv - half, adv + half + 1);
-        EXPECT(turning);                                    /* arc done, centre white */
+        EXPECT(g_b_turning);                                    /* arc done, centre white */
         set_sensors(2u);
         sstep(&ctl, now + 2u, adv - half, adv + half + 2);
-        EXPECT(!turning && !halted && enabled && leaving_junction);
+        EXPECT(!g_b_turning && !g_b_halted && enabled && g_b_leaving_junction);
         EXPECT(ctl.status.left_pwm_percent == 0.0f);        /* spin stopped */
     }
 
@@ -1381,7 +1381,7 @@ static void alltest_robot_tests(void)
     sstep(&ctl, 5050, 0, 0);
     motion_control_step(&ctl, 5060, adv, adv);
     sstep(&ctl, 5061, adv, adv);
-    EXPECT(turn_stage == TURN_PIVOT && ctl.active_profile == MOTION_PROFILE_JUNCTION &&
+    EXPECT(g_turn_stage == TURN_PIVOT && ctl.active_profile == MOTION_PROFILE_JUNCTION &&
            ctl.status.active_command == MOTION_CMD_TURN_RIGHT_DEG);
 
     /* A left or right pivot stops on the line: past 90 % of its arc, the
@@ -1407,14 +1407,14 @@ static void alltest_robot_tests(void)
             sstep(&ctl, 5050, 0, 0);
             motion_control_step(&ctl, 5060, adv, adv);
             sstep(&ctl, 5061, adv, adv);
-            EXPECT(turn_stage == TURN_PIVOT);
+            EXPECT(g_turn_stage == TURN_PIVOT);
             set_sensors(variant == 2 ? 0u : 2u);
             now = msteps(&ctl, 5062, 3, side ? adv : adv + at, side ? adv + at : adv);
             sstep(&ctl, now, side ? adv : adv + at, side ? adv + at : adv);
             if (variant == 0 || (variant == 3 && side == 1)) {
-                EXPECT(!turning && !halted && enabled);      /* stopped on the line */
+                EXPECT(!g_b_turning && !g_b_halted && enabled);      /* stopped on the line */
             } else {
-                EXPECT(turning && turn_stage == TURN_PIVOT); /* kept turning */
+                EXPECT(g_b_turning && g_turn_stage == TURN_PIVOT); /* kept turning */
             }
         }
     }
@@ -1457,9 +1457,9 @@ static void alltest_robot_tests(void)
         EXPECT(ctl.active_profile == MOTION_PROFILE_REVERSE &&
                ctl.status.active_command == MOTION_CMD_FORWARD_CM);
         req.b_reverse = FALSE;
-        steer_action = 1u;
+        g_steer_action = 1u;
         EXPECT(vc_give_back(&c));
-        EXPECT(leaving_junction && junction_done == 6000u && steer_action == 0u);
+        EXPECT(g_b_leaving_junction && g_junction_done == 6000u && g_steer_action == 0u);
     }
 
     all_numbers = false;
@@ -1502,7 +1502,7 @@ static void s5_follow(MOTION_CONTROLLER *ctl)
     s5_reset();
     vstep(ctl, 5000, 0, 0);
     vstep(ctl, 5030, 1, 1);
-    EXPECT(armed && enabled && !halted);
+    EXPECT(g_b_armed && enabled && !g_b_halted);
     EXPECT(ctl->status.active_command == MOTION_CMD_FOLLOW_LINE);
     EXPECT((s5_flags & S5_EVT_FOLLOWING) != 0u);
 }
@@ -1514,7 +1514,7 @@ static uint32_t s5_hold(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
     s5_forget(S5_EVT_STOPPED);
     s5_post(S5_REQ_HOLD, S5_MOVE_FWD, 0u, FALSE);
     vstep(ctl, now, l, r);
-    EXPECT(in_avoid && !enabled);                   /* S5 has control */
+    EXPECT(g_b_in_avoid && !enabled);                   /* S5 has control */
     EXPECT((s5_flags & S5_EVT_FOLLOWING) == 0u);
     EXPECT(ctl->status.active_command != MOTION_CMD_FOLLOW_LINE);
     EXPECT((s5_flags & S5_EVT_STOPPED) == 0u);      /* not before the settle */
@@ -1522,7 +1522,7 @@ static uint32_t s5_hold(MOTION_CONTROLLER *ctl, uint32_t now, int32_t l, int32_t
         vstep(ctl, t, l, r);
     EXPECT((s5_flags & S5_EVT_STOPPED) != 0u);
     EXPECT(t - now >= S2_AVOID_HOLD_SETTLE_MS);     /* coasted first */
-    EXPECT(motors_off(ctl) && !halted);
+    EXPECT(motors_off(ctl) && !g_b_halted);
     return t;
 }
 
@@ -1537,11 +1537,11 @@ static void s5_handover_tests(void)
     s5_reset();
     s5_post(S5_REQ_HOLD, S5_MOVE_FWD, 0u, FALSE);
     for (t = 5000u; t <= 6000u; t += 10u) vstep(&ctl, t, 0, 0);
-    EXPECT(!armed && !halted && max_pwm_seen == 0u);
+    EXPECT(!g_b_armed && !g_b_halted && max_pwm_seen == 0u);
     s5_post(S5_REQ_NONE, S5_MOVE_FWD, 0u, FALSE);
     vstep(&ctl, 6010, 0, 0);
     vstep(&ctl, 6040, 1, 1);
-    EXPECT(armed && enabled && (s5_flags & S5_EVT_FOLLOWING) != 0u);
+    EXPECT(g_b_armed && enabled && (s5_flags & S5_EVT_FOLLOWING) != 0u);
 
     /* (b) Full hand-over: HOLD -> STOPPED, MOVE -> MOTION_DONE,
      *     stop-on-line MOVE -> LINE_FOUND, RESUME -> line following. */
@@ -1551,14 +1551,14 @@ static void s5_handover_tests(void)
     s5_forget(S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED);
     s5_post(S5_REQ_MOVE, S5_MOVE_FWD, 10u, FALSE);
     vstep(&ctl, t += 10u, 1, 1);
-    EXPECT(in_avoid && ctl.status.active_command == MOTION_CMD_FORWARD_CM &&
+    EXPECT(g_b_in_avoid && ctl.status.active_command == MOTION_CMD_FORWARD_CM &&
            ctl.next_profile == MOTION_PROFILE_AVOID);  /* applied with all_test numbers */
     for (ticks = 1; ticks < 400 && (s5_flags & S5_EVT_MOTION_DONE) == 0u; ticks += 2)
         vstep(&ctl, t += 10u, ticks, ticks);
     EXPECT((s5_flags & S5_EVT_MOTION_DONE) != 0u);
     EXPECT((s5_flags & S5_EVT_MOVE_FAILED) == 0u);
     EXPECT(ticks >= 100);                           /* 10 cm x 10 ticks/cm */
-    EXPECT(motors_off(&ctl) && !halted && !enabled);
+    EXPECT(motors_off(&ctl) && !g_b_halted && !enabled);
 
     snapshot.data[0] = 0u;                          /* both sensors on white */
     s5_forget(S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED | S5_EVT_LINE_FOUND);
@@ -1570,16 +1570,16 @@ static void s5_handover_tests(void)
     ticks += 2;
     vstep(&ctl, t += 10u, ticks, ticks);
     EXPECT((s5_flags & S5_EVT_LINE_FOUND) != 0u);
-    EXPECT(motors_off(&ctl) && !halted);
+    EXPECT(motors_off(&ctl) && !g_b_halted);
 
     snapshot = (line_barcode_msg_t){{3u | (2u << 3u), LINE_BARCODE_FOLLOW, 0u}};
     s5_post(S5_REQ_RESUME, S5_MOVE_FWD, 0u, FALSE);
     vstep(&ctl, t += 10u, ticks, ticks);
-    EXPECT(enabled && !halted);                     /* line following back */
+    EXPECT(enabled && !g_b_halted);                     /* line following back */
     vstep(&ctl, t += 10u, ticks, ticks);
-    EXPECT(!in_avoid && motors_off(&ctl));          /* VC's 30 ms grace */
+    EXPECT(!g_b_in_avoid && motors_off(&ctl));          /* VC's 30 ms grace */
     vstep(&ctl, t += 30u, ticks, ticks);
-    EXPECT(!in_avoid && ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+    EXPECT(!g_b_in_avoid && ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
     EXPECT((s5_flags & S5_EVT_FOLLOWING) != 0u);
 
     /* (c1) Wheels stalled during an S5 move: the motion controller's
@@ -1591,14 +1591,14 @@ static void s5_handover_tests(void)
     s5_post(S5_REQ_MOVE, S5_MOVE_FWD, 30u, FALSE);
     {
         uint32_t t0 = t;
-        while (!halted && t < t0 + 5000u) vstep(&ctl, t += 10u, 1, 1);
-        EXPECT(halted && !line_halt && motors_off(&ctl));
+        while (!g_b_halted && t < t0 + 5000u) vstep(&ctl, t += 10u, 1, 1);
+        EXPECT(g_b_halted && !g_b_line_halt && motors_off(&ctl));
         EXPECT(t - t0 <= 2000u);                    /* stall caught quickly */
         EXPECT((s5_flags & (S5_EVT_MOTION_DONE | S5_EVT_MOVE_FAILED)) == 0u);
     }
     s5_post(S5_REQ_SAFE_STOP, S5_MOVE_FWD, 0u, FALSE);
     for (int i = 0; i < 100; ++i) vstep(&ctl, t += 10u, 1, 1);
-    EXPECT(halted && motors_off(&ctl));
+    EXPECT(g_b_halted && motors_off(&ctl));
 
     /* (c2) A move that keeps going past S2_AVOID_MOVE_TIMEOUT_MS fails with
      *      S5_EVT_MOVE_FAILED and the motors stop; S5's SAFE_STOP then
@@ -1610,21 +1610,21 @@ static void s5_handover_tests(void)
     {
         uint32_t t0 = t;
         ticks = 1;
-        while ((s5_flags & S5_EVT_MOVE_FAILED) == 0u && !halted &&
+        while ((s5_flags & S5_EVT_MOVE_FAILED) == 0u && !g_b_halted &&
                t < t0 + S2_AVOID_MOVE_TIMEOUT_MS + 1000u) {
             ++ticks;                                /* creeping: no stall */
             vstep(&ctl, t += 10u, ticks, ticks);
         }
-        EXPECT((s5_flags & S5_EVT_MOVE_FAILED) != 0u && !halted);
+        EXPECT((s5_flags & S5_EVT_MOVE_FAILED) != 0u && !g_b_halted);
         EXPECT(t - t0 > S2_AVOID_MOVE_TIMEOUT_MS);
         EXPECT((s5_flags & S5_EVT_MOTION_DONE) == 0u && motors_off(&ctl));
     }
     s5_post(S5_REQ_SAFE_STOP, S5_MOVE_FWD, 0u, FALSE);
     vstep(&ctl, t += 10u, ticks, ticks);
-    EXPECT(halted && !line_halt && motors_off(&ctl) && !enabled);
+    EXPECT(g_b_halted && !g_b_line_halt && motors_off(&ctl) && !enabled);
     s5_post(S5_REQ_NONE, S5_MOVE_FWD, 0u, FALSE);   /* too late: latched */
     for (int i = 0; i < 300; ++i) vstep(&ctl, t += 10u, ticks, ticks);
-    EXPECT(halted && motors_off(&ctl));
+    EXPECT(g_b_halted && motors_off(&ctl));
 
     /* (c3) A move the controller rejects (0 cm) fails at once. */
     s5_follow(&ctl);
@@ -1638,11 +1638,11 @@ static void s5_handover_tests(void)
     s5_follow(&ctl);
     s5_word = 5u;                                   /* reserved kind 5 */
     vstep(&ctl, 6000, 2, 2);
-    EXPECT(halted && !line_halt && motors_off(&ctl));
+    EXPECT(g_b_halted && !g_b_line_halt && motors_off(&ctl));
     EXPECT((s5_flags & S5_EVT_FOLLOWING) == 0u);
     s5_word = 0u;
     for (int i = 0; i < 300; ++i) vstep(&ctl, 6010u + 10u * (unsigned)i, 2, 2);
-    EXPECT(halted && motors_off(&ctl));
+    EXPECT(g_b_halted && motors_off(&ctl));
 
     /* (e) #47 CAL_FAIL: S5 asks for SAFE_STOP before the VC has armed.
      *     The wheels must never be driven. */
@@ -1650,15 +1650,15 @@ static void s5_handover_tests(void)
     s5_reset();
     s5_post(S5_REQ_SAFE_STOP, S5_MOVE_FWD, 0u, FALSE);
     for (t = 5000u; t <= 8000u; t += 10u) vstep(&ctl, t, 0, 0);
-    EXPECT(halted && !line_halt && max_pwm_seen == 0u);
+    EXPECT(g_b_halted && !g_b_line_halt && max_pwm_seen == 0u);
     EXPECT(ctl.status.active_command != MOTION_CMD_FOLLOW_LINE);
 
     /* (f) An obstacle mid barcode turn: S5 takes over and the turn ends. */
     s5_follow(&ctl);
-    turning = true; turn_stage = TURN_PIVOT;
+    g_b_turning = true; g_turn_stage = TURN_PIVOT;
     s5_post(S5_REQ_HOLD, S5_MOVE_FWD, 0u, FALSE);
     vstep(&ctl, 6000, 1, 1);
-    EXPECT(in_avoid && !turning && turn_stage == 0u);
+    EXPECT(g_b_in_avoid && !g_b_turning && g_turn_stage == 0u);
 
     s5_reset();
 }
@@ -1726,9 +1726,9 @@ static void bad_command_tests(void)
     /* (a) Ready: no bad message starts the robot, not even START with a
      * reserved bit set. Nothing reaches the VC's buffer; the motors stay 0. */
     reset(&ctl);
-    auto_start = false;
+    g_b_auto_start = false;
     robot_control_step(&ctl, 5000, 0, 0);
-    EXPECT(!armed && ready_reported);
+    EXPECT(!g_b_armed && g_b_ready_reported);
     t = 5010u;
     for (i = 0u; i < BAD_COMMANDS; ++i, t += 10u) {
         send_bad(&bad_commands[i]);
@@ -1737,12 +1737,12 @@ static void bad_command_tests(void)
         fake_imu.sample_count++;
         robot_control_step(&ctl, t, 0, 0);
         motion_control_step(&ctl, t + 5u, 0, 0);
-        EXPECT(!armed && !start_requested && !enabled && stopped_motors(&ctl));
+        EXPECT(!g_b_armed && !g_b_start_requested && !enabled && stopped_motors(&ctl));
     }
     send_command(S1_COMMAND_START);                        /* the link still works */
     fake_imu.sample_count++;
     robot_control_step(&ctl, t, 0, 0);
-    EXPECT(armed && enabled && counted(BAD_COMMANDS + 1u, 1u, BAD_COMMANDS));
+    EXPECT(g_b_armed && enabled && counted(BAD_COMMANDS + 1u, 1u, BAD_COMMANDS));
 
     /* (b) Following: bad messages change nothing (a corrupted PAUSE is not
      * a PAUSE); a valid PAUSE straight after stops at once. */
@@ -1753,14 +1753,14 @@ static void bad_command_tests(void)
         fake_imu.sample_count++;
         robot_control_step(&ctl, t, 1, 1);
         motion_control_step(&ctl, t + 5u, 1, 1);
-        EXPECT(!paused && !halted && enabled);
+        EXPECT(!g_b_paused && !g_b_halted && enabled);
         EXPECT(ctl.status.active_command == MOTION_CMD_FOLLOW_LINE &&
                ctl.status.left_pwm_percent > 0);
     }
     EXPECT(counted(BAD_COMMANDS, 0u, BAD_COMMANDS));
     send_command(S1_COMMAND_PAUSE);
     robot_control_step(&ctl, t, 1, 1);
-    EXPECT(paused && !enabled && stopped_motors(&ctl));
+    EXPECT(g_b_paused && !enabled && stopped_motors(&ctl));
 
     /* (c) Paused: a corrupted RESUME keeps the robot stopped; a valid
      * RESUME then restarts line following. */
@@ -1771,13 +1771,13 @@ static void bad_command_tests(void)
             fake_imu.sample_count++;
             robot_control_step(&ctl, t, 1, 1);
             motion_control_step(&ctl, t + 5u, 1, 1);
-            EXPECT(paused && !enabled && stopped_motors(&ctl));
+            EXPECT(g_b_paused && !enabled && stopped_motors(&ctl));
         }
     }
     send_command(S1_COMMAND_RESUME);
     fake_imu.sample_count++;
     robot_control_step(&ctl, t, 1, 1);
-    EXPECT(!paused && enabled);
+    EXPECT(!g_b_paused && enabled);
     fake_imu.sample_count++;
     robot_control_step(&ctl, t + 50u, 1, 1);
     motion_control_step(&ctl, t + 60u, 2, 2);
@@ -1793,7 +1793,7 @@ static void bad_command_tests(void)
     send_command(S1_COMMAND_PAUSE);
     EXPECT(command_count == 1u && counted(101u, 1u, 100u));
     robot_control_step(&ctl, 5050, 1, 1);
-    EXPECT(paused && stopped_motors(&ctl));
+    EXPECT(g_b_paused && stopped_motors(&ctl));
 
     /* (e) Bad and valid interleaved in one control period: only the valid
      * ones reach the VC, in order (STATUS answered, then PAUSE applied). */
@@ -1805,7 +1805,7 @@ static void bad_command_tests(void)
     send_command(S1_COMMAND_PAUSE);
     EXPECT(command_count == 2u && counted(4u, 2u, 2u));
     robot_control_step(&ctl, 5050, 1, 1);
-    EXPECT(command_count == 0u && paused && stopped_motors(&ctl) && publish_count >= 1u);
+    EXPECT(command_count == 0u && g_b_paused && stopped_motors(&ctl) && publish_count >= 1u);
 
     /* (f) Valid on the wire but not supported by the VC (RESET_STATS,
      * REVERSE): queued, logged, and the robot keeps following. */
@@ -1816,13 +1816,13 @@ static void bad_command_tests(void)
     fake_imu.sample_count++;
     robot_control_step(&ctl, 5050, 1, 1);
     motion_control_step(&ctl, 5055, 1, 1);
-    EXPECT(command_count == 0u && !paused && !halted &&
+    EXPECT(command_count == 0u && !g_b_paused && !g_b_halted &&
            ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
 
     /* (g) Other topics are not commands: a START byte on a wrong topic, or a
      * 1-byte message on the map topic, is not counted, queued or applied. */
     reset(&ctl);
-    auto_start = false;
+    g_b_auto_start = false;
     robot_control_step(&ctl, 5000, 0, 0);
     static const unsigned char start = S1_COMMAND_START;
     broker_publish(MQTT_CLIENT_ID "/commands", &start, 1u, 1u, 0u);
@@ -1832,7 +1832,7 @@ static void bad_command_tests(void)
     EXPECT(command_count == 0u && counted(0u, 0u, 0u));
     fake_imu.sample_count++;
     robot_control_step(&ctl, 5010, 0, 0);
-    EXPECT(!armed && !start_requested && stopped_motors(&ctl));
+    EXPECT(!g_b_armed && !g_b_start_requested && stopped_motors(&ctl));
 
     printf("INT-15 bad commands: %u bad payloads x Ready/following, %u bad RESUMEs, "
            "flood, interleave, unsupported, wrong topics\n",
@@ -1846,7 +1846,7 @@ int main(void)
     reset(&ctl);
     fake_imu.calibrated = FALSE;
     robot_control_step(&ctl, 6000, 0, 0);
-    EXPECT(!armed && ctl.status.left_pwm_percent == 0);
+    EXPECT(!g_b_armed && ctl.status.left_pwm_percent == 0);
 
     follow(&ctl);
     snapshot.data[0] = 3u | (0u << 3u);
@@ -1865,17 +1865,17 @@ int main(void)
         has_event = true;
         robot_control_step(&ctl, 5041, 1, 1);
         if (action == LINE_BARCODE_CMD_STRAIGHT) {
-            EXPECT(!turning && ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+            EXPECT(!g_b_turning && ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
             continue;
         }
-        EXPECT(turning && !enabled);
+        EXPECT(g_b_turning && !enabled);
         EXPECT(ctl.target_value == (action == LINE_BARCODE_CMD_UTURN ? 180 : 90));
         bool right = action == LINE_BARCODE_CMD_RIGHT;
         EXPECT(ctl.status.active_command == (right ? MOTION_CMD_TURN_RIGHT_DEG : MOTION_CMD_TURN_LEFT_DEG));
         int ticks = (int)(ctl.target_value * 2) + 1;
         motion_control_step(&ctl, 5050, right ? ticks : 1, right ? 1 : ticks);
         robot_control_step(&ctl, 5051, right ? ticks : 1, right ? 1 : ticks);
-        EXPECT(!turning && enabled);
+        EXPECT(!g_b_turning && enabled);
     }
     /* #53: lifted (state or the one-sample event) stops and stays stopped. */
     follow(&ctl); fake_imu.motion_state = IMU_MOTION_LIFTED; stopped(&ctl, 5041);
@@ -1884,7 +1884,7 @@ int main(void)
     follow(&ctl); fake_imu.motion_state = IMU_MOTION_TILT;
     fake_imu.event = IMU_EVENT_TILT;
     robot_control_step(&ctl, 5041, 1, 1);
-    EXPECT(!halted && enabled);
+    EXPECT(!g_b_halted && enabled);
     EXPECT(ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
     follow(&ctl); fake_imu.event = IMU_EVENT_FAULT; stopped(&ctl, 5041);
     follow(&ctl); fake_imu.sensor_ok = FALSE; stopped(&ctl, 5041);
@@ -1904,9 +1904,9 @@ int main(void)
     for (unsigned with_map = 0; with_map < 2; ++with_map) {
         follow(&ctl); queued = snapshot;
         queued.data[1] = (uint8_t)(LINE_BARCODE_EVT_JUNCTION << 3u); has_event = true;
-        map_received = with_map != 0u;
+        g_b_map_received = with_map != 0u;
         robot_control_step(&ctl, 5041, 1, 1);
-        EXPECT(!halted && enabled && !turning);
+        EXPECT(!g_b_halted && enabled && !g_b_turning);
         robot_control_step(&ctl, 5042, 1, 1);
         motion_control_step(&ctl, 5050, 2, 2);
         EXPECT(ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
@@ -1919,50 +1919,50 @@ int main(void)
         follow(&ctl); line_stop(&ctl, t0);
         robot_control_step(&ctl, t0 + 50u, 1, 1);
         robot_control_step(&ctl, t0 + rearm - 1u, 1, 1);
-        EXPECT(halted && !enabled);                 /* not yet */
+        EXPECT(g_b_halted && !enabled);                 /* not yet */
         robot_control_step(&ctl, t0 + rearm, 1, 1);
-        EXPECT(!halted && enabled);                 /* re-armed on its own */
+        EXPECT(!g_b_halted && enabled);                 /* re-armed on its own */
 
         /* A brief loss of black restarts the wait. */
         follow(&ctl); line_stop(&ctl, t0);
         snapshot.data[0] = 0u; robot_control_step(&ctl, 5500u, 1, 1);
         snapshot.data[0] = 3u | (2u << 3u);
         robot_control_step(&ctl, t0 + rearm, 1, 1);
-        EXPECT(halted);
+        EXPECT(g_b_halted);
         robot_control_step(&ctl, 5500u + rearm, 1, 1);
-        EXPECT(!halted && enabled);
+        EXPECT(!g_b_halted && enabled);
 
         /* Moving the robot by hand (encoders change) restarts the wait. */
         follow(&ctl); line_stop(&ctl, t0);
         robot_control_step(&ctl, 5500u, 5, 5);
         robot_control_step(&ctl, t0 + rearm, 5, 5);
-        EXPECT(halted);
+        EXPECT(g_b_halted);
         robot_control_step(&ctl, 5500u + rearm, 5, 5);
-        EXPECT(!halted && enabled);
+        EXPECT(!g_b_halted && enabled);
 
         /* An IMU (safety) stop never re-arms, even on stable black. */
         follow(&ctl); fake_imu.event = IMU_EVENT_FAULT;
         robot_control_step(&ctl, t0, 1, 1);
-        EXPECT(halted && !line_halt);
+        EXPECT(g_b_halted && !g_b_line_halt);
         fake_imu.event = IMU_EVENT_NONE;
         for (uint32_t t = t0 + 100u; t <= t0 + 3u * rearm; t += 100u) {
             fake_imu.sample_count++;
             robot_control_step(&ctl, t, 1, 1);
         }
-        EXPECT(halted && ctl.status.left_pwm_percent == 0);
+        EXPECT(g_b_halted && ctl.status.left_pwm_percent == 0);
     }
     follow(&ctl);
     queued = (line_barcode_msg_t){{0u, LINE_BARCODE_EVT_COMMAND << 3u, 0u}};
     has_event = true;
     snapshot.data[1] = LINE_BARCODE_FAULT;
     stopped(&ctl, 5041);
-    EXPECT(!turning); /* Newer fault takes precedence over queued turn. */
+    EXPECT(!g_b_turning); /* Newer fault takes precedence over queued turn. */
 
     follow(&ctl);
     queued = (line_barcode_msg_t){{0u, LINE_BARCODE_EVT_COMMAND << 3u, 0u}};
     has_event = true;
     robot_control_step(&ctl, 5041, 1, 1);
-    EXPECT(turning);
+    EXPECT(g_b_turning);
     fake_imu.sample_count++;
     stopped(&ctl, 15042); /* Turn deadline with a fresh IMU sample. */
 
@@ -1970,7 +1970,7 @@ int main(void)
     fake_imu.motion_state = IMU_MOTION_HUMP;
     fake_imu.event = IMU_EVENT_HUMP;
     robot_control_step(&ctl, 5041, 1, 1);
-    EXPECT(!halted && ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
+    EXPECT(!g_b_halted && ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
 
     follow(&ctl);
     motion_control_step(&ctl, 5600, 1, 1);
@@ -1992,39 +1992,39 @@ int main(void)
     /* #48 Ready state: with auto-start off, an initialised robot waits,
      * motors off, until START. Other commands do not start it. */
     reset(&ctl);
-    auto_start = false;
+    g_b_auto_start = false;
     robot_control_step(&ctl, 5000, 0, 0);
-    EXPECT(!armed && !enabled && ready_reported);
+    EXPECT(!g_b_armed && !enabled && g_b_ready_reported);
     send_command(S1_COMMAND_PAUSE);
     send_command(S1_COMMAND_RESUME);
     fake_imu.sample_count++;
     robot_control_step(&ctl, 5050, 0, 0);
-    EXPECT(!armed && !enabled && command_count == 0u); /* drained, not a start */
+    EXPECT(!g_b_armed && !enabled && command_count == 0u); /* drained, not a start */
     EXPECT(ctl.status.left_pwm_percent == 0 && ctl.status.right_pwm_percent == 0);
     send_command(S1_COMMAND_START);
     fake_imu.sample_count++;
     robot_control_step(&ctl, 5100, 0, 0);
-    EXPECT(armed && enabled && start_requested);
+    EXPECT(g_b_armed && enabled && g_b_start_requested);
     robot_control_step(&ctl, 5130, 0, 0);
     motion_control_step(&ctl, 5140, 1, 1);
     EXPECT(ctl.status.active_command == MOTION_CMD_FOLLOW_LINE);
     send_command(S1_COMMAND_START);                       /* already running */
     robot_control_step(&ctl, 5150, 1, 1);
-    EXPECT(armed && command_count == 0u);
+    EXPECT(g_b_armed && command_count == 0u);
 
     /* A START sent during initialisation is kept until the robot is Ready. */
     reset(&ctl);
-    auto_start = false;
+    g_b_auto_start = false;
     send_command(S1_COMMAND_START);
     robot_control_step(&ctl, 1000, 0, 0);                  /* before S2_ROBOT_START_MS */
-    EXPECT(!armed && start_requested && !ready_reported);
+    EXPECT(!g_b_armed && g_b_start_requested && !g_b_ready_reported);
     fake_imu.sample_count++;
     robot_control_step(&ctl, S2_ROBOT_START_MS, 0, 0);
-    EXPECT(armed && enabled);
+    EXPECT(g_b_armed && enabled);
 
     /* Polling never blocks and drains at most S1_QUEUE_DEPTH per step. */
     reset(&ctl);
-    auto_start = false;
+    g_b_auto_start = false;
     for (unsigned i = 0u; i < 10u; ++i) send_command(S1_COMMAND_STATUS);
     robot_control_step(&ctl, 1000, 0, 0);
 #if S1_REAL_LINK
@@ -2045,18 +2045,18 @@ int main(void)
     follow(&ctl);
     send_command(S1_COMMAND_PAUSE);
     robot_control_step(&ctl, 5041, 1, 1);
-    EXPECT(paused && !enabled && !halted);
+    EXPECT(g_b_paused && !enabled && !g_b_halted);
     EXPECT(ctl.status.left_pwm_percent == 0 && ctl.status.right_pwm_percent == 0);
     for (uint32_t t = 5100u; t <= 7000u; t += 100u) {
         fake_imu.sample_count++;
         robot_control_step(&ctl, t, 1, 1);
         motion_control_step(&ctl, t, 1, 1);
-        EXPECT(paused && ctl.status.left_pwm_percent == 0);
+        EXPECT(g_b_paused && ctl.status.left_pwm_percent == 0);
     }
     send_command(S1_COMMAND_RESUME);
     fake_imu.sample_count++;
     robot_control_step(&ctl, 7050, 1, 1);
-    EXPECT(!paused && enabled);
+    EXPECT(!g_b_paused && enabled);
     fake_imu.sample_count++;
     robot_control_step(&ctl, 7100, 1, 1);
     motion_control_step(&ctl, 7110, 2, 2);
@@ -2070,12 +2070,12 @@ int main(void)
     send_command(S1_COMMAND_RESUME);
     fake_imu.sample_count++;
     robot_control_step(&ctl, 5060, 1, 1);
-    EXPECT(paused && !enabled);
+    EXPECT(g_b_paused && !enabled);
     snapshot.data[0] = 3u | (2u << 3u);
     fake_imu.sensor_ok = FALSE;
     send_command(S1_COMMAND_RESUME);
     robot_control_step(&ctl, 5070, 1, 1);
-    EXPECT(paused && !enabled);
+    EXPECT(g_b_paused && !enabled);
 
     /* PAUSE during a line stop blocks the automatic re-arm until RESUME. */
     {
@@ -2084,46 +2084,46 @@ int main(void)
         send_command(S1_COMMAND_PAUSE);
         robot_control_step(&ctl, t0 + 10u, 1, 1);
         robot_control_step(&ctl, t0 + 3u * rearm, 1, 1);
-        EXPECT(halted && paused && !enabled);              /* no re-arm while paused */
+        EXPECT(g_b_halted && g_b_paused && !enabled);              /* no re-arm while paused */
         send_command(S1_COMMAND_RESUME);
         fake_imu.sample_count++;
         robot_control_step(&ctl, t0 + 3u * rearm + 1u, 1, 1);
-        EXPECT(!paused && halted);          /* time paused doesn't count */
+        EXPECT(!g_b_paused && g_b_halted);          /* time paused doesn't count */
         robot_control_step(&ctl, t0 + 4u * rearm, 1, 1);
-        EXPECT(halted && !enabled);
+        EXPECT(g_b_halted && !enabled);
         robot_control_step(&ctl, t0 + 4u * rearm + 1u, 1, 1);
-        EXPECT(!halted && enabled);         /* a full re-arm wait after RESUME */
+        EXPECT(!g_b_halted && enabled);         /* a full re-arm wait after RESUME */
     }
 
     /* A safety stop ignores PAUSE and RESUME: it needs a reboot. */
     follow(&ctl); fake_imu.event = IMU_EVENT_FAULT;
     robot_control_step(&ctl, 5041, 1, 1);
-    EXPECT(halted && !line_halt);
+    EXPECT(g_b_halted && !g_b_line_halt);
     fake_imu.event = IMU_EVENT_NONE;
     send_command(S1_COMMAND_PAUSE);
     send_command(S1_COMMAND_RESUME);
     fake_imu.sample_count++;
     robot_control_step(&ctl, 5100, 1, 1);
-    EXPECT(halted && !line_halt && !paused && !enabled);
+    EXPECT(g_b_halted && !g_b_line_halt && !g_b_paused && !enabled);
 
     /* PAUSE in Ready cancels a pending START. */
     reset(&ctl);
-    auto_start = false;
+    g_b_auto_start = false;
     send_command(S1_COMMAND_START);
     robot_control_step(&ctl, 1000, 0, 0);
     send_command(S1_COMMAND_PAUSE);
     robot_control_step(&ctl, 1100, 0, 0);
     fake_imu.sample_count++;
     robot_control_step(&ctl, 5000, 0, 0);
-    EXPECT(!armed && !start_requested);
+    EXPECT(!g_b_armed && !g_b_start_requested);
 
     /* The MQTT letter map is applied to S3; a later barcode and its mapped
      * direction appear in telemetry. A bad map changes nothing. */
     follow(&ctl);
-    EXPECT(applied_map[0] == '\0' && !map_received);        /* no built-in map */
+    EXPECT(applied_map[0] == '\0' && !g_b_map_received);        /* no built-in map */
     send_map("FAZW");
     robot_control_step(&ctl, 5041, 1, 1);
-    EXPECT(map_received && strcmp(applied_map, "FAZW") == 0);
+    EXPECT(g_b_map_received && strcmp(applied_map, "FAZW") == 0);
     pending_map.bytes[0] = pending_map.bytes[1] = pending_map.bytes[2] = 0u; /* A,A,A,A */
     has_map = true;
     robot_control_step(&ctl, 5042, 1, 1);
@@ -2134,7 +2134,7 @@ int main(void)
     has_event = true;
     fake_imu.sample_count++;
     robot_control_step(&ctl, 5060, 1, 1);
-    EXPECT(last_letter == 26u);
+    EXPECT(g_last_letter == 26u);
     send_command(S1_COMMAND_STATUS);
     robot_control_step(&ctl, 5061, 1, 1);
     EXPECT(field(S1_FIELD_BARCODE_LETTER) == 26 &&
@@ -2144,7 +2144,7 @@ int main(void)
     /* Telemetry: once a second, STATUS forces one at once; state, line bits,
      * distance, hump and barcode counts come from the live sources. */
     reset(&ctl);
-    auto_start = false;
+    g_b_auto_start = false;
     robot_control_step(&ctl, 1000, 0, 0);
     EXPECT(publish_count == 1u && field(S1_FIELD_STATE) == S1_STATE_IDLE);
     EXPECT(field(S1_FIELD_MAP_RECEIVED) == 0);             /* #38: waiting for map */

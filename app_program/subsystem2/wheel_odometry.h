@@ -18,17 +18,18 @@ typedef struct
     bool    available;
 } WHEEL_ODOMETRY;
 
-static inline void wheel_odometry_init(WHEEL_ODOMETRY * o, float left_scale,
+static inline void wheel_odometry_init(WHEEL_ODOMETRY * p_odo, float left_scale,
                                        float right_scale, int32_t left,
                                        int32_t right)
 {
-    *o = (WHEEL_ODOMETRY){.left_previous      = left,
-                          .right_previous     = right,
-                          .left_ticks_per_cm  = left_scale,
-                          .right_ticks_per_cm = right_scale,
-                          .available = wheel_odometry_finite(left_scale) &&
-                                       wheel_odometry_finite(right_scale) &&
-                                       left_scale > 0.0f && right_scale > 0.0f};
+    *p_odo =
+        (WHEEL_ODOMETRY){.left_previous      = left,
+                         .right_previous     = right,
+                         .left_ticks_per_cm  = left_scale,
+                         .right_ticks_per_cm = right_scale,
+                         .available = wheel_odometry_finite(left_scale) &&
+                                      wheel_odometry_finite(right_scale) &&
+                                      left_scale > 0.0f && right_scale > 0.0f};
 }
 
 /* Rebase when stationary/turning; never feed hand movement or pivots to S4.
@@ -36,37 +37,37 @@ static inline void wheel_odometry_init(WHEEL_ODOMETRY * o, float left_scale,
  * Keep fractional millimetres until enough travel exists for S4's byte API.
  * Reject >255 mm per control update rather than wrapping the distance byte.
  */
-static inline bool wheel_odometry_step(WHEEL_ODOMETRY * o, int32_t left,
-                                       int32_t right, bool travelling,
-                                       uint8_t * mm)
+static inline bool wheel_odometry_step(WHEEL_ODOMETRY * p_odo, int32_t left,
+                                       int32_t right, bool b_travelling,
+                                       uint8_t * p_step_mm)
 {
-    int64_t dl        = (int64_t)left - o->left_previous;
-    int64_t dr        = (int64_t)right - o->right_previous;
-    o->left_previous  = left;
-    o->right_previous = right;
-    *mm               = 0u;
-    if (!travelling || !o->available)
+    int64_t delta_left    = (int64_t)left - p_odo->left_previous;
+    int64_t delta_right   = (int64_t)right - p_odo->right_previous;
+    p_odo->left_previous  = left;
+    p_odo->right_previous = right;
+    *p_step_mm            = 0u;
+    if (!b_travelling || !p_odo->available)
     {
-        o->remainder_mm = 0.0f;
+        p_odo->remainder_mm = 0.0f;
         return true;
     }
-    if (dl < 0)
+    if (delta_left < 0)
     {
-        dl = -dl;
+        delta_left = -delta_left;
     }
-    if (dr < 0)
+    if (delta_right < 0)
     {
-        dr = -dr;
+        delta_right = -delta_right;
     }
-    float distance =
-        o->remainder_mm + 5.0f * ((float)dl / o->left_ticks_per_cm +
-                                  (float)dr / o->right_ticks_per_cm);
+    float distance = p_odo->remainder_mm +
+                     5.0f * ((float)delta_left / p_odo->left_ticks_per_cm +
+                             (float)delta_right / p_odo->right_ticks_per_cm);
     if (!wheel_odometry_finite(distance) || distance >= 256.0f)
     {
         return false;
     }
-    *mm             = (uint8_t)distance;
-    o->remainder_mm = distance - *mm;
+    *p_step_mm          = (uint8_t)distance;
+    p_odo->remainder_mm = distance - *p_step_mm;
     return true;
 }
 #endif

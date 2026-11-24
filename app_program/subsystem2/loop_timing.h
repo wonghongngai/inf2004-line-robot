@@ -35,40 +35,40 @@ typedef struct
 } LOOP_TIMING;
 
 /* Call once per loop wake-up with the current time. */
-static inline void loop_timing_wake(LOOP_TIMING * t, uint32_t now_ms)
+static inline void loop_timing_wake(LOOP_TIMING * p_timing, uint32_t now_ms)
 {
-    if (t->started)
+    if (p_timing->started)
     {
-        uint32_t gap = now_ms - t->last_loop_ms;
-        if (gap > t->loop_max_ms)
+        uint32_t gap = now_ms - p_timing->last_loop_ms;
+        if (gap > p_timing->loop_max_ms)
         {
-            t->loop_max_ms = gap;
+            p_timing->loop_max_ms = gap;
         }
     }
-    t->last_loop_ms = now_ms;
-    t->started      = 1u;
+    p_timing->last_loop_ms = now_ms;
+    p_timing->started      = 1u;
 }
 
 /* Call once per control step with the time since the previous step. */
-static inline void loop_timing_control(LOOP_TIMING * t, uint32_t gap_ms,
+static inline void loop_timing_control(LOOP_TIMING * p_timing, uint32_t gap_ms,
                                        uint32_t period_ms)
 {
-    ++t->steps;
+    ++p_timing->steps;
     if (gap_ms > period_ms + S2_CONTROL_LATE_MS)
     {
-        ++t->late;
+        ++p_timing->late;
     }
-    if (gap_ms > t->gap_max_ms)
+    if (gap_ms > p_timing->gap_max_ms)
     {
-        t->gap_max_ms = gap_ms;
+        p_timing->gap_max_ms = gap_ms;
     }
 }
 
 /* Call after printing: the maxima restart, the totals carry on. */
-static inline void loop_timing_new_window(LOOP_TIMING * t)
+static inline void loop_timing_new_window(LOOP_TIMING * p_timing)
 {
-    t->gap_max_ms  = 0u;
-    t->loop_max_ms = 0u;
+    p_timing->gap_max_ms  = 0u;
+    p_timing->loop_max_ms = 0u;
 }
 
 #endif /* LOOP_TIMING_H */

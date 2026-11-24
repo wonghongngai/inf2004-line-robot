@@ -51,15 +51,15 @@ def check(what, found, allowed, minimum=1):
     print(f'{"FAIL" if extra or len(found) < minimum else "ok  "} {what}: {files or "none"}')
 
 
-# ---- STOP bit, flg_motion_stop (S2) ---------------------------------------
-check('flg_motion_stop set (producer: subsystem2_send_command)',
-      calls('tk_set_flg', 'flg_motion_stop'), {'subsystem2/subsystem2.c'})
-check('flg_motion_stop cleared with tk_clr_flg (nobody: consumed by TWF_CLR)',
-      calls('tk_clr_flg', 'flg_motion_stop'), set(), minimum=0)
-waits = calls('tk_wai_flg', 'flg_motion_stop')
-check('flg_motion_stop waited on (consumer: motion_task)', waits, {'subsystem2/task_motion.c'})
+# ---- STOP bit, g_flg_motion_stop (S2) ---------------------------------------
+check('g_flg_motion_stop set (producer: subsystem2_send_command)',
+      calls('tk_set_flg', 'g_flg_motion_stop'), {'subsystem2/subsystem2.c'})
+check('g_flg_motion_stop cleared with tk_clr_flg (nobody: consumed by TWF_CLR)',
+      calls('tk_clr_flg', 'g_flg_motion_stop'), set(), minimum=0)
+waits = calls('tk_wai_flg', 'g_flg_motion_stop')
+check('g_flg_motion_stop waited on (consumer: motion_task)', waits, {'subsystem2/task_motion.c'})
 if not all('TWF_CLR' in args for _, args in waits):
-    failures.append('flg_motion_stop: the consumer must clear on read (TWF_CLR)')
+    failures.append('g_flg_motion_stop: the consumer must clear on read (TWF_CLR)')
 
 # ---- S5_EVT_* bits, flg_s5_evt (S5) ---------------------------------------
 check('flg_s5_evt set (producer: VC executor)',

@@ -6,26 +6,26 @@
 #include "subsystem4.h"
 #include "drv_lsm303dlhc.h"
 
-EXPORT ID       mtx_imu_data;
-EXPORT IMU_DATA s4_imu_data;
+EXPORT ID       g_mtx_imu_data;
+EXPORT IMU_DATA g_s4_imu_data;
 
 /* Distance accumulated since the IMU task last consumed it. */
-LOCAL UW pending_distance_mm;
+LOCAL UW g_pending_distance_mm;
 
-LOCAL UB pack_status(const IMU_DATA * data)
+LOCAL UB pack_status(const IMU_DATA * p_data)
 {
     UB status = 0U;
 
-    status |= ((UB)data->motion_state & S4_STATUS_MOTION_MASK);
-    status |= (UB)((((UB)data->event) << S4_STATUS_EVENT_SHIFT) &
+    status |= ((UB)p_data->motion_state & S4_STATUS_MOTION_MASK);
+    status |= (UB)((((UB)p_data->event) << S4_STATUS_EVENT_SHIFT) &
                    S4_STATUS_EVENT_MASK);
 
-    if (data->calibrated)
+    if (p_data->calibrated)
     {
         status |= S4_STATUS_CALIBRATED;
     }
 
-    if (!data->sensor_ok)
+    if (!p_data->sensor_ok)
     {
         status |= S4_STATUS_IMU_FAULT;
     }
@@ -36,49 +36,49 @@ LOCAL UB pack_status(const IMU_DATA * data)
 EXPORT ER subsystem4_init(void)
 {
     T_CMTX cmtx = {0};
-    ER     er;
+    ER     ercd;
 
-    cmtx.mtxatr  = TA_INHERIT;
-    mtx_imu_data = tk_cre_mtx(&cmtx);
-    if (mtx_imu_data < E_OK)
+    cmtx.mtxatr    = TA_INHERIT;
+    g_mtx_imu_data = tk_cre_mtx(&cmtx);
+    if (g_mtx_imu_data < E_OK)
     {
-        return mtx_imu_data;
+        return g_mtx_imu_data;
     }
 
-    pending_distance_mm = 0U;
+    g_pending_distance_mm = 0U;
 
-    s4_imu_data.ax_mg             = 0;
-    s4_imu_data.ay_mg             = 0;
-    s4_imu_data.az_mg             = 0;
-    s4_imu_data.mx_raw            = 0;
-    s4_imu_data.my_raw            = 0;
-    s4_imu_data.mz_raw            = 0;
-    s4_imu_data.baseline_ax_mg    = 0;
-    s4_imu_data.baseline_ay_mg    = 0;
-    s4_imu_data.baseline_az_mg    = 0;
-    s4_imu_data.hump_peak_mg      = 0;
-    s4_imu_data.pitch_deg         = 0;
-    s4_imu_data.ramp_height_mm    = 0U;
-    s4_imu_data.ramp_height_valid = FALSE;
-    s4_imu_data.motion_state      = IMU_MOTION_FAULT;
-    s4_imu_data.event             = IMU_EVENT_NONE;
-    s4_imu_data.calibrated        = FALSE;
-    s4_imu_data.sensor_ok         = FALSE;
-    s4_imu_data.sample_count      = 0U;
-    s4_imu_data.read_errors       = 0U;
-    s4_imu_data.last_cycle_ms     = 0U;
-    s4_imu_data.max_cycle_ms      = 0U;
-    s4_imu_data.timing_overruns   = 0U;
+    g_s4_imu_data.ax_mg             = 0;
+    g_s4_imu_data.ay_mg             = 0;
+    g_s4_imu_data.az_mg             = 0;
+    g_s4_imu_data.mx_raw            = 0;
+    g_s4_imu_data.my_raw            = 0;
+    g_s4_imu_data.mz_raw            = 0;
+    g_s4_imu_data.baseline_ax_mg    = 0;
+    g_s4_imu_data.baseline_ay_mg    = 0;
+    g_s4_imu_data.baseline_az_mg    = 0;
+    g_s4_imu_data.hump_peak_mg      = 0;
+    g_s4_imu_data.pitch_deg         = 0;
+    g_s4_imu_data.ramp_height_mm    = 0U;
+    g_s4_imu_data.ramp_height_valid = FALSE;
+    g_s4_imu_data.motion_state      = IMU_MOTION_FAULT;
+    g_s4_imu_data.event             = IMU_EVENT_NONE;
+    g_s4_imu_data.calibrated        = FALSE;
+    g_s4_imu_data.sensor_ok         = FALSE;
+    g_s4_imu_data.sample_count      = 0U;
+    g_s4_imu_data.read_errors       = 0U;
+    g_s4_imu_data.last_cycle_ms     = 0U;
+    g_s4_imu_data.max_cycle_ms      = 0U;
+    g_s4_imu_data.timing_overruns   = 0U;
 
     /* Do not stop the whole firmware if the IMU is absent at boot. */
-    er = lsm303dlhc_init();
-    if (er < E_OK)
+    ercd = lsm303dlhc_init();
+    if (ercd < E_OK)
     {
-        LOG_WARN(TAG_S4_IMU, "IMU init deferred, er=%d", er);
+        LOG_WARN(TAG_S4_IMU, "IMU init deferred, er=%d", ercd);
     }
     else
     {
-        s4_imu_data.sensor_ok = TRUE;
+        g_s4_imu_data.sensor_ok = TRUE;
     }
 
     return E_OK;
@@ -92,54 +92,54 @@ EXPORT ER subsystem4_start(void)
     return (tid < E_OK) ? tid : E_OK;
 }
 
-EXPORT ER subsystem4_get_latest(IMU_DATA * out)
+EXPORT ER subsystem4_get_latest(IMU_DATA * p_out)
 {
-    ER er;
+    ER ercd;
 
-    if (out == NULL)
+    if (p_out == NULL)
     {
         return E_PAR;
     }
 
-    er = tk_loc_mtx(mtx_imu_data, TMO_FEVR);
-    if (er < E_OK)
+    ercd = tk_loc_mtx(g_mtx_imu_data, TMO_FEVR);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    *out = s4_imu_data;
+    *p_out = g_s4_imu_data;
 
-    return tk_unl_mtx(mtx_imu_data);
+    return tk_unl_mtx(g_mtx_imu_data);
 }
 
-EXPORT ER subsystem4_get_packed(IMU_PACKED_MSG * out)
+EXPORT ER subsystem4_get_packed(IMU_PACKED_MSG * p_out)
 {
     UW height;
     W  pitch;
     W  peak;
-    ER er;
+    ER ercd;
 
-    if (out == NULL)
+    if (p_out == NULL)
     {
         return E_PAR;
     }
 
-    er = tk_loc_mtx(mtx_imu_data, TMO_FEVR);
-    if (er < E_OK)
+    ercd = tk_loc_mtx(g_mtx_imu_data, TMO_FEVR);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    out->status = pack_status(&s4_imu_data);
+    p_out->status = pack_status(&g_s4_imu_data);
 
-    height = s4_imu_data.ramp_height_mm;
+    height = g_s4_imu_data.ramp_height_mm;
     if (height > S4_MAX_RAMP_HEIGHT_MM)
     {
         height = S4_MAX_RAMP_HEIGHT_MM;
     }
-    out->ramp_height_mm = (UB)height;
+    p_out->ramp_height_mm = (UB)height;
 
-    pitch = s4_imu_data.pitch_deg;
+    pitch = g_s4_imu_data.pitch_deg;
     if (pitch < -90)
     {
         pitch = -90;
@@ -152,9 +152,9 @@ EXPORT ER subsystem4_get_packed(IMU_PACKED_MSG * out)
     {
         /* No action needed in any other case. */
     }
-    out->pitch_encoded = (UB)(pitch + 90);
+    p_out->pitch_encoded = (UB)(pitch + 90);
 
-    peak = s4_imu_data.hump_peak_mg;
+    peak = g_s4_imu_data.hump_peak_mg;
     if (peak < 0)
     {
         peak = 0;
@@ -164,25 +164,25 @@ EXPORT ER subsystem4_get_packed(IMU_PACKED_MSG * out)
     {
         peak = 255;
     }
-    out->hump_peak_10mg = (UB)peak;
+    p_out->hump_peak_10mg = (UB)peak;
 
-    tk_unl_mtx(mtx_imu_data);
+    tk_unl_mtx(g_mtx_imu_data);
     return E_OK;
 }
 
 EXPORT ER subsystem4_add_distance_mm(S4_DISTANCE_DELTA_MM delta_mm)
 {
-    ER er;
+    ER ercd;
 
-    er = tk_loc_mtx(mtx_imu_data, TMO_FEVR);
-    if (er < E_OK)
+    ercd = tk_loc_mtx(g_mtx_imu_data, TMO_FEVR);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
 
-    pending_distance_mm += (UW)delta_mm;
+    g_pending_distance_mm += (UW)delta_mm;
 
-    tk_unl_mtx(mtx_imu_data);
+    tk_unl_mtx(g_mtx_imu_data);
     return E_OK;
 }
 
@@ -190,14 +190,14 @@ EXPORT UW subsystem4_take_distance_mm(void)
 {
     UW distance;
 
-    if (tk_loc_mtx(mtx_imu_data, TMO_FEVR) < E_OK)
+    if (tk_loc_mtx(g_mtx_imu_data, TMO_FEVR) < E_OK)
     {
         return 0U;
     }
 
-    distance            = pending_distance_mm;
-    pending_distance_mm = 0U;
+    distance              = g_pending_distance_mm;
+    g_pending_distance_mm = 0U;
 
-    tk_unl_mtx(mtx_imu_data);
+    tk_unl_mtx(g_mtx_imu_data);
     return distance;
 }

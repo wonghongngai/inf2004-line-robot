@@ -97,7 +97,7 @@
 #define S2_JUNCTION_SETTLE_MS           500u /* ignore the crossing just handled */
 
 /* Called only by the motor-owning task; no second writer to motor GPIO. */
-void robot_control_step(MOTION_CONTROLLER * controller, uint32_t now,
+void robot_control_step(MOTION_CONTROLLER * p_controller, uint32_t now,
                         int32_t left, int32_t right);
 
 #endif
