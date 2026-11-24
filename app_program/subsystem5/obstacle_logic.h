@@ -239,8 +239,13 @@ IMPORT UW bypass_side_cm(UW shift_mm);
  * cm from the robot's centre line, not the ~23 cm the scan's edge gave,
  * and a spin's front corners reach about 11 cm (the scanned width of one
  * box ranged 128-276 mm, DEVIATIONS B5-6a).  It lengthens F3 by as much
- * (NFR5-4 budget, LINE_SEEK_MAX_CM).  [VERIFY in the U41 runs] */
-#define LOOK_SIDE_EXTRA_MM (120U)
+ * (NFR5-4 budget, LINE_SEEK_MAX_CM).
+ * 120 -> 60 (24 Nov, #62, shorter detour): with 120 the 9 counted U41
+ * runs read the face at 139 mm or more on the first look (~220 mm from
+ * the centre); 60 less leaves ~160 mm, still clear of the ~120 mm a
+ * spinning corner sweeps.  The failing runs before the 120 read 28-33 mm.
+ * [VERIFY: re-run U41 centred / left / right] */
+#define LOOK_SIDE_EXTRA_MM (60U)
 
 /**
  * F1's distance as driven: bypass_side_cm(shift + LOOK_SIDE_EXTRA_MM), so

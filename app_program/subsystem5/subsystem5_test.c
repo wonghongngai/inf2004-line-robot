@@ -377,7 +377,7 @@ EXPORT void subsystem5_test(void)
             S5_MOVE_TURN_R, S5_MOVE_FWD, S5_MOVE_TURN_L, S5_MOVE_FWD,
             S5_MOVE_TURN_L, S5_MOVE_FWD, S5_MOVE_FWD,    S5_MOVE_TURN_R};
         static const UH values[BYPASS_STEPS] = {
-            90U, 29U, 90U, PASS_MAX_CM, 90U, 50U, 4U, 120U}; /* F1: 170 + 120 */
+            90U, 23U, 90U, PASS_MAX_CM, 90U, 50U, 4U, 120U}; /* F1: 170 + 60 */
         static const plan_t left_plan  = {PLAN_PASS_LEFT, 170U, FALSE};
         static const plan_t right_plan = {PLAN_PASS_RIGHT, 170U, FALSE};
         static const plan_t stop_plan  = {PLAN_STOP, 0U, FALSE};
@@ -449,12 +449,12 @@ EXPORT void subsystem5_test(void)
                    "F1 = shift rounded up to cm, 10..40 cm (170 -> 17, 171 -> "
                    "18, 98 -> 10, 600 -> 40)");
         TEST_CHECK("S5-U35",
-                   ((29U == bypass_out_cm(170U)) &&
-                    (12U == bypass_out_cm(0U)) &&
-                    (40U == bypass_out_cm(280U)) &&
+                   ((23U == bypass_out_cm(170U)) &&
+                    (BYPASS_SIDE_MIN_CM == bypass_out_cm(0U)) &&
+                    (34U == bypass_out_cm(280U)) &&
                     (BYPASS_SIDE_MAX_CM == bypass_out_cm(600U))),
-                   "F1 as driven: shift + 120 (look spins clear the box, 23 "
-                   "Nov), 10..40 cm (170 -> 29, 0 -> 12, 280 -> 40)");
+                   "F1 as driven: shift + 60 (look spins clear the box; 120 "
+                   "until 24 Nov), 10..40 cm (170 -> 23, 0 -> 10, 280 -> 34)");
     }
 
     /* S5-U31: profile + plan on the 2026-11-06 bench scan */
@@ -574,11 +574,11 @@ EXPORT void subsystem5_test(void)
         plan_t             stop  = {PLAN_STOP, 0U, FALSE};
 
         TEST_CHECK(
-            "S5-U37", (346U == bypass_side_gap_mm(&left, &prof)),
-            "side gap, left pass: F1 260 (135 + 120) + pivots 100 - left edge "
-            "14 = 346 mm");
-        TEST_CHECK("S5-U37", (170U == bypass_side_gap_mm(&right, &prof)),
-                   "right pass: F1 260 + 100 - right edge 190 = 170 mm");
+            "S5-U37", (286U == bypass_side_gap_mm(&left, &prof)),
+            "side gap, left pass: F1 200 (135 + 60, rounded up) + pivots 100 "
+            "- left edge 14 = 286 mm");
+        TEST_CHECK("S5-U37", (110U == bypass_side_gap_mm(&right, &prof)),
+                   "right pass: F1 200 + 100 - right edge 190 = 110 mm");
         {
             obstacle_profile_t wide = {TRUE, 190U, 90U,   185,
                                        0,    900U, 9999U, 9999U};
@@ -588,7 +588,7 @@ EXPORT void subsystem5_test(void)
                        ((50U == bypass_side_gap_mm(&near, &wide)) &&
                         (0U == bypass_side_gap_mm(&stop, &prof)) &&
                         (0U == bypass_side_gap_mm(NULL, &prof))),
-                       "side gap at least 50 mm (900 mm box, F1 12 cm); not a "
+                       "side gap at least 50 mm (900 mm box, F1 10 cm); not a "
                        "pass or NULL: 0");
         }
         TEST_CHECK("S5-U37", (35U == bypass_pass_plan_cm(&prof)),
