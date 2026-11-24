@@ -18,9 +18,14 @@ TEMP_DEPS = $(TEMP_SRCS:.c=.d)
 OBJS += $(subst ../, ./mtkernel_3/, $(TEMP_OBJS))
 C_DEPS += $(subst ../, ./mtkernel_3/, $(TEMP_DEPS))
 
+# Compiler warnings for team code only (#60, BARR-C review fix 7). The
+# kernel and vendor objects keep their own flags. Override on the command
+# line to experiment, e.g. APP_WARN="-Wall".
+APP_WARN ?= -Wall -Wextra
+
 mtkernel_3/app_program/%.o: ../app_program/%.c
 	@echo 'Building file: $<'
 	@mkdir -p $(dir $@)
-	$(GCC) $(CFLAGS) -D$(TARGET) $(INCPATH) -MF"$(@:%.o=%.d)" -MT"$(@)" -c -o "$@" "$<"
+	$(GCC) $(CFLAGS) $(APP_WARN) -D$(TARGET) $(INCPATH) -MF"$(@:%.o=%.d)" -MT"$(@)" -c -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
