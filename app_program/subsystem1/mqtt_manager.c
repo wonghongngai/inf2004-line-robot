@@ -47,12 +47,12 @@
 #define BARCODE_SENT    2U /* published, waiting for the broker's PUBACK */
 /* One event taken from the queue, kept until the broker acknowledges it.
  * Owned solely by the Wi-Fi task. */
-static S1_BARCODE_RESULT barcode_pending;
-static unsigned char     barcode_state;
+static S1_BARCODE_RESULT g_barcode_pending;
+static unsigned char     g_barcode_state;
 
-static mqtt_client_t * client;
-static ip_addr_t       broker_addr;
-static u8_t            connecting;
+static mqtt_client_t * g_p_client;
+static ip_addr_t       g_broker_addr;
+static u8_t            g_connecting;
 
 /* One incoming binary payload, stored separately from receive protocol state.
  * Owned solely by the Wi-Fi task. Zero is valid data, not a terminator. */
@@ -60,150 +60,153 @@ static u8_t            connecting;
 #define RX_COMMAND     1U
 #define RX_MAPPING     2U
 #define RX_BAD_COMMAND 3U /* command topic, wrong length: counted, not queued */
-static unsigned char rx_payload[S1_MAPPING_BYTES];
-static unsigned char rx_kind;
-static unsigned char rx_length;
-static unsigned char rx_log; /* this message may print its own lines */
+static unsigned char g_rx_payload[S1_MAPPING_BYTES];
+static unsigned char g_rx_kind;
+static unsigned char g_rx_length;
+static unsigned char g_rx_log; /* this message may print its own lines */
 
-static void heartbeat_timeout(void * arg);
+static void heartbeat_timeout(void * p_arg);
 
-static int topic_is(const char * topic, const char * name)
+static int topic_is(const char * p_topic, const char * p_name)
 {
-    unsigned int i = 0;
-    while (topic[i] != '\0' && name[i] != '\0' && topic[i] == name[i])
+    unsigned int idx = 0;
+    while (p_topic[idx] != '\0' && p_name[idx] != '\0' &&
+           p_topic[idx] == p_name[idx])
     {
-        ++i;
+        ++idx;
     }
-    return topic[i] == '\0' && name[i] == '\0';
+    return p_topic[idx] == '\0' && p_name[idx] == '\0';
 }
 
-static void incoming_publish_cb(void * arg, const char * topic, u32_t tot_len)
+static void incoming_publish_cb(void * p_arg, const char * p_topic,
+                                u32_t tot_len)
 {
-    (void)arg;
-    rx_length = 0;
-    rx_kind   = RX_NONE;
-    rx_log    = 1;
-    if (topic_is(topic, MQTT_COMMAND_TOPIC))
+    (void)p_arg;
+    g_rx_length = 0;
+    g_rx_kind   = RX_NONE;
+    g_rx_log    = 1;
+    if (topic_is(p_topic, MQTT_COMMAND_TOPIC))
     {
         /* Every command message is counted (S1-U17); only a few per
          * window print, so a flood cannot tie the task up in printing. */
-        rx_kind = tot_len == S1_COMMAND_BYTES ? RX_COMMAND : RX_BAD_COMMAND;
-        rx_log  = (unsigned char)s1_command_log_ok();
+        g_rx_kind = tot_len == S1_COMMAND_BYTES ? RX_COMMAND : RX_BAD_COMMAND;
+        g_rx_log  = (unsigned char)s1_command_log_ok();
     }
-    else if (topic_is(topic, MQTT_MAPPING_TOPIC) && tot_len == S1_MAPPING_BYTES)
+    else if (topic_is(p_topic, MQTT_MAPPING_TOPIC) &&
+             tot_len == S1_MAPPING_BYTES)
     {
-        rx_kind = RX_MAPPING;
+        g_rx_kind = RX_MAPPING;
     }
     else
     {
         /* No action needed in any other case. */
     }
-    if (rx_log)
+    if (g_rx_log)
     {
-        LOG_INFO(TAG_S1_MQTT, "RX topic=%s length=%lu", topic,
+        LOG_INFO(TAG_S1_MQTT, "RX topic=%s length=%lu", p_topic,
                  (unsigned long)tot_len);
     }
 }
 
-static void incoming_data_cb(void * arg, const u8_t * data, u16_t len,
+static void incoming_data_cb(void * p_arg, const u8_t * p_data, u16_t len,
                              u8_t flags)
 {
     unsigned int expected =
-        rx_kind == RX_MAPPING ? S1_MAPPING_BYTES : S1_COMMAND_BYTES;
-    unsigned int i;
-    (void)arg;
-    if (rx_kind == RX_COMMAND || rx_kind == RX_MAPPING)
+        g_rx_kind == RX_MAPPING ? S1_MAPPING_BYTES : S1_COMMAND_BYTES;
+    unsigned int idx;
+    (void)p_arg;
+    if (g_rx_kind == RX_COMMAND || g_rx_kind == RX_MAPPING)
     {
-        if (len > expected - rx_length)
+        if (len > expected - g_rx_length)
         {
-            rx_kind = rx_kind == RX_COMMAND ? RX_BAD_COMMAND : RX_NONE;
+            g_rx_kind = g_rx_kind == RX_COMMAND ? RX_BAD_COMMAND : RX_NONE;
         }
         else
         {
-            for (i = 0; i < len; ++i)
+            for (idx = 0; idx < len; ++idx)
             {
-                rx_payload[rx_length + i] = data[i];
+                g_rx_payload[g_rx_length + idx] = p_data[idx];
             }
-            rx_length = (unsigned char)(rx_length + len);
+            g_rx_length = (unsigned char)(g_rx_length + len);
         }
     }
     if ((flags & MQTT_DATA_FLAG_LAST) != 0U)
     {
-        S1_COMMAND command = {{rx_payload[0]}};
-        if (rx_kind == RX_COMMAND && rx_length == S1_COMMAND_BYTES &&
+        S1_COMMAND command = {{g_rx_payload[0]}};
+        if (g_rx_kind == RX_COMMAND && g_rx_length == S1_COMMAND_BYTES &&
             s1_command_valid(&command))
         {
-            if (rx_log)
+            if (g_rx_log)
             {
                 LOG_INFO(TAG_S1_MQTT, "RX command=%u",
-                         (unsigned int)rx_payload[0]);
+                         (unsigned int)g_rx_payload[0]);
             }
-            s1_deliver_command(rx_payload, S1_COMMAND_BYTES);
+            s1_deliver_command(g_rx_payload, S1_COMMAND_BYTES);
         }
-        else if (rx_kind == RX_COMMAND || rx_kind == RX_BAD_COMMAND)
+        else if (g_rx_kind == RX_COMMAND || g_rx_kind == RX_BAD_COMMAND)
         {
             /* Short, long or reserved bits set: s1_deliver_command counts it. */
-            if (rx_log)
+            if (g_rx_log)
             {
                 LOG_WARN(TAG_S1_MQTT, "invalid binary command rejected");
             }
-            s1_deliver_command(rx_payload,
-                               rx_kind == RX_COMMAND ? rx_length : 0U);
+            s1_deliver_command(g_rx_payload,
+                               g_rx_kind == RX_COMMAND ? g_rx_length : 0U);
         }
-        else if (rx_kind == RX_MAPPING && rx_length == S1_MAPPING_BYTES)
+        else if (g_rx_kind == RX_MAPPING && g_rx_length == S1_MAPPING_BYTES)
         {
-            s1_deliver_mapping(rx_payload, S1_MAPPING_BYTES); /* validates */
+            s1_deliver_mapping(g_rx_payload, S1_MAPPING_BYTES); /* validates */
         }
         else
         {
             LOG_WARN(TAG_S1_MQTT, "invalid binary command/mapping rejected");
         }
-        rx_kind   = RX_NONE;
-        rx_length = 0;
+        g_rx_kind   = RX_NONE;
+        g_rx_length = 0;
     }
 }
 
-static void subscribe_done_cb(void * arg, err_t result)
+static void subscribe_done_cb(void * p_arg, err_t result)
 {
     if (result == ERR_OK)
     {
-        LOG_INFO(TAG_S1_MQTT, "subscribed to %s", (const char *)arg);
+        LOG_INFO(TAG_S1_MQTT, "subscribed to %s", (const char *)p_arg);
     }
     else
     {
-        LOG_ERR(TAG_S1_MQTT, "subscribe %s failed, err=%d", (const char *)arg,
+        LOG_ERR(TAG_S1_MQTT, "subscribe %s failed, err=%d", (const char *)p_arg,
                 (int)result);
     }
 }
 
-static void publish_done_cb(void * arg, err_t result)
+static void publish_done_cb(void * p_arg, err_t result)
 {
-    (void)arg;
+    (void)p_arg;
     if (result != ERR_OK)
     {
         LOG_ERR(TAG_S1_MQTT, "publish failed, err=%d", (int)result);
     }
 }
 
-static void barcode_done_cb(void * arg, err_t result)
+static void barcode_done_cb(void * p_arg, err_t result)
 {
-    unsigned int frame = (unsigned int)(mem_ptr_t)arg;
+    unsigned int frame = (unsigned int)(mem_ptr_t)p_arg;
     /* Ignore a late callback for an event that was already re-armed. */
-    if (barcode_state != BARCODE_SENT || frame != barcode_pending.id)
+    if (g_barcode_state != BARCODE_SENT || frame != g_barcode_pending.id)
     {
         return;
     }
     if (result == ERR_OK)
     {
         LOG_INFO(TAG_S1_MQTT, "barcode acked frame=%u", frame);
-        barcode_state = BARCODE_NONE;
+        g_barcode_state = BARCODE_NONE;
     }
     else
     {
         LOG_WARN(TAG_S1_MQTT,
                  "barcode publish frame=%u failed, err=%d; retrying", frame,
                  (int)result);
-        barcode_state = BARCODE_WAITING;
+        g_barcode_state = BARCODE_WAITING;
     }
 }
 
@@ -211,41 +214,41 @@ static void publish_queued_barcode(void)
 {
     S1_BARCODE_PACKET packet;
     err_t             result;
-    if (barcode_state == BARCODE_NONE)
+    if (g_barcode_state == BARCODE_NONE)
     {
-        if (s1_take_barcode(&barcode_pending) <= 0)
+        if (s1_take_barcode(&g_barcode_pending) <= 0)
         {
             return;
         }
-        barcode_state = BARCODE_WAITING;
+        g_barcode_state = BARCODE_WAITING;
     }
-    if (barcode_state != BARCODE_WAITING)
+    if (g_barcode_state != BARCODE_WAITING)
     {
         return;
     }
-    if (!s1_barcode_pack(&barcode_pending, &packet))
+    if (!s1_barcode_pack(&g_barcode_pending, &packet))
     {
-        barcode_state = BARCODE_NONE; /* S1 validated it; never expected */
+        g_barcode_state = BARCODE_NONE; /* S1 validated it; never expected */
         return;
     }
     /* mqtt_publish copies the payload, so the stack buffer is safe. */
-    result = mqtt_publish(client, MQTT_BARCODE_TOPIC, packet.bytes,
+    result = mqtt_publish(g_p_client, MQTT_BARCODE_TOPIC, packet.bytes,
                           (u16_t)S1_BARCODE_BYTES, 1, 0, barcode_done_cb,
-                          (void *)(mem_ptr_t)barcode_pending.id);
+                          (void *)(mem_ptr_t)g_barcode_pending.id);
     if (result == ERR_OK)
     {
-        barcode_state = BARCODE_SENT;
+        g_barcode_state = BARCODE_SENT;
     }
 }
 
-static void heartbeat_timeout(void * arg)
+static void heartbeat_timeout(void * p_arg)
 {
     const unsigned char payload = S1_HEARTBEAT_ONLINE;
-    (void)arg;
-    if (mqtt_client_is_connected(client))
+    (void)p_arg;
+    if (mqtt_client_is_connected(g_p_client))
     {
-        (void)mqtt_publish(client, MQTT_TOPIC, &payload, S1_HEARTBEAT_BYTES, 1,
-                           1, publish_done_cb, NULL);
+        (void)mqtt_publish(g_p_client, MQTT_TOPIC, &payload, S1_HEARTBEAT_BYTES,
+                           1, 1, publish_done_cb, NULL);
     }
     s1_command_stats_report();
 
@@ -255,18 +258,18 @@ static void heartbeat_timeout(void * arg)
     sys_timeout(MQTT_UTK_HEARTBEAT_MS, heartbeat_timeout, NULL);
 }
 
-static void retry_timeout(void * arg)
+static void retry_timeout(void * p_arg)
 {
-    (void)arg;
+    (void)p_arg;
     /* The Wi-Fi owner starts the next attempt only when an IP is ready. */
-    connecting = 0;
+    g_connecting = 0;
 }
 
-static void connection_cb(mqtt_client_t * c, void * arg,
+static void connection_cb(mqtt_client_t * p_client, void * p_arg,
                           mqtt_connection_status_t status)
 {
-    (void)c;
-    (void)arg;
+    (void)p_client;
+    (void)p_arg;
 
     if (status == MQTT_CONNECT_ACCEPTED)
     {
@@ -276,7 +279,7 @@ static void connection_cb(mqtt_client_t * c, void * arg,
          * connection later drops, the poll loop's mqtt_utk_start() call
          * is allowed to reconnect. Leaving it set would wedge the client
          * permanently after the first disconnect. */
-        connecting = 0;
+        g_connecting = 0;
         sys_untimeout(retry_timeout, NULL);
 
         /* t= is ms since boot (lwIP sys_now), for S1-U11 and S1-U13. */
@@ -285,23 +288,23 @@ static void connection_cb(mqtt_client_t * c, void * arg,
 
         /* lwIP drops unacknowledged requests on disconnect without calling
          * their callbacks, so resend the pending barcode event. */
-        if (barcode_state == BARCODE_SENT)
+        if (g_barcode_state == BARCODE_SENT)
         {
-            barcode_state = BARCODE_WAITING;
+            g_barcode_state = BARCODE_WAITING;
         }
 
         /* Reinstall command and mapping subscriptions after every reconnect. */
-        mqtt_set_inpub_callback(client, incoming_publish_cb, incoming_data_cb,
-                                NULL);
+        mqtt_set_inpub_callback(g_p_client, incoming_publish_cb,
+                                incoming_data_cb, NULL);
 
-        err = mqtt_subscribe(client, MQTT_COMMAND_TOPIC, 1 /* qos */,
+        err = mqtt_subscribe(g_p_client, MQTT_COMMAND_TOPIC, 1 /* qos */,
                              subscribe_done_cb, (void *)MQTT_COMMAND_TOPIC);
         if (err != ERR_OK)
         {
             LOG_ERR(TAG_S1_MQTT, "mqtt_subscribe() failed, err=%d", (int)err);
         }
         /* QoS 1: a lost map would leave every barcode unmapped. */
-        err = mqtt_subscribe(client, MQTT_MAPPING_TOPIC, 1 /* qos */,
+        err = mqtt_subscribe(g_p_client, MQTT_MAPPING_TOPIC, 1 /* qos */,
                              subscribe_done_cb, (void *)MQTT_MAPPING_TOPIC);
         if (err != ERR_OK)
         {
@@ -326,7 +329,7 @@ static void connection_cb(mqtt_client_t * c, void * arg,
         LOG_WARN(TAG_S1_MQTT, "connection status %d t=%u ms, retrying in %ds",
                  (int)status, (unsigned int)sys_now(),
                  MQTT_UTK_RETRY_MS / 1000);
-        connecting = 1; /* Guard poll-loop retries until the timer fires. */
+        g_connecting = 1; /* Guard poll-loop retries until the timer fires. */
         sys_untimeout(heartbeat_timeout, NULL);
         sys_untimeout(retry_timeout, NULL);
         sys_timeout(MQTT_UTK_RETRY_MS, retry_timeout, NULL);
@@ -344,7 +347,7 @@ static void publish_queued_telemetry(void)
     }
     if (length > 0)
     {
-        result = mqtt_publish(client, MQTT_TELEMETRY_TOPIC, pending,
+        result = mqtt_publish(g_p_client, MQTT_TELEMETRY_TOPIC, pending,
                               (u16_t)length, 1, 0, publish_done_cb, NULL);
         if (result == ERR_OK)
         {
@@ -357,12 +360,13 @@ void mqtt_utk_network_down(void)
 {
     sys_untimeout(retry_timeout, NULL);
     sys_untimeout(heartbeat_timeout, NULL);
-    if (client != NULL && (connecting || mqtt_client_is_connected(client)))
+    if (g_p_client != NULL &&
+        (g_connecting || mqtt_client_is_connected(g_p_client)))
     {
         LOG_WARN(TAG_S1_MQTT, "Wi-Fi unavailable; waiting for IP");
-        mqtt_disconnect(client);
+        mqtt_disconnect(g_p_client);
     }
-    connecting = 0;
+    g_connecting = 0;
 }
 
 void mqtt_utk_start(void)
@@ -370,33 +374,33 @@ void mqtt_utk_start(void)
     struct mqtt_connect_client_info_t client_info = {0};
     err_t                             err;
 
-    if (client != NULL && mqtt_client_is_connected(client))
+    if (g_p_client != NULL && mqtt_client_is_connected(g_p_client))
     {
         publish_queued_telemetry();
         publish_queued_barcode();
         return;
     }
-    if (connecting)
+    if (g_connecting)
     {
         return;
     }
 
-    if (client == NULL)
+    if (g_p_client == NULL)
     {
-        client = mqtt_client_new();
-        if (client == NULL)
+        g_p_client = mqtt_client_new();
+        if (g_p_client == NULL)
         {
             LOG_ERR(TAG_S1_MQTT, "mqtt_client_new() failed");
             return;
         }
     }
 
-    if (!ip4addr_aton(MQTT_BROKER_IP, ip_2_ip4(&broker_addr)))
+    if (!ip4addr_aton(MQTT_BROKER_IP, ip_2_ip4(&g_broker_addr)))
     {
         LOG_ERR(TAG_S1_MQTT, "bad MQTT_BROKER_IP");
         return;
     }
-    IP_SET_TYPE(&broker_addr, IPADDR_TYPE_V4);
+    IP_SET_TYPE(&g_broker_addr, IPADDR_TYPE_V4);
 
     client_info.client_id    = MQTT_CLIENT_ID;
     client_info.keep_alive   = MQTT_UTK_KEEPALIVE_S;
@@ -409,13 +413,13 @@ void mqtt_utk_start(void)
     LOG_INFO(TAG_S1_MQTT,
              "connecting to " MQTT_BROKER_IP ":%u as " MQTT_CLIENT_ID "",
              (unsigned)MQTT_BROKER_PORT);
-    connecting = 1;
-    err        = mqtt_client_connect(client, &broker_addr, MQTT_BROKER_PORT,
-                                     connection_cb, NULL, &client_info);
+    g_connecting = 1;
+    err = mqtt_client_connect(g_p_client, &g_broker_addr, MQTT_BROKER_PORT,
+                              connection_cb, NULL, &client_info);
     if (err != ERR_OK)
     {
         LOG_ERR(TAG_S1_MQTT, "mqtt_client_connect() failed, err=%d", (int)err);
-        connecting = 1;
+        g_connecting = 1;
         sys_untimeout(retry_timeout, NULL);
         sys_timeout(MQTT_UTK_RETRY_MS, retry_timeout, NULL);
     }

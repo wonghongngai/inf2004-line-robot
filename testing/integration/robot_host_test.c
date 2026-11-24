@@ -114,13 +114,13 @@ ER tk_snd_mbf(ID id, const void *msg, INT size, TMO tmout)
     mbf[id - 1].size[slot] = size;
     mbf[id - 1].used += mbf_cost(size);
     ++mbf[id - 1].count;
-    if (id == command_queue) ++command_count;
+    if (id == g_command_queue) ++command_count;
     return E_OK;
 }
 INT tk_rcv_mbf(ID id, void *msg, TMO tmout)
 {
     assert(id >= 1 && id <= mbf_count && tmout == TMO_POL);
-    if (id == command_queue) ++command_polls;
+    if (id == g_command_queue) ++command_polls;
     if (mbf[id - 1].count == 0) return E_TMOUT;
     unsigned slot = (unsigned)mbf[id - 1].head % FAKE_MBF_MSGS;
     INT size = mbf[id - 1].size[slot];
@@ -128,7 +128,7 @@ INT tk_rcv_mbf(ID id, void *msg, TMO tmout)
     mbf[id - 1].head = (mbf[id - 1].head + 1) % FAKE_MBF_MSGS;
     --mbf[id - 1].count;
     mbf[id - 1].used -= mbf_cost(size);
-    if (id == command_queue) --command_count;
+    if (id == g_command_queue) --command_count;
     return size;
 }
 
@@ -200,9 +200,9 @@ static void s1_link_reset(void)
 {
     s1_link_up();
     for (ID i = 0; i < mbf_count; ++i) { mbf[i].used = mbf[i].head = mbf[i].count = 0; }
-    memset(&command_stats, 0, sizeof(command_stats));
-    command_stats_reported = command_stats;
-    command_log_budget = S1_COMMAND_LOG_BURST;
+    memset(&g_command_stats, 0, sizeof(g_command_stats));
+    g_command_stats_reported = g_command_stats;
+    g_command_log_budget = S1_COMMAND_LOG_BURST;
 }
 #endif
 

@@ -24,12 +24,12 @@
 #error "BUZZER_PIN must be even (PWM channel A)"
 #endif
 
-LOCAL ID buzzer_alarm;
+LOCAL ID g_buzzer_alarm;
 
 /* Alarm handler: end the tone. Only a register write, safe in handler context. */
-LOCAL void buzzer_off(void * exinf)
+LOCAL void buzzer_off(void * p_exinf)
 {
-    (void)exinf;
+    (void)p_exinf;
     (void)pwm_set_cc(BUZZER_PIN, 0U);
 }
 
@@ -37,16 +37,16 @@ LOCAL void buzzer_off(void * exinf)
 LOCAL ER buzzer_init(void)
 {
     T_CALM alarm = {0};
-    ER     er;
-    ID     id;
-    if (buzzer_alarm > 0)
+    ER     ercd;
+    ID     alarm_id;
+    if (g_buzzer_alarm > 0)
     {
         return E_OK;
     }
-    er = pwm_set_pin(BUZZER_PIN);
-    if (er < E_OK)
+    ercd = pwm_set_pin(BUZZER_PIN);
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
     out_w(BUZZER_CSR_ADDR, 0U); /* free-running, disabled while configuring */
     out_w(BUZZER_DIV_ADDR, BUZZER_CLKDIV_INT << PWM_DIV_INT_SHIFT);
@@ -55,44 +55,44 @@ LOCAL ER buzzer_init(void)
     (void)pwm_set_enabled(BUZZER_PIN, TRUE);
     alarm.almatr = TA_HLNG;
     alarm.almhdr = (FP)buzzer_off;
-    id           = tk_cre_alm(&alarm);
-    if (id < E_OK)
+    alarm_id     = tk_cre_alm(&alarm);
+    if (alarm_id < E_OK)
     {
-        return id;
+        return alarm_id;
     }
-    buzzer_alarm = id;
+    g_buzzer_alarm = alarm_id;
     return E_OK;
 }
 
-EXPORT ER buzzer_beep(UINT ms)
+EXPORT ER buzzer_beep(UINT duration_ms)
 {
-    ER er;
-    if (ms == 0U)
+    ER ercd;
+    if (duration_ms == 0U)
     {
         return E_PAR;
     }
-    er = buzzer_init();
-    if (er < E_OK)
+    ercd = buzzer_init();
+    if (ercd < E_OK)
     {
-        return er;
+        return ercd;
     }
     (void)pwm_set_cc(BUZZER_PIN, BUZZER_ON_CC);
-    er = tk_sta_alm(buzzer_alarm, (RELTIM)ms);
-    if (er < E_OK)
+    ercd = tk_sta_alm(g_buzzer_alarm, (RELTIM)duration_ms);
+    if (ercd < E_OK)
     {
         buzzer_off(NULL); /* never leave the tone running */
     }
-    return er;
+    return ercd;
 }
 
 /* Overrides the weak default in cyw43_utk.c. Runs on the Wi-Fi task. */
 EXPORT void wifi_utk_link_up(void)
 {
 #if WIFI_CONNECT_BEEP
-    ER er = buzzer_beep(WIFI_BEEP_MS);
-    if (er < E_OK)
+    ER ercd = buzzer_beep(WIFI_BEEP_MS);
+    if (ercd < E_OK)
     {
-        LOG_ERR(TAG_S1_BUZZER, "connect beep failed, er=%d", (int)er);
+        LOG_ERR(TAG_S1_BUZZER, "connect beep failed, er=%d", (int)ercd);
     }
 #endif
 }

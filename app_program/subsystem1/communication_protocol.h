@@ -141,24 +141,25 @@ typedef struct
 /* Return 1 on success, 0 on invalid input. Failed setters leave packet intact.
  * Values are logical units, including signed speed. Pack before enqueueing;
  * don't modify a packet concurrently from multiple tasks/ISRs. */
-void s1_telemetry_init(S1_TELEMETRY * packet);
-int  s1_telemetry_set(S1_TELEMETRY * packet, S1_FIELD field, int value);
-int  s1_telemetry_get(const S1_TELEMETRY * packet, S1_FIELD field, int * value);
-int  s1_telemetry_valid(const S1_TELEMETRY * packet);
-int  s1_command_set(S1_COMMAND * packet, unsigned int code);
-int  s1_command_valid(const S1_COMMAND * packet);
+void s1_telemetry_init(S1_TELEMETRY * p_packet);
+int  s1_telemetry_set(S1_TELEMETRY * p_packet, S1_FIELD field, int value);
+int  s1_telemetry_get(const S1_TELEMETRY * p_packet, S1_FIELD field,
+                      int * p_value);
+int  s1_telemetry_valid(const S1_TELEMETRY * p_packet);
+int  s1_command_set(S1_COMMAND * p_packet, unsigned int code);
+int  s1_command_valid(const S1_COMMAND * p_packet);
 /* letters[slot] are 0..25. Set rejects range/duplicates and leaves packet
  * intact; get rejects reserved bits, range and duplicates. */
-int s1_mapping_set(S1_MAPPING *        packet,
+int s1_mapping_set(S1_MAPPING *        p_packet,
                    const unsigned char letters[S1_MAP_SLOTS]);
-int s1_mapping_get(const S1_MAPPING * packet,
+int s1_mapping_get(const S1_MAPPING * p_packet,
                    unsigned char      letters[S1_MAP_SLOTS]);
 /* 1 when non-null, runs <= S1_BARCODE_RUNS_MAX and letter is 0 or 'A'..'Z'. */
-int s1_barcode_result_valid(const S1_BARCODE_RESULT * result);
+int s1_barcode_result_valid(const S1_BARCODE_RESULT * p_result);
 /* Pack keeps only the low 16 bits of id; rejects an invalid result and
  * leaves packet intact. Unpack rejects reserved bits and out-of-range fields. */
-int s1_barcode_pack(const S1_BARCODE_RESULT * result,
-                    S1_BARCODE_PACKET *       packet);
-int s1_barcode_unpack(const S1_BARCODE_PACKET * packet,
-                      S1_BARCODE_RESULT *       result);
+int s1_barcode_pack(const S1_BARCODE_RESULT * p_result,
+                    S1_BARCODE_PACKET *       p_packet);
+int s1_barcode_unpack(const S1_BARCODE_PACKET * p_packet,
+                      S1_BARCODE_RESULT *       p_result);
 #endif

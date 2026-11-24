@@ -37,10 +37,10 @@ int main(void)
 {
     assert(subsystem1_init() == E_OK);
     assert(subsystem1_start() == E_OK);
-    assert(barcode_queue != telemetry_queue);
+    assert(g_barcode_queue != g_telemetry_queue);
     S1_BARCODE_RESULT result = {1u, 29u, 'Z'};
     assert(subsystem1_publish_barcode(&result) == E_OK);
-    assert(sent_id == barcode_queue);
+    assert(sent_id == g_barcode_queue);
     S1_BARCODE_RESULT copy;
     memcpy(&copy, sent, sizeof(copy));
     assert(copy.id == 1u && copy.letter == 'Z' && copy.runs == 29u);
