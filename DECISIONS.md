@@ -7,6 +7,18 @@ differs from the plan is in [DEVIATIONS.md](DEVIATIONS.md); what is done is in
 
 Decided 13 Nov 2026: `integrated` is the final firmware (#4, see `STATUS.md`).
 
+## 25 Nov 2026: filmed course and completion definition
+
+Manual observation: the pink strip in full track demo video is a hump used
+for hump detection. This supersedes the 23 Nov no-hump course assumption
+for this recording; SYS-03 is reopened pending measured track evidence.
+The full-track video is one whole take with smooth movement and no stops.
+Completion is determined by operator PAUSE or lifting the robot (lift-stop).
+SYS-01 permits that terminal action after navigation; SYS-05 records the
+actual final telemetry state and does not require automatic FINISHED.
+This clarification establishes neither three consecutive runs nor a
+measured full-run telemetry gap.
+
 ## 24 Nov 2026: BARR-C deviations (#60)
 
 The team agreed the seven deviations proposed in

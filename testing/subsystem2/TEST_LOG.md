@@ -1,6 +1,6 @@
 # Subsystem 2 — test log
 
-**Subsystem:** Motors, encoders, PID, Vehicle Controller  ·  **Student ID:** <student ID>  ·  **Code:** `app_program/subsystem2/`
+**Subsystem:** Motors, encoders, PID, Vehicle Controller  ·  **Student ID:** 2503986  ·  **Code:** `app_program/subsystem2/`
 
 See `testing/README.md` for how to run tests and record results.
 
@@ -92,3 +92,9 @@ Add a new row for every run. Never edit or delete old rows.
 | 2026-11-23 | S2-U08 (#23) | `f399b56` + uncommitted #23 changes (lost-line stop, straight-trim I term, `S2_ENC_LEFT_TICKS_PER_CM` 116.2; image built 15:06) | Hong Ngai; log analysis Claude | **PASS** (3 runs; tester: stayed on the tape and corrected itself; offset not measured as a number, limit 10 cm) | [`logs/2026-11-23_S2-U08_tape.txt`](logs/2026-11-23_S2-U08_tape.txt) | Straight tape, line steering active. Encoder travel (left wheel at 116.2 ticks/cm): run 1 about 270 cm, run 2 about 215 cm, run 3 about 260 cm. A false start of about 5 cm before run 1 is not counted. No stop, no `line lost`, `fault=0` throughout. Corrections were short: run 1 mostly left (C black, after starting with the tape under C), runs 2 and 3 only right (R black, matching the slight left lean seen in S2-U16). `watch max` 0-16 mm, so the lost-line watch rarely armed. I-term bias +0.2 to +1.7 PWM points (cap 3.0), no swing to the cap. PWM in the 1 s status lines 13-16 / 17-19, no oscillation. Note: 3-4 `junction: no barcode, straight on` per run, about every 65 cm (C and R both black, after R black). The test strip has cross tapes there (tester, 23 Nov), so these are correct junction detections; with no barcode it went straight on each time, as designed |
 | 2026-11-25 (reported) | S2-U13 (#39) | not recorded | Hong Ngai | **PASS** on distance (9 of 9 within ±2 cm; largest error 1 cm). Clean stop and encoder polarity not reported | none: no log taken; floor measurements reported by the tester | 10 cm: 11, 9, 10 cm. 20 cm: 19, 20, 20 cm. 30 cm: 29, 29, 31 cm. Commit or build, the date of the runs, and whether the stop was clean were not given |
 | 2026-11-25 | S2-U17 (#39) | `84988ea` (`main`, `integrated`) | Hong Ngai | **PASS** (3 of 3 behaved as designed; no false back-up at a junction) | none: no log taken | Run 1 and run 2: backed up after a reject and read the barcode on the rescan. Run 3: gave up after the retries because the printed barcode was damaged, then carried on as designed. Letter, print size and the number of back-ups in run 3 not recorded |
+
+**Qualitative observation; no new PASS/FAIL score.**
+
+The robot follows a curved guide line; dashboard motor/encoder fields are shown. Lateral offset over 2 m, pivot accuracy, PID error and control timing are not measured.
+
+Existing scored results retain their original evidence and scope.
