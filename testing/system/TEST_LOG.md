@@ -26,7 +26,23 @@ end of the course. Record the actual final state in the result.
 ## Results
 
 The team tracks full-course verification in [issue #37](https://github.com/wonghongngai/inf2004-line-robot/issues/37).
-The recorded hardware results below retain their original test IDs and scopes.
+
+### Course recording, 25 November 2026
+
+Evidence for these observations is the 2 min 45 s local recording `IMG_3433.MOV`.
+Times are offsets into the video. The flashed firmware revision is unknown.
+
+| Test ID | Recorded result | Video evidence |
+|---|---|---|
+| `SYS-01` | **One run observed.** The robot reversed and re-approached the first barcode twice, then continued along the course. The clip ends with the robot on the guide line by another set of barcodes. The designated finish is unclear. The test requires three consecutive completions. | 00:19–02:45. First barcode re-approaches at about 00:28–00:46. |
+| `SYS-02` | **Two junction actions matched the displayed map.** The robot crossed straight after the printed `Z` and turned left after the printed `A`. Those are the two actions matched to labels in the footage. The robot’s decoded-letter output was off-screen during the run, so the straight crossing alone cannot confirm a successful decode. | Dashboard map at 00:13–00:15. `Z` approach and straight crossing at 00:48–00:56. `A` approach and left turn at 01:24–01:34. |
+| `SYS-04` | **One bypass and line recovery observed.** The robot stopped short of the orange obstacle, went around it with no visible contact, rejoined the guide line, and followed the next bends. | Stopped at about 01:50. Bypass at about 01:56–02:20. Back on the guide line by 02:22. |
+| `SYS-05` | **Startup telemetry visible.** The dashboard showed `Idle`, no reported faults, and a telemetry receive time. The longest gap and final telemetry state could not be measured because the dashboard went off-screen before the track run. | Dashboard at about 00:15. |
+| `SYS-06` | **Local recording reviewed.** One continuous clip shows the dashboard before the camera follows the robot on the course. The designated finish is unclear. The video index still needs the unlisted link. | 00:00–02:45. |
+
+### Supporting hardware results
+
+These results retain their original test IDs and scopes.
 
 | Date | Test ID | Firmware revision | Recorded result | Evidence |
 |---|---|---|---|---|

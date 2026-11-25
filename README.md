@@ -33,10 +33,6 @@ The same code builds into several firmware images, chosen with
 **Decided 13 Nov 2026 (issue #4):** `integrated` is the final firmware.
 `all_test` and the other modes are test harnesses only.
 
-> ⚠️ Until issue #8 is done, `integrated` does **not** have the turning,
-> straight-driving and avoidance tuning added to `all_test` in early November,
-> so expect it to drive worse than `all_test` for now.
-
 ### 1.1 Build
 
 Everyone builds with the same script, `build.sh` in the repo root. Run it from Git
@@ -280,9 +276,10 @@ entry per scan (QoS 1 redeliveries are shown once). It works with `integrated`
 as well as `all_test`, because the scanner publishes these results itself.
 Live speed is the average translational speed between telemetry updates,
 calculated from calibrated wheel encoders. Older firmware leaves it
-**Not published**. Obstacle distance, scan angle, and obstacle width are still
-unpopulated. Distance and hump height depend on encoder setup and IMU readiness. The barcode counts match the scanner’s session totals, including
-only internal white gaps shorter than one second.
+**Not published**. Obstacle distance, scan angle and obstacle width populate
+after a scan finds an obstacle. Distance and hump height depend on encoder
+setup and IMU readiness. The barcode counts match the scanner’s session
+totals, including only internal white gaps shorter than one second.
 
 With Mosquitto clients installed, replace `BROKER` and `CLIENT_ID`:
 

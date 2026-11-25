@@ -125,9 +125,16 @@ Last updated: 2026-11-23, S5 on the robot (#31, #35, #46): S5-U41/U42 9 of 9, IN
 
 ## System (`testing/system/TEST_LOG.md`)
 
+The [system test log](testing/system/TEST_LOG.md#course-recording-25-november-2026) has timestamped observations from the 25 November recording.
+
 | Test | Status | Next action |
 |---|---|---|
-| SYS tests (one per project requirement) | ⬜ none defined | Write one SYS test per requirement in the brief (line, barcode, obstacle, telemetry; no hump test, the track has no hump) before demo week |
+| SYS-01 Full-course navigation | 🟡 One run filmed with an unclear finish | Record three consecutive completions without touching or resetting the robot |
+| SYS-02 Barcode-directed navigation | 🟡 Two observed junction actions matched the dashboard map: straight for Z and left for A | Record every barcode and its junction action during the scored runs |
+| SYS-03 Highest hump height over MQTT | — Dropped because the final course has no hump | See the [separate ramp tests](testing/subsystem4/TEST_LOG.md#results) |
+| SYS-04 Obstacle bypass and line recovery | 🟡 One bypass observed with no visible contact. The robot rejoined the line by 02:22 | Record obstacle bypass and line recovery during the scored runs |
+| SYS-05 Full-run telemetry | 🟡 Startup telemetry visible. Longest gap and final state remain unscored | Save a timestamped MQTT capture of a complete run |
+| SYS-06 Full-course demo video | 🟡 Local recording reviewed. The designated finish is unclear | Confirm the finish and add the unlisted link to the [video index](videos/README.md) and the system test log |
 
 ---
 
