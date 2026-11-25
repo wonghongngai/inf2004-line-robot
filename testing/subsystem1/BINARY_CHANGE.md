@@ -71,11 +71,10 @@ This runs `s1/protocol` (C codec, with ASan/UBSan where the compiler supports
 them) and `s1/binary_cli` (`test_binary.py`). Build flags live in
 `testing/run_host_tests.sh`.
 
-## Performance and hardware evidence still required
+## Performance questions from the October comparison
 
-Packing and validation use bounded loops over at most 80 field bits; there is no
-heap allocation in the codec and queue calls remain nonblocking. This is a design
-property, not measured RTOS timing. Measure packing/publishing latency, radio
-reconnection, command delivery including fragmentation/invalid packets, queue
-saturation, live highest-hump reporting and control-task timing on the Pico.
-Record actual timing and RAM high-water marks before claiming Week 13 completion.
+In the October 10-byte format, packing and validation used bounded loops over
+at most 80 field bits. The codec uses no heap allocation and the queue calls
+are nonblocking. See the [S1 results](TEST_LOG.md#results) for later checks of
+packet validity, reconnect and control timing. The October build-size figures
+do not cover current packing latency or runtime RAM high-water marks.

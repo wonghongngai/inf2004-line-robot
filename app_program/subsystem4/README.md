@@ -42,7 +42,8 @@ telemetry.
   ±`S4_LIFT_CLIP_MG`) stays at ≥ `S4_LIFT_DELTA_MG` (200 mg) for 3 samples.
   S4 then reports `IMU_MOTION_LIFTED` every sample and `IMU_EVENT_LIFT` once
   (code 3, which was COLLISION); the VC and `all_test` stop and stay stopped
-  until reboot. S4-U12 passed 5/5 lifts on 21 Nov; see the
+  until reboot. The 23 Nov S4-U12 run passed 6/6 lifts with zero false stops
+  over five ramp passes. See the
   [lift-stop results](../../testing/subsystem4/TEST_LOG.md#results). The
   video caption calls the lift demonstration collision detection; it is
   evidence of lift-stop, not an impact test.

@@ -53,8 +53,8 @@ are not WCET proof or end-to-end stop latency. Use trace/GPIO on hardware.
 
 ## Deferred pending measurements/owner agreement
 
-- Re-measure distance and both pivots before relying on integrated motion.
-  S2_CALIBRATION_READY retains its previous value; it is not new evidence.
+- Use the measured travel and driven-pivot scales in [CALIBRATION.md](CALIBRATION.md).
+  S2-U06 and S2-U07 record the physical calibration.
 - Current straight-line PID gains are Kp 6.0, Ki 0.5 and Kd 0; see
   [calibration and measured results](TEST_LOG.md#results). FOLLOW_LINE uses
   its separate steering and encoder trim. Motor floors, tolerances and
@@ -72,4 +72,5 @@ are not WCET proof or end-to-end stop latency. Use trace/GPIO on hardware.
 
 motion_protocol_host_test.c is enabled only with S2_PROTOCOL_HOST_TEST=1.
 It tests byte layout, reserved codes, finite values, bounds and precision.
-subsystem2_test.c checks the packed queue size. Physical tests remain pending.
+subsystem2_test.c checks the packed queue size. The [physical results](TEST_LOG.md#results)
+include calibration, PID tuning, STOP and integrated control-loop timing.

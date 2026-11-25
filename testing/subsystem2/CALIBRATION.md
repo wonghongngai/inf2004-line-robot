@@ -1,14 +1,15 @@
 # Physical calibration — 2026-10-29
 
-> **Measurement record.** The live values are in
-> `app_program/subsystem2/subsystem2.h`. The ticks/cm below are the
-> 29 Oct polling-decoder figures; `subsystem2.h` now uses re-measured values
-> (23.10 left, 18.83 right). The pivot ticks/degree were re-measured 22 Nov (see the end of this file).
+> **Measurement record.** The current values are in
+> [subsystem2.h](../../app_program/subsystem2/subsystem2.h). The first
+> measurements below are the 29 Oct polling-decoder figures. Current
+> travel scales are 116.2 ticks/cm (left) and 118.3 ticks/cm (right).
+> Driven pivot scales are 24.2 ticks/degree for a right pivot and 25.0
+> ticks/degree for a left pivot.
 
-Values supplied by the user and entered in `subsystem2.h`. PID gains remain
-zero pending physical tuning. The shared minimum effective PWM is 15%,
-covering the reported right-wheel reliable starting range of 10–15%.
-These are PWM duty cycles, not calibrated speeds.
+The current straight-driving PID gains are Kp 6.0, Ki 0.5 and Kd 0. See
+[S2-U10](TEST_LOG.md#results) for the physical tuning result. The shared
+minimum effective PWM is 15% for the motion profile.
 
 ## Distance
 
@@ -88,7 +89,7 @@ Four pushes; run 2 is excluded because the right encoder froze mid-push.
 | Ticks/cm | 113.2 | 112.1 |
 
 Spread (max − min) / mean: left 3.7 %, right 6.0 %. Run 3 curved (left 6 % ahead).
-These are 4–5 % below the live `S2_ENC_LEFT/RIGHT_TICKS_PER_CM` (117.8 / 118.3),
+These were 4–5 % below the then-current `S2_ENC_LEFT/RIGHT_TICKS_PER_CM` (117.8 / 118.3),
 which were trimmed on the track for drift on 8 Nov. **`subsystem2.h` is not
 changed**: a hand push is not accurate enough to override a track trim. The old
 `S2_LEFT/RIGHT_TICKS_PER_CM` (23.10 / 18.83) are far from every measurement and
@@ -130,5 +131,5 @@ Right pivots (left wheel, 24.2) came out exactly 90° and 360°. Left pivots
 At 24.2 a left pivot stops after about 2150 ticks (90°) and 8690 ticks (360°),
 so those ticks covered about 85° and 350°: 25.3 and 24.8 ticks per degree.
 `S2_RIGHT_TURN_TICKS_PER_DEGREE` is now **25.0**; `S2_LEFT_TURN_TICKS_PER_DEGREE`
-stays 24.2. Not yet re-tested.
+stays 24.2. The subsequent driven-pivot run is recorded as a [pass under S2-U07](TEST_LOG.md#results).
 

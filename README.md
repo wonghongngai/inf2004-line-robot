@@ -228,7 +228,8 @@ steps once per computer, then repeat step 3 onwards each session.
    on the robot's Wi-Fi in `MQTT_BROKER_IP` in `config/wifi_secrets.h`
    (`ipconfig` on Windows, `ipconfig getifaddr en0` on macOS). The Pico W
    joins 2.4 GHz networks only. The settings are compiled in, so **rebuild
-   and reflash** after any change: `sh build.sh all_test`.
+   and reflash** the profile you are using: `sh build.sh integrated` for
+   the final system or `sh build.sh all_test` for the whole-robot test harness.
 5. **Check the connection** on the serial console (section 1.2). Expect
    `wifi: link up, ip=...`, `mqtt: connected to ...`, then
    `mqtt: subscribed to <id>/command`. The broker window shows
@@ -258,7 +259,7 @@ Preview all five subsystem panels with simulated data:
 python3 tools/mqtt_dashboard.py --demo
 ```
 
-For live data, start the MQTT-enabled `all_test` firmware and run the
+For live data, start the MQTT-enabled `integrated` or `all_test` firmware and run the
 dashboard on a computer with Python 3 and `mosquitto_sub` installed. Use the
 broker address, port and robot client ID from `config/wifi_secrets.h`:
 
@@ -292,7 +293,7 @@ python3 tools/mqtt_binary.py command resume | mosquitto_pub -h BROKER -t 'CLIENT
 Commands are raw bytes, never text or retained messages. A local broker
 config is in `tools/mosquitto-local.conf`.
 
-#### Set barcode actions in `all_test`
+#### Set barcode actions in `integrated` and `all_test`
 
 Send four distinct uppercase letters in a single compact MQTT message. This
 example assigns F to left, A to right, Z to straight, and W to U-turn:
