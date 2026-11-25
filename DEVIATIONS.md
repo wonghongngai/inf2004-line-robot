@@ -28,7 +28,7 @@ The source documents are not in this repo. Each row gives the planned item, what
 | 3 | Obstacle detection distance is 20 cm, NFR5-1 requires at least 30 cm | Changed, decided 20 Nov: keep 20 cm | #64 (`DECISIONS.md`); S5-U48 in #31 |
 | 4 | All recent tuning lives in `all_test`; the `integrated` firmware (the Week 6 architecture) is untested on the robot | Changed | Decided 13 Nov: integrated is final (#4); port the tuning (#8) |
 | 5 | Task priorities inverted: Week 6 made S5 the highest, the code makes it the lowest (20) | Changed, decided 20 Nov: keep | #66 (`DECISIONS.md`); S1-U17 PASS 22 Nov (#15), S2-U12 still to record (#19) |
-| 6 | No reverse motion, though WU requires `moveBackward` and the S5 planner can choose REVERSE | Missing | #39 |
+| 6 | Reverse by distance built: `MOTION_PROFILE_REVERSE` (FORWARD_CM driven backwards, heading held), used by the S5 back-off (`ea03e1a`, 23 Nov) and the barcode reverse-and-rescan (PR #127, 24 Nov). Host-tested; S2-U13 distances 9 of 9 within ±2 cm; on the robot (25 Nov, `84988ea`, no logs) the barcode rescan worked 3 of 3 (S2-U17), and the S5 back-off worked 3 of 3: two 15 cm back-offs and rescans, then NO PATH (S5-U51) | Partial | #39 |
 | 7 | No IMU motion classes or turn rate (FR4-3, FR4-4; still assessed) | Missing | #42, #43 |
 | 8 | Coarse scan uses 50/70/90/110/130 deg, FR5-1 specifies 30/60/90/120/150 deg | Changed, decided 20 Nov: FR5-1 updated | #65 (`DECISIONS.md`) |
 | 9 | A5-2 tilt suppression only in part: S5 ignores forward readings while S4 reports a hump or tilt (`s5_detect_allowed()`, since 7 Nov), but has no hold after the tilt clears and no rate-of-change check; its test S5-U44 was dropped (#44) | Partial | #44 (decided: no further work) |
@@ -79,7 +79,7 @@ The communication stack is built as designed, but none of FR1 or NFR1 has been t
 
 ## Buddy 2: Motion control
 
-Motor and encoder drivers follow the PT design, but PID control is not tuned, reverse motion was dropped against the brief, and straight-line correction exists only in the all_test build.
+Motor and encoder drivers follow the PT design, but PID control is not tuned, reverse motion (dropped in W6 against the brief) is back but not yet tested on the robot, and straight-line correction exists only in the all_test build.
 
 | ID | Requirement (source) | Current code | Type | Follow-up |
 | --- | --- | --- | --- | --- |
@@ -87,7 +87,7 @@ Motor and encoder drivers follow the PT design, but PID control is not tuned, re
 | B2-2 | FR2-2 / NFR2-2 speed and distance from encoders | `wheel_odometry.h`; `CALIBRATION.md`: old calibration "not validated for IRQ counts" | Partial | #18 (S2-U06, S2-U07) |
 | B2-3 | WU p6 PID speed control | PID present, gains still 0 pending physical tuning | Missing | #18 (S2-U10), #56 (tuning report) |
 | B2-4 | FR2-3 / NFR2-1 straight-line correction | Encoder trim in `all_buddies_test.c` only (`ab62be5`); not in the integrated controller | Partial | #8, #19 (S2-U08) |
-| B2-5 | FR2-4 forward, turn, stop; WU p6 required APIs include `moveBackward(distance)` | Commands: FORWARD_CM, TURN_LEFT_DEG, TURN_RIGHT_DEG, STOP, RESET_FAULT, FOLLOW_LINE. "There is intentionally no backwards command" (W6 §8.1 dropped it on AI advice) | Changed, now reversed by team decision | #39 |
+| B2-5 | FR2-4 forward, turn, stop; WU p6 required APIs include `moveBackward(distance)` | Commands: FORWARD_CM, TURN_LEFT_DEG, TURN_RIGHT_DEG, STOP, RESET_FAULT, FOLLOW_LINE. W6 §8.1 dropped backwards on AI advice; the team reversed that (13 Nov) and `moveBackward(distance)` is now FORWARD_CM in `MOTION_PROFILE_REVERSE` (no separate command). Host-tested; S2-U13 distances PASS (25 Nov, no log) | Partial | #39 |
 | B2-6 | NFR2-1 to NFR2-3 measurable tolerances (W6 gap marked "Fixed") | Thresholds agreed 20 Nov in `TEST_PLAN.md` (S2-U07 to U13); NFR2 wording itself not yet updated | Partial | #6 (`DECISIONS.md`) |
 | B2-7 | PT: encoder counter widths decided from measured range (CR1) | Done 23 Nov (#52, S2-U14): widths from the robot logs, status 30 → 12 bytes, "provisional" removed. Other subsystems not yet migrated to the packed status | Partial | #52 (widths); migration open |
 | B2-8 | WU deliverables: motion library, PID tuning report, motion accuracy evaluation | Library exists; no report or evaluation | Missing | #56 |
@@ -102,7 +102,7 @@ The decoder is the best-tested part of the project on the PC, but the sensor lay
 | B3-2 | W6 statechart 3: on line loss, Search Line mode adjusts movement until the line is found | Stop and wait, no search motion. `integrated` steers in the straddle model (#8): C and R sit either side of the tape and both white is the normal reading, so S3's LOST is ignored. Since #23 the VC detects loss itself: a correction of ≥ 150 ms that clears to white with no black within `S2_LINE_LOST_MM` (150 mm, encoders) starts a soft probe toward the side the tape was last under (`S2_LINE_PROBE_MM`, 100 mm); black ends it, none stops the robot; it re-arms once C or R sees the tape and it is held still 1 s, or after PAUSE + RESUME. Host-tested; two false stops on the track (23 Nov, tape still between C and R) led to the probe, which is not yet run on the robot. `LINE_BARCODE_SEARCH_MS` is 0 in both robot builds | Changed, decided 20 Nov: stop and wait; statechart 3 updated (course has no gaps). Straddle VC gets its own loss check (#23, 23 Nov) | #68 (`DECISIONS.md`); S3-U31 in #23 |
 | B3-3 | FR3-2 junction detection | Cross-junction from the scanner seeing black for 4.5 narrow-bar widths; host test S3-U25 passes; not tested on the track | Unverified | #23 |
 | B3-4 | FR3-3 decode navigation barcodes (W6); prof: all A to Z, both directions | Decoder handles A to Z both ways on the PC (S3-U07); on hardware only A and Z were tried (`208188b`) | Partial | #23 (S3-U32, S3-U35) |
-| B3-5 | W6 statechart 3: an invalid barcode is ignored and line tracking continues | Matches; now also planned: reverse and re-scan a failed barcode | Changed (addition) | #39 |
+| B3-5 | W6 statechart 3: an invalid barcode is ignored and line tracking continues | Matches, plus (PR #127, 24 Nov) a rejected barcode of at least 9 runs makes the robot reverse 30 cm (45 cm if 20+ runs) and rescan it, up to 2 retries, then carry on as before. On the robot 25 Nov (S2-U17, no log): 2 runs rescanned and read the barcode, 1 gave up on a damaged print as designed, no false back-up at a junction. The #127 case where a rescan reads 29 runs and is still rejected was not seen, but its cause is still unknown | Changed (addition) | #39 |
 | B3-6 | Sampling: periodic sensor processing (W6) | Period changed from 10 ms to 1 ms on 3 Nov (`b276d54`) for barcode resolution | Changed | Record CPU cost in the resource report (#61) |
 | B3-7 | NFR3-1 robust to lighting, track and speed changes; NFR3-2 reliable recognition | No track or lighting tests recorded; on-target S3 unit tests passed 19 Nov (d9c4830; S3-U01 retired) | Unverified | #21, #22, #23 |
 | B3-8 | WU deliverables: line-following module, barcode decoder, navigation command interface | Code and S3 README exist; README map section is out of date (says MQTT maps are ignored) | Partial | #57 |

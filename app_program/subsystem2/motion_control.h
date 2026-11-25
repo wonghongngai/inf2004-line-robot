@@ -14,7 +14,8 @@
 /*
  * Commands Buddy 2 accepts.
  *
- * There is intentionally no backwards command.
+ * There is no separate backwards command: reversing by distance (#39) is
+ * FORWARD_CM run in MOTION_PROFILE_REVERSE (see MOTION_PROFILE below).
  */
 typedef enum
 {
