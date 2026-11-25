@@ -194,7 +194,7 @@ Tasks in the final firmware, highest priority first:
 | — | S1 | — | — | no task of its own: all S1 network code runs in `cyw43` | `subsystem1/` |
 | `motion_task` | S2 | 14 | core 1 | PID loop and the Vehicle Controller | `subsystem2/subsystem2.c` |
 | `line_service_task` | S3 | 16 | core 1 | IR sampling (1 ms), barcode decoding, junctions; on core 1, away from the radio | `subsystem3/line_service.c` |
-| `imu_task` | S4 | 18 | any | IMU sampling (20 ms), terrain and safety state | `subsystem4/subsystem4.c` |
+| `imu_task` | S4 | 18 | core 0 | IMU sampling (20 ms), terrain and safety state | `subsystem4/subsystem4.c` |
 | `obstacle` (`obstacle_task`) | S5 | 20 | any | scan, profile, plan, request avoidance moves | `subsystem5/subsystem5.c` |
 
 Core: `TP_PRC1` = core 0, `TP_PRC2` = core 1, or "any".
@@ -216,7 +216,7 @@ first, then S5 avoidance, then line following.
 
 | ID | From → To | Mechanism | Object ID / function | Data / meaning | Agreed by | Issue |
 | --- | --- | --- | --- | --- | --- | --- |
-| IF-05 | VC → S1 | message buffer, nonblocking send (owned by S1) | `subsystem1_publish_telemetry()` | 80-bit telemetry packet once a second: state, faults, speed, distance, line sensors, barcode, highest hump, encoder counts, obstacle scan results (layout in `subsystem1/README.md`) | Buddy 1; VC publishes it (#72) | #40, #41 |
+| IF-05 | VC → S1 | message buffer, nonblocking send (owned by S1) | `subsystem1_publish_telemetry()` | 147 information bits in a 19-byte telemetry packet once a second: state, faults, speed, distance, line sensors, barcode, highest hump, encoder counts, obstacle scan results (layout in `subsystem1/README.md`) | Buddy 1; VC publishes it (#72) | #40, #41 |
 | IF-06 | S1 → VC | message buffer, polled with `TMO_POL` (owned by S1) | `subsystem1_receive_command()` | PC commands STATUS, PAUSE, RESUME, RESET_STATS, START | Buddy 1; VC handles STATUS, PAUSE, RESUME, START (#72, #48) | #49 |
 | IF-07 | S3 → VC | S3 message buffer and snapshot API | `g_h_line_nav_q` | line positions; barcode letter and junction command; one consumer | integrated build | #38, #68 |
 | IF-08 | S4 → VC, S5 | snapshot under S4 mutex | `subsystem4_get_latest()` | IMU calibrated, terrain (hump, tilt, highest-hump height), lift-stop, motion class, turn rate. S5 ignores readings while tilted or on a hump (A5-2) | integrated build | #53, #42, #43, #44, #67 |
@@ -279,10 +279,13 @@ Notes:
 ### Other open points
 
 Decided 20 Nov ([DECISIONS.md](DECISIONS.md)): add a START command and a
-Ready state (#48, built 21 Nov; bench test pending); tilt is report-only (#67); on line
+Ready state (#48, built 21 Nov; robot test PASS 21 Nov, see integration TEST_LOG); tilt is report-only (#67); on line
 loss the robot stops and waits (#68).
 
-Still to define (TBD): command handling when Wi-Fi drops (#49).
+Decided 22 Nov (#49): commands and maps sent while offline are dropped,
+never replayed (clean MQTT session). Senders check the online heartbeat and
+never queue or retain commands. Resend the letter map after every reboot.
+[S1-U20 passed on hardware](testing/subsystem1/TEST_LOG.md#results).
 
 Each interface is tested by at least one integration test
 (`testing/integration/TEST_LOG.md`).

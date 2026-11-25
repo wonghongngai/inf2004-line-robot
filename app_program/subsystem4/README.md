@@ -21,7 +21,7 @@ telemetry.
 - Keep the robot **stationary for the first second** after boot: that is when
   the baseline is calibrated.
 
-## Status (13 Nov 2026)
+## Status (reviewed 25 Nov 2026)
 
 - **Hump thresholds tuned 23 Nov (#27)** from `S4_TRACE` captures of the 10 mm
   one-side ramp: every decision uses the 200 ms (10-sample) average of the
@@ -31,15 +31,21 @@ telemetry.
   4/3, refitted on the robot from eight climbs (#27 step 5); no hump may start
   for 500 ms after the wheels start from a standstill. The tilt
   threshold `S4_TILT_DELTA_MG` is still a placeholder (S4-U08, issue #25).
-- The hump height estimator keeps the climb height after the descent; the
-  host test `s4/hump_height` expects 0. Decision pending (#5).
+- Per [decision #5](../../DECISIONS.md#5-hump-height-after-the-descent),
+  climb height is retained after descent and the highest hump is reported.
+  The host test no longer expects zero after descent. S4-U09/U10 passed
+  on the one-side 10 mm ramp on 23 Nov; see the
+  [ramp results](../../testing/subsystem4/TEST_LOG.md#results).
 - Collision detection was **removed** on the instructor's instructions
   (13 Nov) and replaced by a lift-stop (#53, 21 Nov). Lift = the 200 ms
   average of the Z deviation from `baseline_az_mg` (each sample clipped to
   ±`S4_LIFT_CLIP_MG`) stays at ≥ `S4_LIFT_DELTA_MG` (200 mg) for 3 samples.
   S4 then reports `IMU_MOTION_LIFTED` every sample and `IMU_EVENT_LIFT` once
   (code 3, which was COLLISION); the VC and `all_test` stop and stay stopped
-  until reboot. The thresholds are placeholders until S4-U12 on the robot.
+  until reboot. S4-U12 passed 5/5 lifts on 21 Nov; see the
+  [lift-stop results](../../testing/subsystem4/TEST_LOG.md#results). The
+  video caption calls the lift demonstration collision detection; it is
+  evidence of lift-stop, not an impact test.
 - Still to build (both assessed): motion classification (#42) and turn rate
   from the magnetometer (#43).
 - Minimum-bit (CR1): the packed output is a 4-byte `IMU_PACKED_MSG`

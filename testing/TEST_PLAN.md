@@ -55,7 +55,7 @@ something that hasn't passed on the bench (L3).
 
 | Test | Level | How | Status |
 |---|---|---|---|
-| `s1/protocol`: 80-bit telemetry codec | L1 | `sh testing/run_host_tests.sh s1/protocol` | PASS |
+| `s1/protocol`: 19-byte telemetry codec (147 information bits) | L1 | `sh testing/run_host_tests.sh s1/protocol` | PASS |
 | `s1/binary_cli`: `tools/mqtt_binary.py` encoder/decoder | L1 | `sh testing/run_host_tests.sh s1/binary_cli` | PASS |
 | S1-U01–U10, U18: packet sizes, range rejection, queues, barcode map, reverse command | L2 | `make TEST=1` | PASS on target 20 Nov (11 checks; U01 fixed) |
 | `s1/barcode_queue` | L1 | `sh testing/run_host_tests.sh s1/barcode_queue` | PASS 23 Nov on `main` (`8487fc2`), #16 |
@@ -146,7 +146,7 @@ superseded by the IDs below.
 | S3-U30 | Follows the course's curves and corners | L4 | Each curve or corner type × 5 | 5/5 without losing the line |
 | S3-U31 | Lost line in the straddle model (rewritten 23 Nov, #23; probe added the same day) | L4 | `integrated` steers with C and R either side of the tape (#8), so both white is normal. When a correction of ≥ 150 ms clears to white and neither sensor sees black within `S2_LINE_LOST_MM` (150 mm), the VC first probes: it steers softly toward the side the tape was last under for up to `S2_LINE_PROBE_MM` (100 mm). Black during the probe = carry on (`line probe found the tape`); none = stop (`line lost`). (a) Tune: 3 laps of the course; read the `steer` lines' `watch max=` and any `line probe` lines. (b) Recovery: on a straight at cruise speed, nudge the tape under C only ×5, under R only ×5. (c) Lost: nudge it past C ×5 and past R ×5. (d) Re-arm: after each (c), leave it on white 3 s, then put the tape under C or R and hold still; once with PAUSE + RESUME | (a) No `line lost` in 3 laps; probes, if any, find the tape. (b) 10/10 recover, no stop. (c) 10/10 `line lost` and stop within about 30 cm (150 + 100 mm plus braking). (d) No re-arm on white; re-arm 1 s after the tape is seen; PAUSE + RESUME re-arms. Logic host-tested in `int/robot_control` |
 | S3-U32 | The 4 letters received over MQTT (#38), at driving speed | L4 | Send a map from the PC; 10 passes × 4 barcodes, both directions, each followed by a cross-junction | ≥ 9/10 correct letters each, and the mapped move done at the next junction; log the decode rate per letter |
-| S3-U35 | All A–Z decode in both directions | L3 | Print A–Z from the tec-it Code 39 generator; pass each barcode both ways at cruise speed | 26/26 letters correct in both directions (prof requirement, 13 Nov) |
+| S3-U35 | A-Z coverage and printed-barcode evidence | L1 + L2 + recorded L3 | Decision #38: no complete printed A-Z robot test. S3-U07 checks all 26 synthetic letters both ways on host and Pico; S3-U18 checks real PDF A/Z. Large printed A: 3/3 forward, 3/3 reversed; medium A failed reversed. | Use large prints. Synthetic coverage does not establish printed 26/26 hardware coverage; see DECISIONS.md and subsystem3/TEST_LOG.md. |
 | S3-U33 | Bad barcodes cause no action | L4 | An unmapped letter and a damaged barcode, 5 passes each | 0 wrong commands. Unmapped: the console shows `decoded=<letter> queued=no mapping`, then `junction: no mapped barcode, straight on`. Damaged: `rejected invalid frame`, then `junction: no barcode, straight on`. On the PC: S3-U46 (S3 service) and `int/robot_control` (the VC's straddle path, both cases); this is the on-robot check |
 | S3-U34 | Speed limit for decoding | L3/L4 | Increase the speed until decoding fails | highest reliable speed recorded; cruise speed set below it |
 
@@ -190,7 +190,7 @@ is to measure real data.
 | S5-U01, U04, U05, U16 | L3 | manual | PASS (logs not saved) |
 | S5-U02: > 90 % of readings within ±5 cm at 5 / 15 / 30 / 45 / 60 cm (rule and range changed 22 Nov, #29; was every reading within ±2 cm over 5–100 cm) | L3 | manual | **PASS 22 Nov** (re-scored under the new rule) |
 | S5-U06: detection → action ≤ 2 s | L3 | manual | **FAIL (2299 ms) before the `FINE_BUDGET_POINTS` fix: re-run** |
-| S5-U45: all of the above automatic checks, plus U08, U11–U13 (new), on the PC | L1 | `sh testing/run_host_tests.sh s5/` | PASS 22 Nov (102 checks, #30); U08, U11–U13 not yet run on the Pico |
+| S5-U45: all of the above automatic checks, plus U08, U11–U13 (new), on the PC | L1 | `sh testing/run_host_tests.sh s5/` | Host PASS 22 Nov (#30). Later on-target capture completed U08 and U11-U13; the full S5 summary was not received. See subsystem5/TEST_LOG.md for scope and counts. |
 | S5-U03, U07, U10 | — | planned | not written yet. U15 is replaced by U28 (scan rework, 5 Nov) |
 
 **New:**
@@ -229,11 +229,11 @@ is to measure real data.
 
 | ID | What | Pass when |
 |---|---|---|
-| SYS-01 | Full course, start to finish | 3 runs in a row with no touches |
+| SYS-01 | Full course, start to finish | 3 runs in a row without intervention during navigation; terminate each completed run with operator PAUSE or lift-stop |
 | SYS-02 | Every barcode on the course is obeyed | all correct in SYS-01 runs |
-| SYS-03 | Highest hump reported over MQTT matches the measured height | **Dropped 23 Nov:** the track has no hump. Hump detection and height are covered by S4-U09/U10 on the 10 mm ramp (PASS 23 Nov) |
+| SYS-03 | Highest hump reported over MQTT matches the measured height | Reopened 25 Nov: the operator identifies the pink strip in full track demo video as the hump. Separate 10 mm ramp tests S4-U09/U10 passed 23 Nov. |
 | SYS-04 | Obstacle avoided and line reacquired during a full run | passes in the SYS-01 runs |
-| SYS-05 | Telemetry continuous for a whole run | no gap over 3 s; final state = finished |
+| SYS-05 | Telemetry continuous for a whole run | no gap over 3 s until operator PAUSE or lift-stop ends the completed run; record the actual final telemetry state and termination method (normal PAUSE: IDLE; lift-stop: FAULT latched until reboot; automatic FINISHED is not required) |
 | SYS-06 | Demo video | one uncut run with the console/MQTT view, linked in `videos/README.md` |
 
 ---
@@ -247,7 +247,7 @@ is to measure real data.
 3. **Bench (L3), in parallel:** S1-U11–U15, S2-U05–U07/U10–U11, S3-U28/U34,
    S4-U08/U11, S5-U02/U06/U43.
 4. **Integrated (L4):** INT-07–INT-10, then each buddy's L4 tests.
-5. **Track (L5) and SYS:** only after L4 passes, then SYS-01–SYS-06 (SYS-03 dropped: no hump on the track).
+5. **Track (L5) and SYS:** only after L4 passes, then SYS-01–SYS-06 (SYS-03 reopened 25 Nov after hump is placed on track).
 
 At each weekly check-in, move `STATUS.md` cells only for tests that have a
 Results row with a commit hash and a saved log.

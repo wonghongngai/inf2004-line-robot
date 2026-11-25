@@ -55,7 +55,10 @@ are not WCET proof or end-to-end stop latency. Use trace/GPIO on hardware.
 
 - Re-measure distance and both pivots before relying on integrated motion.
   S2_CALIBRATION_READY retains its previous value; it is not new evidence.
-- Tune PID (currently zero), motor floors, tolerances and response deadlines.
+- Current straight-line PID gains are Kp 6.0, Ki 0.5 and Kd 0; see
+  [calibration and measured results](TEST_LOG.md#results). FOLLOW_LINE uses
+  its separate steering and encoder trim. Motor floors, tolerances and
+  response deadlines still need evidence for the profile being assessed.
 - Derive numeric/encoder widths (done 23 Nov, #52: the wire count wraps at
   16 bits by design; the int32 counter itself lasts about 12 days at the
   highest measured rate). Coherent cross-core reset/read snapshots still need

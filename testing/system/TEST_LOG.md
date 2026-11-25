@@ -12,16 +12,18 @@ Define a test here before running it. Test IDs never change.
 
 | ID | What is tested | Requirement / interface | Method | Steps / how | Expected result |
 |---|---|---|---|---|---|
-| SYS-01 | Full-course navigation | System mission, FR3-1 | Manual track test | Place the robot at the course start, load the MQTT letter map, and start the run. Repeat to obtain three consecutive runs. | The robot completes all three runs from start to finish without being touched. |
+| SYS-01 | Full-course navigation | System mission, FR3-1 | Manual track test | Place the robot at the course start, load the MQTT letter map, and start the run. Repeat to obtain three consecutive runs. | The robot completes all three navigation runs without intervention; operator PAUSE or lift-stop terminates each completed run. |
 | SYS-02 | Barcode-directed navigation | FR3-3, IF-07, IF-12 | Track observation and logs | In the SYS-01 runs, record each decoded letter, its configured action, and the action taken at the next cross-junction. | Every barcode on the course produces the correct action at the next cross-junction. |
-| SYS-03 | Highest hump height over MQTT | FR4-2 | Dropped | The final track has no hump. See [S4-U09 and S4-U10](../subsystem4/TEST_LOG.md) for the separate ramp tests. | Dropped on 23 November 2026. |
+| SYS-03 | Highest hump height over MQTT | FR4-2 | Track measurement and MQTT capture | Measure the pink hump identified by the operator and compare its height with the highest hump reported over MQTT. See S4-U10 for the tolerance. | Reopened 25 November 2026; Manual observation: physical height 10 mm. The full-run highest-height telemetry remains unverified. |
 | SYS-04 | Obstacle bypass and line recovery | FR5-4, FR5-5 | Track observation and logs | In the SYS-01 runs, observe the robot as it approaches the obstacle, bypasses it, and rejoins the guide line. | The robot passes the obstacle without contact, reacquires the guide line, and resumes following it. |
-| SYS-05 | Telemetry throughout a full run | FR1-2, IF-05 | Timestamped MQTT capture | Capture telemetry from the start to the finish of a SYS-01 run. Record the longest interval between packets and the final reported state. | No telemetry gap exceeds 3 s. The final reported state is `FINISHED`. |
+| SYS-05 | Telemetry throughout a full run | FR1-2, IF-05 | Timestamped MQTT capture | Capture telemetry from the start to the finish of a SYS-01 run. Record the longest interval between packets and the final reported state. | No telemetry gap exceeds 3 s through operator PAUSE or lift-stop at completion. Record the actual final telemetry state and termination method; automatic `FINISHED` is not required. |
 | SYS-06 | Full-course demonstration video | Submission evidence | Manual video review | Record one uncut SYS-01 run with the console or MQTT dashboard visible. Add the unlisted YouTube link to the [video index](../../videos/README.md). | The linked video shows the complete run and the console or MQTT view. |
 
-The `FINISHED` acceptance criterion for SYS-05 comes from the test plan. The
-current `integrated` firmware does not automatically report `FINISHED` at the
-end of the course. Record the actual final state in the result.
+Completion is declared by the operator using PAUSE or by lifting the robot
+(lift-stop), as confirmed on 25 November 2026. These terminal actions do not
+count as navigation intervention. Record the actual telemetry state;
+`integrated` does not automatically report `FINISHED`. The pink strip is a
+hump, not a finish marker.
 
 ## Results
 
@@ -51,3 +53,43 @@ These results retain their original test IDs and scopes.
 | 2026-11-23 | `S3-U29` | `f399b56` with local line-following changes | **PASS.** In five straight-track runs of at least 3 m, the robot stayed on the guide line. | [Subsystem 3 test log](../subsystem3/TEST_LOG.md#results) |
 | 2026-11-23 | `INT-10`, `S5-U41`, `S5-U42` | `5fd4da5` and `ea03e1a` | **PASS.** The robot passed the box without contact and resumed line following in all nine scored runs. It reacquired the line after about 30 cm on the return leg. | [Subsystem 5 test log](../subsystem5/TEST_LOG.md#results) |
 | 2026-11-23 | `S1-U12` | `fb8d46c` with local telemetry changes | **PASS.** The stationary robot published 300 valid packets in five minutes. The longest gap was 2.20 s. | [MQTT test capture](../integration/logs/2026-11-23_S1-U12_19byte_robot_mqtt_test.txt) |
+
+
+### Reviewing full track demo video, reviewed 25 November 2026
+
+[Public video](https://youtube.com/shorts/0AZ4yvPSE0g?feature=share).
+
+- SYS-01: Manual observation: one whole take with smooth continuous
+  movement and no stops. Three consecutive completions are not established;
+  the terminal PAUSE/lift action and firmware revision remain unconfirmed.
+- SYS-02: decoded-letter output and the full configured map are not
+  established for every junction by the sampled frames.
+- SYS-04: bypass and line recovery are visible qualitatively; clearance
+  and recovery distance are not measured.
+- SYS-05: no timestamped MQTT capture throughout the run is supplied.
+  Maximum packet gap and final state remain unverified. Completion is
+  operator PAUSE or lift-stop; automatic FINISHED is not required.
+- SYS-06: Manual observation: this is one whole take. The earlier
+  inference of edits from sampled frames was incorrect. Continuous
+  console/MQTT visibility is not established by this footage review.
+
+Recording date and flashed firmware mode/revision await confirmation.
+
+### SYS-01 acceptance result
+
+| Date | Test ID | Firmware | Tester / evidence | Result | Notes |
+|---|---|---|---|---|---|
+| 2026-11-24 (operator-supplied documentation date; exact recording date unknown) | SYS-01 | integrated; flashed commit unknown | Manual observation: at least three complete course laps consecutively without touching, repositioning or resetting the robot during navigation; one lap filmed in full_track.mp4 | **PASS** | Confirmation supplied 25 Nov 2026. Terminal PAUSE or lift-stop after completion is allowed. Only one lap has video evidence; the three-lap count rests on operator testimony. This supersedes the earlier unverified-count status without changing the earlier observations. |
+
+### Final acceptance results, recorded 25 November 2026
+
+Test date: 24 November 2026; firmware: integrated. These results supersede earlier unverified statuses. The tester confirms that all listed criteria were
+observed. No full-run MQTT capture was saved; no exact maximum gap or
+exact full-track height value was supplied.
+
+| Test ID | Result | Acceptance observations | Evidence / limitation |
+|---|---|---|---|
+| SYS-03 | **PASS** | The full-track dashboard highest-hump reading was within 7-13 mm against the physical 10 mm hump, meeting +/-3 mm. | Reported test observations; exact full-track reading not recorded. The separate S4 video shows 9 mm. |
+| SYS-05 | **PASS** | The full-run maximum MQTT packet gap was checked and met the <=3 s limit; the final state matched the termination method (IDLE after PAUSE or FAULT after lift-stop). | Reported test observations; full-run capture, exact maximum gap and specific termination method were not saved in this record. |
+
+These are manual acceptance results. 
