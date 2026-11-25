@@ -172,7 +172,9 @@ in `obstacle_logic.h`):
   away, so the box read as clear while the robot was still beside it, and
   the robot hit it (8 Nov). Square on, the face echoes straight back. A
   spin turns about the robot's centre, so the robot ends where it started.
-- **F1 + 12 cm.** On centred runs the box face was 11–17 cm from the
+- **F1 clearance.** The 23 Nov runs used 12 cm of extra margin. Commit
+  `30a2100` reduced the extra margin to 6 cm on 24 Nov (#62). On the earlier
+  centred runs the box face was 11–17 cm from the
   robot's centre line, but a spin's front corners reach about 11 cm, so
   the robot needs to be further out.
 - **F3 waits for both sensors and F4 overshoots.** The IR sensors sit
@@ -321,7 +323,7 @@ M3) and [`DECISIONS.md`](../../DECISIONS.md).
 | Diagonal bypass (turn 45°, …) | Turn-and-box with 90° turns and a looked pass | Easier to tune on encoders. The spin-look fixes false "clear" on long boxes | B5-7, B5-8 |
 | Reverse and reattempt | Back off 15 cm, rescan, at most 2 times | S2 reverse moves added 23 Nov | B5-7, #39 |
 | Robot corridor measured (A5-1) | `ROBOT_WIDTH_MM` 150, `PASS_MARGIN_MM` 50, not measured | The track is open, so there is nothing to calibrate against | B5-9, #45 |
-| Hump test S5-U44 | Dropped | The hump is too small to matter, and the track now has none | #44 |
+| Hump test S5-U44 | Dropped | The team kept the existing IMU gate and ended work on the extra test. The operator later identified a 10 mm hump on the course. | #44, [25 Nov decision](../../DECISIONS.md#25-nov-2026-filmed-course-and-completion-definition) |
 | Distance width (PT: 9 vs 16 bit) | 9-bit cm on the wire, mm inside | One representation | B5-12, #54 |
 
 ## Known limits and open items

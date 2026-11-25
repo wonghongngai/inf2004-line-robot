@@ -101,4 +101,4 @@ Existing scored results retain their original evidence and scope.
 
 | Date | Test ID | Firmware | Result | Log / evidence | Notes |
 |---|---|---|---|---|---|
-| 2026-11-24 (supplied documentation date) | S1-U16 | integrated; flashed commit unknown | **PASS** |Five barcode passes produced five valid events with correct letters and consecutive frame IDs, allowing QoS retransmissions. The tester confirms these checks were observed. This supersedes the earlier not-run/unverified status; packet bytes and frame ID values are unavailable for independent replay. |
+| 2026-11-24 (tester-supplied date) | S1-U16 | `integrated`, flashed commit unknown | **PASS (operator report)** | Tester observation | Five passes produced five events with the correct letters and consecutive frame IDs, allowing for QoS retransmissions. The packet bytes and frame ID values were not saved for this run. |

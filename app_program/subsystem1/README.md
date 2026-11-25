@@ -217,6 +217,7 @@ codec, Python decoder, tests and this table. Compile-time checks catch range
 allocations that no longer use the minimum bits. Protocol v1 has no version byte;
 coordinate incompatible revisions with all publishers and subscribers.
 
-See `testing/subsystem1/BINARY_CHANGE.md` for measured before/after results and
-remaining hardware evidence. Radio recovery, live sensor integration and final
-RTOS timing must still be tested on the Pico.
+See the [binary change measurements](../../testing/subsystem1/BINARY_CHANGE.md)
+for the original before/after comparison. The [S1 test log](../../testing/subsystem1/TEST_LOG.md#results)
+records the later Pico and robot checks for reconnect, command delivery,
+19-byte telemetry and control timing under a command flood.

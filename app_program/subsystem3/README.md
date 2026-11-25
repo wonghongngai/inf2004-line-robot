@@ -301,13 +301,14 @@ has 29 alternating segments: 15 black bars and 14 internal white gaps. Letter
 identity comes from widths, not segment count. Both scan directions work.
 GP28 is the offset barcode sensor; centre/right continue steering.
 
-The combined controller starts with A=LEFT, F=RIGHT, Z=STRAIGHT and W=U-TURN.
-In MQTT-enabled `all_test`, a valid mapping message replaces those assignments.
-The controller looks up each detected letter at the next C/R-both-black junction.
-Letters outside the current map have no barcode movement assignment.
-An unmapped letter replaces any previously pending letter. The existing
-C/R-both-black stop rule still applies without a mapped movement.
-The existing movement advance/pivot calibration and timeout still apply.
+In `integrated` and MQTT-enabled `all_test`, send a letter map before the
+trial. For example, assign A=LEFT, F=RIGHT, Z=STRAIGHT and W=U-TURN. At the next
+C/R-both-black junction, the controller applies the stored letter's mapped
+action. With an unmapped letter or no map, it continues straight.
+
+In `integrated`, a rejected frame with enough segments can trigger up to two
+reverse-and-rescan attempts. The controller pauses the scanner while reversing
+and resumes it for the forward approach.
 
 Leave white margins before and after the barcode. The leading margin must
 last at least 100 ms and at least ten narrow-bar durations; the trailing

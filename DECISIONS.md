@@ -9,15 +9,14 @@ Decided 13 Nov 2026: `integrated` is the final firmware (#4, see `STATUS.md`).
 
 ## 25 Nov 2026: filmed course and completion definition
 
-Manual observation: the pink strip in full track demo video is a hump used
-for hump detection. This supersedes the 23 Nov no-hump course assumption
-for this recording; SYS-03 is reopened pending measured track evidence.
-The full-track video is one whole take with smooth movement and no stops.
-Completion is determined by operator PAUSE or lifting the robot (lift-stop).
-SYS-01 permits that terminal action after navigation; SYS-05 records the
-actual final telemetry state and does not require automatic FINISHED.
-This clarification establishes neither three consecutive runs nor a
-measured full-run telemetry gap.
+The operator identified the pink strip in the full-track video as the 10 mm
+hump, reopening SYS-03 and superseding the 23 Nov course assumption. The
+operator confirms the footage shows one continuous run.
+
+Completion permits operator PAUSE or lift-stop after navigation. SYS-05
+checks the packet gap and the actual final state at that action. Automatic
+`FINISHED` is not required. The [system test log](testing/system/TEST_LOG.md#operator-reported-acceptance-results-recorded-25-november-2026)
+records the tester's acceptance results and supporting evidence.
 
 ## 24 Nov 2026: BARR-C deviations (#60)
 
@@ -40,7 +39,7 @@ subsystem's rows. The reasons are in the review's deviations table.
 | Issue | Decision | Follow-up |
 | --- | --- | --- |
 | #27 | **The hump is a 10 mm ramp under one side of the robot only**; the other side stays on the floor | S4-U09, U10 and the capture procedure in `testing/subsystem4/TEST_LOG.md` describe that one ramp |
-| — | **The track has no hump**: no hump test on the track. SYS-03 (highest hump over MQTT on the course) is dropped, and the hump checks are removed from the track-run and SYS plans in `STATUS.md` | Hump detection and height rest on S4-U09/U10 (10 mm ramp, PASS 23 Nov) |
+| — | **Course assumption on 23 Nov (superseded 25 Nov):** SYS-03 was dropped when the track was believed to have no hump | The [25 Nov clarification](#25-nov-2026-filmed-course-and-completion-definition) reopens SYS-03. S4-U09/U10 remain the separate 10 mm ramp tests |
 | #27 | **S4-U09 cut to 5 ramp passes + 5 flat runs** (from 10 + 10), before any scored run | Pass: 5/5 detected, 0 false on flat floor |
 | #27 | **S4-U10 compares against the ramp's height at the wheels, 10 mm**, not the rise of the robot's centre (about 5 mm, since the body tilts only about half as much as the ramp) | The height factor `S4_HEIGHT_CAL_NUM/DEN` (step 5 of #27) must absorb that geometry; SYS-03 inherits it through S4-U10's tolerance |
 | #27 | **Height stays a fixed factor on the forward-tilt estimate** (no sideways-tilt term). Refit at 20 ms in `integrated`: new factor = current factor × 10 mm ÷ mean reported height, from the capture and S4-U09 passes; S4-U10 is then scored on fresh passes. (23 Nov, step 3: the detector now counts the whole climb, so the factor was reset from 25/11 to a provisional 1/1 for that refit; refitted the same day to **4/3** from eight climbs, mean 7.25 mm at 1/1, `testing/subsystem4/TEST_LOG.md`.) The factor is only valid for this kind of hump (one-side ramp): a hump across the full width of the robot would read about twice its height | Chosen over adding a sideways-tilt term (geometry-based, works for any hump) because the demo has only this ramp and it is a one-constant change |
@@ -210,8 +209,10 @@ S4 18, S5 20. Week 6 made S5 the highest.
   S5's slow work is servo travel and 60 ms echo cycles, so a lower priority
   costs it little.
 
-**Still to measure.** S1-U17 (#15) and S2-U12 (#19): control-loop lateness with
-Wi-Fi on. If it is too late, lower the Wi-Fi priority.
+**Follow-up on 22 Nov.** S1-U17 recorded zero late control cycles during a
+command flood. S2-U12 recorded zero late steps over 36,924 steps at 15/19%
+follow PWM with Wi-Fi on. See the [S1](testing/subsystem1/TEST_LOG.md#results)
+and [S2](testing/subsystem2/TEST_LOG.md#results) logs.
 
 ### #67 Tilt
 

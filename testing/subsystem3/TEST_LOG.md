@@ -31,7 +31,7 @@ Define a test here before running it. Test IDs never change.
 | S3-U26 | Decoded letter (both directions) is stored and becomes a COMMAND at the next junction | FR3-3 / instructor demo brief | auto | `line_barcode_test.c` host + target | `[TEST] S3-U26 PASS` |
 | S3-U27 | Four-letter run-time mapping accepted; duplicate/lowercase rejected | FR3-3 / MQTT mapping | auto | `subsystem3_test.c` target + `line_service_test.c` host | `[TEST] S3-U27 PASS` |
 | S3-U31 | Lost line on the robot, straddle model (rewritten 23 Nov, #23: was "S3 FOUND ≤ 200 ms, VC re-armed ≤ 1.5 s", which the straddle VC never did; probe added 23 Nov after two false stops) | FR3 / #68 / B3-2 | manual | `integrated`: (a) 3 laps, read `watch max=` and any `line probe` lines; (b) nudge the tape under C only ×5, R only ×5; (c) nudge it past C ×5, past R ×5; (d) after each (c) leave it on white 3 s, then put the tape under C or R and hold still; once with PAUSE + RESUME. Save the console log | (a) no `line lost`, every probe finds the tape; (b) 10/10 recover, no stop; (c) 10/10 `line lost` and stop within about 30 cm; (d) no re-arm on white, re-arm 1 s after the tape is seen; PAUSE + RESUME re-arms |
-| S3-U33 | Bad barcodes cause no action on the robot | FR3-3 / W6 statechart 3 | manual | `integrated`, MQTT map sent: an unmapped letter, then a damaged barcode, 5 passes each, each followed by a cross-junction. Save the console log | 0 wrong commands: `queued=no mapping` / `rejected invalid frame`, then `straight on` at the junction, every pass. PC side: S3-U46 and `int/robot_control` |
+| S3-U33 | Unmapped and damaged barcodes on the robot | FR3-3 / W6 statechart 3 | manual | `integrated`, map loaded: five passes each for an unmapped letter and a damaged barcode. Save console evidence through the next junction. | Zero wrong junction commands. An unmapped letter goes straight. A rejected frame can trigger up to two reverse-and-rescan attempts before continuing straight if retries are exhausted. The S3-U46 and VC host results predate the retry path. |
 | S3-U36 | Three 19 Nov hardware scans of A with scan speed changing within characters decode A, forward and reversed (rank-based narrow/wide rule) | FR3 | auto | `line_barcode_test.c` host + target | `[TEST] S3-U36 PASS` |
 | S3-U37 | A frame whose wide/narrow bar separation is below 1.15x is rejected | FR3 | auto | `line_barcode_test.c` host + target | `[TEST] S3-U37 PASS` |
 | S3-U38 | Three 19 Nov hardware scans of the medium-size A (~0.73x print) decode A, forward and reversed | FR3 | auto | `line_barcode_test.c` host + target | `[TEST] S3-U38 PASS` |
@@ -107,7 +107,7 @@ The left IR sensor (GP28, the barcode scanner) was repositioned on 20 Nov so it 
 | --- | --- | --- | --- | --- | --- | --- |
 | 2026-11-20 | S3-M03 A, forward (print size not recorded) | `8ddacf7` (image built 17:41 from the then-uncommitted code this commit records) | robot operator; log analysis Claude | PASS (3/3) | [`logs/2026-11-20_barcode_hw.txt`](logs/2026-11-20_barcode_hw.txt), 18:39–18:41 | Every pass decoded A (29/29 runs) and turned LEFT at the next junction. Narrow 66–131 ms, wide 244–316 ms; weakest wide/narrow separation 1.86x (2.02x, 2.16x on the other passes). Each run then stopped at the following junction (`incomplete or unmapped barcode`), as `all_test` does; two of those stops logged a `[BARCODE REJECT]` for marks scanned after the turn. The boot before the passes (18:38, straight after flashing) had Buddy 4 `accelerometer not responding` errors throughout and did not run |
 
-## Physical and integration cases (not yet run)
+## Earlier physical and integration test definitions
 
 | ID | Steps | Acceptance / evidence | Status |
 | --- | --- | --- | --- |
@@ -117,7 +117,7 @@ The left IR sensor (GP28, the barcode scanner) was repositioned on 20 Nov so it 
 | S3-M04 | Remove line, reacquire it, then repeat with no line | SEARCH after 100 ms, FOUND on recovery, fault after 2 s; stop handled by controller | **Superseded 19 Nov** by S3-U31 |
 | S3-M05 | Pause during avoidance, then resume after bypass | No stale command after pause; correct recovery; controller/encoder enforces 50 cm maximum | **Superseded 19 Nov** by INT-10 (`testing/integration/TEST_LOG.md`) |
 | S3-M06 | Fill event buffer without consuming, and delay IR task over 20 ms | Latched fault in snapshot; controller stops, explicit reset restores service | S3 side automated 19 Nov by S3-U43 (queue) and S3-U44 (timing). Controller stop still pending integration |
-| S3-M07 | Measure wake-to-publish timing with all buddy tasks running | 10 ms nominal sampling; no intervals over 20 ms; measure worst case, CPU and RAM before/after | Pending hardware |
+| S3-M07 | Measure wake-to-publish timing with all buddy tasks running | 1 ms nominal sampling in the current SIDE profile; measure worst-case wake-to-publish timing, CPU and RAM | Pending hardware |
 
 Host results below refer to source content recorded by SHA-256 in the log. They
 are development evidence on an uncommitted working tree, not an on-target run

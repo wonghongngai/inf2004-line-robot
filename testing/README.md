@@ -1,7 +1,8 @@
 # Testing
 
-All test records for the project live in this folder. A test only counts as
-done when it is **written down here with its result and a saved log**.
+All test records for the project live in this folder. Record each result
+with its evidence. Save the log or capture for measured tests, and identify
+operator-reported results when that supporting evidence is unavailable.
 
 ```
 testing/
@@ -101,8 +102,8 @@ Host tests check logic only. They never replace a hardware test.
 
 ## Videos of tests and demos
 
-A manual test (an LED, a motor, a sensor reacting) is best shown with a short
-video. Record 15–60 s showing the test ID and the hardware, share it as an
+A subsystem test can be shown with a short video. Record 15–60 s showing the
+test ID and the hardware. For SYS-06, retain the whole course run. Share it as an
 **unlisted YouTube** link (the only way videos are shared), list it in
 **`videos/README.md`**, and put the link in the *Log / evidence* column of
 the test's result row. `videos/README.md` explains how.
@@ -111,8 +112,9 @@ the test's result row. `videos/README.md` explains how.
 
 - **Never edit or delete an old result.** If a test fails, record the FAIL,
   fix the code, re-run, and add a new PASS row. The history is the evidence.
-- **Always record the commit.** A result is meaningless without the exact
-  code it was run on. Commit your work *before* testing.
+- **Record the flashed commit.** Commit your work before testing. When
+  recording an earlier operator report with missing evidence, name what
+  was observed and state which commit information or measurements are missing.
 - **A FAIL needs a note** saying what went wrong and, later, which commit fixed it.
 - Before merging a change into `main`, re-run your subsystem's unit tests.
   Before a demo or hand-in, run every test and record the full set.

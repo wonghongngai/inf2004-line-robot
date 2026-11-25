@@ -29,23 +29,11 @@ something that hasn't passed on the bench (L3).
 
 ---
 
-## Step 0: Everyone, before writing new tests (about 1 hour each)
+## Before running the plan
 
-1. **Fix the ID drift in the TEST_LOGs.** The on-target code already has real
-   checks, but the *Test cases* tables still describe the course template's
-   LED/sample tests under the same IDs:
-
-   | Area | In the code (`subsystemN_test.c`) | In `TEST_LOG.md` |
-   |---|---|---|
-   | S1 | S1-U01–U10: packet sizes, ranges, queues, barcode map | S1-U01–U03 = template LED tests |
-   | S2 | S2-U01–U04: message size, forward target, STOP, stall → FAULT | S2-U01–U02 = template sample tests |
-   | S4 | S4-U01–U07: snapshot, sensor, calibration, sample rate, 20 ms cycle, 4-byte packing, ramp range | S4-U01–U02 = template tests |
-
-   Rewrite those rows to describe what the code checks. The template tests
-   were never run, so nothing is lost. INT-01/INT-02 were template examples
-   and are *Retired* (#74, 20 Nov).
-2. **Run what already exists** (the "Have" tables below) and record the
-   results. Most of these tests have never had a Results row.
+Use the current test IDs in each subsystem's test log. The original LED and
+sample tasks are retired, including INT-01 and INT-02 (#74). Record each run
+under its existing ID and retain previous results.
 
 ---
 
@@ -105,7 +93,7 @@ their line-stop re-arm checks now live in `int/robot_control`. Every L4 test run
 | S2-U10 | Speed PID step response (gains are currently 0) | L3 | Step the target speed, log the encoder speed | settles within 300 ms, overshoot ≤ 20 % |
 | S2-U11 | STOP latency | L3 | STOP command → motor outputs off, timed by the firmware (1 ms loop); wheel stop time recorded alongside | ≤ 100 ms to outputs off (was: to wheels stopped; changed 22 Nov, see `testing/subsystem2/TEST_LOG.md`) |
 | S2-U12 | Control loop timing | L4 | 5 min integrated run; read the late-control count that `motion_task` prints | 0 late cycles; max work time recorded |
-| S2-U13 | Reverse by distance (`moveBackward`, #39) | L3 | Reverse 10 / 20 / 30 cm, 3× each, measure on the floor | within ±2 cm; stops cleanly; works for both encoder polarities |
+| S2-U13 | Reverse by distance using `FORWARD_CM` with `MOTION_PROFILE_REVERSE` (#39) | L3 | Reverse 10, 20 and 30 cm, three times each, and measure against a floor mark. | Within ±2 cm on every run, with a clean stop and correct encoder direction. The 25 Nov operator report covers distance only. |
 | S2-U14 | Status field widths from measurements (#52, CR1) | L1 | Host `s2/motion_protocol`: 12-byte layout, 16-bit tick wrap and `s2_tick_delta`, saturation at each limit, rejects | PASS on the PC; widths justified from the robot logs (`subsystem2/TEST_LOG.md`) |
 | S2-U17 | Reverse and rescan a rejected barcode on the robot (#39, PR #127) | L4 | `integrated`: a barcode S3 rejects, plus junctions, 3 runs | backs up and rescans, up to 2 retries, then carries on; never backs up at a junction |
 | INT-13 | Host test of the S5 avoidance hand-over | L1 | New `int/robot_avoidance`: `robot_control.c` + the real `s5_executor.c`, kernel flags stubbed | VC hands control to S5, takes it back, and safe-stops on failure. **PASS 22 Nov (#20)**, 994 checks |
@@ -132,11 +120,9 @@ S3-U22 (TRACK layout, unused) and the `s3/count_a` host test with the
 count-only decoder mode it tested. The old S3-M01–M05 physical cases are
 superseded by the IDs below.
 
-> ⚠️ **Layout:** both builds now default to SIDE layout: GP28 is the offset
-> barcode scanner and GP27/GP0 steer (`ALL_TEST_LINE_LAYOUT` and
-> `S2_LINE_LAYOUT`). The top-level README still describes the older TRACK
-> layout (GP7/GP27/GP0, barcode off). Check that the sensors are physically
-> mounted to match SIDE before any S3 hardware test, and fix the README.
+> **Layout:** both builds default to SIDE. GP28 is the offset barcode scanner
+> and GP27/GP0 steer. Match the physical mount to the
+> [pin table](../README.md#31-sensors-and-pins) before a hardware test.
 
 **New:**
 
@@ -148,7 +134,7 @@ superseded by the IDs below.
 | S3-U31 | Lost line in the straddle model (rewritten 23 Nov, #23; probe added the same day) | L4 | `integrated` steers with C and R either side of the tape (#8), so both white is normal. When a correction of ≥ 150 ms clears to white and neither sensor sees black within `S2_LINE_LOST_MM` (150 mm), the VC first probes: it steers softly toward the side the tape was last under for up to `S2_LINE_PROBE_MM` (100 mm). Black during the probe = carry on (`line probe found the tape`); none = stop (`line lost`). (a) Tune: 3 laps of the course; read the `steer` lines' `watch max=` and any `line probe` lines. (b) Recovery: on a straight at cruise speed, nudge the tape under C only ×5, under R only ×5. (c) Lost: nudge it past C ×5 and past R ×5. (d) Re-arm: after each (c), leave it on white 3 s, then put the tape under C or R and hold still; once with PAUSE + RESUME | (a) No `line lost` in 3 laps; probes, if any, find the tape. (b) 10/10 recover, no stop. (c) 10/10 `line lost` and stop within about 30 cm (150 + 100 mm plus braking). (d) No re-arm on white; re-arm 1 s after the tape is seen; PAUSE + RESUME re-arms. Logic host-tested in `int/robot_control` |
 | S3-U32 | The 4 letters received over MQTT (#38), at driving speed | L4 | Send a map from the PC; 10 passes × 4 barcodes, both directions, each followed by a cross-junction | ≥ 9/10 correct letters each, and the mapped move done at the next junction; log the decode rate per letter |
 | S3-U35 | A-Z coverage and printed-barcode evidence | L1 + L2 + recorded L3 | Decision #38: no complete printed A-Z robot test. S3-U07 checks all 26 synthetic letters both ways on host and Pico; S3-U18 checks real PDF A/Z. Large printed A: 3/3 forward, 3/3 reversed; medium A failed reversed. | Use large prints. Synthetic coverage does not establish printed 26/26 hardware coverage; see DECISIONS.md and subsystem3/TEST_LOG.md. |
-| S3-U33 | Bad barcodes cause no action | L4 | An unmapped letter and a damaged barcode, 5 passes each | 0 wrong commands. Unmapped: the console shows `decoded=<letter> queued=no mapping`, then `junction: no mapped barcode, straight on`. Damaged: `rejected invalid frame`, then `junction: no barcode, straight on`. On the PC: S3-U46 (S3 service) and `int/robot_control` (the VC's straddle path, both cases); this is the on-robot check |
+| S3-U33 | Unmapped and damaged barcodes | L4 | Run five passes for each case in `integrated` with the map loaded and capture the console through the next junction | No wrong junction commands. An unmapped letter goes straight. A rejected frame can trigger up to two reverse-and-rescan attempts before continuing straight if the retries are exhausted. Host evidence predates the retry path. |
 | S3-U34 | Speed limit for decoding | L3/L4 | Increase the speed until decoding fails | highest reliable speed recorded; cruise speed set below it |
 
 **Done when:** every S3 test that is not retired passes (U02–U42 except U22), and barcode turns work end-to-end (INT-08).
@@ -162,10 +148,10 @@ superseded by the IDs below.
 | Test | Level | How | Status |
 |---|---|---|---|
 | S4-U01–U07: snapshot, sensor, calibration, sample rate, cycle within the sample period (20 ms again from 20 Nov), packing, range | L2 | `make TEST=1` | PASS on target 20 Nov at 20 ms (7 checks); U05 had failed at 10 ms |
-| `s4/hump_height` | L1 | `sh testing/run_host_tests.sh s4/` | **FAIL**: the test expects the height to fall back to 0; since `7f823b8` the code keeps the climb height. Decide which is right |
+| `s4/hump_height` | L1 | `sh testing/run_host_tests.sh s4/` | PASS 23 Nov. The climb height is retained after descent ([decision #5](../DECISIONS.md#5-hump-height-after-the-descent)). |
 
-**New:** the thresholds in `subsystem4.h` are placeholders, so the first step
-is to measure real data.
+Hump thresholds were tuned with the 10 mm ramp on 23 Nov. S4-U08 covers
+flat-floor noise and the remaining tilt calibration.
 
 | ID | What | Level | How | Pass when |
 |---|---|---|---|---|
@@ -190,16 +176,16 @@ is to measure real data.
 | S5-U09, U21–U22, U28, U31–U38: packing, servo maths, fine-scan window, profile, plan, bypass table | L2 | `make TEST=1` | PASS on target 19 Nov (`d9c4830`, 68 checks) |
 | S5-U01, U04, U05, U16 | L3 | manual | PASS (logs not saved) |
 | S5-U02: > 90 % of readings within ±5 cm at 5 / 15 / 30 / 45 / 60 cm (rule and range changed 22 Nov, #29; was every reading within ±2 cm over 5–100 cm) | L3 | manual | **PASS 22 Nov** (re-scored under the new rule) |
-| S5-U06: detection → action ≤ 2 s | L3 | manual | **FAIL (2299 ms) before the `FINE_BUDGET_POINTS` fix: re-run** |
+| S5-U06: detection → action ≤ 2 s | L3 | manual | Retired 22 Nov (#29). The earlier 2299 ms failure remains in the test log. |
 | S5-U45: all of the above automatic checks, plus U08, U11–U13 (new), on the PC | L1 | `sh testing/run_host_tests.sh s5/` | Host PASS 22 Nov (#30). Later on-target capture completed U08 and U11-U13; the full S5 summary was not received. See subsystem5/TEST_LOG.md for scope and counts. |
-| S5-U03, U07, U10 | — | planned | not written yet. U15 is replaced by U28 (scan rework, 5 Nov) |
+| S5-U03, U07, U10 | L1 / L3 | Host test, box profile trial, size script | S5-U03 passed on host. The owner closed S5-U07 with the width tolerance unmet. S5-U10 size figures were recorded 22 Nov. |
 
 **New:**
 
 | ID | What | Level | How | Pass when |
 |---|---|---|---|---|
 | S5-U45 | Obstacle logic on the PC (was listed here as S5-U39, but that ID is the telemetry word in the TEST_LOG) | L1 | Host test `s5/obstacle_logic`: the real `subsystem5_test.c` + `obstacle_logic.c` + `drv_servo.c`, kernel and PWM stubbed (`testing/subsystem5/s5_host_stubs.h`) | same checks as on target; runs in seconds. **PASS 22 Nov (#30)** |
-| S5-U48 | Detect at ≥ 20 cm and stop ≥ 10 cm from the obstacle (NFR5-1 as changed by #64, 20 Nov; was ≥ 30 cm). Was listed here as S5-U40, but that ID is the obstacle-telemetry test in the TEST_LOG (#40, PASS 22 Nov) | L4 | The 9 approaches of S5-U41 (cut from 10 on 23 Nov), box on the line at cruise speed, `integrated` image; read the detection distance from `OBSTACLE at … mm`, measure the rest distance by hand | 9/9: the obstacle confirmed by the 200 mm trigger (`OBSTACLE at … mm`, under 200 by construction) and at rest ≥ 10 cm from the box. *Reworded 23 Nov after the runs (user's decision):* detection is scored as the trigger working at `D_DETECT_MM` (200 mm, `DECISIONS.md` #64), not as a logged distance ≥ 200 mm: the confirming reading is below 200 mm by construction (2 of 3 readings under 200), so the old wording could never pass. If the rest distance fails: restore 30 cm and set `BYPASS_MIN_GAP_MM` to 150 (`DECISIONS.md` #64), then re-run U48 and U41 |
+| S5-U48 | Confirm the 20 cm detection trigger and stop at least 10 cm away (#64) | L4 | In the nine S5-U41 approaches, record the `OBSTACLE at … mm -> HOLD` line and the sensor-to-box distance at rest. | 9/9 confirmed by the 200 mm threshold and rested at least 100 mm away. If the rest distance fails, restore the 30 cm trigger and 150 mm bypass gap, then repeat S5-U41 and S5-U48. |
 | S5-U51 | Back-off on the robot when both sides are blocked (#39) | L4 | `integrated`: boxes so neither side fits, 3 runs, console attached | 15 cm straight back and a rescan, up to 2 back-offs, then NO PATH; no contact |
 | S5-U41 | Avoids a box (replaces INT-S5-01's bypass part in `integrated`) | L4 | Box centred, offset 5 cm left and 5 cm right, 3 runs each (Cut from 5 to 3 runs per position on 23 Nov, during the first session (after 4 centred runs)), filmed, `integrated` image | 9/9 pass without touching it and hand back (`RESUME line following`) |
 | S5-U42 | Reacquires the line within 50 cm (NFR5-4) | L4 | Same runs as U41; mark where the line is reacquired | 9/9 within 50 cm |
@@ -233,7 +219,7 @@ is to measure real data.
 |---|---|---|
 | SYS-01 | Full course, start to finish | 3 runs in a row without intervention during navigation; terminate each completed run with operator PAUSE or lift-stop |
 | SYS-02 | Every barcode on the course is obeyed | all correct in SYS-01 runs |
-| SYS-03 | Highest hump reported over MQTT matches the measured height | Reopened 25 Nov: the operator identifies the pink strip in full track demo video as the hump. Separate 10 mm ramp tests S4-U09/U10 passed 23 Nov. |
+| SYS-03 | Highest hump reported over MQTT matches the measured height | Within ±3 mm of the 10 mm track hump (7–13 mm). S4-U09/U10 are separate ramp tests. |
 | SYS-04 | Obstacle avoided and line reacquired during a full run | passes in the SYS-01 runs |
 | SYS-05 | Telemetry continuous for a whole run | no gap over 3 s until operator PAUSE or lift-stop ends the completed run; record the actual final telemetry state and termination method (normal PAUSE: IDLE; lift-stop: FAULT latched until reboot; automatic FINISHED is not required) |
 | SYS-06 | Demo video | one uncut run with the console/MQTT view, linked in `videos/README.md` |
