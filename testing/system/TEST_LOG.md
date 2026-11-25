@@ -2,7 +2,9 @@
 
 Tests of the complete product against its requirements, run on the final hardware set-up. Run the full set before every demo and before hand-in.
 
-See `testing/README.md` for how to run tests and record results.
+Run these cases on the final hardware using the `integrated` firmware. The
+[system test plan](../TEST_PLAN.md#system-testingsystem-the-whole-robot-against-the-brief)
+defines the acceptance criteria.
 
 ## Test cases
 
@@ -10,16 +12,25 @@ Define a test here before running it. Test IDs never change.
 
 | ID | What is tested | Requirement / interface | Method | Steps / how | Expected result |
 |---|---|---|---|---|---|
-| SYS-01 | e.g. device reports a reading over WiFi every 10 s | REQ-? | manual | 1. Power on. 2. Watch the dashboard for 2 minutes. | a reading appears every 10 s ± 1 s |
-| SYS-02 | | | manual | 1. … 2. … | |
+| SYS-01 | Full-course navigation | System mission, FR3-1 | Manual track test | Place the robot at the course start, load the MQTT letter map, and start the run. Repeat to obtain three consecutive runs. | The robot completes all three runs from start to finish without being touched. |
+| SYS-02 | Barcode-directed navigation | FR3-3, IF-07, IF-12 | Track observation and logs | In the SYS-01 runs, record each decoded letter, its configured action, and the action taken at the next cross-junction. | Every barcode on the course produces the correct action at the next cross-junction. |
+| SYS-03 | Highest hump height over MQTT | FR4-2 | Dropped | The final track has no hump. See [S4-U09 and S4-U10](../subsystem4/TEST_LOG.md) for the separate ramp tests. | Dropped on 23 November 2026. |
+| SYS-04 | Obstacle bypass and line recovery | FR5-4, FR5-5 | Track observation and logs | In the SYS-01 runs, observe the robot as it approaches the obstacle, bypasses it, and rejoins the guide line. | The robot passes the obstacle without contact, reacquires the guide line, and resumes following it. |
+| SYS-05 | Telemetry throughout a full run | FR1-2, IF-05 | Timestamped MQTT capture | Capture telemetry from the start to the finish of a SYS-01 run. Record the longest interval between packets and the final reported state. | No telemetry gap exceeds 3 s. The final reported state is `FINISHED`. |
+| SYS-06 | Full-course demonstration video | Submission evidence | Manual video review | Record one uncut SYS-01 run with the console or MQTT dashboard visible. Add the unlisted YouTube link to the [video index](../../videos/README.md). | The linked video shows the complete run and the console or MQTT view. |
 
-*Method:* **auto** = `TEST_CHECK` in code, result printed on the console;
-**manual** = a person observes the result (LED, scope, meter, phone app…).
+The `FINISHED` acceptance criterion for SYS-05 comes from the test plan. The
+current `integrated` firmware does not automatically report `FINISHED` at the
+end of the course. Record the actual final state in the result.
 
 ## Results
 
-Add a new row for every run. Never edit or delete old rows.
+The team tracks full-course verification in [issue #37](https://github.com/wonghongngai/inf2004-line-robot/issues/37).
+The recorded hardware results below retain their original test IDs and scopes.
 
-| Date | Test ID | Commit | Tester | Result | Log / evidence | Notes |
-|---|---|---|---|---|---|---|
-| YYYY-MM-DD | SYS-01 | `abc1234` | | PASS / FAIL | `logs/YYYY-MM-DD_….txt` | |
+| Date | Test ID | Firmware revision | Recorded result | Evidence |
+|---|---|---|---|---|
+| 2026-11-22 | `INT-08` | `49952fc` with local tuning changes | **PASS.** The tester counted 21 of 21 correct mapped manoeuvres across separate junction trials. Two left-turn trials stopped for 3–9 s after turning. | [Integration test log](../integration/TEST_LOG.md#results) |
+| 2026-11-23 | `S3-U29` | `f399b56` with local line-following changes | **PASS.** In five straight-track runs of at least 3 m, the robot stayed on the guide line. | [Subsystem 3 test log](../subsystem3/TEST_LOG.md#results) |
+| 2026-11-23 | `INT-10`, `S5-U41`, `S5-U42` | `5fd4da5` and `ea03e1a` | **PASS.** The robot passed the box without contact and resumed line following in all nine scored runs. It reacquired the line after about 30 cm on the return leg. | [Subsystem 5 test log](../subsystem5/TEST_LOG.md#results) |
+| 2026-11-23 | `S1-U12` | `fb8d46c` with local telemetry changes | **PASS.** The stationary robot published 300 valid packets in five minutes. The longest gap was 2.20 s. | [MQTT test capture](../integration/logs/2026-11-23_S1-U12_19byte_robot_mqtt_test.txt) |
