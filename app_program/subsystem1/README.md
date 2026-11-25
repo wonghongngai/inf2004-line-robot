@@ -139,7 +139,7 @@ make -C build_make PICO_SDK_PATH=/path/to/pico-sdk NET=lwip MQTT=1 TEST=1
 | Topic | Payload | QoS / retained |
 | --- | --- | --- |
 | `MQTT_TOPIC` from secrets | One byte online every 2 seconds; offline Last Will | 1 / yes |
-| `<MQTT_CLIENT_ID>/telemetry` | Exactly 15 binary bytes | 1 / no |
+| `<MQTT_CLIENT_ID>/telemetry` | Exactly 19 binary bytes | 1 / no |
 | `<MQTT_CLIENT_ID>/command` | Exactly 1 byte, code 0–5 | subscription QoS 1 |
 | `<MQTT_CLIENT_ID>/barcode` | Exactly 4 binary bytes, one per completed/rejected scan | 1 / no |
 
