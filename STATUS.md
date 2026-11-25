@@ -134,7 +134,7 @@ The [system test log](testing/system/TEST_LOG.md#course-recording-25-november-20
 | SYS-03 Highest hump height over MQTT | — Dropped because the final course has no hump | See the [separate ramp tests](testing/subsystem4/TEST_LOG.md#results) |
 | SYS-04 Obstacle bypass and line recovery | 🟡 One bypass observed with no visible contact. The robot rejoined the line by 02:22 | Record obstacle bypass and line recovery during the scored runs |
 | SYS-05 Full-run telemetry | 🟡 Startup telemetry visible. Longest gap and final state remain unscored | Save a timestamped MQTT capture of a complete run |
-| SYS-06 Full-course demo video | 🟡 Local recording reviewed. The designated finish is unclear | Confirm the finish and add the unlisted link to the [video index](videos/README.md) and the system test log |
+| SYS-06 Full-course demo video | 🟡 Video linked in the [video index](videos/README.md) and the system test log | Confirm where the run finishes |
 
 ---
 
