@@ -1061,8 +1061,6 @@ static void run_forward(MOTION_CONTROLLER * p_controller, uint32_t now_ms,
 /*
  * Left pivot.
  *
- * No reverse command is used.
- *
  * Left wheel remains stopped while the right wheel moves forward.
  */
 static void run_left_turn(MOTION_CONTROLLER * p_controller, uint32_t now_ms,
